@@ -275,8 +275,8 @@ public:
       grid[1] = wrfInputData->fm_dy;
       grid[2] = wrfInputData->fm_dz;
 
-      std::cout << "Dim: " << wrfInputData->fm_nx << " X " << wrfInputData->fm_ny << " X " << wrfInputData->fm_nz << std::endl;
-      std::cout << "at " << grid[0] << " X " << grid[1] << " X " << grid[2] << std::endl;
+      std::cout << "Dim: " << wrfInputData->fm_nx << " X " << wrfInputData->fm_ny << " X " << wrfInputData->fm_nz
+                << " at " << grid[0] << " X " << grid[1] << " X " << grid[2] << std::endl;
 
       domain = { wrfInputData->fm_nx, wrfInputData->fm_ny, wrfInputData->fm_nz };
       DTE_heightField->setDomain(domain, grid);

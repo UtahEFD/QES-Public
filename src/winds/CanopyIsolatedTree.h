@@ -75,12 +75,9 @@ public:
     }
   }
 
-  void setCellFlags(const WINDSInputData *, WINDSGeneralData *, int);
-  void canopyVegetation(WINDSGeneralData *, int);
-  void canopyWake(WINDSGeneralData *, int);
-
-  void canopyTurbulenceWake(WINDSGeneralData *, TURBGeneralData *, int);
-
+  void setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, int building_number);
+  void canopyVegetation(WINDSGeneralData *wgd, int building_id);
+  void canopyWake(WINDSGeneralData *wgd, int building_id);
 
   int getCellFlagCanopy();
   int getCellFlagWake();
@@ -96,18 +93,9 @@ private:
   float attenuationCoeff;
   float LAI, zMaxLAI;
   int ustar_method = 2;
-  float ustar_wake = 0.0;
-  float ustar_us = 0.0;
-
-  const int wake_stream_coef = 18;
-  const int wake_span_coef = 5;
-  const float rmax = 1.0;
-  const float lambda_sq = 0.083;
-  const float epsilon = 10e-10;
 
   float Bfunc(const float &);
   float ucfunc(const float &, const float &);
-  float kfunc(const float &, const float &);
 };
 
 inline int CanopyIsolatedTree::getCellFlagCanopy()
@@ -138,34 +126,4 @@ inline float CanopyIsolatedTree::ucfunc(const float &xh, const float &us)
   } else {
     return us * 90.68 * pow(xh, -1.48);
   }
-}
-
-inline float CanopyIsolatedTree::kfunc(const float &xh, const float &us)
-{
-  /* from MATLAB
-     f=-10.47*(x1)+97.91;
-     g=470.9451*(x2).^(-1.63);
-     gp=470.9451*(-1.63)*(x2).^(-1.63-1.0);
-     A=[[x1^3 x1^2 x1 1];[x2^3 x2^2 x2 1];[3*x1^2 2*x1 1 0];[3*x2^2 2*x2 1 0]];
-     b=[f g 0 gp]';
-     s=A\b;
-     %coef for x1=0.0
-     %s=[0.2885 -3.5879 0 97.91];
-     %coef for x1=2.0
-     %s=[0.5230 -7.9671 25.5927 53.4692];
-  */
-
-  if (xh <= 7.77) {
-    return us * us * (0.2885 * xh * xh * xh + -3.5879 * xh * xh + 97.91);
-  } else {
-    return us * us * 470.9451 * pow(xh, -1.63);
-  }
-
-  // if (xh <= 0.0) {
-  //   return us * us * 76.97;
-  // } else if (xh <= 7.77) {
-  //   return us * us * (0.5230 * xh * xh * xh + -7.9671 * xh * xh + 25.5927 * xh + 53.4692);
-  // } else {
-  //   return us * us * 470.9451 * pow(xh, -1.63);
-  // }
 }

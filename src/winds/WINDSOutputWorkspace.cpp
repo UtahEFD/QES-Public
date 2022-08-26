@@ -88,6 +88,9 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, std::string ou
   dim_vect_fc.push_back(NcDim_y_fc);
   dim_vect_fc.push_back(NcDim_x_fc);
   // create attributes
+  createAttVector("u0", "x-component velocity", "m s-1", dim_vect_fc, &(WGD_->u0));
+  createAttVector("v0", "y-component velocity", "m s-1", dim_vect_fc, &(WGD_->v0));
+  createAttVector("w0", "z-component velocity", "m s-1", dim_vect_fc, &(WGD_->w0));
   createAttVector("u", "x-component velocity", "m s-1", dim_vect_fc, &(WGD_->u));
   createAttVector("v", "y-component velocity", "m s-1", dim_vect_fc, &(WGD_->v));
   createAttVector("w", "z-component velocity", "m s-1", dim_vect_fc, &(WGD_->w));
@@ -273,6 +276,9 @@ void WINDSOutputWorkspace::setAllOutputFields()
                         "u",
                         "v",
                         "w",
+                        "u0",
+                        "v0",
+                        "w0",
                         "icellflag",
                         "terrain",
                         "z0_u",

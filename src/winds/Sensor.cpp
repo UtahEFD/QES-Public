@@ -122,20 +122,37 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
     average__one_overL += WID->metParams->sensors[i]->TS[time_id[i]]->site_one_overL / num_sites;
     if (WID->simParams->UTMx != 0 && WID->simParams->UTMy != 0) {
       if (WID->metParams->sensors[i]->site_coord_flag == 1) {
-        WID->metParams->sensors[i]->site_UTM_x = WID->metParams->sensors[i]->site_xcoord * acos(WGD->theta) + WID->metParams->sensors[i]->site_ycoord * asin(WGD->theta) + WID->simParams->UTMx;
-        WID->metParams->sensors[i]->site_UTM_y = WID->metParams->sensors[i]->site_xcoord * asin(WGD->theta) + WID->metParams->sensors[i]->site_ycoord * acos(WGD->theta) + WID->simParams->UTMy;
+        WID->metParams->sensors[i]->site_UTM_x = WID->metParams->sensors[i]->site_xcoord * acos(WGD->theta)
+                                                 + WID->metParams->sensors[i]->site_ycoord * asin(WGD->theta)
+                                                 + WID->simParams->UTMx;
+        WID->metParams->sensors[i]->site_UTM_y = WID->metParams->sensors[i]->site_xcoord * asin(WGD->theta)
+                                                 + WID->metParams->sensors[i]->site_ycoord * acos(WGD->theta)
+                                                 + WID->simParams->UTMy;
         WID->metParams->sensors[i]->site_UTM_zone = WID->simParams->UTMZone;
         // Calling UTMConverter function to convert UTM coordinate to lat/lon and vice versa (located in Sensor.cpp)
-        GIStool::UTMConverter(WID->metParams->sensors[i]->site_lon, WID->metParams->sensors[i]->site_lat, WID->metParams->sensors[i]->site_UTM_x, WID->metParams->sensors[i]->site_UTM_y, WID->metParams->sensors[i]->site_UTM_zone, 1);
+        GIStool::UTMConverter(WID->metParams->sensors[i]->site_lon,
+                              WID->metParams->sensors[i]->site_lat,
+                              WID->metParams->sensors[i]->site_UTM_x,
+                              WID->metParams->sensors[i]->site_UTM_y,
+                              WID->metParams->sensors[i]->site_UTM_zone,
+                              1);
       }
 
       if (WID->metParams->sensors[i]->site_coord_flag == 2) {
         // Calling UTMConverter function to convert UTM coordinate to lat/lon and vice versa (located in Sensor.cpp)
-        GIStool::UTMConverter(WID->metParams->sensors[i]->site_lon, WID->metParams->sensors[i]->site_lat, WID->metParams->sensors[i]->site_UTM_x, WID->metParams->sensors[i]->site_UTM_y, WID->metParams->sensors[i]->site_UTM_zone, 1);
+        GIStool::UTMConverter(WID->metParams->sensors[i]->site_lon,
+                              WID->metParams->sensors[i]->site_lat,
+                              WID->metParams->sensors[i]->site_UTM_x,
+                              WID->metParams->sensors[i]->site_UTM_y,
+                              WID->metParams->sensors[i]->site_UTM_zone,
+                              1);
         WID->metParams->sensors[i]->site_xcoord = WID->metParams->sensors[i]->site_UTM_x - WID->simParams->UTMx;
         WID->metParams->sensors[i]->site_ycoord = WID->metParams->sensors[i]->site_UTM_y - WID->simParams->UTMy;
       }
-      GIStool::getConvergence(WID->metParams->sensors[i]->site_lon, WID->metParams->sensors[i]->site_lat, WID->metParams->sensors[i]->site_UTM_zone, convergence);
+      GIStool::getConvergence(WID->metParams->sensors[i]->site_lon,
+                              WID->metParams->sensors[i]->site_lat,
+                              WID->metParams->sensors[i]->site_UTM_zone,
+                              convergence);
     }
 
     int idx = i - count;// id of the available sensors for the running timestep of the code
@@ -151,7 +168,9 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
       blending_height += WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[0] / num_sites;
     } else {
       if (WID->metParams->sensors[i]->TS[time_id[i]]->site_blayer_flag == 4) {
-        while (id < WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref.size() && WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[id] > 0 && counter < 1) {
+        while (id < WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref.size()
+               && WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[id] > 0
+               && counter < 1) {
           blending_height += WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[id] / num_sites;
           counter += 1;
           id += 1;

@@ -33,7 +33,6 @@
 
 #include "WINDSInputData.h"
 #include "WINDSGeneralData.h"
-#include "TURBGeneralData.h"
 
 CanopyIsolatedTree::CanopyIsolatedTree(const std::vector<polyVert> &iSP, float iH, float iW, float iBH, float iLAI, int iID)
 {
@@ -172,7 +171,7 @@ void CanopyIsolatedTree::canopyVegetation(WINDSGeneralData *WGD, int tree_id)
   // apply canopy parameterization
   float avg_atten; /**< average attenuation of the canopy */
   float veg_vel_frac; /**< vegetation velocity fraction */
-  int num_atten;
+  //int num_atten;
 
   for (size_t n = 0u; n < canopy_cell2D.size(); ++n) {
     int icell_2d = canopy_cell2D[n];
@@ -292,6 +291,10 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
 {
 
   int u_vegwake_flag(0), v_vegwake_flag(0), w_vegwake_flag(0);
+  const int wake_stream_coef = 11;
+  const int wake_span_coef = 4;
+  const float lambda_sq = 0.083;
+  const float epsilon = 10e-10;
 
   float z0;
   float z_b;
@@ -299,8 +302,7 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
   float x_p, y_p, x_u, y_u, x_v, y_v, x_w, y_w;
   float x_wall, x_wall_u, x_wall_v, x_wall_w, dn_u, dn_v, dn_w;
   float u_defect, u_c, r_center, theta, delta, B_h;
-  //float ustar_wake(0), ustar_us(0), mag_us(0);
-  float mag_us(0);
+  float ustar_wake(0), ustar_us(0), mag_us(0);
 
   int kk(0), k_bottom(1), k_top(WGD->nz - 2);
   int icell_cent, icell_face, icell_2d;
@@ -552,7 +554,7 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
               delta = (B_h - 1.15) / sqrt(1 - (1 - pow((B_h - 1.15) / (B_h + 1.15), 2)) * pow(cos(theta), 2)) * H;
 
               // check if within the wake
-              if (r_center < rmax * delta) {
+              if (r_center < 0.5 * delta) {
                 // get velocity deficit
                 u_c = ucfunc(x_u / H, ustar_wake);
                 u_defect = u_c * (exp(-(r_center * r_center) / (lambda_sq * delta * delta)));
@@ -615,7 +617,7 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
               delta = (B_h - 1.15) / sqrt(1 - (1 - pow((B_h - 1.15) / (B_h + 1.15), 2)) * pow(cos(theta), 2)) * H;
 
               // check if within the wake
-              if (r_center < rmax * delta) {
+              if (r_center < 0.5 * delta) {
                 // get velocity deficit
                 u_c = ucfunc(x_v / H, ustar_wake);
                 u_defect = u_c * (exp(-(r_center * r_center) / (lambda_sq * delta * delta)));
@@ -678,7 +680,7 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
               delta = (B_h - 1.15) / sqrt(1 - (1 - pow((B_h - 1.15) / (B_h + 1.15), 2)) * pow(cos(theta), 2)) * H;
 
               // check if within the wake
-              if (r_center < rmax * delta) {
+              if (r_center < 0.5 * delta) {
                 // get velocity deficit
                 u_c = ucfunc(x_w / H, ustar_wake);
                 u_defect = u_c * (exp(-(r_center * r_center) / (lambda_sq * delta * delta)));
@@ -709,261 +711,6 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
   v0_mod_id.clear();
   u0_modified.clear();
   v0_modified.clear();
-
-  return;
-}
-void CanopyIsolatedTree::canopyTurbulenceWake(WINDSGeneralData *WGD, TURBGeneralData *TGD, int tree_id)
-{
-
-  int tke_vegwake_flag(0);
-
-  float z0;
-  float z_b;
-  float x_c, y_c, z_c, yw1, yw3, y_norm;
-  float x_p, y_p, x_u, y_u, x_v, y_v, x_w, y_w;
-  float x_wall, x_wall_u, x_wall_v, x_wall_w, dn_u, dn_v, dn_w;
-  float u_defect, k_c, r_center, theta, delta, B_h;
-  //float ustar_wake(0), ustar_us(0), mag_us(0);
-  float mag_us(0);
-
-  int kk(0), k_bottom(1), k_top(WGD->nz - 2);
-  int icell_cent, icell_face, icell_2d;
-
-  //std::vector<float> u0_modified, v0_modified;
-  //std::vector<int> u0_mod_id, v0_mod_id;
-
-  float Lt = 0.5 * W;
-  Lr = H;
-
-  if (k_end == 0)
-    return;
-
-  /*
-  icell_face = i_building_cent + j_building_cent * WGD->nx + (k_end + 1) * WGD->nx * WGD->ny;
-  u0_h = WGD->u0[icell_face];// u velocity at the height of building at the centroid
-  v0_h = WGD->v0[icell_face];// v velocity at the height of building at the centroid
-  */
-
-  upwind_dir = atan2(v0_h, u0_h);
-  mag_us = sqrt(u0_h * u0_h + v0_h * v0_h);
-
-  yw1 = 0.5 * wake_span_coef * H;
-  yw3 = -0.5 * wake_span_coef * H;
-
-  y_norm = yw1;
-
-  for (auto k = 1; k <= k_start; k++) {
-    k_bottom = k;
-    if (base_height <= WGD->z[k])
-      break;
-  }
-
-  for (auto k = k_start; k < WGD->nz - 2; k++) {
-    k_top = k;
-    if (1.5 * (H + base_height) < WGD->z[k + 1])
-      break;
-  }
-  k_top++;
-
-  for (auto k = k_start; k < k_end; k++) {
-    kk = k;
-    if (0.75 * H + base_height <= WGD->z[k])
-      break;
-  }
-
-  // if the whole tree (defined as center) is in a flow reversal region -> skip the wake
-  icell_cent = i_building_cent + j_building_cent * (WGD->nx - 1) + kk * (WGD->nx - 1) * (WGD->ny - 1);
-  if (WGD->icellflag[icell_cent] == 3 || WGD->icellflag[icell_cent] == 4 || WGD->icellflag[icell_cent] == 6)
-    return;
-
-  for (auto k = k_top; k >= k_bottom; k--) {
-
-    // absolute z-coord within building above ground
-    z_b = WGD->z[k] - base_height;
-    // z-coord relative to center of tree (zMaxLAI)
-    z_c = z_b - zMaxLAI;
-
-    for (auto y_idx = 1; y_idx < 2 * ceil((yw1 - yw3) / WGD->dxy); ++y_idx) {
-
-      // y-coord relative to center of tree (zMaxLAI)
-      y_c = 0.5 * float(y_idx) * WGD->dxy + yw3;
-
-      if (std::abs(y_c) > std::abs(y_norm)) {
-        continue;
-      } else if (std::abs(y_c) > Lt && std::abs(y_c) <= yw1) {
-        // y_cp=y_c-Lt(ibuild)
-        // xwall=sqrt((Lt(ibuild)**2.)-(y_cp**2.))
-        x_wall = 0;
-      } else {
-        x_wall = 0;
-        // x_wall=sqrt(pow(Lt,2)-pow(y_c,2));
-      }
-
-      int x_idx_min = -1;
-      for (auto x_idx = 0; x_idx <= 2.0 * ceil(wake_stream_coef * Lr / WGD->dxy); ++x_idx) {
-        tke_vegwake_flag = 1;
-
-        // x-coord relative to center of tree (zMaxLAI)
-        x_c = 0.5 * float(x_idx) * WGD->dxy;
-
-        if (sqrt(pow(x_c, 2) + pow(y_c, 2)) <= Lt)
-          continue;
-
-        int i = ceil(((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / WGD->dx) - 1;
-        int j = ceil(((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / WGD->dy) - 1;
-
-        //int i = ((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / WGD->dx;
-        //int j = ((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / WGD->dy;
-        // check if in the domain
-        if (i >= WGD->nx - 2 || i <= 0 || j >= WGD->ny - 2 || j <= 0)
-          break;
-
-        // linearized indexes
-        icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-
-        // check if not in canopy/building set start (was x_idx_min < 0) to x_idx_min > 0
-        /* old version - > canopy now
-	  if (WGD->icellflag[icell_cent] != 0
-            && WGD->icellflag[icell_cent] != 2
-            && WGD->icellflag[icell_cent] != getCellFlagCanopy()
-            && x_idx_min < 0)
-          x_idx_min = x_idx;
-
-        if (WGD->icellflag[icell_cent] == 0
-            || WGD->icellflag[icell_cent] == 2
-            || WGD->icellflag[icell_cent] == getCellFlagCanopy()) {
-          // check for canopy/building/terrain that will disrupt the wake
-          if (x_idx_min >= 0) {
-            if (WGD->canopy->icanopy_flag[icell_cent] == tree_id) {
-              x_idx_min = -1;
-            } else if (WGD->icellflag[i + j * (WGD->nx - 1) + kk * (WGD->nx - 1) * (WGD->ny - 1)] == 0
-                       || WGD->icellflag[i + j * (WGD->nx - 1) + kk * (WGD->nx - 1) * (WGD->ny - 1)] == 2) {
-              break;
-            } else if (WGD->icellflag[icell_cent] == 0
-                       || WGD->icellflag[icell_cent] == 2
-                       || WGD->icellflag[icell_cent] == getCellFlagCanopy()) {
-              break;
-            }
-          } else {
-            // check the tree is right by a building/terrain -> skip downstream
-            if (WGD->icellflag[icell_cent] == 0 || WGD->icellflag[icell_cent] == 2)
-              break;
-          }
-        }
-	*/
-
-        if (WGD->icellflag[icell_cent] != 0
-            && WGD->icellflag[icell_cent] != 2
-            && x_idx_min < 0)
-          x_idx_min = x_idx;
-
-        if (WGD->icellflag[icell_cent] == 0
-            || WGD->icellflag[icell_cent] == 2
-            || WGD->icellflag[icell_cent] == getCellFlagCanopy()) {
-          // check for canopy/building/terrain that will disrupt the wake
-          if (x_idx_min >= 0) {
-            if (WGD->canopy->icanopy_flag[icell_cent] == tree_id) {
-              x_idx_min = -1;
-            } else if (WGD->icellflag[i + j * (WGD->nx - 1) + kk * (WGD->nx - 1) * (WGD->ny - 1)] == 0
-                       || WGD->icellflag[i + j * (WGD->nx - 1) + kk * (WGD->nx - 1) * (WGD->ny - 1)] == 2) {
-              break;
-            } else if (WGD->icellflag[icell_cent] == 0
-                       || WGD->icellflag[icell_cent] == 2) {
-              break;
-            }
-          } else {
-            // check the tree is right by a building/terrain -> skip downstream
-            if (WGD->icellflag[icell_cent] == 0 || WGD->icellflag[icell_cent] == 2)
-              break;
-          }
-        }
-
-        // NOTE: wake is not applied in the canopy
-        if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2 && WGD->icellflag[icell_cent] != getCellFlagCanopy()) {
-
-          // START OF WAKE TURBULENCE PARAMETRIZATION
-
-          // wake celltype w-values
-          // ij coord of cell-center
-          int i_w = ceil(((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / WGD->dx) - 1;
-          int j_w = ceil(((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / WGD->dy) - 1;
-
-          if (i_w < WGD->nx - 1 && i_w > 0 && j_w < WGD->ny - 1 && j_w > 0) {
-            // not rotated relative coordinate of cell-center
-            x_p = (i_w + 0.5) * WGD->dx - building_cent_x;
-            y_p = (j_w + 0.5) * WGD->dy - building_cent_y;
-            // rotated relative coordinate of cell-center
-            x_w = x_p * cos(upwind_dir) + y_p * sin(upwind_dir);
-            y_w = -x_p * sin(upwind_dir) + y_p * cos(upwind_dir);
-
-            if (std::abs(y_w) > std::abs(y_norm)) {
-              break;
-            } else {
-              x_wall_w = 0;
-            }
-
-            // adjusted downstream value
-            x_w -= x_wall_w;
-
-            if (std::abs(y_w) < std::abs(y_norm) && std::abs(y_norm) > epsilon && H > epsilon) {
-              dn_w = H;
-            } else {
-              dn_w = 0.0;
-            }
-
-            if (x_w > wake_stream_coef * dn_w)
-              tke_vegwake_flag = 0;
-
-            // linearized indexes
-            icell_cent = i_w + j_w * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-            // icell_face = i_v + j_v*WGD->nx+k*WGD->nx*WGD->ny;
-
-            if (dn_w > 0.0 && tke_vegwake_flag == 1 && WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
-
-              // polar coordinate in the wake
-              r_center = sqrt(pow(z_c, 2) + pow(y_w, 2));
-              theta = atan2(z_c, y_w);
-
-              // FM - ellipse equation:
-              B_h = Bfunc(x_w / H);
-              delta = (B_h - 1.15) / sqrt(1 - (1 - pow((B_h - 1.15) / (B_h + 1.15), 2)) * pow(cos(theta), 2)) * H;
-
-              // check if within the wake
-              if (r_center < rmax * delta) {
-                // get velocity deficit
-                k_c = kfunc(x_w / H, ustar_us);
-
-                // apply parametrization
-                //if (u_defect >= 0.01)
-                TGD->tke[icell_cent] = TGD->tke[1 + (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1)]
-                                       + k_c * (exp(-(r_center * r_center) / (lambda_sq * delta * delta)));
-                //TGD->Lm[icell_cent] = 0.4 * H;//1.0 / (1. / TGD->Lm[icell_cent] + 1.0 / H);
-                TGD->nuT[icell_cent] = 0.55 * sqrt(TGD->tke[icell_cent]) * TGD->Lm[icell_cent];
-
-              }// if (r_center<delta/1)
-            }
-          }
-          // if u,v, and w are done -> exit x-loop
-          if (tke_vegwake_flag == 0)
-            break;
-          // END OF WAKE VELOCITY PARAMETRIZATION
-        }
-      }// end of x-loop (stream-wise)
-    }// end of y-loop (span-wise)
-  }// end of z-loop
-
-  // for (auto x_id = 0u; x_id < u0_mod_id.size(); x_id++) {
-  //   WGD->u0[u0_mod_id[x_id]] = u0_modified[x_id];
-  // }
-
-  // for (auto y_id = 0u; y_id < v0_mod_id.size(); y_id++) {
-  //   WGD->v0[v0_mod_id[y_id]] = v0_modified[y_id];
-  // }
-
-  // u0_mod_id.clear();
-  // v0_mod_id.clear();
-  // u0_modified.clear();
-  // v0_modified.clear();
 
   return;
 }

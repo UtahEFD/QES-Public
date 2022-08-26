@@ -41,6 +41,12 @@
 #define MAX_S(x, y) ((x) > (y) ? (x) : (y))
 
 #include "WINDSInputData.h"
+
+#include "WindProfilerType.h"
+#include "WindProfilerWRF.h"
+#include "WindProfilerBarnCPU.h"
+#include "WindProfilerBarnGPU.h"
+
 #include "Building.h"
 #include "Canopy.h"
 #include "CanopyElement.h"
@@ -142,6 +148,8 @@ public:
   float dxy; /**< Minimum value between dx and dy */
 
   int wrf_nx, wrf_ny;
+
+  float halo_x, halo_y;
   int halo_index_x, halo_index_y;
 
   long numcell_cout; /**< :document this: */
@@ -172,7 +180,9 @@ public:
   std::vector<float> z_face; /**< :Location of the bottom face of the cell in z-direction: */
 
   std::vector<QEStime> sensortime; /**< :document this: */
-  std::vector<int> sensortime_id; /**< :document this: */
+  std::vector<int> sensortime_id;
+  // FM TEMPORARY!!!!!!!!!!!!!
+  std::vector<int> time_id;
 
   // time variables
   int nt; /**< :document this: */
@@ -236,6 +246,8 @@ public:
 
   // Sensor* sensor;      may not need this now
 
+  // wind profiler class
+  WindProfilerType *windProfiler; /**< pointer to the wind profiler class, used to interp wind */
 
   int id; /**< :document this: */
 
