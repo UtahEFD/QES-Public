@@ -25,25 +25,27 @@ fsize=12;
 xS=50;yS=200;zS=1;
 
 % set the case base name for use in all the other file paths
+casePath="../QES-data";
+
 caseNameWinds = "7x11array_shapefile";
 caseNamePlume = "7x11array_shapefile";
 
 % set the plotOutputFolders
-plotOutputDir = "plotOutput";
+plotOutputDir = "plotOutput2";
 mkdir(plotOutputDir)
 
 data=struct();
 varnames=struct();
 
 % read wind netcdf file
-fileName = sprintf("../QES-data/%s_windsOut.nc",caseNameWinds);
+fileName = sprintf("%s/%s_windsOut.nc",casePath,caseNameWinds);
 [data.winds,varnames.winds] = readNetCDF(fileName);
 % read turb netcdf file
-fileName = sprintf("../QES-data/%s_turbOut.nc",caseNameWinds);
+fileName = sprintf("%s/%s_turbOut.nc",casePath,caseNameWinds);
 [data.turb,varnames.turb] = readNetCDF(fileName);
 
 % read main plume files
-fileName = sprintf("../QES-data/%s_conc.nc",caseNamePlume);
+fileName = sprintf("%s/%s_conc.nc",casePath,caseNamePlume);
 [data.plume,varnames.plume] = readNetCDF(fileName);
 
 xoH=(data.plume.x-xS)/H;
