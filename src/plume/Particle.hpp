@@ -48,14 +48,64 @@ class Particle
 {
 protected:
 public:
+  // initializer
+  Particle()
+  {
+    // diameter of particle (micron and m)
+    d = 0.0;
+    d_m = (1.0E-6) * d;
+
+    // mass of particle (g and kg)
+    m = 0.0;
+    m_kg = (1.0E-3) * m;
+
+    // density of particle
+    rho = 0.0;
+
+    // tag
+    tag = "ParticleTracer";// tagged as "tracer" so when particle type is unspecified in XML, it defaults to tracer
+
+
+    // (1 - fraction) particle deposited
+    wdepos = 1.0;
+    depFlag = false;
+
+    // (1 - fraction) particle decay
+    wdecay = 1.0;
+  }
+
+  // initializer
+  Particle(const double &d_part, const double &m_part, const double &rho_part)
+  {
+    // diameter of particle (micron and m)
+    d = d_part;
+    d_m = (1.0E-6) * d;
+
+    // mass of particle (g and kg)
+    m = m_part;
+    m_kg = (1.0E-3) * m;
+
+    // density of particle
+    rho = rho_part;
+
+    // tag
+    tag = "ParticleTracer";// tagged as "tracer" so when particle type is unspecified in XML, it defaults to tracer
+
+    // (1 - fraction) particle deposited
+    wdepos = 1.0;
+    depFlag = false;
+
+    // (1 - fraction) particle deposited
+    wdecay = 1.0;
+  }
+
+  // destructor
+  virtual ~Particle()
+  {
+  }
+
   ParticleType parType;
 
-  // Physical properties
-  double d;
-  double d_m;
-  double m;
-  double m_kg;
-  double rho;
 
   std::string tag;// particle type tag
 
@@ -118,6 +168,13 @@ public:
   bool isRogue;// this is false until it becomes true. Should not go true. It is whether a particle has gone rogue or not
   bool isActive;// this is true until it becomes false.  If a particle leaves the domain or runs out of mass, this becomes false.
 
+  // particle physical property
+  double d;// particle diameter diameter [microns]
+  double d_m;// particle diameter diameter [m]
+  double m;// particle mass [g]
+  double m_kg;// particle mass [kg]
+  double rho;// density of particle
+
   // deposition vatiables
   double wdepos;// (1 - fraction) particle deposited [0,1]
   double Sc;// Schmidt number
@@ -134,61 +191,6 @@ public:
   // decay varables
   double wdecay;// (1 - fraction) particle decayed [0,1]
 
-  // initializer
-  Particle()
-  {
-    // diameter of particle (micron and m)
-    d = 0.0;
-    d_m = (1.0E-6) * d;
-
-    // mass of particle (g and kg)
-    m = 0.0;
-    m_kg = (1.0E-3) * m;
-
-    // density of particle
-    rho = 0.0;
-
-    // tag
-    tag = "ParticleTracer";// tagged as "tracer" so when particle type is unspecified in XML, it defaults to tracer
-
-
-    // (1 - fraction) particle deposited
-    wdepos = 1.0;
-    depFlag = false;
-
-    // (1 - fraction) particle decay
-    wdecay = 1.0;
-  }
-
-  // initializer
-  Particle(const double &d_part, const double &m_part, const double &rho_part)
-  {
-    // diameter of particle (micron and m)
-    d = d_part;
-    d_m = (1.0E-6) * d;
-
-    // mass of particle (g and kg)
-    m = m_part;
-    m_kg = (1.0E-3) * m;
-
-    // density of particle
-    rho = rho_part;
-
-    // tag
-    tag = "ParticleTracer";// tagged as "tracer" so when particle type is unspecified in XML, it defaults to tracer
-
-    // (1 - fraction) particle deposited
-    wdepos = 1.0;
-    depFlag = false;
-
-    // (1 - fraction) particle deposited
-    wdecay = 1.0;
-  }
-
-  // destructor
-  virtual ~Particle()
-  {
-  }
 
   virtual void setSettlingVelocity(const double &, const double &){};
 };
