@@ -151,12 +151,6 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     // and the grid sizes. Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
 
     int cellId = interp->getCellId(xPos, yPos, zPos);
-    int cellId2d = interp->getCellId2d(xPos, yPos);
-    // LDU: if particle drops below terrain height, remove it (kludge, fix later) (doesn't include halo)
-    if (zPos <= WGD->terrain[cellId2d]) {
-      isActive = false;
-      break;
-    }
     double dWall = WGD->mixingLengths[cellId];
     double par_dt = calcCourantTimestep(dWall,
                                         std::abs(uMean) + std::abs(uFluct),
@@ -281,16 +275,10 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     disY = (vMean + vFluct) * par_dt;
     disZ = (wMean + wFluct) * par_dt;
 
-    // LDU 5/2/22: CHANGE THIS BACK WHEN DONE MAKING FRAME2 FIGS. FORWARD DISPERSION IS + disX etc, BACKWARD DISPERSION IS - disX etc.
-
-    xPos = xPos + disX;// for forward (normal) dispersion
+    xPos = xPos + disX;
     yPos = yPos + disY;
     zPos = zPos + disZ;
 
-    /*xPos = xPos - disX; // for backward dispersion (footprint study)
-    yPos = yPos - disY;
-    zPos = zPos - disZ;
-    */
     uTot = uMean + uFluct;
     vTot = vMean + vFluct;
     wTot = wMean + wFluct;
