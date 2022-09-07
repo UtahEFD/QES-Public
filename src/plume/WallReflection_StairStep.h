@@ -84,22 +84,22 @@ public:
                        double &wFluct);
 
 private:
-  void oneStepReflect(const WINDSGeneralData *,
-                      const Plume *,
-                      Vector3Double &,
-                      Vector3Double &,
-                      const double &,
-                      Vector3Double &,
-                      bool &);
+  void oneReflection(const WINDSGeneralData *,
+                     const Plume *,
+                     Vector3Double &,
+                     Vector3Double &,
+                     const double &,
+                     Vector3Double &,
+                     bool &);
 
 
-  void test_regress(const WINDSGeneralData *,
-                    const Plume *,
-                    Vector3Double &,
-                    Vector3Double &,
-                    const double &,
-                    double &,
-                    double &,
-                    Vector3Double &,
-                    bool &);
+  void trajectorySplit_regression(const WINDSGeneralData *,
+                                  const Plume *,
+                                  Vector3Double &,
+                                  Vector3Double &,
+                                  const double &,
+                                  double &,
+                                  double &,
+                                  Vector3Double &,
+                                  bool &);
 };

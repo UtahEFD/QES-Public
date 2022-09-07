@@ -96,11 +96,11 @@ bool WallReflection_StairStep::reflect(const WINDSGeneralData *WGD,
 
 
   // linearized cell ID for origine of the trajectory of the particle
-  int cellIdOld = plume->interp->getCellId(xPos - disX, yPos - disY, zPos - disZ);
+  //int cellIdOld = plume->interp->getCellId(xPos - disX, yPos - disY, zPos - disZ);
 
   // i,j,k of cell index
-  Vector3Int cellIdxOld = plume->interp->getCellIndex(cellIdOld);
-  Vector3Int cellIdxNew = plume->interp->getCellIndex(cellIdNew);
+  //Vector3Int cellIdxOld = plume->interp->getCellIndex(cellIdOld);
+  //Vector3Int cellIdxNew = plume->interp->getCellIndex(cellIdNew);
 
   //test_regress(plume, Xold, Xnew, U, d);
 
@@ -114,7 +114,7 @@ bool WallReflection_StairStep::reflect(const WINDSGeneralData *WGD,
   //zPos -= disZ;
 
   // for debug
-  std::cerr << "----------------" << std::endl;
+  //std::cerr << "----------------" << std::endl;
   // position of the particle start of trajectory
   Vector3Double X = { xPos - disX, yPos - disY, zPos - disZ };
   // vector of the trajectory
@@ -130,10 +130,11 @@ bool WallReflection_StairStep::reflect(const WINDSGeneralData *WGD,
   double d1 = 0.0;
   double d2 = U.length();
 
-  std::cerr << "TEST REGRESSION \t" << std::endl;
+  //std::cerr << "TEST REGRESSION \t" << std::endl;
 
   // i,j,k of cell index
-  std::cerr << "Xold\t" << X << "\t" << plume->interp->getCellIndex(plume->interp->getCellId(X)) << std::endl;
+  /*
+    std::cerr << "Xold\t" << X << "\t" << plume->interp->getCellIndex(plume->interp->getCellId(X)) << std::endl;
   std::cerr << "Xnew\t" << Xnew << "\t" << plume->interp->getCellIndex(plume->interp->getCellId(Xnew)) << std::endl;
   std::cerr << "--" << std::endl;
   std::cerr << "U\t" << U << "\t"
@@ -141,17 +142,18 @@ bool WallReflection_StairStep::reflect(const WINDSGeneralData *WGD,
                  - plume->interp->getCellIndex(plume->interp->getCellId(Xnew))
             << "\t" << U.length() << std::endl;
   std::cerr << "--" << std::endl;
-
+  */
   U = U / U.length();
-  bool test;
-  test_regress(WGD, plume, X, U, d, d1, d2, vecFluct, test);
-
+  bool isActive;
+  trajectorySplit_regression(WGD, plume, X, U, d, d1, d2, vecFluct, isActive);
+  /*
   std::cerr << "--" << std::endl;
   std::cerr << "X0  \t" << X0 << "\t" << plume->interp->getCellIndex(plume->interp->getCellId(X0)) << std::endl;
   std::cerr << "Xnew\t" << X << "\t" << plume->interp->getCellIndex(plume->interp->getCellId(X)) << std::endl;
   std::cerr << "----------------" << std::endl;
+  */
 
-  if (test) {
+  if (isActive) {
     // update output variable: particle position
     xPos = X[0];
     yPos = X[1];
@@ -164,317 +166,74 @@ bool WallReflection_StairStep::reflect(const WINDSGeneralData *WGD,
   } else {
     return false;
   }
-
-#if 0
-  // some constants
-  const double eps_S = 0.001;
-  const int maxCount = 10;
-
-  // QES-winds grid information
-  int nx = WGD->nx;
-  int ny = WGD->ny;
-  //int nz = WGD->nz;
-  double dx = WGD->dx;
-  double dy = WGD->dy;
-  //double dz = WGD->dz;
-
-  // cartesian basis vectors
-  const Vector3Double e1 = { 1.0, 0.0, 0.0 }, e2 = { 0.0, 1.0, 0.0 }, e3 = { 0.0, 0.0, 1.0 };
-
-  /* Vector3 variables informations:
-     Xold     = origine of the trajectory of the particle  
-     Xnew     = end of the trajectory of the particle 
-     vecFluct = fluctuation of the particle
-     P        = position of the particle on the wall where bounce happens
-     S        = location of the wall
-     U        = trajectory of the particle
-     V1       = trajectory of the particle to the wall V1 = P - Xold
-     V2       = trajectory of the particle to the wall V1 = Xnew - P
-     R        = unit vector giving orentation of the reflection
-     N        = unit vector noraml to the surface
-  */
-  Vector3Double Xnew, Xold;
-  Vector3Double vecFluct, vecFluct_old;
-  Vector3Double P, S, U, V1, V2;
-  Vector3Double R, N;
-
-  // position of the particle start of trajectory
-  Xold = { xPos - disX, yPos - disY, zPos - disZ };
-
-  // postion of the particle end of trajectory
-  Xnew = { xPos, yPos, zPos };
-
-  // icellFlag of the cell at the end of the trajectory of the particle
-  int cellFlagNew = WGD->icellflag.at(cellIdNew);
-
-  // vector of fluctuation
-  vecFluct = { uFluct, vFluct, wFluct };
-  //vecFluct_old = { uFluct_old, vFluct_old, wFluct_old };
-
-  /* Working variables informations:
-     count       - number of reflections
-     f1,f2,f3    - sign of trajectory in each direction (+/-1)
-     l1,l2,l3    - ratio of distance to wall over total distance travel to closest surface in 
-     -             each direction: by definition positive, if < 1 -> reflection possible
-     -             if > 1 -> surface too far
-     validSuface - number of potential valid surface
-     s           - smallest ratio of dist. to wall over total dist. travel (once surface selected)
-     d           - distance travel after reflection
-  */
-  int count = 0;
-  double f1, f2, f3;
-  double l1, l2, l3;
-  int validSurface;
-  double s, d;
-
-  while ((cellFlagNew == 0 || cellFlagNew == 2) && (count < maxCount)) {
-
-    // distance travelled by particle
-    U = Xnew - Xold;
-
-    cellIdxOld = plume->interp->getCellIndex(cellIdOld);
-    int i = cellIdxOld[0], j = cellIdxOld[1], k = cellIdxOld[2];
-
-    //set direction
-    f1 = (e1 * U);
-    f1 = f1 / std::abs(f1);
-    f2 = (e2 * U);
-    f2 = f2 / std::abs(f2);
-    f3 = (e3 * U);
-    f3 = f3 / std::abs(f3);
-
-    // reset smallest ratio
-    s = 100.0;
-    // reset number of potential valid surface
-    validSurface = 0;
-    // reset distance travel after all
-    d = 0.0;
-
-    // x-drection
-    N = -f1 * e1;
-    S = { WGD->x[i] + f1 * 0.50 * dx, double(WGD->y[j]), double(WGD->z[k]) };
-    l1 = -(Xold * N - S * N) / (U * N);
-
-    // y-drection
-    N = -f2 * e2;
-    S = { double(WGD->x[i]), WGD->y[j] + f2 * 0.50 * dy, double(WGD->z[k]) };
-    l2 = -(Xold * N - S * N) / (U * N);
-
-    // z-drection (dz can be variable with hieght)
-    N = -f3 * e3;
-    if (f3 >= 0.0) {
-      S = { double(WGD->x[i]), double(WGD->y[j]), double(WGD->z_face[k]) };
-    } else {
-      S = { double(WGD->x[i]), double(WGD->y[j]), double(WGD->z_face[k - 1]) };
-    }
-    l3 = -(Xold * N - S * N) / (U * N);
-
-    // check with surface is a potential bounce (0 < li < 1.0)
-    // if li=1 -> particle in surface, -> cause problem as particle will stay
-    // on the surface, move the reflection point slightly.
-    // check for surface in the x-direction
-    if ((l1 >= -eps_S) && (l1 <= 1.0 - eps_S)) {
-      validSurface++;
-      s = l1;
-      N = -f1 * e1;
-    } else if ((l1 >= 1.0 - eps_S) && (l1 <= 1.0 + eps_S)) {
-      validSurface++;
-      l1 -= 2 * eps_S;
-      s = l1;
-      N = -f1 * e1;
-    }
-    // check for surface in the y-direction
-    if ((l2 >= -eps_S) && (l2 <= 1.0 - eps_S)) {
-      validSurface++;
-      s = l2;
-      N = -f2 * e2;
-    } else if ((l2 >= 1.0 - eps_S) && (l2 <= 1.0 + eps_S)) {
-      validSurface++;
-      l2 -= 2 * eps_S;
-      s = l2;
-      N = -f2 * e2;
-    }
-    // check for surface in the z-direction
-    if ((l3 >= -eps_S) && (l3 <= 1.0 - eps_S)) {
-      validSurface++;
-      s = l3;
-      N = -f3 * e3;
-    } else if ((l3 >= 1.0 - eps_S) && (l3 <= 1.0 + eps_S)) {
-      validSurface++;
-      l3 -= 2 * eps_S;
-      s = l3;
-      N = -f3 * e3;
-    }
-
-    // check if more than one surface is valid
-    if (validSurface == 0) {
-      // if 0 valid surface
-      std::cerr << "\tReflection problem: no valid surface\n"
-                << "\t" << count << " " << U.length() << "->"
-                << "[" << l1 << "," << l2 << "," << l3 << "]"
-                << std::endl;
-      //exit(EXIT_FAILURE);
-      return false;
-    } else if (validSurface == 1) {
-      // only one surface -> s and N already set above
-      /* NOTE: the particle travel between fluid -> solid, if only one surface is valid
-       *       the surface detected above has to be the reflection surface.
-       */
-
-      // for debug
-      //std::cerr << "[x,x,x][" << l1 << "," << l2 << "," << l3 << "] " << std::endl;
-    } else if (validSurface > 1) {
-      // Here-> Multiple options to bounce
-      // need to find the best surface
-      /* NOTE: the particle travel between fluid -> solid, if only multiple surface is valid
-       *       that means that the particle travel across a face in more that one direction. 
-       *       Some cell might be fluid, at least one will be solid. Need to check icellflag.
-       */
-
-      // list of potential surface
-      // - ratio of dist. to wall over dist. total
-      std::vector<double> vl(3, 0.0);
-      // - normal vector for each surface
-      std::vector<Vector3Double> vN(3, { 0, 0, 0 });
-      // - linear index for icellflag check
-      std::vector<int> vn(3, 0);
-
-      // add potential surface to the list (valid only if 0 <= li <= 1.0)
-      // -> only executed if 2 valid surfaces exist
-      // surface in the x-direction
-      vl[0] = l1;
-      vN[0] = -f1 * e1;
-      vn[0] = f1;
-      // surface in the y-direction
-      vl[1] = l2;
-      vN[1] = -f2 * e2;
-      vn[1] = f2 * (nx - 1);
-      // surface in the z-direction
-      vl[2] = l3;
-      vN[2] = -f3 * e3;
-      vn[2] = f3 * (nx - 1) * (ny - 1);
-
-      // sort indices from smallest to largest (only indices are sorted)
-      std::vector<size_t> idx(vl.size());
-      std::iota(idx.begin(), idx.end(), 0);
-      std::sort(idx.begin(), idx.end(), [&vl](size_t i1, size_t i2) { return vl[i1] < vl[i2]; });
-
-      // for debug
-      //std::cerr << "[" << idx[0] << "," << idx[1] << "," << idx[2] << "]"
-      //          << "[" << vl[0] << "," << vl[1] << "," << vl[2] << "] " << std::endl;
-
-      // check if surface is valid (ie, next cell is solid)
-      if ((WGD->icellflag.at(cellIdOld + vn[idx[0]]) == 0)
-          || (WGD->icellflag.at(cellIdOld + vn[idx[0]]) == 2)) {
-        s = vl[idx[0]];
-        N = vN[idx[0]];
-      } else if ((WGD->icellflag.at(cellIdOld + vn[idx[0]] + vn[idx[1]]) == 0)
-                 || (WGD->icellflag.at(cellIdOld + vn[idx[0]] + vn[idx[1]]) == 2)) {
-        s = vl[idx[1]];
-        N = vN[idx[1]];
-      } else if ((WGD->icellflag.at(cellIdOld + vn[idx[0]] + vn[idx[1]] + vn[idx[2]]) == 0)
-                 || (WGD->icellflag.at(cellIdOld + vn[idx[0]] + vn[idx[1]] + vn[idx[2]]) == 2)) {
-        s = vl[idx[2]];
-        N = vN[idx[2]];
-      } else {
-        // this should happend only if particle traj. more than 1 cell in each direction,
-        // -> should have been skipped at the beginning of the function
-        //std::cout << "Reflection problem: no valid surface" << std::endl;
-        return true;
-      }
-    }
-    // no else -> only one valid surface
-
-    // vector from current postition to the wall
-    V1 = s * U;
-    // postion of reflection on the wall
-    P = Xold + V1;
-    // distance traveled after the wall
-    V2 = U - V1;
-    d = V2.length();
-    // reflection: normalizing V2 -> R is of norm 1
-    V2 = V2 / V2.length();
-    R = V2.reflect(N);
-    // update postion from surface reflection
-    Xnew = P + d * R;
-    // reflection of the Fluctuation
-    vecFluct = vecFluct.reflect(N);
-    //vecFluct_old = vecFluct_old.reflect(N);
-    // prepare variables for next bounce: particle position
-    Xold = P;
-
-    // increment the reflection count
-    count = count + 1;
-    // update the icellflag
-    cellIdNew = plume->interp->getCellId(Xnew);
-
-    try {
-      cellFlagNew = WGD->icellflag.at(cellIdNew);
-    } catch (const std::out_of_range &oor) {
-      // cell ID out of bound
-      std::cout << "Reflection problem: particle out of range after reflection" << std::endl;
-      std::cerr << xPos << "," << yPos << "," << zPos << std::endl;
-      return false;
-    }
-
-  }// end of: while( (cellFlagNew==0 || cellFlagNew==2) && (count < maxCount) )
-
-  //std::cout << Xold << " " << Xnew << std::endl;
-
-  if (count < maxCount) {
-    // update output variable: particle position
-    xPos = Xnew[0];
-    yPos = Xnew[1];
-    zPos = Xnew[2];
-    // update output variable: fluctuations
-    uFluct = vecFluct[0];
-    vFluct = vecFluct[1];
-    wFluct = vecFluct[2];
-    // update output variable: old fluctuations
-    //uFluct_old = vecFluct_old[0];
-    //vFluct_old = vecFluct_old[1];
-    //wFluct_old = vecFluct_old[2];
-  } else {
-    // update output variable: particle position to old position
-    xPos -= disX;
-    yPos -= disY;
-    zPos -= disZ;
-  }
-
-
-  Vector3Double X = { xPos - disX, yPos - disY, zPos - disZ };
-  Vector3Double U = { disX, disY, disZ };
-  Vector3Double vecFluct = { uFluct, vFluct, wFluct };
-  double d = U.length();
-  U = U / U.length();
-
-  bool test;
-  oneStepReflect(WGD, plume, X, U, d, vecFluct, test);
-  if (test) {
-    // update output variable: particle position
-    xPos = X[0];
-    yPos = X[1];
-    zPos = X[2];
-    // update output variable: fluctuations
-    uFluct = vecFluct[0];
-    vFluct = vecFluct[1];
-    wFluct = vecFluct[2];
-    return true;
-  } else {
-    return false;
-  }
-
-#endif
 }
 
+void WallReflection_StairStep::trajectorySplit_regression(const WINDSGeneralData *WGD,
+                                                          const Plume *plume,
+                                                          Vector3Double &X,
+                                                          Vector3Double &u,
+                                                          const double &d,
+                                                          double &d1,
+                                                          double &d2,
+                                                          Vector3Double &vecFluct,
+                                                          bool &isActive)
+{
+  /*
+    - d total distance
+    - d1 total distance traveled so far
+    - d2 distance traveled this step 
+  */
 
-void WallReflection_StairStep::oneStepReflect(const WINDSGeneralData *WGD,
-                                              const Plume *plume,
-                                              Vector3Double &X,
-                                              Vector3Double &u,
-                                              const double &d,
-                                              Vector3Double &vecFluct,
-                                              bool &isActive)
+  if (std::abs(d1 - d) < 1.0E-3) {
+    //std::cerr << "END OF REGRESSION dist \t" << std::abs(d1 - d) << std::endl;
+    isActive = true;
+    return;
+  } else {
+
+    Vector3Double Xold = X;
+    Vector3Double Xnew = X + d2 * u;
+
+    // linearized cell ID for origine of the trajectory of the particle
+    int cellIdOld = plume->interp->getCellId(Xold);
+    // i,j,k of cell index
+    Vector3Int cellIdxOld = plume->interp->getCellIndex(cellIdOld);
+
+    // linearized cell ID for origine of the trajectory of the particle
+    int cellIdNew = plume->interp->getCellId(Xnew);
+    // i,j,k of cell index
+    Vector3Int cellIdxNew = plume->interp->getCellIndex(cellIdNew);
+
+
+    if ((abs(cellIdxOld[0] - cellIdxNew[0]) > 1)
+        || (abs(cellIdxOld[1] - cellIdxNew[1]) > 1)
+        || (abs(cellIdxOld[2] - cellIdxNew[2]) > 1)) {
+      d2 = 0.5 * d2;
+    } else {
+      d1 += d2;
+      oneReflection(WGD, plume, X, u, d2, vecFluct, isActive);
+      //X = Xold + d2 * u;
+    }
+
+    /*
+      std::cerr << "Xnew\t" << X << "\t"
+              << plume->interp->getCellIndex(plume->interp->getCellId(X)) << "\n"
+              << "    \t" << plume->interp->getCellIndex(plume->interp->getCellId(Xold)) - plume->interp->getCellIndex(plume->interp->getCellId(X))
+              << " " << d << " " << d1 << " " << d2 << std::endl;
+    */
+    trajectorySplit_regression(WGD, plume, X, u, d, d1, d2, vecFluct, isActive);
+
+    isActive = true;
+    return;
+  }
+}
+
+void WallReflection_StairStep::oneReflection(const WINDSGeneralData *WGD,
+                                             const Plume *plume,
+                                             Vector3Double &X,
+                                             Vector3Double &u,
+                                             const double &d,
+                                             Vector3Double &vecFluct,
+                                             bool &isActive)
 {
   // some constants
   const double eps_S = 0.001;
@@ -742,65 +501,6 @@ void WallReflection_StairStep::oneStepReflect(const WINDSGeneralData *WGD,
   } else {
     X = Xold;
     isActive = false;
-    return;
-  }
-}
-
-
-void WallReflection_StairStep::test_regress(const WINDSGeneralData *WGD,
-                                            const Plume *plume,
-                                            Vector3Double &X,
-                                            Vector3Double &u,
-                                            const double &d,
-                                            double &d1,
-                                            double &d2,
-                                            Vector3Double &vecFluct,
-                                            bool &isActive)
-{
-  /*
-    - d total distance
-    - d1 total distance traveled so far
-    - d2 distance traveled this step 
-  */
-
-  if (std::abs(d1 - d) < 1.0E-3) {
-    std::cerr << "END OF REGRESSION dist \t" << std::abs(d1 - d) << std::endl;
-    isActive = true;
-    return;
-  } else {
-
-    Vector3Double Xold = X;
-    Vector3Double Xnew = X + d2 * u;
-
-    // linearized cell ID for origine of the trajectory of the particle
-    int cellIdOld = plume->interp->getCellId(Xold);
-    // i,j,k of cell index
-    Vector3Int cellIdxOld = plume->interp->getCellIndex(cellIdOld);
-
-    // linearized cell ID for origine of the trajectory of the particle
-    int cellIdNew = plume->interp->getCellId(Xnew);
-    // i,j,k of cell index
-    Vector3Int cellIdxNew = plume->interp->getCellIndex(cellIdNew);
-
-
-    if ((abs(cellIdxOld[0] - cellIdxNew[0]) > 1)
-        || (abs(cellIdxOld[1] - cellIdxNew[1]) > 1)
-        || (abs(cellIdxOld[2] - cellIdxNew[2]) > 1)) {
-      d2 = 0.5 * d2;
-    } else {
-      d1 += d2;
-      oneStepReflect(WGD, plume, X, u, d2, vecFluct, isActive);
-      //X = Xold + d2 * u;
-    }
-
-    std::cerr << "Xnew\t" << X << "\t"
-              << plume->interp->getCellIndex(plume->interp->getCellId(X)) << "\n"
-              << "    \t" << plume->interp->getCellIndex(plume->interp->getCellId(Xold)) - plume->interp->getCellIndex(plume->interp->getCellId(X))
-              << " " << d << " " << d1 << " " << d2 << std::endl;
-
-    test_regress(WGD, plume, X, u, d, d1, d2, vecFluct, isActive);
-
-    isActive = true;
     return;
   }
 }
