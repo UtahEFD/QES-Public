@@ -55,10 +55,10 @@ public:
 
   // possible reflection methods:
   /*
-     * "doNothing" (default)   - nothing happen when particle enter wall
-     * "setInactive"           - particle is set to inactive when entering a wall
-     * "stairstepReflection"   - particle use full stair step reflection when entering a wall
-     */
+   * "doNothing" (default)   - nothing happen when particle enter wall
+   * "setInactive"           - particle is set to inactive when entering a wall
+   * "stairstepReflection"   - particle use full stair step reflection when entering a wall
+   */
 
   std::string wallReflection;
 

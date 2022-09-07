@@ -207,52 +207,6 @@ protected:
   // this function moves (advects) one particle
   void advectParticle(double, std::list<Particle *>::iterator, WINDSGeneralData *, TURBGeneralData *);
 
-  /* reflection functions in WallReflection.cpp */
-  // main function pointer
-  bool (Plume::*wallReflection)(const WINDSGeneralData *WGD,
-                                double &xPos,
-                                double &yPos,
-                                double &zPos,
-                                double &disX,
-                                double &disY,
-                                double &disZ,
-                                double &uFluct,
-                                double &vFluct,
-                                double &wFluct);
-  // reflection on walls (stair step)
-  bool wallReflectionFullStairStep(const WINDSGeneralData *WGD,
-                                   double &xPos,
-                                   double &yPos,
-                                   double &zPos,
-                                   double &disX,
-                                   double &disY,
-                                   double &disZ,
-                                   double &uFluct,
-                                   double &vFluct,
-                                   double &wFluct);
-  // reflection -> set particle inactive when entering a wall
-  bool wallReflectionSetToInactive(const WINDSGeneralData *WGD,
-                                   double &xPos,
-                                   double &yPos,
-                                   double &zPos,
-                                   double &disX,
-                                   double &disY,
-                                   double &disZ,
-                                   double &uFluct,
-                                   double &vFluct,
-                                   double &wFluct);
-  // reflection -> this function will do nothing
-  bool wallReflectionDoNothing(const WINDSGeneralData *WGD,
-                               double &xPos,
-                               double &yPos,
-                               double &zPos,
-                               double &disX,
-                               double &disY,
-                               double &disZ,
-                               double &uFluct,
-                               double &vFluct,
-                               double &wFluct);
-
   // function for calculating the individual particle timestep from the courant number, the current velocity fluctuations,
   // and the grid size. Forces particles to always move only at one timestep at at time.
   // Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number

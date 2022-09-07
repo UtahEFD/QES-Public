@@ -69,7 +69,17 @@ public:
   {}
   ~WallReflection()
   {}
-  virtual bool reflect(const WINDSGeneralData *, const Plume *, double &, double &, double &, double &, double &, double &, double &, double &, double &) = 0;
+  virtual bool reflect(const WINDSGeneralData *,
+                       const Plume *,
+                       double &,
+                       double &,
+                       double &,
+                       double &,
+                       double &,
+                       double &,
+                       double &,
+                       double &,
+                       double &) = 0;
 };
 
 class WallReflection_DoNothing : public WallReflection
