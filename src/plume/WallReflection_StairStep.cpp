@@ -105,53 +105,67 @@ bool WallReflection_StairStep::reflect(const WINDSGeneralData *WGD,
   //test_regress(plume, Xold, Xnew, U, d);
 
   // check particle trajectory more than 1 cell in each direction
-  if ((abs(cellIdxOld[0] - cellIdxNew[0]) > 1)
-      || (abs(cellIdxOld[1] - cellIdxNew[1]) > 1)
-      || (abs(cellIdxOld[2] - cellIdxNew[2]) > 1)) {
-    // update output variable: particle position to old position
-    xPos -= disX;
-    yPos -= disY;
-    zPos -= disZ;
+  //if ((abs(cellIdxOld[0] - cellIdxNew[0]) > 1)
+  //    || (abs(cellIdxOld[1] - cellIdxNew[1]) > 1)
+  //    || (abs(cellIdxOld[2] - cellIdxNew[2]) > 1)) {
+  // update output variable: particle position to old position
+  //xPos -= disX;
+  //yPos -= disY;
+  //zPos -= disZ;
 
-    // for debug
-    std::cerr << "----------------" << std::endl;
-    Vector3Double Xnew, X0, Xold, U, vecFluct;
-    // position of the particle start of trajectory
-    Xold = { xPos, yPos, zPos };
-    // postion of the particle end of trajectory
-    Xnew = { xPos + disX, yPos + disY, zPos + disZ };
-    X0 = Xnew;
-    U = Xnew - Xold;
-    vecFluct = { uFluct, vFluct, wFluct };
+  // for debug
+  std::cerr << "----------------" << std::endl;
+  // position of the particle start of trajectory
+  Vector3Double X = { xPos - disX, yPos - disY, zPos - disZ };
+  // vector of the trajectory
+  Vector3Double U = { disX, disY, disZ };
+  // postion of the particle end of trajectory
+  Vector3Double Xnew = X + U;
+  // vector of fluctuations
+  Vector3Double vecFluct = { uFluct, vFluct, wFluct };
 
-    double d = U.length();
-    double d1 = 0.0;
-    double d2 = U.length();
+  Vector3Double X0 = Xnew;
 
-    std::cerr << "TEST REGRESSION \t" << std::endl;
+  double d = U.length();
+  double d1 = 0.0;
+  double d2 = U.length();
 
-    // i,j,k of cell index
-    std::cerr << "Xold\t" << Xold << "\t" << plume->interp->getCellIndex(plume->interp->getCellId(Xold)) << std::endl;
-    std::cerr << "Xnew\t" << Xnew << "\t" << plume->interp->getCellIndex(plume->interp->getCellId(Xnew)) << std::endl;
-    std::cerr << "--" << std::endl;
-    std::cerr << "U\t" << U << "\t"
-              << plume->interp->getCellIndex(plume->interp->getCellId(Xold))
-                   - plume->interp->getCellIndex(plume->interp->getCellId(Xnew))
-              << "\t" << U.length() << std::endl;
-    std::cerr << "--" << std::endl;
+  std::cerr << "TEST REGRESSION \t" << std::endl;
 
-    U = U / U.length();
-    bool test;
-    Vector3Double vf = { uFluct, vFluct, wFluct };
-    test_regress(WGD, plume, Xold, U, d, d1, d2, vf, test);
+  // i,j,k of cell index
+  std::cerr << "Xold\t" << X << "\t" << plume->interp->getCellIndex(plume->interp->getCellId(X)) << std::endl;
+  std::cerr << "Xnew\t" << Xnew << "\t" << plume->interp->getCellIndex(plume->interp->getCellId(Xnew)) << std::endl;
+  std::cerr << "--" << std::endl;
+  std::cerr << "U\t" << U << "\t"
+            << plume->interp->getCellIndex(plume->interp->getCellId(X))
+                 - plume->interp->getCellIndex(plume->interp->getCellId(Xnew))
+            << "\t" << U.length() << std::endl;
+  std::cerr << "--" << std::endl;
 
-    std::cerr << "--" << std::endl;
-    std::cerr << "X0  \t" << X0 << "\t" << plume->interp->getCellIndex(plume->interp->getCellId(X0)) << std::endl;
-    std::cerr << "Xnew\t" << Xold << "\t" << plume->interp->getCellIndex(plume->interp->getCellId(Xold)) << std::endl;
-    std::cerr << "----------------" << std::endl;
+  U = U / U.length();
+  bool test;
+  test_regress(WGD, plume, X, U, d, d1, d2, vecFluct, test);
+
+  std::cerr << "--" << std::endl;
+  std::cerr << "X0  \t" << X0 << "\t" << plume->interp->getCellIndex(plume->interp->getCellId(X0)) << std::endl;
+  std::cerr << "Xnew\t" << X << "\t" << plume->interp->getCellIndex(plume->interp->getCellId(X)) << std::endl;
+  std::cerr << "----------------" << std::endl;
+
+  if (test) {
+    // update output variable: particle position
+    xPos = X[0];
+    yPos = X[1];
+    zPos = X[2];
+    // update output variable: fluctuations
+    uFluct = vecFluct[0];
+    vFluct = vecFluct[1];
+    wFluct = vecFluct[2];
     return true;
+  } else {
+    return false;
   }
 
+#if 0
   // some constants
   const double eps_S = 0.001;
   const int maxCount = 10;
@@ -427,27 +441,30 @@ bool WallReflection_StairStep::reflect(const WINDSGeneralData *WGD,
     zPos -= disZ;
   }
 
+
   Vector3Double X = { xPos - disX, yPos - disY, zPos - disZ };
-  Vector3Double XR = { disX, disY, disZ };
-  Vector3Double vf = { uFluct, vFluct, wFluct };
-  double dr = XR.length();
-  XR = XR / XR.length();
+  Vector3Double U = { disX, disY, disZ };
+  Vector3Double vecFluct = { uFluct, vFluct, wFluct };
+  double d = U.length();
+  U = U / U.length();
 
   bool test;
-  oneStepReflect(WGD, plume, X, XR, dr, vf, test);
+  oneStepReflect(WGD, plume, X, U, d, vecFluct, test);
   if (test) {
     // update output variable: particle position
     xPos = X[0];
     yPos = X[1];
     zPos = X[2];
     // update output variable: fluctuations
-    uFluct = vf[0];
-    vFluct = vf[1];
-    wFluct = vf[2];
+    uFluct = vecFluct[0];
+    vFluct = vecFluct[1];
+    wFluct = vecFluct[2];
     return true;
   } else {
     return false;
   }
+
+#endif
 }
 
 
