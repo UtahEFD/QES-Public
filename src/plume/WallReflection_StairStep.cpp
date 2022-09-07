@@ -71,101 +71,58 @@ bool WallReflection_StairStep::reflect(const WINDSGeneralData *WGD,
   } catch (const std::out_of_range &oor) {
     // cell ID out of bound (assuming particle outside of domain)
     if (zPos < plume->domainZstart) {
-      std::cerr << "Reflection problem: particle out of range before reflection" << std::endl;
-
-      Vector3Double Xnew, Xold, U, vecFluct;
-      // position of the particle start of trajectory
-      Xold = { xPos - disX, yPos - disY, zPos - disZ };
-      // postion of the particle end of trajectory
-      Xnew = { xPos, yPos, zPos };
-      U = Xnew - Xold;
-      vecFluct = { uFluct, vFluct, wFluct };
-
-      std::cerr << "Xnew\t" << Xnew << std::endl;
-      std::cerr << "Xold\t" << Xold << std::endl;
-      std::cerr << "U\t" << U << "\t" << U.length() << std::endl;
+      // assume in terrain
+      cellFlag = 2;
+    } else {
+      // otherwise, outside domain -> set to false
+      //std::cerr << "Reflection problem: particle out of range before reflection" << std::endl;
+      return false;
     }
-    // -> set to false
-    return false;
   }
 
   if ((cellFlag != 0) && (cellFlag != 2)) {
     // particle end trajectory outside solide -> no need for reflection
     return true;
-  }
-
-
-  // linearized cell ID for origine of the trajectory of the particle
-  //int cellIdOld = plume->interp->getCellId(xPos - disX, yPos - disY, zPos - disZ);
-
-  // i,j,k of cell index
-  //Vector3Int cellIdxOld = plume->interp->getCellIndex(cellIdOld);
-  //Vector3Int cellIdxNew = plume->interp->getCellIndex(cellIdNew);
-
-  //test_regress(plume, Xold, Xnew, U, d);
-
-  // check particle trajectory more than 1 cell in each direction
-  //if ((abs(cellIdxOld[0] - cellIdxNew[0]) > 1)
-  //    || (abs(cellIdxOld[1] - cellIdxNew[1]) > 1)
-  //    || (abs(cellIdxOld[2] - cellIdxNew[2]) > 1)) {
-  // update output variable: particle position to old position
-  //xPos -= disX;
-  //yPos -= disY;
-  //zPos -= disZ;
-
-  // for debug
-  //std::cerr << "----------------" << std::endl;
-  // position of the particle start of trajectory
-  Vector3Double X = { xPos - disX, yPos - disY, zPos - disZ };
-  // vector of the trajectory
-  Vector3Double U = { disX, disY, disZ };
-  // postion of the particle end of trajectory
-  Vector3Double Xnew = X + U;
-  // vector of fluctuations
-  Vector3Double vecFluct = { uFluct, vFluct, wFluct };
-
-  Vector3Double X0 = Xnew;
-
-  double d = U.length();
-  double d1 = 0.0;
-  double d2 = U.length();
-
-  //std::cerr << "TEST REGRESSION \t" << std::endl;
-
-  // i,j,k of cell index
-  /*
-    std::cerr << "Xold\t" << X << "\t" << plume->interp->getCellIndex(plume->interp->getCellId(X)) << std::endl;
-  std::cerr << "Xnew\t" << Xnew << "\t" << plume->interp->getCellIndex(plume->interp->getCellId(Xnew)) << std::endl;
-  std::cerr << "--" << std::endl;
-  std::cerr << "U\t" << U << "\t"
-            << plume->interp->getCellIndex(plume->interp->getCellId(X))
-                 - plume->interp->getCellIndex(plume->interp->getCellId(Xnew))
-            << "\t" << U.length() << std::endl;
-  std::cerr << "--" << std::endl;
-  */
-  U = U / U.length();
-  bool isActive;
-  trajectorySplit_regression(WGD, plume, X, U, d, d1, d2, vecFluct, isActive);
-  /*
-  std::cerr << "--" << std::endl;
-  std::cerr << "X0  \t" << X0 << "\t" << plume->interp->getCellIndex(plume->interp->getCellId(X0)) << std::endl;
-  std::cerr << "Xnew\t" << X << "\t" << plume->interp->getCellIndex(plume->interp->getCellId(X)) << std::endl;
-  std::cerr << "----------------" << std::endl;
-  */
-
-  if (isActive) {
-    // update output variable: particle position
-    xPos = X[0];
-    yPos = X[1];
-    zPos = X[2];
-    // update output variable: fluctuations
-    uFluct = vecFluct[0];
-    vFluct = vecFluct[1];
-    wFluct = vecFluct[2];
-    return true;
   } else {
-    return false;
+    // particle end trajectory inside solide -> need for reflection
+
+    // position of the particle start of trajectory
+    Vector3Double X = { xPos - disX, yPos - disY, zPos - disZ };
+    // vector of the trajectory
+    Vector3Double U = { disX, disY, disZ };
+    // postion of the particle end of trajectory
+    Vector3Double Xnew = X + U;
+    // vector of fluctuations
+    Vector3Double vecFluct = { uFluct, vFluct, wFluct };
+
+    Vector3Double X0 = Xnew;
+
+    double d = U.length();
+    double d1 = 0.0;
+    double d2 = U.length();
+
+    // normailzation of direction verctor for particle trajectory
+    U = U / U.length();
+    bool isActive;
+    trajectorySplit_regression(WGD, plume, X, U, d, d1, d2, vecFluct, isActive);
+
+    if (isActive) {
+      // update output variable: particle position
+      xPos = X[0];
+      yPos = X[1];
+      zPos = X[2];
+      // update output variable: fluctuations
+      uFluct = vecFluct[0];
+      vFluct = vecFluct[1];
+      wFluct = vecFluct[2];
+      return true;
+    } else {
+      return false;
+    }
   }
+
+  // should never be there
+  return false;
 }
 
 void WallReflection_StairStep::trajectorySplit_regression(const WINDSGeneralData *WGD,
@@ -210,21 +167,16 @@ void WallReflection_StairStep::trajectorySplit_regression(const WINDSGeneralData
       d2 = 0.5 * d2;
     } else {
       d1 += d2;
-      oneReflection(WGD, plume, X, u, d2, vecFluct, isActive);
       //X = Xold + d2 * u;
+      oneReflection(WGD, plume, X, u, d2, vecFluct, isActive);
     }
-
-    /*
-      std::cerr << "Xnew\t" << X << "\t"
-              << plume->interp->getCellIndex(plume->interp->getCellId(X)) << "\n"
-              << "    \t" << plume->interp->getCellIndex(plume->interp->getCellId(Xold)) - plume->interp->getCellIndex(plume->interp->getCellId(X))
-              << " " << d << " " << d1 << " " << d2 << std::endl;
-    */
+    // regression
     trajectorySplit_regression(WGD, plume, X, u, d, d1, d2, vecFluct, isActive);
 
     isActive = true;
     return;
   }
+  return;
 }
 
 void WallReflection_StairStep::oneReflection(const WINDSGeneralData *WGD,
@@ -377,10 +329,11 @@ void WallReflection_StairStep::oneReflection(const WINDSGeneralData *WGD,
     // check if more than one surface is valid
     if (validSurface == 0) {
       // if 0 valid surface
-      std::cerr << "\tReflection problem: no valid surface\n"
-                << "\t" << count << " " << U.length() << "->"
-                << "[" << l1 << "," << l2 << "," << l3 << "]"
-                << std::endl;
+      std::cerr << "[WARNING]\tReflection problem: no valid surface" << std::endl;
+      //std::cerr << "\tReflection problem: no valid surface\n"
+      //          << "\t" << count << " " << U.length() << "->"
+      //          << "[" << l1 << "," << l2 << "," << l3 << "]"
+      //          << std::endl;
       //exit(EXIT_FAILURE);
       isActive = false;
       return;
@@ -486,7 +439,6 @@ void WallReflection_StairStep::oneReflection(const WINDSGeneralData *WGD,
     } catch (const std::out_of_range &oor) {
       // cell ID out of bound
       //std::cerr << "Reflection problem: particle out of range after reflection" << std::endl;
-      //std::cerr << Xnew << std::endl;
       isActive = false;
       return;
     }

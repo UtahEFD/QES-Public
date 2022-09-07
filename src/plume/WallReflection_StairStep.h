@@ -84,15 +84,6 @@ public:
                        double &wFluct);
 
 private:
-  void oneReflection(const WINDSGeneralData *,
-                     const Plume *,
-                     Vector3Double &,
-                     Vector3Double &,
-                     const double &,
-                     Vector3Double &,
-                     bool &);
-
-
   void trajectorySplit_regression(const WINDSGeneralData *,
                                   const Plume *,
                                   Vector3Double &,
@@ -102,4 +93,12 @@ private:
                                   double &,
                                   Vector3Double &,
                                   bool &);
+
+  void oneReflection(const WINDSGeneralData *,
+                     const Plume *,
+                     Vector3Double &,
+                     Vector3Double &,
+                     const double &,
+                     Vector3Double &,
+                     bool &);
 };
