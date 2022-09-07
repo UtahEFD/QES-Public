@@ -17,7 +17,6 @@ CUDA_ADD_LIBRARY( qesplumecore
 
     Plume.cpp
     AdvectParticle.cpp
-    WallReflection.cpp
     
     PlumeOutput.cpp
     PlumeOutputParticleData.cpp
@@ -38,6 +37,8 @@ CUDA_ADD_LIBRARY( qesplumecore
     SourceCube.cpp SourceCube.hpp
     SourceFullDomain.cpp SourceFullDomain.hpp
 
+    WallReflection.cpp
+    WallReflection_StairStep.cpp
 )
 
 #target_link_libraries (qesplumecore quicloader) 

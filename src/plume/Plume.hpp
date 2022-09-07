@@ -60,6 +60,9 @@
 #include "InterpPowerLaw.h"
 #include "InterpTriLinear.h"
 
+#include "WallReflection.h"
+#include "WallReflection_StairStep.h"
+
 #include "Particle.hpp"
 
 #include "SourcePoint.hpp"
@@ -112,15 +115,7 @@ public:
   // the sources can set these values, then the other values are set using urb and turb info using these values
   std::list<Particle *> particleList;
 
-protected:
-  // QES grid information
-  int nx;// a copy of the urb grid nx value
-  int ny;// a copy of the urb grid ny value
-  int nz;// a copy of the urb grid nz value
-  double dx;// a copy of the urb grid dx value, eventually could become an array
-  double dy;// a copy of the urb grid dy value, eventually could become an array
-  double dz;// a copy of the urb grid dz value, eventually could become an array
-  double dxy;//a copy of the urb grid dz value, eventually could become an array
+  Interp *interp;
 
   // these values are calculated from the urb and turb grids by dispersion
   // they are used for applying boundary conditions at the walls of the domain
@@ -131,7 +126,28 @@ protected:
   double domainZstart;// the domain starting z value, a copy of the value found by dispersion
   double domainZend;// the domain ending z value, a copy of the value found by dispersion
 
-  Interp *interp;
+protected:
+  // QES grid information
+  int nx;// a copy of the urb grid nx value
+  int ny;// a copy of the urb grid ny value
+  int nz;// a copy of the urb grid nz value
+  double dx;// a copy of the urb grid dx value, eventually could become an array
+  double dy;// a copy of the urb grid dy value, eventually could become an array
+  double dz;// a copy of the urb grid dz value, eventually could become an array
+  double dxy;//a copy of the urb grid dz value, eventually could become an array
+
+  /*
+  // these values are calculated from the urb and turb grids by dispersion
+  // they are used for applying boundary conditions at the walls of the domain
+  double domainXstart;// the domain starting x value, a copy of the value found by dispersion
+  double domainXend;// the domain ending x value, a copy of the value found by dispersion
+  double domainYstart;// the domain starting y value, a copy of the value found by dispersion
+  double domainYend;// the domain ending y value, a copy of the value found by dispersion
+  double domainZstart;// the domain starting z value, a copy of the value found by dispersion
+  double domainZend;// the domain ending z value, a copy of the value found by dispersion
+  */
+
+  WallReflection *wallReflect;
 
   // time variables
   double sim_dt;// the simulation timestep

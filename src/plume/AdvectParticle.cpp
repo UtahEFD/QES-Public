@@ -271,7 +271,8 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     // check and do wall (building and terrain) reflection (based in the method)
     if (isActive == true) {
       //isActive = (this->*wallReflection)(WGD, xPos, yPos, zPos, disX, disY, disZ, uFluct, vFluct, wFluct, uFluct_old, vFluct_old, wFluct_old);
-      isActive = (this->*wallReflection)(WGD, xPos, yPos, zPos, disX, disY, disZ, uFluct, vFluct, wFluct);
+      //isActive = (this->*wallReflection)(WGD, xPos, yPos, zPos, disX, disY, disZ, uFluct, vFluct, wFluct);
+      isActive = wallReflect->reflect(WGD, this, xPos, yPos, zPos, disX, disY, disZ, uFluct, vFluct, wFluct);
     }
 
     // now apply boundary conditions

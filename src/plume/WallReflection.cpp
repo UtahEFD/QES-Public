@@ -33,7 +33,45 @@
  * @note Part of plume class 
  */
 
+#include "WallReflection.h"
 #include "Plume.hpp"
+
+bool WallReflection_SetToInactive::reflect(const WINDSGeneralData *WGD,
+                                           const Plume *plume,
+                                           double &xPos,
+                                           double &yPos,
+                                           double &zPos,
+                                           double &disX,
+                                           double &disY,
+                                           double &disZ,
+                                           double &uFluct,
+                                           double &vFluct,
+                                           double &wFluct)
+
+{
+  try {
+    int cellIdx = plume->interp->getCellId(xPos, yPos, zPos);
+    int cellFlag(0);
+    cellFlag = WGD->icellflag.at(cellIdx);
+
+    if ((cellFlag == 0) || (cellFlag == 2)) {
+      // particle end trajectory inside solide -> set inactive
+      return false;
+    } else {
+      // particle end trajectory outside solide -> keep active
+      return true;
+    }
+
+  } catch (const std::out_of_range &oor) {
+    // cell ID out of bound (assuming particle outside of domain)
+    //if (zPos < domainZstart) {
+    //  std::cerr << "Reflection problem: particle out of range before reflection" << std::endl;
+    //  std::cerr << xPos << "," << yPos << "," << zPos << std::endl;
+    //}
+    // -> set to false
+    return false;
+  }
+}
 
 // reflection -> set particle inactive when entering a wall
 bool Plume::wallReflectionSetToInactive(const WINDSGeneralData *WGD,
