@@ -213,6 +213,24 @@ protected:
   // this function moves (advects) one particle
   void advectParticle(double, std::list<Particle *>::iterator, WINDSGeneralData *, TURBGeneralData *);
 
+
+  void depositParticle(double,
+                       double,
+                       double,
+                       double,
+                       double,
+                       double,
+                       double,
+                       double,
+                       double,
+                       double,
+                       double,
+                       double,
+                       double,
+                       std::list<Particle *>::iterator,
+                       WINDSGeneralData *,
+                       TURBGeneralData *);
+
   // function for calculating the individual particle timestep from the courant number, the current velocity fluctuations,
   // and the grid size. Forces particles to always move only at one timestep at at time.
   // Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number

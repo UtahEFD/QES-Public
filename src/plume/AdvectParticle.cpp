@@ -40,6 +40,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
   // set settling velocity
   (*parItr)->setSettlingVelocity(rhoAir, nuAir);
 
+  //std::cout << "in advpart, par type is: " << typeid(*parItr).name() << " txx=" << (*parItr)->txx_old <<  " tyy=" << (*parItr)->tyy_old << " tzz=" << (*parItr)->tzz_old << " d = " << (*parItr)->d << " m = " << (*parItr)->m << " depFlag = " << (*parItr)->depFlag << " vs = " << (*parItr)->vs << std::endl;
   // get the current isRogue and isActive information
   bool isRogue = (*parItr)->isRogue;
   bool isActive = (*parItr)->isActive;
@@ -52,9 +53,17 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
   double yPos = (*parItr)->yPos;
   double zPos = (*parItr)->zPos;
 
+  double disX = 0.0;
+  double disY = 0.0;
+  double disZ = 0.0;
+
   double uMean = 0.0;
   double vMean = 0.0;
   double wMean = 0.0;
+
+  double uTot = 0.0;
+  double vTot = 0.0;
+  double wTot = 0.0;
 
   double flux_div_x = 0.0;
   double flux_div_y = 0.0;
@@ -149,6 +158,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
                                         std::abs(wMean) + std::abs(wFluct),
                                         timeRemainder);
 
+    //std::cout << "par_dt = " << par_dt << std::endl;
     // update the par_time, useful for debugging
     //par_time = par_time + par_dt;
 
@@ -261,13 +271,23 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     //    assert( isRogue == false );
 
     // now update the particle position for this iteration
-    double disX = (uMean + uFluct) * par_dt;
-    double disY = (vMean + vFluct) * par_dt;
-    double disZ = (wMean + wFluct) * par_dt;
+    disX = (uMean + uFluct) * par_dt;
+    disY = (vMean + vFluct) * par_dt;
+    disZ = (wMean + wFluct) * par_dt;
 
     xPos = xPos + disX;
     yPos = yPos + disY;
     zPos = zPos + disZ;
+
+    uTot = uMean + uFluct;
+    vTot = vMean + vFluct;
+    wTot = wMean + wFluct;
+
+    // Deposit mass (vegetation only right now)
+    if ((*parItr)->depFlag == true) {
+      depositParticle(xPos, yPos, zPos, disX, disY, disZ, uTot, vTot, wTot, txx, tyy, tzz, CoEps, parItr, WGD, TGD);
+    }
+
     // check and do wall (building and terrain) reflection (based in the method)
     if (isActive == true) {
       isActive = wallReflect->reflect(WGD, this, xPos, yPos, zPos, disX, disY, disZ, uFluct, vFluct, wFluct);
@@ -317,6 +337,16 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
   (*parItr)->xPos = xPos;
   (*parItr)->yPos = yPos;
   (*parItr)->zPos = zPos;
+
+  (*parItr)->disX = disX;
+  (*parItr)->disY = disY;
+  (*parItr)->disZ = disZ;
+
+  (*parItr)->uTot = uTot;
+  (*parItr)->vTot = vTot;
+  (*parItr)->wTot = wTot;
+
+  (*parItr)->CoEps = CoEps;
 
   (*parItr)->uMean = uMean;
   (*parItr)->vMean = vMean;

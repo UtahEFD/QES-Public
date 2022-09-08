@@ -38,7 +38,8 @@
 
 
 #include "SourceType.hpp"
-
+#include "winds/WINDSGeneralData.h"
+//#include "Particles.hpp"
 
 class SourcePoint : public SourceType
 {
@@ -49,7 +50,10 @@ private:
   double posX;
   double posY;
   double posZ;
-
+  //  double pRho = 0.0; // particle density (kg/m^3), variable read in from XML // LDU commented 11/16
+  //  double pD = 0.0; // particle diameter (microns), variable read in from XML // LDU commented 11/16
+  double sourceStrength = 0.0;// total mass released (g)
+  //  bool sourceDepFlag = true; // deposition flag (1 for on, 0 for off)
 protected:
 public:
   // Default constructor
@@ -68,15 +72,29 @@ public:
     m_sShape = SourceShape::point;
 
     setReleaseType();
+    setParticleType();
+    // Create particle factories
+    registerParticles();
 
+    /* 
+    // Create a generic particle with attributes read from XML
+    Particles * particles;
+    particles->setParticleValues();
+*/
+    //std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
     parsePrimitive<double>(true, posX, "posX");
     parsePrimitive<double>(true, posY, "posY");
     parsePrimitive<double>(true, posZ, "posZ");
+
+    //    parsePrimitive<double>(false, pRho, "particleDensity"); // LDU commented 11/16
+    //    parsePrimitive<double>(false, pD, "particleDiameter"); // LDU commented 11/16
+    parsePrimitive<double>(false, sourceStrength, "sourceStrength");
+    //    parsePrimitive<bool>(false, sourceDepFlag, "depositionFlag"); // LDU commented 11/16
   }
 
 
   void checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend);
 
-
+  //template <class parType>
   int emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles);
 };

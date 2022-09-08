@@ -197,7 +197,7 @@ PlumeOutput::PlumeOutput(PlumeInputData *PID, WINDSGeneralData *WGD, Plume *plum
 
   // setup desired output fields string
   // LA future work: can be added in fileOptions at some point
-  output_fields = { "x", "y", "z", "pBox", "conc", "tAvg" };
+  output_fields = { "x", "y", "z", "pBox", "conc", "tAvg", "depcvol" };
 
   // set data dimensions, which in this case are cell-centered dimensions
   // space dimensions
@@ -240,6 +240,29 @@ PlumeOutput::PlumeOutput(PlumeInputData *PID, WINDSGeneralData *WGD, Plume *plum
   //NcDim NcDim_x = addDimension("x",nBoxesX);
   //NcDim NcDim_y = addDimension("y",nBoxesY);
   //NcDim NcDim_z = addDimension("z",nBoxesZ);
+
+  NcDim NcDim_xDep = addDimension("xDep", WGD->nx - 1);
+  NcDim NcDim_yDep = addDimension("yDep", WGD->ny - 1);
+  NcDim NcDim_zDep = addDimension("zDep", WGD->nz - 1);
+
+
+  std::vector<NcDim> dim_vect_xDep;
+  dim_vect_xDep.push_back(NcDim_xDep);
+  createAttVector("xDep", "x-distance, deposition grid", "m", dim_vect_xDep, &(WGD->x));
+  std::vector<NcDim> dim_vect_yDep;
+  dim_vect_yDep.push_back(NcDim_yDep);
+  createAttVector("yDep", "y-distance, deposition grid", "m", dim_vect_yDep, &(WGD->y));
+  std::vector<NcDim> dim_vect_zDep;
+  dim_vect_zDep.push_back(NcDim_zDep);
+  createAttVector("zDep", "z-distance, deposition grid", "m", dim_vect_zDep, &(WGD->z));
+
+  std::vector<NcDim> dim_vectDep;
+  dim_vectDep.push_back(NcDim_t);
+  dim_vectDep.push_back(NcDim_zDep);
+  dim_vectDep.push_back(NcDim_yDep);
+  dim_vectDep.push_back(NcDim_xDep);
+
+  createAttVector("depcvol", "deposited mass", "g", dim_vectDep, &(WGD->depcvol));
 
   // create attributes space dimensions
   std::vector<NcDim> dim_vect_face;
@@ -335,7 +358,7 @@ void PlumeOutput::boxCount()
       if (idx >= 0 && idx <= nBoxesX - 1 && idy >= 0 && idy <= nBoxesY - 1 && idz >= 0 && idz <= nBoxesZ - 1) {
         int id = idz * nBoxesY * nBoxesX + idy * nBoxesX + idx;
         pBox[id]++;
-        conc[id] = conc[id] + (*parItr)->m * (*parItr)->wdepos * (*parItr)->wdecay * timeStep;
+        conc[id] = conc[id] + (*parItr)->m * (*parItr)->wdecay * timeStep;
       }
 
     }// is active == true

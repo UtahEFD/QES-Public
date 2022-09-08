@@ -81,6 +81,9 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   dz = WGD->dz;
   dxy = WGD->dxy;
 
+  long numcell_cent = (nx - 1) * (ny - 1) * (nz - 1);
+  WGD->depcvol.resize(numcell_cent, 0.0);
+
   // Create instance of Interpolation class
   std::cout << "[Plume] \t Interpolation Method set to: "
             << PID->plumeParams->interpMethod << std::endl;
