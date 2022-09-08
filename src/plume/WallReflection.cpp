@@ -28,9 +28,7 @@
  ****************************************************************************/
 
 /** @file WallReflection.cpp 
- * @brief These functions handle the different wall reflection options
- *
- * @note Part of plume class 
+ * @brief 
  */
 
 #include "WallReflection.h"

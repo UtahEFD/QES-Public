@@ -27,10 +27,8 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file WallReflection.cpp 
- * @brief These functions handle the different wall reflection options
- *
- * @note Part of plume class 
+/** @file WallReflection_StairStep.cpp 
+ * @brief
  */
 
 #include "WallReflection_StairStep.h"
@@ -71,7 +69,7 @@ bool WallReflection_StairStep::reflect(const WINDSGeneralData *WGD,
   } catch (const std::out_of_range &oor) {
     // cell ID out of bound (assuming particle outside of domain)
     if (zPos < plume->domainZstart) {
-      // assume in terrain
+      // assume in terrain icellflag
       cellFlag = 2;
     } else {
       // otherwise, outside domain -> set to false

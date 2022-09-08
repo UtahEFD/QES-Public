@@ -27,7 +27,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Plume.hpp 
+/** @file WallReflection.h
  * @brief
  */
 
