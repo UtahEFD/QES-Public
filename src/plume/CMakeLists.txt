@@ -37,6 +37,8 @@ CUDA_ADD_LIBRARY( qesplumecore
     SourceCube.cpp SourceCube.hpp
     SourceFullDomain.cpp SourceFullDomain.hpp
 
+    DomainBoundaryConditions.cpp
+    
     WallReflection.cpp
     WallReflection_StairStep.cpp
 )

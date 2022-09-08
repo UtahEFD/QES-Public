@@ -60,6 +60,8 @@
 #include "InterpPowerLaw.h"
 #include "InterpTriLinear.h"
 
+#include "DomainBoundaryConditions.h"
+
 #include "WallReflection.h"
 #include "WallReflection_StairStep.h"
 
@@ -148,6 +150,10 @@ protected:
   */
 
   WallReflection *wallReflect;
+
+  DomainBC *domainBC_x;
+  DomainBC *domainBC_y;
+  DomainBC *domainBC_z;
 
   // time variables
   double sim_dt;// the simulation timestep

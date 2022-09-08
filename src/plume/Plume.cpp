@@ -808,14 +808,17 @@ void Plume::setBCfunctions(std::string xBCtype, std::string yBCtype, std::string
     // the enforceWallBCs_x pointer function now points to the
     // enforceWallBCs_exiting function
     enforceWallBCs_x = &Plume::enforceWallBCs_exiting;
+    domainBC_x = new DomainBC_exiting(domainXstart, domainXend);
   } else if (xBCtype == "periodic") {
     // the enforceWallBCs_x pointer function now points to the
     // enforceWallBCs_periodic function
     enforceWallBCs_x = &Plume::enforceWallBCs_periodic;
+    domainBC_x = new DomainBC_periodic(domainXstart, domainXend);
   } else if (xBCtype == "reflection") {
     // the enforceWallBCs_x pointer function now points to the
     // enforceWallBCs_reflection function
     enforceWallBCs_x = &Plume::enforceWallBCs_reflection;
+    domainBC_x = new DomainBC_reflection(domainXstart, domainXend);
   } else {
     std::cerr << "!!! Plume::setBCfunctions() error !!! input xBCtype \""
               << xBCtype
@@ -828,14 +831,17 @@ void Plume::setBCfunctions(std::string xBCtype, std::string yBCtype, std::string
     // the enforceWallBCs_y pointer function now points to the
     // enforceWallBCs_exiting function
     enforceWallBCs_y = &Plume::enforceWallBCs_exiting;
+    domainBC_y = new DomainBC_exiting(domainYstart, domainYend);
   } else if (yBCtype == "periodic") {
     // the enforceWallBCs_y pointer function now points to the
     // enforceWallBCs_periodic function
     enforceWallBCs_y = &Plume::enforceWallBCs_periodic;
+    domainBC_y = new DomainBC_periodic(domainYstart, domainYend);
   } else if (yBCtype == "reflection") {
     // the enforceWallBCs_y pointer function now points to the
     // enforceWallBCs_reflection function
     enforceWallBCs_y = &Plume::enforceWallBCs_reflection;
+    domainBC_y = new DomainBC_reflection(domainYstart, domainYend);
   } else {
     std::cerr << "!!! Plume::setBCfunctions() error !!! input yBCtype \""
               << yBCtype
@@ -848,14 +854,17 @@ void Plume::setBCfunctions(std::string xBCtype, std::string yBCtype, std::string
     // the enforceWallBCs_z pointer function now points to the
     // enforceWallBCs_exiting function
     enforceWallBCs_z = &Plume::enforceWallBCs_exiting;
+    domainBC_z = new DomainBC_exiting(domainZstart, domainZend);
   } else if (zBCtype == "periodic") {
     // the enforceWallBCs_z pointer function now points to the
     // enforceWallBCs_periodic function
     enforceWallBCs_z = &Plume::enforceWallBCs_periodic;
+    domainBC_z = new DomainBC_periodic(domainZstart, domainZend);
   } else if (zBCtype == "reflection") {
     // the enforceWallBCs_z pointer function now points to the
     // enforceWallBCs_reflection function
     enforceWallBCs_z = &Plume::enforceWallBCs_reflection;
+    domainBC_z = new DomainBC_reflection(domainZstart, domainZend);
   } else {
     std::cerr << "!!! Plume::setBCfunctions() error !!! input zBCtype \""
               << zBCtype
