@@ -274,10 +274,6 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     }
 
     // now apply boundary conditions
-    //if (isActive == true) isActive = (this->*enforceWallBCs_x)(xPos, uFluct, domainXstart, domainXend);
-    //if (isActive == true) isActive = (this->*enforceWallBCs_y)(yPos, vFluct, domainYstart, domainYend);
-    //if (isActive == true) isActive = (this->*enforceWallBCs_z)(zPos, wFluct, domainZstart, domainZend);
-
     if (isActive == true) isActive = domainBC_x->enforce(xPos, uFluct);
     if (isActive == true) isActive = domainBC_y->enforce(yPos, vFluct);
     if (isActive == true) isActive = domainBC_z->enforce(zPos, wFluct);

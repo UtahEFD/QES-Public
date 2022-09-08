@@ -273,37 +273,6 @@ protected:
   // a function used at constructor time to set the pointer function to the desired BC type
   void setBCfunctions(std::string xBCtype, std::string yBCtype, std::string zBCtype);
 
-  // A pointer to the wallBC function for the x direction.
-  // Which function it points at is determined by setBCfunctions and the input xBCtype
-  bool (Plume::*enforceWallBCs_x)(double &pos,
-                                  double &velFluct,
-                                  const double &domainStart,
-                                  const double &domainEnd);
-  // A pointer to the wallBC function for the y direction.
-  // Which function it points at is determined by setBCfunctions and the input yBCtype
-  bool (Plume::*enforceWallBCs_y)(double &pos,
-                                  double &velFluct,
-                                  const double &domainStart,
-                                  const double &domainEnd);
-  // A pointer to the wallBC function for the z direction.
-  // Which function it points at is determined by setBCfunctions and the input zBCtype
-  bool (Plume::*enforceWallBCs_z)(double &pos,
-                                  double &velFluct,
-                                  const double &domainStart,
-                                  const double &domainEnd);
-  // Boundary condition functions:
-  bool enforceWallBCs_exiting(double &pos,
-                              double &velFluct,
-                              const double &domainStart,
-                              const double &domainEnd);
-  bool enforceWallBCs_periodic(double &pos,
-                               double &velFluct,
-                               const double &domainStart,
-                               const double &domainEnd);
-  bool enforceWallBCs_reflection(double &pos,
-                                 double &velFluct,
-                                 const double &domainStart,
-                                 const double &domainEnd);
 
 private:
   Plume();

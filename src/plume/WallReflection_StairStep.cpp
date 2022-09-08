@@ -93,8 +93,6 @@ bool WallReflection_StairStep::reflect(const WINDSGeneralData *WGD,
     // vector of fluctuations
     Vector3Double vecFluct = { uFluct, vFluct, wFluct };
 
-    Vector3Double X0 = Xnew;
-
     double d = U.length();
     double d1 = 0.0;
     double d2 = U.length();
