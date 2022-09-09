@@ -40,9 +40,9 @@ matlab -nodisplay -nosplash -nodesktop -r "run('PowerLawBLFlow_xDir_inputFiles.m
 
 cd ../../../build
 
-./qesPlume/qesPlume -q ../testCases/PowerLawBLFlow_ContRelease/QES-files/PowerLawBLFlow_xDir_ContRelease.xml -u ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_xDir_windsWk.nc -t ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_xDir_turbOut.nc -o ../testCases/PowerLawBLFlow_ContRelease/QES-data/ -b PowerLawBLFlow_xDir_ContRelease
+./qesPlume/qesPlume -q ../testCases/PowerLawBLFlow_ContRelease/QES-files/PowerLawBLFlow_xDir_ContRelease.xml -w ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_xDir_windsWk.nc -t ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_xDir_turbOut.nc -o ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_xDir_ContRelease
 
-./qesPlume/qesPlume -q ../testCases/PowerLawBLFlow_ContRelease/QES-files/PowerLawBLFlow_yDir_ContRelease.xml -u ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_yDir_windsWk.nc -t ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_yDir_turbOut.nc -o ../testCases/PowerLawBLFlow_ContRelease/QES-data/ -b PowerLawBLFlow_yDir_ContRelease
+./qesPlume/qesPlume -q ../testCases/PowerLawBLFlow_ContRelease/QES-files/PowerLawBLFlow_yDir_ContRelease.xml -w ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_yDir_windsWk.nc -t ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_yDir_turbOut.nc -o ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_yDir_ContRelease
 
 cd -
 

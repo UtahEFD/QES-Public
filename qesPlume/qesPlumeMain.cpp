@@ -17,6 +17,7 @@
 #include "plume/handlePlumeArgs.hpp"
 #include "plume/PlumeInputData.hpp"
 #include "util/NetCDFInput.h"
+#include "util/QEStool.h"
 
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
@@ -55,13 +56,9 @@ int main(int argc, char **argv)
   arguments.processArguments(argc, argv);
 
   // parse xml settings
-  PlumeInputData *PID = new PlumeInputData(arguments.inputQESFile);
-
-  //PlumeInputData* PID = parseXMLTree(arguments.inputQESFile);
-  //if ( !PID ) {
-  //    std::cerr << "QES-Plume input file: " << arguments.inputQESFile << " not able to be read successfully." << std::endl;
-  //    exit(EXIT_FAILURE);
-  //}
+  PlumeInputData *PID = new PlumeInputData(arguments.qesPlumeParamFile);
+  if (!PID)
+    QEStool::error("QES-Plume input file: " + arguments.qesPlumeParamFile + " not able to be read successfully.");
 
   // Create instance of QES-winds General data class
   WINDSGeneralData *WGD = new WINDSGeneralData(arguments.inputWINDSFile);

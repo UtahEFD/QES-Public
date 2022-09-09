@@ -4,6 +4,7 @@
 #include "util/ParseInterface.h"
 
 #include "util/QESNetCDFOutput.h"
+#include "util/QEStool.h"
 
 #include "winds/handleWINDSArgs.h"
 
@@ -49,17 +50,15 @@ int main(int argc, char *argv[])
 
   // Parse the base XML QUIC file -- contains simulation parameters
   //WINDSInputData* WID = parseXMLTree(arguments.quicFile);
-  WINDSInputData *WID = new WINDSInputData(arguments.qesFile);
+  WINDSInputData *WID = new WINDSInputData(arguments.qesWindsParamFile);
   if (!WID) {
-    std::cerr << "[ERROR] QES Input file: " << arguments.qesFile << " not able to be read successfully." << std::endl;
-    exit(EXIT_FAILURE);
+    QEStool::error("QES Input file: " + arguments.qesWindsParamFile + " not able to be read successfully.");
   }
 
   // Checking if
   if (arguments.compTurb && !WID->turbParams) {
-    std::cerr << "[ERROR] Turbulence model is turned on without turbParams in QES Intput file "
-              << arguments.qesFile << std::endl;
-    exit(EXIT_FAILURE);
+    QEStool::error("Turbulence model is turned on without turbParams in QES Intput file "
+                   + arguments.qesWindsParamFile);
   }
 
 
@@ -69,8 +68,7 @@ int main(int argc, char *argv[])
       WID->simParams->DTE_heightField->outputOBJ(arguments.filenameTerrain);
       std::cout << "OBJ created....\n";
     } else {
-      std::cerr << "[ERROR] No dem file specified as input\n";
-      return -1;
+      QEStool::error("No dem file specified as input");
     }
   }
 
@@ -115,8 +113,7 @@ int main(int argc, char *argv[])
     std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
     solver = new SharedMemory(WID, WGD);
   } else {
-    std::cerr << "[ERROR] invalid solve type\n";
-    exit(EXIT_FAILURE);
+    QEStool::error("Invalid solve type");
   }
 
   //check for comparison

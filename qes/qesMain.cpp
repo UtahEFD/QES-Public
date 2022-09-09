@@ -58,16 +58,16 @@ int main(int argc, char *argv[])
   // ///////////////////////////////////
 
   // Parse the base XML QUIC file -- contains simulation parameters
-  WINDSInputData *WID = new WINDSInputData(arguments.inputWINDSFile);
+  WINDSInputData *WID = new WINDSInputData(arguments.qesWindsParamFile);
   if (!WID) {
-    std::cerr << "[ERROR] QES Input file: " << arguments.inputWINDSFile
+    std::cerr << "[ERROR] QES Input file: " << arguments.qesWindsParamFile
               << " not able to be read successfully." << std::endl;
     exit(EXIT_FAILURE);
   }
   // parse xml settings
 
   PlumeInputData *PID = nullptr;
-  if (arguments.compPlume) PID = new PlumeInputData(arguments.inputPlumeFile);
+  if (arguments.compPlume) PID = new PlumeInputData(arguments.qesPlumeParamFile);
   //if ( !PID ) {
   //    std::cerr << "[Error] QES input file: " << arguments.inputPlumeFile
   //              << " not able to be read successfully." << std::endl;
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
   // Checking if
   if (arguments.compTurb && !WID->turbParams) {
     std::cerr << "[ERROR] Turbulence model is turned on without turbParams in QES Intput file "
-              << arguments.inputWINDSFile << std::endl;
+              << arguments.qesWindsParamFile << std::endl;
     exit(EXIT_FAILURE);
   }
 

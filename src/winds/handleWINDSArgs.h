@@ -33,6 +33,7 @@
 
 #include <iostream>
 #include "util/ArgumentParsing.h"
+#include "util/QEStool.h"
 
 enum solverTypes : int { CPU_Type = 1,
                          DYNAMIC_P = 2,
@@ -67,8 +68,7 @@ public:
   bool verbose;
 
 
-  std::string qesFile = ""; /**< Input files (from cmd line) */
-
+  std::string qesWindsParamFile = ""; /**< Input files (from cmd line) */
 
   std::string netCDFFileBasename = ""; /**< Base name for all NetCDF output files */
 

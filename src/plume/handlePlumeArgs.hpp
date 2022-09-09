@@ -42,6 +42,7 @@
 
 #include "util/doesFolderExist.h"
 #include "util/ArgumentParsing.h"
+#include "util/QEStool.h"
 
 class PlumeArgs : public ArgumentParsing
 {
@@ -61,19 +62,21 @@ public:
      */
   void processArguments(int argc, char *argv[]);
 
-  std::string inputQESFile = "";
+  //bool debug = false;
+  bool verbose = false;
+
+  std::string qesPlumeParamFile = "";
+
+  std::string netCDFFileBasename = ""; /**< Base name for all NetCDF output files */
+
   std::string projectQESFiles = "";
   std::string inputWINDSFile = "";
   std::string inputTURBFile = "";
-  std::string outputFolder = "";
-  std::string caseBaseName = "";
+
   // going to assume concentration is always output. So these next options are like choices for additional debug output
   bool doEulDataOutput;
   bool doParticleDataOutput;
   bool doSimInfoFileOutput;
-  // LA future work: this one should probably be replaced by cmake arguments at compiler time
-  bool debug = false;
-  bool verbose = false;
 
   // output file variables created from the outputFolder and caseBaseName
   std::string outputEulerianFile;

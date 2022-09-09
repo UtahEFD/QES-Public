@@ -31,24 +31,27 @@
 
 #include "handlePlumeArgs.hpp"
 
-PlumeArgs::PlumeArgs() : inputWINDSFile("windsout.nc"), inputTURBFile("turbout.nc")
+PlumeArgs::PlumeArgs()
+  : verbose(false),
+    qesPlumeParamFile(""), inputTURBFile("")
+
 {
   reg("help", "help/usage information", ArgumentParsing::NONE, '?');
-  reg("inputQESFile", "specifies input xml settings file", ArgumentParsing::STRING, 'q');
+  reg("verbose", "turn on verbose output", ArgumentParsing::NONE, 'v');
+  // LA future work: this one should probably be replaced by cmake arguments at compiler time
+  //reg("debug", "should command line output include debug info", ArgumentParsing::NONE, 'd');
+
+  reg("qesPlumeParamFile", "specifies input xml settings file", ArgumentParsing::STRING, 'q');
   // single name for all input/output files
   reg("projectQESFiles", "specifies input/output files name", ArgumentParsing::STRING, 'm');
   // individual names for input/output files
-  reg("inputWINDSFile", "specifies input qes-winds file", ArgumentParsing::STRING, 'u');
+  reg("inputWINDSFile", "specifies input qes-winds file", ArgumentParsing::STRING, 'w');
   reg("inputTURBFile", "specifies input qes-turb file", ArgumentParsing::STRING, 't');
-  reg("outputFolder", "select output folder for output files", ArgumentParsing::STRING, 'o');
-  reg("caseBaseName", "specify case base name for file naming", ArgumentParsing::STRING, 'b');
+  reg("outbasename", "Specifies the basename for netcdf files", ArgumentParsing::STRING, 'o');
   // going to assume concentration is always output. So these next options are like choices for additional debug output
   reg("doEulDataOutput", "should debug Eulerian data be output", ArgumentParsing::NONE, 'e');
   reg("doParticleDataOutput", "should debug Lagrangian data be output", ArgumentParsing::NONE, 'l');
   reg("doSimInfoFileOutput", "should debug simInfoFile be output", ArgumentParsing::NONE, 's');
-  // LA future work: this one should probably be replaced by cmake arguments at compiler time
-  reg("debug", "should command line output include debug info", ArgumentParsing::NONE, 'd');
-  reg("verbose", "should command line output include verbose info", ArgumentParsing::NONE, 'v');
 }
 
 void PlumeArgs::processArguments(int argc, char *argv[])
@@ -60,11 +63,17 @@ void PlumeArgs::processArguments(int argc, char *argv[])
     exit(EXIT_SUCCESS);
   }
 
+  verbose = isSet("verbose");
+  if (verbose) std::cout << "Verbose Output: ON" << std::endl;
 
-  if (!isSet("inputQESFile", inputQESFile)) {
-    std::cerr << "inputQESFile not specified! Exiting program!" << std::endl;
-    exit(EXIT_FAILURE);
-  }
+  //debug = isSet("debug");
+
+  isSet("qesPlumeParamFile", qesPlumeParamFile);
+  if (qesPlumeParamFile != "")
+    std::cout << "qesPlumeParamFile set to " << qesPlumeParamFile << std::endl;
+  else
+    QEStool::error("qesPlumeParamFile not specified");
+
 
   if (isSet("projectQESFiles", projectQESFiles)) {
     inputWINDSFile = projectQESFiles + "_windsWk.nc";
@@ -74,46 +83,24 @@ void PlumeArgs::processArguments(int argc, char *argv[])
     outputParticleDataFile = projectQESFiles + "_particleInfo.nc";
   } else {
     if (!isSet("inputWINDSFile", inputWINDSFile)) {
-      std::cerr << "inputWINDSFile not specified! Exiting program!" << std::endl;
-      exit(EXIT_FAILURE);
+      QEStool::error("inputWINDSFile not specified!");
     }
     if (!isSet("inputTURBFile", inputTURBFile)) {
-      std::cerr << "inputTURBFile not specified! Exiting program!" << std::endl;
-      exit(EXIT_FAILURE);
-    }
-    if (!isSet("outputFolder", outputFolder)) {
-      std::cerr << "outputFolder not specified! Exiting program!" << std::endl;
-      exit(EXIT_FAILURE);
-    }
-    if (!isSet("caseBaseName", caseBaseName)) {
-      std::cerr << "caseBaseName not specified! Exiting program!" << std::endl;
-      exit(EXIT_FAILURE);
-    }
-    // check whether input outputFolder is an existing folder and if not, exit with error
-    if (!doesDirExist(outputFolder)) {
-      std::cerr << "input outputFolder \"" << outputFolder << "\" does not exist! Exiting program!" << std::endl;
-      exit(EXIT_FAILURE);
+      QEStool::error("inputTURBFile not specified!");
     }
 
-    // check whether input outputFolder has a "/" char on the end, and if not, add one
-    std::string lastChar = outputFolder.substr(outputFolder.length() - 1, 1);
-    if (lastChar != "/") {
-      outputFolder = outputFolder + "/";
+    isSet("outbasename", netCDFFileBasename);
+    if (netCDFFileBasename != "") {
+      // setup specific output file variables for netcdf output
+      outputEulerianFile = netCDFFileBasename + "_eulerianData.nc";
+      outputFile = netCDFFileBasename + "_conc.nc";
+      outputParticleDataFile = netCDFFileBasename + "_particleInfo.nc";
+    } else {
+      QEStool::error("No output basename set -> output turned off ");
     }
-
-    // LA future work: might be important to also check caseBaseName for bad characters that would make a filename have trouble
-    //  I was checking to see if it is an empty string, but I think the isSet() function probably handles that check
-
-
-    // now that the outputFolder and caseBaseName are confirmed to be good, setup specific output file variables for netcdf output
-    outputEulerianFile = outputFolder + caseBaseName + "_eulerianData.nc";
-    outputFile = outputFolder + caseBaseName + "_conc.nc";
-    outputParticleDataFile = outputFolder + caseBaseName + "_particleInfo.nc";
   }
 
   doEulDataOutput = isSet("doEulDataOutput");
   doParticleDataOutput = isSet("doParticleDataOutput");
   doSimInfoFileOutput = isSet("doSimInfoFileOutput");
-  debug = isSet("debug");
-  verbose = isSet("verbose");
 }

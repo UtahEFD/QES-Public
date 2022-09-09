@@ -79,9 +79,9 @@ int main(int argc, char *argv[])
 
   // Parse the base XML QUIC file -- contains simulation parameters
   //WINDSInputData* WID = parseXMLTree(arguments.qesFile);
-  WINDSInputData *WID = new WINDSInputData(arguments.qesFile);
+  WINDSInputData *WID = new WINDSInputData(arguments.qesWindsParamFile);
   if (!WID) {
-    std::cerr << "[ERROR] QUIC Input file: " << arguments.qesFile << " not able to be read successfully." << std::endl;
+    std::cerr << "[ERROR] QUIC Input file: " << arguments.qesWindsParamFile << " not able to be read successfully." << std::endl;
     exit(EXIT_FAILURE);
   }
 
@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
   // Checking if
   if (arguments.compTurb && !WID->turbParams) {
     std::cerr << "[ERROR] Turbulence model is turned on without turbParams in QES Intput file "
-              << arguments.qesFile << std::endl;
+              << arguments.qesWindsParamFile << std::endl;
     exit(EXIT_FAILURE);
   }
 

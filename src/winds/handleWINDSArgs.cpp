@@ -40,9 +40,9 @@
 
 WINDSArgs::WINDSArgs()
   : verbose(false),
-    qesFile(""), netCDFFileBasename(""),
+    qesWindsParamFile(""), netCDFFileBasename(""),
     compTurb(false), solveType(1), compareType(0),
-    visuOutput(false), wkspOutput(false), turbOutput(false), terrainOut(false),
+    visuOutput(true), wkspOutput(false), turbOutput(false), terrainOut(false),
     fireMode(false)
 {
   reg("help", "help/usage information", ArgumentParsing::NONE, '?');
@@ -50,19 +50,18 @@ WINDSArgs::WINDSArgs()
 
   reg("windsolveroff", "Turns off the wind solver and wind output", ArgumentParsing::NONE, 'x');
   reg("solvetype", "selects the method for solving the windfield", ArgumentParsing::INT, 's');
-  reg("juxtapositiontype", "selects a second solve method to compare to the original solve type", ArgumentParsing::INT, 'j');
+  //reg("juxtapositiontype", "selects a second solve method to compare to the original solve type", ArgumentParsing::INT, 'j');
 
-  reg("turbcomp", "Turns on the computation of turbulent fields", ArgumentParsing::NONE, 't');
-
-  reg("qesproj", "Specifies the QES Proj file", ArgumentParsing::STRING, 'q');
+  reg("qesWindsParamFile", "Specifies input xml settings file", ArgumentParsing::STRING, 'q');
 
   reg("outbasename", "Specifies the basename for netcdf files", ArgumentParsing::STRING, 'o');
-  reg("visuout", "Turns on the netcdf file to write visulatization results", ArgumentParsing::NONE, 'z');
+  //reg("visuout", "Turns on the netcdf file to write visulatization results", ArgumentParsing::NONE, 'z');
   reg("wkout", "Turns on the netcdf file to write wroking file", ArgumentParsing::NONE, 'w');
   // [FM] the output of turbulence field linked to the flag compTurb
   // reg("turbout", "Turns on the netcdf file to write turbulence file", ArgumentParsing::NONE, 'r');
   reg("terrainout", "Turn on the output of the triangle mesh for the terrain", ArgumentParsing::NONE, 'h');
 
+  reg("turbcomp", "Turns on the computation of turbulent fields", ArgumentParsing::NONE, 't');
   reg("firemode", "Enable writing of wind data back to WRF Input file.", ArgumentParsing::NONE, 'f');
 }
 
@@ -105,12 +104,15 @@ void WINDSArgs::processArguments(int argc, char *argv[])
   fireMode = isSet("firemode");
   if (fireMode) std::cout << "Wind data will be written back to WRF input file." << std::endl;
 
-  isSet("qesproj", qesFile);
-  if (qesFile != "") std::cout << "QES proj set to " << qesFile << std::endl;
+  isSet("qesWindsParamFile", qesWindsParamFile);
+  if (qesWindsParamFile != "")
+    std::cout << "qesWindsParamFile set to " << qesWindsParamFile << std::endl;
+  else
+    QEStool::error("qesWindsParamFile not specified");
 
   isSet("outbasename", netCDFFileBasename);
   if (netCDFFileBasename != "") {
-    visuOutput = isSet("visuout");
+    //visuOutput = isSet("visuout");
     if (visuOutput) {
       netCDFFileVisu = netCDFFileBasename;
       netCDFFileVisu.append("_windsOut.nc");
@@ -141,7 +143,7 @@ void WINDSArgs::processArguments(int argc, char *argv[])
     }
 
   } else {
-    std::cout << "No output basename set -> output turned off " << std::endl;
+    QEStool::warning("No output basename set -> output turned off ");
     visuOutput = false;
     wkspOutput = false;
     turbOutput = false;
