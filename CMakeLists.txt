@@ -244,7 +244,6 @@ add_subdirectory(src/unitTests)
 add_subdirectory(scratch)
 
 add_subdirectory(qesWinds)
-#add_subdirectory(qesCanopy)
 add_subdirectory(qesPlume)
 add_subdirectory(qes)
 add_subdirectory(tests)
