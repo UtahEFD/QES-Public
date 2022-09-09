@@ -75,7 +75,7 @@ public:
   ///@{
   /** Flag to turn on/off different modules */
   bool solveWind, compTurb;
-  int solveType, compareType;
+  int solveType;
   bool visuOutput, wkspOutput, turbOutput, terrainOut;
   ///@}
 

@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
   // Run the QES-Winds Solver
   //
   // //////////////////////////////////////////
-  Solver *solver, *solverC = nullptr;
+  Solver *solver = nullptr;
   if (arguments.solveType == CPU_Type) {
     std::cout << "Run Serial Solver (CPU) ..." << std::endl;
     solver = new CPUSolver(WID, WGD);
@@ -114,22 +114,6 @@ int main(int argc, char *argv[])
     solver = new SharedMemory(WID, WGD);
   } else {
     QEStool::error("Invalid solve type");
-  }
-
-  //check for comparison
-  if (arguments.compareType) {
-    if (arguments.compareType == CPU_Type)
-      solverC = new CPUSolver(WID, WGD);
-    else if (arguments.compareType == DYNAMIC_P)
-      solverC = new DynamicParallelism(WID, WGD);
-    else if (arguments.compareType == Global_M)
-      solverC = new GlobalMemory(WID, WGD);
-    else if (arguments.compareType == Shared_M)
-      solverC = new SharedMemory(WID, WGD);
-    else {
-      std::cerr << "[ERROR] invalid comparison type\n";
-      exit(EXIT_FAILURE);
-    }
   }
 
   int numIterations = 1;
