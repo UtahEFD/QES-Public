@@ -461,8 +461,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   v.resize(numcell_face, 0.0);
   w.resize(numcell_face, 0.0);
 
-  depcvol.resize(numcell_cent, 0.0);
-
   std::cout << "Memory allocation complete." << std::endl;
 
   // defining ground solid cells (ghost cells below the surface)
@@ -1081,8 +1079,6 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
   u.resize(numcell_face, 0.0);
   v.resize(numcell_face, 0.0);
   w.resize(numcell_face, 0.0);
-
-  depcvol.resize(numcell_cent, 0.0);
 
   return;
 }

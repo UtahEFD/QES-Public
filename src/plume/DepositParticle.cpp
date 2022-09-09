@@ -88,7 +88,7 @@ void Plume::depositParticle(double xPos, double yPos, double zPos, double disX, 
 
       (*parItr)->wdepos *= exp(-depEff * adjLAD * vegDistance / 2);// the /2 comes from Ross' G function, assuming uniform leaf orientation distribution
 
-      WGD->depcvol[cellId_old] += (1 - (*parItr)->wdepos) * (*parItr)->m;
+      deposition->depcvol[cellId_old] += (1 - (*parItr)->wdepos) * (*parItr)->m;
 
       // Take deposited mass away from particle
       (*parItr)->m *= (*parItr)->wdepos;

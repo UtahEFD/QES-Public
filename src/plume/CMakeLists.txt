@@ -15,6 +15,8 @@ CUDA_ADD_LIBRARY( qesplumecore
     InterpPowerLaw.cpp
     InterpTriLinear.cpp    
 
+    Deposition.cpp
+    
     Plume.cpp
     AdvectParticle.cpp
     DepositParticle.cpp

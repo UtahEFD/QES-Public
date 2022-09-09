@@ -160,7 +160,6 @@ public:
   // std::vector<size_t> start; /**< :document this: */
   // std::vector<size_t> count; /**< :document this: */
 
-
   ///@{
   /** :Values of z0 for u and v components: */
   std::vector<float> z0_domain_u, z0_domain_v;
@@ -238,7 +237,6 @@ public:
   std::vector<float> u, v, w;
   ///@}
 
-  std::vector<float> depcvol;
   // local Mixing class and data
   LocalMixing *localMixing; /**< :document this: */
   std::vector<double> mixingLengths; /**< :document this: */

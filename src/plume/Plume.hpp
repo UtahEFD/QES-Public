@@ -62,6 +62,8 @@
 
 #include "DomainBoundaryConditions.h"
 
+#include "Deposition.h"
+
 #include "WallReflection.h"
 #include "WallReflection_StairStep.h"
 
@@ -118,6 +120,8 @@ public:
   std::list<Particle *> particleList;
 
   Interp *interp;
+
+  Deposition *deposition;
 
   // these values are calculated from the urb and turb grids by dispersion
   // they are used for applying boundary conditions at the walls of the domain

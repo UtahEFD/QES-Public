@@ -52,7 +52,7 @@ class PlumeOutput : public QESNetCDFOutput
 {
 public:
   // specialized constructor
-  PlumeOutput(PlumeInputData *PID, WINDSGeneralData *WGD, Plume *plume_ptr, std::string output_file);
+  PlumeOutput(const PlumeInputData *PID, Plume *plume_ptr, std::string output_file);
 
   // deconstructor
   ~PlumeOutput()

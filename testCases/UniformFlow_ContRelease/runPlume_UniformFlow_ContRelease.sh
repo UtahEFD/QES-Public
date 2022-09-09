@@ -23,12 +23,14 @@ date
 sacct -j $SLURM_JOBID
 echo '----------------------------------------------------------------------------'
 echo 'setting environment'
-module load cuda/10.2
-module load gcc/8.1.0
-module load cmake/3.15.3
-module load gdal/3.0.1
-module load boost/1.69.0
-module load netcdf-cxx
+module load cuda/11.4
+module load cmake/3.21.4
+module load gcc/8.5.0
+module load boost/1.77.0
+module load intel-oneapi-mpi/2021.4.0
+module load gdal/3.3.3
+module load netcdf-c/4.8.1
+module load netcdf-cxx/4.2
 module load matlab
 ulimit -c unlimited -s
 module list

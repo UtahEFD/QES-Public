@@ -81,9 +81,6 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   dz = WGD->dz;
   dxy = WGD->dxy;
 
-  long numcell_cent = (nx - 1) * (ny - 1) * (nz - 1);
-  WGD->depcvol.resize(numcell_cent, 0.0);
-
   // Create instance of Interpolation class
   std::cout << "[Plume] \t Interpolation Method set to: "
             << PID->plumeParams->interpMethod << std::endl;
@@ -163,6 +160,8 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
     std::cerr << "[ERROR] unknown wall reflection setting" << std::endl;
     exit(EXIT_FAILURE);
   }
+
+  deposition = new Deposition(WGD);
 }
 
 void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD, std::vector<QESNetCDFOutput *> outputVec)
