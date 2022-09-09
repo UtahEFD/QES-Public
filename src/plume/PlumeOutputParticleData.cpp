@@ -303,7 +303,6 @@ void PlumeOutputParticleData::save(QEStime timeIn)
 
       uFluct[parID] = (*parItr)->uFluct;
       vFluct[parID] = (*parItr)->vFluct;
-
       wFluct[parID] = (*parItr)->wFluct;
 
       delta_uFluct[parID] = (*parItr)->delta_uFluct;
