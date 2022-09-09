@@ -122,7 +122,7 @@ void QESArgs::processArguments(int argc, char *argv[])
     //    outputEulerianFile = outputFolder + caseBaseName + "_eulerianData.nc";
     //}
     if (compPlume) {
-      outputPlumeFile = netCDFFileBasename + "_conc.nc";
+      outputPlumeFile = netCDFFileBasename + "_plumeOut.nc";
 
       doParticleDataOutput = isSet("doParticleDataOutput");
 

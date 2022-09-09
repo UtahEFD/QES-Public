@@ -78,7 +78,7 @@ void PlumeArgs::processArguments(int argc, char *argv[])
   if (isSet("projectQESFiles", projectQESFiles)) {
     inputWINDSFile = projectQESFiles + "_windsWk.nc";
     inputTURBFile = projectQESFiles + "_turbOut.nc";
-    outputFile = projectQESFiles + "_conc.nc";
+    outputFile = projectQESFiles + "_plumeOut.nc";
     outputEulerianFile = projectQESFiles + "_eulerianData.nc";
     outputParticleDataFile = projectQESFiles + "_particleInfo.nc";
   } else {
@@ -93,7 +93,7 @@ void PlumeArgs::processArguments(int argc, char *argv[])
     if (netCDFFileBasename != "") {
       // setup specific output file variables for netcdf output
       outputEulerianFile = netCDFFileBasename + "_eulerianData.nc";
-      outputFile = netCDFFileBasename + "_conc.nc";
+      outputFile = netCDFFileBasename + "_plumeOut.nc";
       outputParticleDataFile = netCDFFileBasename + "_particleInfo.nc";
     } else {
       QEStool::error("No output basename set -> output turned off ");

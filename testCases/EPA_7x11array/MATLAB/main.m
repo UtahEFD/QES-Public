@@ -45,7 +45,7 @@ fileName = sprintf("%s/%s_turbOut.nc",casePath,caseNameWinds);
 [data.turb,varnames.turb] = readNetCDF(fileName);
 
 % read main plume files
-fileName = sprintf("%s/%s_conc.nc",casePath,caseNamePlume);
+fileName = sprintf("%s/%s_plumeOut.nc",casePath,caseNamePlume);
 [data.plume,varnames.plume] = readNetCDF(fileName);
 
 xoH=(data.plume.x-xS)/H;
