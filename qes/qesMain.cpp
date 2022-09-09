@@ -3,6 +3,8 @@
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
 
+#include "util/QEStool.h"
+
 #include "util/QESNetCDFOutput.h"
 
 #include "handleQESArgs.h"
@@ -60,26 +62,18 @@ int main(int argc, char *argv[])
   // Parse the base XML QUIC file -- contains simulation parameters
   WINDSInputData *WID = new WINDSInputData(arguments.qesWindsParamFile);
   if (!WID) {
-    std::cerr << "[ERROR] QES Input file: " << arguments.qesWindsParamFile
-              << " not able to be read successfully." << std::endl;
-    exit(EXIT_FAILURE);
+    QEStool::error("QES Input file: " + arguments.qesWindsParamFile
+                   + " not able to be read successfully.");
   }
   // parse xml settings
 
   PlumeInputData *PID = nullptr;
   if (arguments.compPlume) PID = new PlumeInputData(arguments.qesPlumeParamFile);
-  //if ( !PID ) {
-  //    std::cerr << "[Error] QES input file: " << arguments.inputPlumeFile
-  //              << " not able to be read successfully." << std::endl;
-  //    exit(EXIT_FAILURE);
-  //}
-
 
   // Checking if
   if (arguments.compTurb && !WID->turbParams) {
-    std::cerr << "[ERROR] Turbulence model is turned on without turbParams in QES Intput file "
-              << arguments.qesWindsParamFile << std::endl;
-    exit(EXIT_FAILURE);
+    QEStool::error("Turbulence model is turned on without turbParams in QES Intput file "
+                   + arguments.qesWindsParamFile);
   }
 
 
@@ -89,8 +83,7 @@ int main(int argc, char *argv[])
       WID->simParams->DTE_heightField->outputOBJ(arguments.filenameTerrain);
       std::cout << "OBJ created....\n";
     } else {
-      std::cerr << "[ERROR] No dem file specified as input\n";
-      return -1;
+      QEStool::error("No dem file specified as input");
     }
   }
 
@@ -209,8 +202,7 @@ Solver *setSolver(const int solveType, WINDSInputData *WID, WINDSGeneralData *WG
     std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
     solver = new SharedMemory(WID, WGD);
   } else {
-    std::cerr << "[ERROR] invalid solve type\n";
-    exit(EXIT_FAILURE);
+    QEStool::error("Invalid solve type");
   }
   return solver;
 }
