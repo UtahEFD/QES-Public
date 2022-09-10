@@ -41,7 +41,7 @@ public:
 
   // flag to turn on/off different modules
   bool solveWind, compTurb, compPlume;
-  int solveType, compareType;
+  int solveType;
 
   // QES_WINDS output files:
   bool visuOutput, wkspOutput, terrainOut;

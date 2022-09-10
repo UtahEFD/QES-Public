@@ -5,7 +5,7 @@ QESArgs::QESArgs()
     qesWindsParamFile(""), qesPlumeParamFile(""),
     netCDFFileBasename(""),
     solveWind(false), compTurb(false), compPlume(false),
-    solveType(1), compareType(0),
+    solveType(1),
     visuOutput(true), wkspOutput(false), terrainOut(false),
     turbOutput(false),
     doParticleDataOutput(false)
@@ -15,7 +15,6 @@ QESArgs::QESArgs()
 
   reg("windsolveroff", "Turns off the wind solver and wind output", ArgumentParsing::NONE, 'x');
   reg("solvetype", "selects the method for solving the windfield", ArgumentParsing::INT, 's');
-  reg("juxtapositiontype", "selects a second solve method to compare to the original solve type", ArgumentParsing::INT, 'j');
 
   reg("qesWindsParamFile", "Specifies the QES Proj file", ArgumentParsing::STRING, 'q');
   reg("qesPlumeParamFile", "Specifies the QES Proj file", ArgumentParsing::STRING, 'p');
@@ -50,7 +49,7 @@ void QESArgs::processArguments(int argc, char *argv[])
   if (verbose) std::cout << "Verbose Output: ON" << std::endl;
 
   isSet("qesWindsParamFile", qesWindsParamFile);
-  if (qesWindsParamFile != "") std::cout << "QES proj set to " << qesWindsParamFile << std::endl;
+  if (qesWindsParamFile != "") std::cout << "qesWindsParamFile set to " << qesWindsParamFile << std::endl;
 
   solveWind = isSet("windsolveroff");
   if (solveWind) std::cout << "the wind fields are not being calculated" << std::endl;
@@ -65,12 +64,6 @@ void QESArgs::processArguments(int argc, char *argv[])
   else if (solveType == Shared_M)
     std::cout << "Solving with: Shared memory solver (GPU)" << std::endl;
 
-  isSet("juxtapositiontype", compareType);
-  if (compareType == CPU_Type)
-    std::cout << "Comparing against: CPU" << std::endl;
-  else if (compareType == DYNAMIC_P)
-    std::cout << "Comparing against: GPU" << std::endl;
-
   compTurb = isSet("turbcomp");
 
   isSet("qesPlumeParamFile", qesPlumeParamFile);
@@ -80,7 +73,7 @@ void QESArgs::processArguments(int argc, char *argv[])
     std::cout << "Turbulence model: ON" << std::endl;
     compPlume = true;
     std::cout << "Plume model: ON" << std::endl;
-    std::cout << "Plume file set to " << qesPlumeParamFile << std::endl;
+    std::cout << "qesPlumeParamFile set to " << qesPlumeParamFile << std::endl;
   } else if (compTurb) {
     std::cout << "Turbulence model: ON" << std::endl;
   }
