@@ -69,11 +69,11 @@ void QESArgs::processArguments(int argc, char *argv[])
   isSet("qesPlumeParamFile", qesPlumeParamFile);
 
   if (qesPlumeParamFile != "") {
+    std::cout << "qesPlumeParamFile set to " << qesPlumeParamFile << std::endl;
     compTurb = true;
     std::cout << "Turbulence model: ON" << std::endl;
     compPlume = true;
     std::cout << "Plume model: ON" << std::endl;
-    std::cout << "qesPlumeParamFile set to " << qesPlumeParamFile << std::endl;
   } else if (compTurb) {
     std::cout << "Turbulence model: ON" << std::endl;
   }
