@@ -23,23 +23,27 @@ nu=(1-n)/alpha;
 
 
 % concentration info
-%dt=1.0; % s
-dt=0.2;
+dt=1.0; % s
 %tAvg=1200; % s 
 tAvg=1800; % s 
 
 % source info
-Q=20/dt; % #par/s (source strength)
+Q=200/dt; % #par/s (source strength)
 tRelease=2100; % total time of release
 Ntot=Q*tRelease; % total number of particles
 
 fsize=12;
+
+% set the plotOutputFolders
+plotOutputDir = "plotOutput";
+mkdir(plotOutputDir)
 
 xS=20;yS=50;zS=4;
 
 xProf=[6.0,10.0,19.0]; % streamwise location 
 %xProf=[4.0,10.0,18.0,36.0]; % streamwise location 
 %xProf=[5.42,10.97,19.31]; % streamwise location 
+
 
 % set the case base name for use in all the other file paths
 caseNameWinds = "PowerLawBLFlow_xDir";
