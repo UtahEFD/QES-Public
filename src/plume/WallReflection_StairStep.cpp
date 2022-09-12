@@ -99,8 +99,8 @@ bool WallReflection_StairStep::reflect(const WINDSGeneralData *WGD,
 
     // normailzation of direction verctor for particle trajectory
     U = U / U.length();
-    bool isActive;
-    trajectorySplit_regression(WGD, plume, X, U, d, d1, d2, vecFluct, isActive);
+    bool isActive = true;
+    trajectorySplit_recursive(WGD, plume, X, U, d, d1, d2, vecFluct, isActive);
 
     if (isActive) {
       // update output variable: particle position
@@ -121,15 +121,15 @@ bool WallReflection_StairStep::reflect(const WINDSGeneralData *WGD,
   return false;
 }
 
-void WallReflection_StairStep::trajectorySplit_regression(const WINDSGeneralData *WGD,
-                                                          const Plume *plume,
-                                                          Vector3Double &X,
-                                                          Vector3Double &u,
-                                                          const double &d,
-                                                          double &d1,
-                                                          double &d2,
-                                                          Vector3Double &vecFluct,
-                                                          bool &isActive)
+void WallReflection_StairStep::trajectorySplit_recursive(const WINDSGeneralData *WGD,
+                                                         const Plume *plume,
+                                                         Vector3Double &X,
+                                                         Vector3Double &u,
+                                                         const double &d,
+                                                         double &d1,
+                                                         double &d2,
+                                                         Vector3Double &vecFluct,
+                                                         bool &isActive)
 {
   /*
     - d total distance
@@ -139,7 +139,9 @@ void WallReflection_StairStep::trajectorySplit_regression(const WINDSGeneralData
 
   if (std::abs(d1 - d) < 1.0E-3) {
     //std::cerr << "END OF REGRESSION dist \t" << std::abs(d1 - d) << std::endl;
-    isActive = true;
+    // isActive = true;
+    return;
+  } else if (!isActive) {
     return;
   } else {
 
@@ -161,6 +163,11 @@ void WallReflection_StairStep::trajectorySplit_regression(const WINDSGeneralData
         || (abs(cellIdxOld[1] - cellIdxNew[1]) > 1)
         || (abs(cellIdxOld[2] - cellIdxNew[2]) > 1)) {
       d2 = 0.5 * d2;
+      if (d2 < 0.125 * d) {
+        std::cerr << "END OF REGRESSION dist \t" << d2 / d << std::endl;
+        isActive = false;
+      }
+
     } else {
       d1 += d2;
       //X = Xold + d2 * u;
@@ -169,7 +176,7 @@ void WallReflection_StairStep::trajectorySplit_regression(const WINDSGeneralData
     // regression
     trajectorySplit_regression(WGD, plume, X, u, d, d1, d2, vecFluct, isActive);
 
-    isActive = true;
+    //isActive = true;
     return;
   }
   return;

@@ -84,7 +84,7 @@ public:
                        double &wFluct);
 
 private:
-  void trajectorySplit_regression(const WINDSGeneralData *,
+  void trajectorySplit_rrecursive(const WINDSGeneralData *,
                                   const Plume *,
                                   Vector3Double &,
                                   Vector3Double &,
