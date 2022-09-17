@@ -174,7 +174,7 @@ void WallReflection_StairStep::trajectorySplit_recursive(const WINDSGeneralData 
       oneReflection(WGD, plume, X, u, d2, vecFluct, isActive);
     }
     // regression
-    trajectorySplit_regression(WGD, plume, X, u, d, d1, d2, vecFluct, isActive);
+    trajectorySplit_recursive(WGD, plume, X, u, d, d1, d2, vecFluct, isActive);
 
     //isActive = true;
     return;

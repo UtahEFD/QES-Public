@@ -84,15 +84,15 @@ public:
                        double &wFluct);
 
 private:
-  void trajectorySplit_rrecursive(const WINDSGeneralData *,
-                                  const Plume *,
-                                  Vector3Double &,
-                                  Vector3Double &,
-                                  const double &,
-                                  double &,
-                                  double &,
-                                  Vector3Double &,
-                                  bool &);
+  void trajectorySplit_recursive(const WINDSGeneralData *,
+                                 const Plume *,
+                                 Vector3Double &,
+                                 Vector3Double &,
+                                 const double &,
+                                 double &,
+                                 double &,
+                                 Vector3Double &,
+                                 bool &);
 
   void oneReflection(const WINDSGeneralData *,
                      const Plume *,
