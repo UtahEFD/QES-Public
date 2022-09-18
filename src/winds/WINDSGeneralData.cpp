@@ -1165,6 +1165,13 @@ void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex
 {
   std::cout << "Applying Wind Profile...\n";
 
+  u0.clear();
+  v0.clear();
+  w0.clear();
+  u0.resize(numcell_face, 0.0);
+  v0.resize(numcell_face, 0.0);
+  w0.resize(numcell_face, 0.0);
+
   auto start_InputWindProfile = std::chrono::high_resolution_clock::now();// Finish recording execution time
 
   int num_sites = WID->metParams->sensors.size();

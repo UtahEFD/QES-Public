@@ -134,30 +134,12 @@ int main(int argc, char *argv[])
     WGD->applyParametrizations(WID);
 
     solver->resetLambda();
-    /*
-      solver->lambda.clear();
-      solver->lambda_old.clear();
-      solver->lambda.resize(WGD->numcell_cent, 0.0);
-      solver->lambda_old.resize(WGD->numcell_cent, 0.0);
-      solver->R.clear();
-      solver->R.resize(WGD->numcell_cent, 0.0);
-    */
 
     // Applying the log law and solver iteratively
     if (WID->simParams->logLawFlag == 1) {
       WID->simParams->maxIterations = tempMaxIter;
       solver->solve(WID, WGD, !arguments.solveWind);
-      //solver->lambda_old = solver->lambda;
-      solver->copyLambda();
 
-      /*for (int i = 0; i < numIterations; i++) {
-        WID->simParams->maxIterations = 500;
-        WGD->wall->wallLogBC(WGD, false);
-        // Run WINDS simulation code
-        solver->solve(WID, WGD, !arguments.solveWind);
-
-        solver->lambda_old = solver->lambda;
-      }*/
       WGD->u0 = WGD->u;
       WGD->v0 = WGD->v;
       WGD->w0 = WGD->w;

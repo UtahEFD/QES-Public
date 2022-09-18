@@ -102,8 +102,3 @@ inline void Solver::resetLambda()
   std::fill(lambda_old.begin(), lambda_old.end(), 0.0);
   std::fill(R.begin(), R.end(), 0.0);
 }
-
-inline void Solver::copyLambda()
-{
-  lambda_old = lambda;
-}
