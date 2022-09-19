@@ -730,8 +730,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     if (WID->buildings->SHPData) {
       std::cout << "Creating buildings from shapefile..." << std::flush;
 
-      // std::vector<Building *> poly_buildings;
-
 
       float corner_height, min_height;
 
@@ -1248,7 +1246,6 @@ void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex
 
 void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
 {
-  // std::cout << "[Winds] \t applying Parameterization" << std::endl;
 
   auto start_param = std::chrono::high_resolution_clock::now();// Start recording execution time
 
@@ -1268,7 +1265,6 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->upwindCavity(WID, this);
     }
-    // std::cout << "Upwind cavity parameterization done...\n";
   }
 
   //////////////////////////////////////////////////
@@ -1279,7 +1275,6 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->polygonWake(WID, this, building_id[i]);
     }
-    // std::cout << "Wake behind building parameterization done...\n";
   }
 
   ///////////////////////////////////////////
@@ -1290,13 +1285,11 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->streetCanyon(this);
     }
-    // std::cout << "Street canyon parameterization done...\n";
   } else if (WID->simParams->streetCanyonFlag == 2) {
     std::cout << "Applying street canyon parameterization...\n";
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->streetCanyonModified(this);
     }
-    // std::cout << "Street canyon parameterization done...\n";
   }
 
   ///////////////////////////////////////////
@@ -1307,7 +1300,6 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->sideWall(WID, this);
     }
-    // std::cout << "Sidewall parameterization done...\n";
   }
 
 
@@ -1319,7 +1311,6 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->rooftop(WID, this);
     }
-    // std::cout << "Rooftop parameterization done...\n";
   }
 
   // ///////////////////////////////////////
@@ -1340,17 +1331,6 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     allBuildingsV[0]->poisson (WID, this);
     std::cout << "Blended Region Parameterization done...\n";
     }*/
-
-
-  /*
-   * Calling wallLogBC to read in vectores of indices of the cells that have wall to right/left,
-   * wall above/below and wall in front/back and applies the log law boundary condition fix
-   * to the cells near Walls
-   *
-   */
-  /*if (WID->simParams->logLawFlag == 1) {
-    wall->wallLogBC(this, true);
-  }*/
 
 
   wall->setVelocityZero(this);

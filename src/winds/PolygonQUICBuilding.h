@@ -67,12 +67,6 @@ public:
     parseMultiPrimitives<float>(true, xVertex, "xVertex");
     parseMultiPrimitives<float>(true, yVertex, "yVertex");
 
-    // parsePrimitive<float>(true, x_start, "xStart");
-    // parsePrimitive<float>(true, y_start, "yStart");
-    // parsePrimitive<float>(true, L, "length");
-    // parsePrimitive<float>(true, W, "width");
-    // parsePrimitive<float>(true, building_rotation, "buildingRotation");
-
     // We cannot call the constructor since the default had
     // already been called.  So, use other functions in
     // PolyBuilding to create the correct PolyBuilding from

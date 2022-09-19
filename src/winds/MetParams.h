@@ -78,7 +78,6 @@ public:
     parseMultiPrimitives<std::string>(false, sensorName, "sensorName");
     for (auto i = 0u; i < sensorName.size(); i++) {
       sensorName[i] = QESfs::get_absolute_path(sensorName[i]);
-      //sensors.push_back(new Sensor(sensorName[i]));
     }
   }
 };

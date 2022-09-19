@@ -60,19 +60,6 @@ public:
   friend class DTEHeightField;
 
   /**
-   * This function calculates area fraction coefficients used in the cut-cell method.
-   *
-   * It takes in a pointer to cell and terrain information (intersection points) and after sorting them for each
-   * face of the cell and calculating coefficients, it sets them to the related solver coefficient (e,f,g,h,m,n)
-   *
-   * @param cells :document this:
-   * @param DTEHF :document this:
-   * @param WID :document this:
-   * @param WGD :document this:
-   */
-  void calculateCoefficient(Cell *cells, const DTEHeightField *DTEHF, const WINDSInputData *WID, WINDSGeneralData *WGD);
-
-  /**
    * This function takes in intersection points for each face and reorder them based on angle.
    *
    * It fisrt calculates the centroid of points (simple average). Then it reorders points based

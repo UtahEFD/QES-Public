@@ -376,7 +376,6 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
           } else {
             y_norm = y1;
           }
-          //std::cout << "y_norm:  " << y_norm << std::endl;
           canyon_factor = 1.0;
           x_id_min = -1;
           for (auto x_id = 1; x_id <= ceil(Lr_local / WGD->dxy); x_id++) {
@@ -462,8 +461,6 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
                   if (xu > dn_u) {
                     farwake_vel = WGD->u0[icell_face] * (1.0 - pow((dn_u / (xu + WGD->wake_factor * dn_u)), farwake_exp));
                     if (canyon_factor == 1.0) {
-                      // std::cout << "farwake_vel:   " << farwake_vel << std::endl;
-                      // std::cout << "i_u:   " << i_u << "\t\t"<< "j_u:   " << j_u << "\t\t"<< "k:   " << k << std::endl;
                       u0_modified.push_back(farwake_vel);
                       u0_mod_id.push_back(icell_face);
                       WGD->w0[icell_face] = 0.0;

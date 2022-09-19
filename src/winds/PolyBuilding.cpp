@@ -1528,8 +1528,6 @@ float PolyBuilding::calculateArea(WINDSGeneralData *WGD, std::vector<cutVert> &f
   int k = 0;
   if (face_points.size() != 0) {
     k = cutcell_index / ((WGD->nx - 1) * (WGD->ny - 1));
-    //unused: int j = (cutcell_index - k * (WGD->nx - 1) * (WGD->ny - 1)) / (WGD->nx - 1);
-    //unused: int i = cutcell_index - k * (WGD->nx - 1) * (WGD->ny - 1) - j * (WGD->nx - 1);
     // calculate area fraction coefficient for each face of the cut-cell
     for (auto i = 0u; i < face_points.size() - 1; i++) {
       coeff += (0.5 * (face_points[i + 1].y_cut + face_points[i].y_cut) * (face_points[i + 1].z_cut - face_points[i].z_cut)) / (WGD->dy * WGD->dz_array[k]) + (0.5 * (face_points[i + 1].x_cut + face_points[i].x_cut) * (face_points[i + 1].z_cut - face_points[i].z_cut)) / (WGD->dx * WGD->dz_array[k]) + (0.5 * (face_points[i + 1].x_cut + face_points[i].x_cut) * (face_points[i + 1].y_cut - face_points[i].y_cut)) / (WGD->dx * WGD->dy);
