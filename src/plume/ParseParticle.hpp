@@ -260,7 +260,7 @@ public:
     parType = ParticleType::small;
     parsePrimitive<double>(true, rho, "particleDensity");
     parsePrimitive<double>(true, d, "particleDiameter");
-    parsePrimitive<bool>(true, depFlag, "depositionFlag");
+    parsePrimitive<bool>(false, depFlag, "depositionFlag");
     d_m = d * (1.0E-6);
     m_kg = m * (1.0E-3);
   }
@@ -307,7 +307,7 @@ public:
     parType = ParticleType::large;
     parsePrimitive<double>(true, rho, "particleDensity");
     parsePrimitive<double>(true, d, "particleDiameter");
-    parsePrimitive<bool>(true, depFlag, "depositionFlag");
+    parsePrimitive<bool>(false, depFlag, "depositionFlag");
     d_m = d * (1.0E-6);
     m_kg = m * (1.0E-3);
   }
@@ -354,7 +354,7 @@ public:
     parType = ParticleType::heavygas;
     parsePrimitive<double>(true, rho, "particleDensity");
     parsePrimitive<double>(true, d, "particleDiameter");
-    parsePrimitive<bool>(true, depFlag, "depositionFlag");
+    parsePrimitive<bool>(false, depFlag, "depositionFlag");
     d_m = d * (1.0E-6);
     m_kg = m * (1.0E-3);
   }
