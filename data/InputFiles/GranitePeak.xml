@@ -34,6 +34,7 @@
 <metParams>
   <z0_domain_flag> 0 </z0_domain_flag>           			<!-- Distribution of sueface roughness for domain (0-uniform (default), 1-custom -->
   <sensorName>PWIDS/PWID79.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+  <sensorName>PWIDS/PWID78.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
   <sensorName>PWIDS/PWID96.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
   <sensorName>PWIDS/PWID72.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
   <sensorName>PWIDS/PWID93.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->

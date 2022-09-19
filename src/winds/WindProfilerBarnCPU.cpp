@@ -146,7 +146,6 @@ void WindProfilerBarnCPU::BarnesInterpolationCPU(const WINDSInputData *WID, WIND
         sum_wv = 0.0;
         sum_wm = 0.0;
         int id = i + j * WGD->nx;//Index in horizontal surface
-        // !!unused!! int idx = i + j * (WGD->nx - 1);//Index in horizontal surface for cell faces
         //If height added to top of terrain is still inside QES domain
         if (k + WGD->terrain_face_id[id] - 1 < WGD->nz) {
           k_mod = k + WGD->terrain_face_id[id] - 1;//Set the modified index
