@@ -31,13 +31,15 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd,Fire* fire,std::string output_file)
 
     // set cell-centered data dimensions
     // time dimension
-    NcDim NcDim_t=addDimension("t");
+    /* NcDim NcDim_t=addDimension("t");
     NcDim NcDim_tstr = addDimension("dateStrLen", dateStrLen);
+    */
     // space dimensions
     NcDim NcDim_x=addDimension("x",wgd_->nx-1);
     NcDim NcDim_y=addDimension("y",wgd_->ny-1);
     NcDim NcDim_z=addDimension("z",wgd_->nz-2);
 
+    /*
       // create attributes for time dimension
     std::vector<NcDim> dim_vect_t;
     dim_vect_t.push_back(NcDim_t);
@@ -48,7 +50,8 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd,Fire* fire,std::string output_file)
     dim_vect_tstr.push_back(NcDim_t);
     dim_vect_tstr.push_back(NcDim_tstr);
     createAttVector("times", "date time", "-", dim_vect_tstr, &timestamp);
-    
+    */
+
     // create attributes space dimensions
     std::vector<NcDim> dim_vect_x;
     dim_vect_x.push_back(NcDim_x);
@@ -123,7 +126,7 @@ void FIREOutput::save(float timeOut)
     
     // save the fields to NetCDF files
     saveOutputFields();
-    
+    /*
     // remove x, y, z and terrain
     // from output array after first save
     if (output_counter==0) {
@@ -132,4 +135,5 @@ void FIREOutput::save(float timeOut)
     
     // increment for next time insertion
     output_counter +=1;
+    */
 };

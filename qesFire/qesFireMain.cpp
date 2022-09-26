@@ -57,24 +57,23 @@ int main(int argc, char *argv[])
     WINDSArgs arguments;
     arguments.processArguments(argc, argv);
 
-    // ///////////////////////////////////
-    // Read and Process any Input for the system
-    // ///////////////////////////////////
+  // ///////////////////////////////////
+  // Read and Process any Input for the system
+  // ///////////////////////////////////
 
   // Parse the base XML QUIC file -- contains simulation parameters
   //WINDSInputData* WID = parseXMLTree(arguments.quicFile);
-  WINDSInputData *WID = new WINDSInputData(arguments.qesFile);
+  WINDSInputData *WID = new WINDSInputData(arguments.qesWindsParamFile);
   if (!WID) {
-    std::cerr << "[ERROR] QES Input file: " << arguments.qesFile << " not able to be read successfully." << std::endl;
-    exit(EXIT_FAILURE);
+    QEStool::error("QES Input file: " + arguments.qesWindsParamFile + " not able to be read successfully.");
   }
 
-    // Checking if
+  // Checking if
   if (arguments.compTurb && !WID->turbParams) {
-    std::cerr << "[ERROR] Turbulence model is turned on without turbParams in QES Intput file "
-              << arguments.qesFile << std::endl;
-    exit(EXIT_FAILURE);
+    QEStool::error("Turbulence model is turned on without turbParams in QES Intput file "
+                   + arguments.qesWindsParamFile);
   }
+
 
   if (arguments.terrainOut) {
     if (WID->simParams->DTE_heightField) {
@@ -82,11 +81,9 @@ int main(int argc, char *argv[])
       WID->simParams->DTE_heightField->outputOBJ(arguments.filenameTerrain);
       std::cout << "OBJ created....\n";
     } else {
-      std::cerr << "[ERROR] No dem file specified as input\n";
-      return -1;
+      QEStool::error("No dem file specified as input");
     }
   }
-
   // Generate the general WINDS data from all inputs
   WINDSGeneralData *WGD = new WINDSGeneralData(WID, arguments.solveType);
 
@@ -109,44 +106,28 @@ int main(int argc, char *argv[])
         outputVec.push_back(new TURBOutput(TGD,arguments.netCDFFileTurb));
     }
 
-    // //////////////////////////////////////////
-    //
-    // Run the QES-Winds Solver
-    //
-    // //////////////////////////////////////////
-    Solver *solver, *solverC = nullptr;
-    if (arguments.solveType == CPU_Type) {
-        std::cout << "Run Serial Solver (CPU) ..." << std::endl;
-        solver = new CPUSolver(WID, WGD);
-    } else if (arguments.solveType == DYNAMIC_P) {
-        std::cout << "Run Dynamic Parallel Solver (GPU) ..." << std::endl;
-        solver = new DynamicParallelism(WID, WGD);
-    } else if (arguments.solveType == Global_M) {
-        std::cout << "Run Global Memory Solver (GPU) ..." << std::endl;
-        solver = new GlobalMemory(WID, WGD);
-    } else if (arguments.solveType == Shared_M) {
-        std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
-        solver = new SharedMemory(WID, WGD);
-    } else {
-        std::cerr << "[ERROR] invalid solve type\n";
-        exit(EXIT_FAILURE);
-    }
+  // //////////////////////////////////////////
+  //
+  // Run the QES-Winds Solver
+  //
+  // //////////////////////////////////////////
+  Solver *solver = nullptr;
+  if (arguments.solveType == CPU_Type) {
+    std::cout << "Run Serial Solver (CPU) ..." << std::endl;
+    solver = new CPUSolver(WID, WGD);
+  } else if (arguments.solveType == DYNAMIC_P) {
+    std::cout << "Run Dynamic Parallel Solver (GPU) ..." << std::endl;
+    solver = new DynamicParallelism(WID, WGD);
+  } else if (arguments.solveType == Global_M) {
+    std::cout << "Run Global Memory Solver (GPU) ..." << std::endl;
+    solver = new GlobalMemory(WID, WGD);
+  } else if (arguments.solveType == Shared_M) {
+    std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
+    solver = new SharedMemory(WID, WGD);
+  } else {
+    QEStool::error("Invalid solve type");
+  }
 
-    //check for comparison
-    if (arguments.compareType) {
-        if (arguments.compareType == CPU_Type)
-            solverC = new CPUSolver(WID, WGD);
-        else if (arguments.compareType == DYNAMIC_P)
-            solverC = new DynamicParallelism(WID, WGD);
-        else if (arguments.compareType == Global_M)
-            solverC = new GlobalMemory(WID, WGD);
-        else if (arguments.compareType == Shared_M)
-            solverC = new SharedMemory(WID, WGD);
-        else {
-            std::cerr << "[ERROR] invalid comparison type\n";
-            exit(EXIT_FAILURE);
-        }
-    }
 
     // Reset icellflag values
     WGD->resetICellFlag();
@@ -162,10 +143,6 @@ int main(int argc, char *argv[])
 
     std::cout << "Solver done!\n";
 
-    if (solverC != nullptr) {
-        std::cout << "Running comparson type...\n";
-        solverC->solve(WID, WGD, !arguments.solveWind);
-    }
     // /////////////////////////////
     //
     // Run turbulence
