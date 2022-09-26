@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -45,14 +46,13 @@ using namespace netCDF::exceptions;
  */
 class NetCDFOutput
 {
-
 protected:
+  NetCDFOutput() {}
+
   NcFile *outfile; /**< File to write. */
   std::map<std::string, NcVar> fields; /**< :document this: */
 
 public:
-  NetCDFOutput()
-  {}
   // initializer
   NetCDFOutput(std::string);
   virtual ~NetCDFOutput()
@@ -62,6 +62,7 @@ public:
   NcDim addDimension(std::string, int size = 0);
   NcDim getDimension(std::string);
   void addField(std::string, std::string, std::string, std::vector<NcDim>, NcType);
+  void addAtt(std::string, std::string, std::string);
 
   // save functions for 1D array (save 1D time)
   void saveField1D(std::string, const std::vector<size_t>, int *);

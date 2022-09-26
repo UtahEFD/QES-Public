@@ -11,7 +11,7 @@ clear all
 H=70; % m
 U=2; % m/s 
 uStar=0.174; %m/s
-zi=10000; % m
+zi=1000; % m
 
 % source info
 Q=400; % #par/s (source strength)
@@ -47,7 +47,7 @@ fileName = sprintf("../QES-data/%s_turbOut.nc",caseNameWinds);
 [data.turb,varnames.turb] = readNetCDF(fileName);
 
 % read main plume files
-fileName = sprintf("../QES-data/%s_conc.nc",caseNamePlume);
+fileName = sprintf("../QES-data/%s_plumeOut.nc",caseNamePlume);
 [data.plume,varnames.plume] = readNetCDF(fileName);
 % read particleInfo files
 %fileName = sprintf("../QES-data/%s_particleInfo.nc",caseNamePlume);
@@ -80,7 +80,7 @@ for k=1:numel(xProf)
     x=data.plume.x(idx)-xS;
     t=(x)/U;
     
-    Fy=1;%(1+(t/Ti)^0.5)^(-1);
+    Fy=(1+(t/Ti)^0.5)^(-1);
     %Fz=(1+0.945*(t/To)^0.8)^(-1);
     Fz=Fy;
     
@@ -155,7 +155,7 @@ save('data2plot_xDir','d2plotLat','d2plotVert','caseNameWinds','caseNamePlume')
 %==========================================================================
 
 [yy,zz]=ndgrid(data.plume.y-yS,data.plume.z-zS);
-xProf2=xoH(xoH > 0.3);
+xProf2=xoH(xoH > 0.2);
 cStarPlume=[];
 cStarModel=[];
 
@@ -181,7 +181,7 @@ for k=1:numel(xProf2)
     x=data.plume.x(idx1)-xS;
     t=x/U;
     
-    Fy=1;%(1+(t/Ti)^0.5)^(-1);
+    Fy=(1+(t/Ti)^0.5)^(-1);
     %Fz=(1+0.945*(t/To)^0.8)^(-1);
     Fz=Fy;
     
@@ -218,14 +218,17 @@ ylabel('C^* QES-Plume')
 
 SSres=0;
 SStot=0;
-maxErr=zeros(size(xProf2));
+maxRelErr=zeros(size(xProf2));
+
 cStarPlumeMean=mean(mean(cStarPlume));
 for k=1:numel(xProf2)
     SSres=SSres+sum((cStarPlume(:,k)-cStarModel(:,k)).^2);
     SStot=SStot+sum((cStarPlume(:,k)-cStarPlumeMean).^2);
-    maxErr(k) = max(abs(cStarPlume(:,k)-cStarModel(:,k)))/(max(cStarModel(:,k)));
+    maxRelErr(k) = max(abs(cStarPlume(:,k)-cStarModel(:,k)))/(max(cStarModel(:,k)));
 end
 R = 1-SSres/SStot;
+
+RMSE = sqrt(SSres/(boxNy*boxNz*numel(xProf2)));
 
 htxt=text(1,1,sprintf('$r^2$=%f\n',double(R)));
 htxt.Units='normalized';
@@ -233,11 +236,17 @@ htxt.Interpreter='latex';
 htxt.FontSize=12;
 htxt.Position=[.1 .9 0];
 
-htxt=text(1,1,sprintf('MaxRelErr=%f\n',double(max(maxErr))));
+htxt=text(1,1,sprintf('MaxRelErr=%f\n',double(max(maxRelErr))));
 htxt.Units='normalized';
 htxt.Interpreter='latex';
 htxt.FontSize=12;
 htxt.Position=[.1 .8 0];
+
+htxt=text(1,1,sprintf('RMSE=%f\n',double(RMSE)));
+htxt.Units='normalized';
+htxt.Interpreter='latex';
+htxt.FontSize=12;
+htxt.Position=[.1 .7 0];
 
 currentPlotName=sprintf('plotOutput/%s_1to1',caseNamePlume);
 hfig.Units='centimeters';

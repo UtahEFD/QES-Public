@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -271,7 +272,13 @@ private:
       // in the flip
       // Previous code had this -- does not seem correct
       // height = scanline[ abs(k-m_nYSize) * m_nXSize + j ];
+
       height = scanline[(m_nYSize - 1 - k) * (m_nXSize) + j] - adfMinMax[0];
+      /*if (j == 131 && k == 126) {
+        std::cout << "adfMinMax[0]:  " << adfMinMax[0] << std::endl;
+        std::cout << "scanline[(m_nYSize - 1 - k) * (m_nXSize) + j]:  " << scanline[(m_nYSize - 1 - k) * (m_nXSize) + j] << std::endl;
+        std::cout << "height:  " << height << std::endl;
+      }*/
     }
 
     if (height < 0.0 || std::isnan(abs(height))) {

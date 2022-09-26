@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -31,13 +32,11 @@
 
 #pragma once
 
-#include "boost/date_time/posix_time/posix_time.hpp"
 #include "util/ParseInterface.h"
+#include "util/QEStime.h"
 
 class URBInputData;
 class URBGeneralData;
-
-namespace bt = boost::posix_time;
 
 /**
  * @class TimeSeries
@@ -51,7 +50,7 @@ private:
 public:
   int site_blayer_flag = 1; /**< :document this: */
   float site_z0; /**< :document this: */
-  float site_p = 0.0; /**< :document this: */
+  //float site_p = 0.0; /**< :document this: */
 
   ///@{
   /** :document this: */
@@ -61,9 +60,7 @@ public:
   float site_one_overL; /**< :document this: */
   float site_canopy_H, site_atten_coeff; /**< :document this: */
 
-  std::string timeStamp = ""; /**< :document this: */
-  time_t timeEpoch = -1; /**< :document this: */
-  bt::ptime timePosix; /**< :document this: */
+  QEStime time; /**< :document this: */
 
 
   /**
@@ -71,11 +68,14 @@ public:
    */
   virtual void parseValues()
   {
+    std::string timeStamp = ""; /**< :document this: */
+    time_t timeEpoch = -1; /**< :document this: */
+
     parsePrimitive<std::string>(false, timeStamp, "timeStamp");
     parsePrimitive<time_t>(false, timeEpoch, "timeEpoch");
     parsePrimitive<int>(false, site_blayer_flag, "boundaryLayerFlag");
     parsePrimitive<float>(true, site_z0, "siteZ0");
-    parsePrimitive<float>(false, site_p, "siteP");
+    //parsePrimitive<float>(false, site_p, "siteP");
     parsePrimitive<float>(true, site_one_overL, "reciprocal");
     parseMultiPrimitives<float>(true, site_z_ref, "height");
     parseMultiPrimitives<float>(true, site_U_ref, "speed");
@@ -85,20 +85,17 @@ public:
 
 
     if (timeStamp == "" && timeEpoch == -1) {
-      std::cout << "[WARNING] no timestamp provided" << std::endl;
-      timeStamp = "2020-01-01T00:00";
-      timePosix = bt::from_iso_extended_string(timeStamp);
-      timeEpoch = bt::to_time_t(timePosix);
+      std::cout << "[WARNING] no timestamp provided to sensor\n";
+      std::cout << "          using system UTC time: " << time << std::endl;
+      //time = "2020-01-01T00:00";
     } else if (timeStamp != "" && timeEpoch == -1) {
-      timePosix = bt::from_iso_extended_string(timeStamp);
-      timeEpoch = bt::to_time_t(timePosix);
+      time = timeStamp;
     } else if (timeEpoch != -1 && timeStamp == "") {
-      timePosix = bt::from_time_t(timeEpoch);
-      timeStamp = bt::to_iso_extended_string(timePosix);
+      time = timeEpoch;
     } else {
-      timePosix = bt::from_iso_extended_string(timeStamp);
-      bt::ptime testtime = bt::from_time_t(timeEpoch);
-      if (testtime != timePosix) {
+      time = timeStamp;
+      QEStime testtime = timeEpoch;
+      if (testtime != time) {
         std::cerr << "[ERROR] invalid timeStamp (timeEpoch != timeStamp)\n";
         exit(EXIT_FAILURE);
       }

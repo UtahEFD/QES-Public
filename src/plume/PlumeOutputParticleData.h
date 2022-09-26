@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -42,17 +43,13 @@
 #include "PlumeInputData.hpp"
 
 #include "util/QESNetCDFOutput.h"
+#include "util/QEStime.h"
 
 class Plume;
 
 class PlumeOutputParticleData : public QESNetCDFOutput
 {
 public:
-  // default constructor
-  PlumeOutputParticleData() : QESNetCDFOutput()
-  {
-  }
-
   // specialized constructor
   PlumeOutputParticleData(PlumeInputData *PID, Plume *plume_ptr, std::string output_file);
 
@@ -64,28 +61,30 @@ public:
   // setup and save output for the given time
   // in this case the saved data is output averaged concentration
   // This is the one function that needs called from outside after constructor time
-  void save(float);
-  void save(ptime) {}
+  void save(QEStime);
 
 protected:
   bool validateFileOtions();
 
 private:
+  // default constructor
+  PlumeOutputParticleData() {}
+
   // Output frequency control information
-  float outputStartTime;// time to start output, adjusted if the output duration does not divide evenly by the output frequency
-  float outputEndTime;// time to end output
+  QEStime outputStartTime;// time to start output, adjusted if the output duration does not divide evenly by the output frequency
+
   float outputFrequency;// output frequency
 
 
   // variables needed for getting proper output time control
-  float nextOutputTime;// next output time value that is updated each time save is called and there is output
+  QEStime nextOutputTime;// next output time value that is updated each time save is called and there is output
 
   // pointer to the class that save needs to use to get the data for the concentration calculation
-  Plume *plume;
+  Plume *m_plume;
 
   // all possible output fields need to be add to this list
-  std::vector<std::string> allOutputFields = { "t", "parID", "tStrt", "sourceIdx", "d", "m", "wdepos", "wdecay", "xPos_init", "yPos_init", "zPos_init", "xPos", "yPos", "zPos", "uMean", "vMean", "wMean", "uFluct", "vFluct", "wFluct", "delta_uFluct", "delta_vFluct", "delta_wFluct", "isRogue", "isActive" };
-  std::vector<std::string> minimalOutputFields = { "t", "parID", "tStrt", "sourceIdx", "xPos", "yPos", "zPos", "isActive" };
+  std::vector<std::string> allOutputFields = { "parID", "tStrt", "sourceIdx", "d", "m", "wdepos", "wdecay", "xPos_init", "yPos_init", "zPos_init", "xPos", "yPos", "zPos", "uMean", "vMean", "wMean", "uFluct", "vFluct", "wFluct", "delta_uFluct", "delta_vFluct", "delta_wFluct", "isRogue", "isActive" };
+  std::vector<std::string> minimalOutputFields = { "parID", "tStrt", "sourceIdx", "xPos", "yPos", "zPos", "isActive" };
 
 
   // main particle metadata, almost a copy of what is in the "particle" class

@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -40,7 +41,29 @@
 #include "QESNetCDFOutput.h"
 
 QESNetCDFOutput::QESNetCDFOutput(std::string output_file)
-  : NetCDFOutput(output_file){};
+  : NetCDFOutput(output_file)
+{
+  NcDim_t = addDimension("t");
+  NcDim_tstr = addDimension("dateStrLen", dateStrLen);
+
+  std::vector<NcDim> dim_vect_t;
+  dim_vect_t.push_back(NcDim_t);
+  addField("t", "s", "time since start of simulation", dim_vect_t, ncDouble);
+
+  std::vector<NcDim> dim_vect_tstr;
+  dim_vect_tstr.push_back(NcDim_t);
+  dim_vect_tstr.push_back(NcDim_tstr);
+  addField("timestamp", "--", "date time using format: YYYY-MM-DDThh:mm:ss", dim_vect_tstr, ncChar);
+
+  timestamp_out.resize(dateStrLen, '0');
+};
+
+void QESNetCDFOutput::setStartTime(QEStime in)
+{
+  timeStart = in;
+  addAtt("t", "simulation_start", timeStart.getTimestamp());
+  flagStartTimeSet = true;
+}
 
 bool QESNetCDFOutput::validateFileOptions()
 {
@@ -351,6 +374,29 @@ void QESNetCDFOutput::saveOutputFields()
     FMargairaz
   */
 
+  //std::cout << fields["t"].getDim(0).getSize() << std::endl;
+
+  if (output_counter == 0 && !flagStartTimeSet) {
+    setStartTime(timeCurrent);
+    time = 0.0;
+  } else {
+    time = timeCurrent - timeStart;
+  }
+
+  std::vector<size_t> time_index;
+  std::vector<size_t> time_size;
+  time_index = { static_cast<unsigned long>(output_counter) };
+  saveField1D("t", time_index, &time);
+
+  timeCurrent.getTimestamp(timestamp);
+  //std::copy(timestamp.begin(), timestamp.end(), timestamp_out.begin());
+  for (int i = 0; i < dateStrLen; ++i) {
+    timestamp_out[i] = timestamp[i];
+  }
+  time_index = { static_cast<unsigned long>(output_counter), 0 };
+  time_size = { 1, static_cast<unsigned long>(dateStrLen) };
+  saveField2D("timestamp", time_index, time_size, timestamp_out);
+
   // loop through scalar fields to save
   // -> int
   for (unsigned int i = 0; i < output_scalar_int.size(); i++) {
@@ -389,12 +435,14 @@ void QESNetCDFOutput::saveOutputFields()
       }
     }
     // if var not time dep -> use direct dimensions
-    else {
+    else if (output_counter == 0) {
       for (unsigned int d = 0; d < output_vector_int[i].dimensions.size(); d++) {
         int dim = output_vector_int[i].dimensions[d].getSize();
         vector_index.push_back(0);
         vector_size.push_back(static_cast<unsigned long>(dim));
       }
+    } else {
+      continue;
     }
 
     saveField2D(output_vector_int[i].name, vector_index, vector_size, *output_vector_int[i].data);
@@ -415,12 +463,14 @@ void QESNetCDFOutput::saveOutputFields()
       }
     }
     // if var not time dep -> use direct dimensions
-    else {
+    else if (output_counter == 0) {
       for (unsigned int d = 0; d < output_vector_flt[i].dimensions.size(); d++) {
         int dim = output_vector_flt[i].dimensions[d].getSize();
         vector_index.push_back(0);
         vector_size.push_back(static_cast<unsigned long>(dim));
       }
+    } else {
+      continue;
     }
 
     saveField2D(output_vector_flt[i].name, vector_index, vector_size, *output_vector_flt[i].data);
@@ -441,12 +491,14 @@ void QESNetCDFOutput::saveOutputFields()
       }
     }
     // if var not time dep -> use direct dimensions
-    else {
+    else if (output_counter == 0) {
       for (unsigned int d = 0; d < output_vector_dbl[i].dimensions.size(); d++) {
         int dim = output_vector_dbl[i].dimensions[d].getSize();
         vector_index.push_back(0);
         vector_size.push_back(static_cast<unsigned long>(dim));
       }
+    } else {
+      continue;
     }
 
     saveField2D(output_vector_dbl[i].name, vector_index, vector_size, *output_vector_dbl[i].data);
@@ -469,4 +521,6 @@ void QESNetCDFOutput::saveOutputFields()
 
     saveField2D(output_vector_char[i].name, vector_index, vector_size, *output_vector_char[i].data);
   }
+
+  output_counter++;
 };

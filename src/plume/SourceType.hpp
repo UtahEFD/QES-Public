@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -40,13 +41,21 @@
 #include <list>
 
 #include "Particle.hpp"
+#include "ParseParticle.hpp"
+#include "ParticleTracer.hpp"
+#include "ParticleSmall.hpp"
+#include "ParticleLarge.hpp"
+#include "ParticleHeavyGas.hpp"
+#include "ParticleFactories.hpp"
+
 #include "ReleaseType.hpp"
 #include "ReleaseType_instantaneous.hpp"
 #include "ReleaseType_continuous.hpp"
 #include "ReleaseType_duration.hpp"
 
+//#include "Interp.h"
 #include "util/ParseInterface.h"
-
+#include "winds/WINDSGeneralData.h"
 
 enum SourceShape {
   point,
@@ -65,12 +74,15 @@ protected:
   //  then setReleaseType() sets the variable m_rType to be the one value found in this variable.
   std::vector<ReleaseType *> rType_tmp;
 
+  std::vector<ParseParticle *> protoParticle_tmp;
+
 
 public:
   // this is the index of the source in the dispersion class overall list of sources
   // this is used to set the source ID for a given particle, to know from which source each particle comes from
   // !!! this will only be set correctly if a call to setSourceIdx() is done by the class that sets up a vector of this class.
   int sourceIdx;
+  //Interp *interp;
 
   // this is a description variable for determining the source shape. May or may not be used.
   // !!! this needs set by parseValues() in each source generated from input files.
@@ -81,6 +93,13 @@ public:
   // per time for each source, and the start and end times to be releasing from the source.
   // !!! this needs set by parseValues() in each source generated from input files by a call to the setReleaseType() function
   ReleaseType *m_rType;
+
+  ParseParticle *protoParticle;
+  ParticleTypeFactory *particleTypeFactory = new ParticleTypeFactory();
+  ParticleTracerFactory particleTracerFactory;
+  ParticleSmallFactory particleSmallFactory;
+  ParticleLargeFactory particleLargeFactory;
+  ParticleHeavyGasFactory particleHeavyGasFactory;
 
   // LA-future work: need a class similar to ReleaseType that describes the input source mass.
   //  This could be mass, mass per time, volume with a density, and volume per time with a density.
@@ -130,6 +149,39 @@ public:
     m_rType = rType_tmp.at(0);
   }
 
+  void setParticleType()
+  {
+    parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticleTracer>("ParticleTracer"));
+    parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticleSmall>("ParticleSmall"));
+    parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticleLarge>("ParticleLarge"));
+    parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticleHeavyGas>("ParticleHeavyGas"));
+
+    if (protoParticle_tmp.empty()) {
+      //std::cerr << "ERROR (SourceType::setParticleType): there was no input particle type!" << std::endl;
+      //exit(1);
+      protoParticle = new ParseParticle();
+      return;
+    } else if (protoParticle_tmp.size() > 1) {
+      std::cerr << "ERROR (SourceType::setParticleType): there was more than one input particle type!" << std::endl;
+      exit(1);
+    }
+
+    // the number of release types is 1, so now set the public release type to be the one that we have
+    protoParticle = protoParticle_tmp.at(0);
+  }
+
+  void registerParticles()
+  {
+    std::string tracerstr = "ParticleTracer";
+    std::string smallstr = "ParticleSmall";
+    std::string largestr = "ParticleLarge";
+    std::string heavygasstr = "ParticleHeavyGas";
+
+    particleTypeFactory->RegisterParticles(tracerstr, &particleTracerFactory);
+    particleTypeFactory->RegisterParticles(smallstr, &particleSmallFactory);
+    particleTypeFactory->RegisterParticles(largestr, &particleLargeFactory);
+    particleTypeFactory->RegisterParticles(heavygasstr, &particleHeavyGasFactory);
+  }
 
   // this function is used to parse all the variables for each source from the input .xml file
   // each source overloads this function with their own version, allowing different combinations of input variables for each source,

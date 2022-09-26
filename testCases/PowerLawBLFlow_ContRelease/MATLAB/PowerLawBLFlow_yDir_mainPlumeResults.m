@@ -31,6 +31,10 @@ tAvg=1800; % s
 
 fsize=12;
 
+% set the plotOutputFolders
+plotOutputDir = "plotOutput";
+mkdir(plotOutputDir)
+
 xS=50;yS=20;zS=4;
 
 yProf=[6.0,10.0,19.0]; % streamwise location 
@@ -51,7 +55,7 @@ fileName = sprintf("../QES-data/%s_turbOut.nc",caseNameWinds);
 [data.turb,varnames.turb] = readNetCDF(fileName);
 
 % read main plume files
-fileName = sprintf("../QES-data/%s_conc.nc",caseNamePlume);
+fileName = sprintf("../QES-data/%s_plumeOut.nc",caseNamePlume);
 [data.plume,varnames.plume] = readNetCDF(fileName);
 % read particleInfo files
 %fileName = sprintf("../QES-data/%s_particleInfo.nc",caseNamePlume);

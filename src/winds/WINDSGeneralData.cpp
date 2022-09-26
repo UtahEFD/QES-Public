@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -89,6 +90,12 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   numcell_cent = (nx - 1) * (ny - 1) * (nz - 1);// Total number of cell-centered values in domain
   numcell_face = nx * ny * nz;// Total number of face-centered values in domain
 
+  //////////////////////////////////////////////////////////////////////////////////
+  /////    Create sensor velocity profiles and generate initial velocity field /////
+  //////////////////////////////////////////////////////////////////////////////////
+  // Calling inputWindProfile function to generate initial velocity
+  // field from sensors information (located in Sensor.cpp)
+
   // where should this really go?
   //
   // Need to now take all WRF station data and convert to
@@ -106,6 +113,20 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       wrf_nx = wrf_ptr->fm_nx;
       wrf_ny = wrf_ptr->fm_ny;
 
+      windProfiler = new WindProfilerWRF();
+
+      // FM -> this should be added on wrf-input (read time form wrf)
+      // initialize our time info...
+      QEStime tmp("2022-01-01T00:00");
+      sensortime.push_back(tmp);// that's roughly 01/19/22 at 1:00pm Central
+      sensortime_id.push_back(0);
+      timestamp.push_back(sensortime[0]);
+
+      totalTimeIncrements = WID->simParams->totalTimeIncrements;
+
+
+      // FM -> CODE REMOVED TO WITH WINDPROFILER CLASSES // TO CLEAN
+#if 0
       WID->metParams->sensors.resize(wrf_ptr->fm_nx * wrf_ptr->fm_ny);
 
       for (auto i = 0; i < wrf_ptr->fm_nx * wrf_ptr->fm_ny; i++) {
@@ -131,11 +152,12 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       //   }
 
       // initialize our time info...
-      sensortime.push_back(1642619569);// that's roughly 01/19/22 at 1:00pm Central
-      sensortime_id.push_back(0);
-      timestamp.push_back(bt::from_time_t(sensortime[0]));
+      //QEStime tmp("2022-01-01T00:00");
+      //sensortime.push_back(tmp);// that's roughly 01/19/22 at 1:00pm Central
+      //sensortime_id.push_back(0);
+      //timestamp.push_back(sensortime[0]);
 
-      totalTimeIncrements = WID->simParams->totalTimeIncrements;
+      //totalTimeIncrements = WID->simParams->totalTimeIncrements;
 
       // Here to take care of the first time this is built
       for (auto i = 0; i < wrf_ptr->fm_nx; i++) {
@@ -152,16 +174,18 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
           WID->metParams->sensors[index]->TS[0]->site_z0 = 0.1;// should get per cell from WRF data...  we do load per atm cell...
           WID->metParams->sensors[index]->TS[0]->site_one_overL = 0.0;
 
-	  // for each height in the WRF profile
+          // for each height in the WRF profile
           for (auto p = 0; p < wrf_ptr->ht_fmw.size(); p++) {
             int id = index + p * wrf_ptr->fm_nx * wrf_ptr->fm_ny;
             WID->metParams->sensors[index]->TS[0]->site_z_ref[p] = wrf_ptr->ht_fmw[p];
-            WID->metParams->sensors[index]->TS[0]->site_U_ref[p] = sqrt( (wrf_ptr->u0_fmw[id] * wrf_ptr->u0_fmw[id]) + (wrf_ptr->v0_fmw[id] * wrf_ptr->v0_fmw[id]) );
+            WID->metParams->sensors[index]->TS[0]->site_U_ref[p] = sqrt((wrf_ptr->u0_fmw[id] * wrf_ptr->u0_fmw[id]) + (wrf_ptr->v0_fmw[id] * wrf_ptr->v0_fmw[id]));
             WID->metParams->sensors[index]->TS[0]->site_wind_dir[p] = 180 + (180 / pi) * atan2(wrf_ptr->v0_fmw[id], wrf_ptr->u0_fmw[id]);
           }
         }
       }
-      // #endif
+#endif
+      // FM -> CODE REMOVED TO WITH WINDPROFILER CLASSES // TO CLEAN
+
 
       // u0 and v0 are wrf_ptr->fm_nx * wrf_ptr->fm_ny *
       // wrf_ptr->ht_fmw.size()
@@ -174,7 +198,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       std::cout << "Size of WRF station/sensor profile data: " << wrf_ptr->statData.size() << std::endl;
       WID->metParams->sensors.resize(wrf_ptr->statData.size());
 
-      for (auto i = 0; i < wrf_ptr->statData.size(); i++) {
+      for (auto i = 0u; i < wrf_ptr->statData.size(); i++) {
         std::cout << "Station " << i << " ("
                   << wrf_ptr->statData[i].xCoord << ", "
                   << wrf_ptr->statData[i].yCoord << ")" << std::endl;
@@ -213,7 +237,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
           sensortime.push_back(t);
           sensortime_id.push_back(t);
-          timestamp.push_back(bt::from_time_t(sensortime[t]));
+          timestamp.push_back(sensortime[t]);
 
           int profDataSz = wrf_ptr->statData[i].profiles[t].size();
           WID->metParams->sensors[i]->TS[0]->site_wind_dir.resize(profDataSz);
@@ -241,6 +265,12 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
        - does not support halo for lon/lat coord (site coord == 3)
     */
 
+    if (solverType == 1) {
+      windProfiler = new WindProfilerBarnCPU();
+    } else {
+      windProfiler = new WindProfilerBarnGPU();
+    }
+
     // If the sensor file specified in the xml
     if (WID->metParams->sensorName.size() > 0) {
       for (size_t i = 0; i < WID->metParams->sensorName.size(); i++) {
@@ -253,7 +283,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     //if (WID->simParams->totalTimeIncrements > 0) {
     // Loop to include all the timestep for the first sensor
     for (size_t i = 0; i < WID->metParams->sensors[0]->TS.size(); i++) {
-      sensortime.push_back(WID->metParams->sensors[0]->TS[i]->timeEpoch);
+      sensortime.push_back(WID->metParams->sensors[0]->TS[i]->time);
       sensortime_id.push_back(i);
     }
 
@@ -262,19 +292,19 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       for (size_t j = 0; j < WID->metParams->sensors[i]->TS.size(); j++) {
         size_t count = 0;
         for (size_t k = 0; k < sensortime.size(); k++) {
-          if (WID->metParams->sensors[i]->TS[j]->timeEpoch != sensortime[k]) {
+          if (WID->metParams->sensors[i]->TS[j]->time != sensortime[k]) {
             count += 1;
           }
         }
         // If the timestep is not allready included in the list
         if (count == sensortime.size()) {
-          sensortime.push_back(WID->metParams->sensors[i]->TS[j]->timeEpoch);
+          sensortime.push_back(WID->metParams->sensors[i]->TS[j]->time);
           sensortime_id.push_back(sensortime.size() - 1);
         }
 
         // If the timestep is not allready included in the list
         if (count == sensortime.size()) {
-          sensortime.push_back(WID->metParams->sensors[i]->TS[j]->timeEpoch);
+          sensortime.push_back(WID->metParams->sensors[i]->TS[j]->time);
           sensortime_id.push_back(sensortime.size() - 1);
         }
       }
@@ -285,10 +315,13 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
     // adding time stamps
     for (size_t t = 0; t < sensortime_id.size(); t++) {
-      timestamp.push_back(bt::from_time_t(sensortime[t]));
+      timestamp.push_back(sensortime[t]);
     }
 
     if (WID->simParams->totalTimeIncrements == 0) {
+      totalTimeIncrements = timestamp.size();
+    } else if (WID->simParams->totalTimeIncrements > timestamp.size()) {
+      std::cout << "[WARNING] not enough timestamp in senors" << std::endl;
       totalTimeIncrements = timestamp.size();
     } else {
       totalTimeIncrements = WID->simParams->totalTimeIncrements;
@@ -303,10 +336,15 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     }
   }
 
+  // Pete could move to input param processing...
+  assert(WID->metParams->sensors.size() > 0);// extra
+  std::cout << "Sensors have been loaded (total sensors = " << WID->metParams->sensors.size() << ")." << std::endl;
+
   // /////////////////////////
   // Calculation of z0 domain info MAY need to move to WINDSInputData
   // or somewhere else once we know the domain size
   // /////////////////////////
+  z0 = 0.1;
   z0_domain_u.resize(nx * ny);
   z0_domain_v.resize(nx * ny);
   if (WID->metParams->z0_domain_flag == 0)// Uniform z0 for the whole domain
@@ -316,6 +354,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         id = i + j * nx;
         z0_domain_u[id] = WID->metParams->sensors[0]->TS[0]->site_z0;
         z0_domain_v[id] = WID->metParams->sensors[0]->TS[0]->site_z0;
+        z0 = WID->metParams->sensors[0]->TS[0]->site_z0;
       }
     }
   } else {
@@ -334,8 +373,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       }
     }
   }
-
-  z0 = 0.1f;
+  z0 = 0.03;
   if (WID->buildings)
     z0 = WID->buildings->wallRoughness;
 
@@ -381,15 +419,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     y[j] = (j + 0.5) * dy;// Location of face centers in y-dir
   }
 
-  // Resize the canopy-related vectors
-  // canopy_atten.resize( numcell_cent, 0.0 );
-  // canopy_top.resize( (nx-1)*(ny-1), 0.0 );
-  // canopy_top_index.resize( (nx-1)*(ny-1), 0 );
-  // canopy_z0.resize( (nx-1)*(ny-1), 0.0 );
-  // canopy_ustar.resize( (nx-1)*(ny-1), 0.0 );
-  // canopy_d.resize( (nx-1)*(ny-1), 0.0 );
-
-
   // Resize the coefficients for use with the solver
   e.resize(numcell_cent, 1.0);
   f.resize(numcell_cent, 1.0);
@@ -403,6 +432,11 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   ni.resize(numcell_cent, 0.0);
   nj.resize(numcell_cent, 0.0);
   nk.resize(numcell_cent, 0.0);
+  ti.resize(numcell_cent, 0.0);
+  tj.resize(numcell_cent, 0.0);
+  tk.resize(numcell_cent, 0.0);
+  center_id.resize(numcell_cent, 1);
+  wall_distance.resize(numcell_cent, 0.0);
 
   icellflag.resize(numcell_cent, 1);
   icellflag_initial.resize(numcell_cent, 1);
@@ -439,12 +473,19 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   }
 
   halo_index_x = (WID->simParams->halo_x / dx);
-  // WID->simParams->halo_x = halo_index_x*dx;
+  halo_x = halo_index_x * dx;
   halo_index_y = (WID->simParams->halo_y / dy);
-  // WID->simParams->halo_y = halo_index_y*dy;
+  halo_y = halo_index_y * dy;
 
-  int ii, jj, idx;
+  ////////////////////////////////////////////////////////
+  //////              Apply Terrain code             /////
+  ///////////////////////////////////////////////////////
+  // Handle remaining Terrain processing components here
+  ////////////////////////////////////////////////////////
+
+
   if (WID->simParams->DTE_heightField) {
+    int ii, jj, idx;
     // ////////////////////////////////
     // Retrieve terrain height field //
     // ////////////////////////////////
@@ -602,26 +643,21 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         terrain[icell_cent] = terrain[id];
       }
     }
-  }
 
-  //////////////////////////////////////////////////////////////////////////////////
-  /////    Create sensor velocity profiles and generate initial velocity field /////
-  //////////////////////////////////////////////////////////////////////////////////
-  // Calling inputWindProfile function to generate initial velocity
-  // field from sensors information (located in Sensor.cpp)
+    for (int i = 0; i < nx - 1; i++) {
+      for (int j = 0; j < ny - 1; j++) {
+        // Gets height of the terrain for each cell
+        int idx = i + j * (nx - 1);
+        for (size_t k = 0; k < z.size() - 1; k++) {
+          if (terrain[idx] < z[k + 1]) {
+            break;
+          }
+          icell_cent = i + j * (nx - 1) + (k + 1) * (nx - 1) * (ny - 1);
+          center_id[icell_cent] = 0;// Marks the cell center as inside solid
+        }
+      }
+    }
 
-  // Pete could move to input param processing...
-  assert(WID->metParams->sensors.size() > 0);// extra
-  std::cout << "Sensors have been loaded (total sensors = " << WID->metParams->sensors.size() << ")." << std::endl;
-
-  ////////////////////////////////////////////////////////
-  //////              Apply Terrain code             /////
-  ///////////////////////////////////////////////////////
-  // Handle remaining Terrain processing components here
-  ////////////////////////////////////////////////////////
-
-
-  if (WID->simParams->DTE_heightField) {
     if (WID->simParams->meshTypeFlag == 0 && WID->simParams->readCoefficientsFlag == 0) {
       auto start_stair = std::chrono::high_resolution_clock::now();
       for (int i = 0; i < nx - 1; i++) {
@@ -693,8 +729,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     //
     if (WID->buildings->SHPData) {
       std::cout << "Creating buildings from shapefile..." << std::flush;
-
-      // std::vector<Building *> poly_buildings;
 
 
       float corner_height, min_height;
@@ -951,17 +985,41 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
   input->getVariableData("t", t);
 
   // check if times is in the NetCDF file
-  NcVar NcVar_times;
-  input->getVariable("times", NcVar_times);
-  if (!NcVar_times.isNull()) {
-    // nothing here yet
+  NcVar NcVar_timestamp;
+  input->getVariable("timestamp", NcVar_timestamp);
+
+  if (NcVar_timestamp.isNull()) {
+    std::cout << "-----------------------------------------------------------------" << std::endl;
+    std::cout << "[WARNING] No timestamp in NetCDF file" << std::endl;
+    std::cout << "-----------------------------------------------------------------" << std::endl;
+    QEStime tmp("2022-01-01T00:00");
+    for (int k = 0; k < nt; k++) {
+      // ptime test= from_iso_extended_string(WID->metParams->sensors[i]->TS[t]->timeStamp)
+      timestamp.push_back(tmp + t[k]);
+    }
   } else {
-    for (int t = 0; t < nt; t++) {
-      // ptime test= from_iso_extended_string(WID->metParams->sensors[i]->TS[t]->timeStamp);
-      timestamp.push_back(bt::from_iso_extended_string("2020-01-01T00:00"));
+    std::cout << "\t\t Loading " << nt << " time steps" << std::endl;
+    for (int k = 0; k < nt; k++) {
+      std::vector<size_t> start_time;
+      std::vector<size_t> count_time;
+      start_time = { static_cast<unsigned long>(k), 0 };
+      count_time = { 1, 19 };
+
+      char timestamp_tmp[19];
+      NcVar_timestamp.getVar(start_time, count_time, &timestamp_tmp[0]);
+
+      std::string tmp = "";
+      for (int i = 0; i < 19; ++i) {
+        tmp += timestamp_tmp[i];
+      }
+
+      QEStime time(tmp);
+      std::cout << "\t\t " << time << std::endl;
+
+      timestamp.push_back(time);
     }
   }
-
+  totalTimeIncrements = nt;
 
   // netCDF variables
   std::vector<size_t> start;
@@ -996,6 +1054,9 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
   ni.resize(numcell_cent, 0.0);
   nj.resize(numcell_cent, 0.0);
   nk.resize(numcell_cent, 0.0);
+  ti.resize(numcell_cent, 0.0);
+  tj.resize(numcell_cent, 0.0);
+  tk.resize(numcell_cent, 0.0);
 
   icellflag.resize(numcell_cent, 1);
   ibuilding_flag.resize(numcell_cent, -1);
@@ -1024,8 +1085,28 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
 void WINDSGeneralData::loadNetCDFData(int stepin)
 {
 
-  std::cout << "[WINDS Data] \t loading data at step " << stepin << std::endl;
+  std::cout << "[WINDS Data] \t loading data at step " << stepin
+            << " (" << timestamp[stepin] << ")" << std::endl;
+#if 0
+  std::vector<size_t> start_time;
+  std::vector<size_t> count_time;
+  start_time = { static_cast<unsigned long>(stepin), 0 };
+  count_time = { 1, 19 };
 
+  NcVar NcVar_timestamp;
+  input->getVariable("timestamp", NcVar_timestamp);
+
+  std::vector<char> timestamp_tmp;
+  NcVar_timestamp.getVar(start_time, count_time, &timestamp_tmp[0]);
+  std::string tmp;
+  for (int i = 0; i < 19; ++i) {
+    tmp[i] = timestamp_tmp[i];
+  }
+  QEStime time(tmp);
+  std::cout << "read at time " << time << std::endl;
+
+  timestamp.push_back(time);
+#endif
   // netCDF variables
   std::vector<size_t> start;
   std::vector<size_t> count_cc;
@@ -1082,6 +1163,31 @@ void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex
 {
   std::cout << "Applying Wind Profile...\n";
 
+  u0.clear();
+  v0.clear();
+  w0.clear();
+  u0.resize(numcell_face, 0.0);
+  v0.resize(numcell_face, 0.0);
+  w0.resize(numcell_face, 0.0);
+
+  auto start_InputWindProfile = std::chrono::high_resolution_clock::now();// Finish recording execution time
+
+  int num_sites = WID->metParams->sensors.size();
+  time_id.clear();
+  time_id.resize(num_sites, -1);
+  // loop to find which timestep of each sensor is related to the running timestep of the code
+  for (auto i = 0u; i < WID->metParams->sensors.size(); ++i) {
+    for (auto j = 0u; j < WID->metParams->sensors[i]->TS.size(); ++j) {
+      if (sensortime[timeIndex] == WID->metParams->sensors[i]->TS[j]->time) {
+        time_id[i] = j;
+      }
+    }
+  }
+
+  windProfiler->interpolateWindProfile(WID, this);
+
+  // FM -> CODE REMOVED TO WITH WINDPROFILER CLASSES // TO CLEAN
+#if 0
   if (WID->simParams->wrfCoupling) {
 
     std::cout << "Using WRF Coupling..." << std::endl;
@@ -1103,9 +1209,9 @@ void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex
         WID->metParams->sensors[index]->TS[0]->site_one_overL = 0.0;
 
         // hack to make time equivalencies
-        WID->metParams->sensors[index]->TS[0]->timeEpoch = 1642619569;
+        WID->metParams->sensors[index]->TS[0]->time = "2022-01-01T00:00:00";
 
-        for (auto p = 0; p < wrf_ptr->ht_fmw.size(); p++) {
+        for (auto p = 0u; p < wrf_ptr->ht_fmw.size(); p++) {
           int id = index + p * wrf_ptr->fm_nx * wrf_ptr->fm_ny;
           WID->metParams->sensors[index]->TS[0]->site_z_ref[p] = wrf_ptr->ht_fmw[p];
           WID->metParams->sensors[index]->TS[0]->site_U_ref[p] = sqrt(pow(wrf_ptr->u0_fmw[id], 2.0) + pow(wrf_ptr->v0_fmw[id], 2.0));
@@ -1119,7 +1225,8 @@ void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex
   } else {
     WID->metParams->sensors[0]->inputWindProfile(WID, this, timeIndex, solveType);
   }
-
+#endif
+  // FM -> CODE REMOVED TO WITH WINDPROFILER CLASSES // TO CLEAN
 
   max_velmag = 0.0;
   for (auto i = 0; i < nx; i++) {
@@ -1130,12 +1237,15 @@ void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex
   }
   max_velmag *= 1.2;
 
+  auto end_InputWindProfile = std::chrono::high_resolution_clock::now();// Finish recording execution time
+
+  std::chrono::duration<float> elapsed_InputWindProfile = end_InputWindProfile - start_InputWindProfile;
+  std::cout << "Elapsed time for input wind profile: " << elapsed_InputWindProfile.count() << " s\n";
   return;
 }
 
 void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
 {
-  // std::cout << "[Winds] \t applying Parameterization" << std::endl;
 
   auto start_param = std::chrono::high_resolution_clock::now();// Start recording execution time
 
@@ -1155,7 +1265,6 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->upwindCavity(WID, this);
     }
-    // std::cout << "Upwind cavity parameterization done...\n";
   }
 
   //////////////////////////////////////////////////
@@ -1166,7 +1275,6 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->polygonWake(WID, this, building_id[i]);
     }
-    // std::cout << "Wake behind building parameterization done...\n";
   }
 
   ///////////////////////////////////////////
@@ -1177,13 +1285,11 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->streetCanyon(this);
     }
-    // std::cout << "Street canyon parameterization done...\n";
   } else if (WID->simParams->streetCanyonFlag == 2) {
     std::cout << "Applying street canyon parameterization...\n";
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->streetCanyonModified(this);
     }
-    // std::cout << "Street canyon parameterization done...\n";
   }
 
   ///////////////////////////////////////////
@@ -1194,7 +1300,6 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->sideWall(WID, this);
     }
-    // std::cout << "Sidewall parameterization done...\n";
   }
 
 
@@ -1206,7 +1311,6 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->rooftop(WID, this);
     }
-    // std::cout << "Rooftop parameterization done...\n";
   }
 
   // ///////////////////////////////////////
@@ -1228,14 +1332,6 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     std::cout << "Blended Region Parameterization done...\n";
     }*/
 
-
-  /*
-   * Calling wallLogBC to read in vectores of indices of the cells that have wall to right/left,
-   * wall above/below and wall in front/back and applies the log law boundary condition fix
-   * to the cells near Walls
-   *
-   */
-  // wall->wallLogBC (this);
 
   wall->setVelocityZero(this);
 
@@ -1263,7 +1359,7 @@ void WINDSGeneralData::printTimeProgress(int index)
   int rpad = PBWIDTH - lpad;
   std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "Running time step (" << index + 1 << "/" << totalTimeIncrements << ") at "
-            << bt::to_iso_extended_string(timestamp[index]) << std::endl;
+            << timestamp[index] << std::endl;
   printf("%3d%% [%.*s%*s]\n", val, lpad, PBSTR, rpad, "");
   fflush(stdout);
   std::cout << "-------------------------------------------------------------------" << std::endl;
@@ -1318,7 +1414,7 @@ void WINDSGeneralData::mergeSort(std::vector<float> &effective_height, std::vect
   return;
 }
 
-void WINDSGeneralData::mergeSortTime(std::vector<time_t> &sensortime, std::vector<int> &sensortime_id)
+void WINDSGeneralData::mergeSortTime(std::vector<QEStime> &sensortime, std::vector<int> &sensortime_id)
 {
   // if the size of the array is 1, it is already sorted
   if (sensortime_id.size() == 1) {
@@ -1327,7 +1423,7 @@ void WINDSGeneralData::mergeSortTime(std::vector<time_t> &sensortime, std::vecto
 
   if (sensortime_id.size() > 1) {
     // make left and right sides of the data
-    std::vector<time_t> sensortime_L, sensortime_R;
+    std::vector<QEStime> sensortime_L, sensortime_R;
     std::vector<int> sensortime_id_L, sensortime_id_R;
     sensortime_L.resize(sensortime_id.size() / 2);
     sensortime_R.resize(sensortime_id.size() - sensortime_id.size() / 2);

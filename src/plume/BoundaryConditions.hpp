@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -55,10 +56,10 @@ public:
 
   // possible reflection methods:
   /*
-     * "doNothing" (default)   - nothing happen when particle enter wall
-     * "setInactive"           - particle is set to inactive when entering a wall
-     * "stairstepReflection"   - particle use full stair step reflection when entering a wall
-     */
+   * "doNothing" (default)   - nothing happen when particle enter wall
+   * "setInactive"           - particle is set to inactive when entering a wall
+   * "stairstepReflection"   - particle use full stair step reflection when entering a wall
+   */
 
   std::string wallReflection;
 

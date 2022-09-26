@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -51,13 +52,11 @@ PlumeOutputParticleData::PlumeOutputParticleData(PlumeInputData *PID, Plume *plu
       "delta_uFluct","delta_vFluct","delta_wFluct",
       "isRogue","isActive"};*/
 
-  // this is the current simulation start time
-  // LA note: this would need adjusted if we ever change the
-  //  input simulation parameters to include a simStartTime
-  //  instead of just using simDur
-  float simStartTime = 0.0;
 
   std::cout << "[PlumeOutputParticleData] set up NetCDF file " << output_file << std::endl;
+
+  // setup copy of disp pointer so output data can be grabbed directly
+  m_plume = plume_ptr;
 
   if (PID->partOutParams == 0) {
     std::cerr << "[PlumeOutputParticleData] ERROR missing particleOutputParameters from input parameter file" << std::endl;
@@ -72,7 +71,7 @@ PlumeOutputParticleData::PlumeOutputParticleData(PlumeInputData *PID, Plume *plu
   } else if (fileOP[0] == "minimal") {
     output_fields = minimalOutputFields;
   } else {
-    output_fields = { "t", "parID", "tStrt", "sourceIdx", "isActive" };
+    output_fields = { "parID", "tStrt", "sourceIdx", "isActive" };
     output_fields.insert(output_fields.end(), fileOP.begin(), fileOP.end());
   }
 
@@ -83,7 +82,6 @@ PlumeOutputParticleData::PlumeOutputParticleData(PlumeInputData *PID, Plume *plu
     exit(EXIT_FAILURE);
   }
 
-
   // setup output frequency control information
   // FM future work: need to create dedicated input variables
   //  LA: we want output from the simulation start time to the end so the only dedicated input variable still needed
@@ -92,18 +90,14 @@ PlumeOutputParticleData::PlumeOutputParticleData(PlumeInputData *PID, Plume *plu
 
   // time to start output, adjusted if the output duration does not divide evenly by the output frequency
   if (PID->partOutParams->outputStartTime < 0)
-    outputStartTime = simStartTime;
+    outputStartTime = m_plume->getSimTimeStart();
   else
-    outputStartTime = PID->partOutParams->outputStartTime;
-  // time to end output
-  if (PID->partOutParams->outputEndTime < 0)
-    outputEndTime = PID->plumeParams->simDur;
-  else
-    outputEndTime = PID->partOutParams->outputEndTime;
+    outputStartTime = m_plume->getSimTimeStart() + PID->partOutParams->outputStartTime;
+
   // output frequency
   outputFrequency = PID->partOutParams->outputFrequency;
 
-
+#if 0 
   // Determine whether outputStartTime needs adjusted to make the output duration divide evenly by the output frequency
   // This is essentially always keeping the outputEndTime at what it is (end of the simulation), and adjusting the outputStartTime
   // to avoid slicing off an output time unless we have to.
@@ -146,22 +140,17 @@ PlumeOutputParticleData::PlumeOutputParticleData(PlumeInputData *PID, Plume *plu
       outputStartTime = current_outputStartTime;
     }
   }// else does divide evenly, no need to adjust anything so no else
-
+#endif
 
   // set the initial next output time value
   nextOutputTime = outputStartTime;
-
-
-  // setup copy of disp pointer so output data can be grabbed directly
-  plume = plume_ptr;
-
 
   // --------------------------------------------------------
   // setup the paricle information storage
   // --------------------------------------------------------
 
   // get total number of particle to be released
-  numPar = plume->getTotalParsToRelease();
+  numPar = m_plume->getTotalParsToRelease();
   std::cout << "[PlumeOutputParticleData] total number of particle to be saved in file " << numPar << std::endl;
 
   // initialize all the output containers
@@ -207,16 +196,11 @@ PlumeOutputParticleData::PlumeOutputParticleData(PlumeInputData *PID, Plume *plu
   // setup the netcdf output information storage
   // --------------------------------------------------------
 
+  setStartTime(m_plume->getSimTimeStart());
+
   // set data dimensions, which in this case are cell-centered dimensions
-  // time dimension
-  NcDim NcDim_t = addDimension("t");
   // particles dimensions
   NcDim NcDim_par = addDimension("parID", numPar);
-
-  // create attributes for time dimension
-  std::vector<NcDim> dim_vect_t;
-  dim_vect_t.push_back(NcDim_t);
-  createAttScalar("t", "time", "s", dim_vect_t, &time);
 
   // create attributes space dimensions
   std::vector<NcDim> dim_vect_par;
@@ -290,12 +274,12 @@ bool PlumeOutputParticleData::validateFileOtions()
 }
 
 
-void PlumeOutputParticleData::save(float currentTime)
+void PlumeOutputParticleData::save(QEStime timeIn)
 {
   // only output if it is during the next output time but before the end time
-  if (currentTime >= nextOutputTime && currentTime <= outputEndTime) {
+  if (timeIn >= nextOutputTime) {
     // copy particle info into the required output storage containers
-    for (auto parItr = plume->particleList.begin(); parItr != plume->particleList.end(); parItr++) {
+    for (auto parItr = m_plume->particleList.begin(); parItr != m_plume->particleList.end(); parItr++) {
 
       int parID = (*parItr)->particleID;
 
@@ -320,7 +304,6 @@ void PlumeOutputParticleData::save(float currentTime)
 
       uFluct[parID] = (*parItr)->uFluct;
       vFluct[parID] = (*parItr)->vFluct;
-
       wFluct[parID] = (*parItr)->wFluct;
 
       delta_uFluct[parID] = (*parItr)->delta_uFluct;
@@ -341,24 +324,14 @@ void PlumeOutputParticleData::save(float currentTime)
 
 
     // set output time for correct netcdf output
-    time = currentTime;
+    timeCurrent = timeIn;
 
     // save the fields to NetCDF files
     saveOutputFields();
 
-
-    // FM: only remove time dep variables from output array after first save
-    // LA note: the output counter is an inherited variable
-    if (output_counter == 0)
-      rmTimeIndepFields();
-
-    // increment inherited output counter for next time insertion
-    output_counter += 1;
-
-
     // update the next output time so output only happens at output frequency
     nextOutputTime = nextOutputTime + outputFrequency;
-
+#if 0
     // reset buffers
     for (auto i = 0u; i < isActive.size(); i++) {
       tStrt[i] = 0;
@@ -387,5 +360,6 @@ void PlumeOutputParticleData::save(float currentTime)
       isRogue[i] = 0;
       isActive[i] = 0;
     }
+#endif
   }
 };

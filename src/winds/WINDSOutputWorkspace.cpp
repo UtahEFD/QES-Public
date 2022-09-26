@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -45,58 +46,68 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, std::string ou
   output_fields = all_output_fields;
 
   // copy of WGD pointer
-  WGD_ = WGD;
+  m_WGD = WGD;
 
   // domain size information:
-  int nx = WGD_->nx;
-  int ny = WGD_->ny;
-  int nz = WGD_->nz;
+  int nx = m_WGD->nx;
+  int ny = m_WGD->ny;
+  int nz = m_WGD->nz;
 
-  // Location of face centers in z-dir
-  z.resize(nz - 1);
-  dz_array.resize(nz - 1, 0.0);
-  z_face.resize(nz - 1);
+  // Location of cell centers in x-dir
+  m_x.resize(nx - 1);
+  for (auto i = 0; i < nx - 1; i++) {
+    //x_cc[i] = (i + 0.5) * m_WGD->dx;
+    m_x[i] = m_WGD->x[i];
+  }
+  // Location of cell centers in y-dir
+  m_y.resize(ny - 1);
+  for (auto j = 0; j < ny - 1; j++) {
+    //y_cc[j] = (j + 0.5) * m_WGD->dy;
+    m_y[j] = m_WGD->y[j];
+  }
+  // Location of cell centers in z-dir
+  m_z.resize(nz - 1);
+  m_dz_array.resize(nz - 1, 0.0);
   for (auto k = 0; k < nz - 1; k++) {
-    z[k] = WGD_->z[k];
-    dz_array[k] = WGD_->dz_array[k];
-    z_face[k] = WGD_->z_face[k];
+    m_z[k] = m_WGD->z[k];
+    m_dz_array[k] = m_WGD->dz_array[k];
   }
 
   // Location of face centers in x-dir
-  x.resize(nx - 1);
+  m_x_face.resize(nx);
+  m_x_face[0] = m_WGD->x[0] - m_WGD->dx;
   for (auto i = 0; i < nx - 1; i++) {
-    //x_cc[i] = (i + 0.5) * WGD_->dx;
-    x[i] = WGD_->x[i];
+    m_x_face[i + 1] = m_WGD->x[i];
   }
-  // Location of face centers in y-dir
-  y.resize(ny - 1);
+  // Location of cell centers in y-dir
+  m_y_face.resize(ny);
+  m_y_face[0] = m_WGD->y[0] - m_WGD->dy;
   for (auto j = 0; j < ny - 1; j++) {
-    //y_cc[j] = (j + 0.5) * WGD_->dy;
-    y[j] = WGD_->y[j];
+    m_y_face[j + 1] = m_WGD->y[j] + m_WGD->dy;
   }
-
-  timestamp.resize(dateStrLen, '0');
-
-  // time dimension
-  NcDim NcDim_t = addDimension("t");
-  NcDim NcDim_tstr = addDimension("dateStrLen", dateStrLen);
-
-  // create attributes for time dimension
-  std::vector<NcDim> dim_vect_t;
-  dim_vect_t.push_back(NcDim_t);
-  createAttScalar("t", "time", "s", dim_vect_t, &time);
-
-  // create attributes for time dimension
-  std::vector<NcDim> dim_vect_tstr;
-  dim_vect_tstr.push_back(NcDim_t);
-  dim_vect_tstr.push_back(NcDim_tstr);
-  createAttVector("times", "date time", "-", dim_vect_tstr, &timestamp);
+  // Location of cell centers in z-dir
+  m_z_face.resize(nz);
+  m_z_face[0] = m_WGD->z_face[0] - m_WGD->dz_array[0];
+  for (auto k = 1; k < nz; k++) {
+    m_z_face[k] = m_WGD->z_face[k - 1];
+  }
 
   // set face-centered data dimensions
   // space dimensions
-  NcDim NcDim_x_fc = addDimension("x_face", WGD_->nx);
-  NcDim NcDim_y_fc = addDimension("y_face", WGD_->ny);
-  NcDim NcDim_z_fc = addDimension("z_face", WGD_->nz);
+  NcDim NcDim_x_fc = addDimension("x_face", m_WGD->nx);
+  NcDim NcDim_y_fc = addDimension("y_face", m_WGD->ny);
+  NcDim NcDim_z_fc = addDimension("z_face", m_WGD->nz);
+
+  // create attributes space dimensions
+  std::vector<NcDim> dim_vect_x_fc;
+  dim_vect_x_fc.push_back(NcDim_x_fc);
+  createAttVector("x_face", "x-face", "m", dim_vect_x_fc, &m_x_face);
+  std::vector<NcDim> dim_vect_y_fc;
+  dim_vect_y_fc.push_back(NcDim_y_fc);
+  createAttVector("y_face", "y-face", "m", dim_vect_y_fc, &m_y_face);
+  std::vector<NcDim> dim_vect_z_fc;
+  dim_vect_z_fc.push_back(NcDim_z_fc);
+  createAttVector("z_face", "z-face", "m", dim_vect_z_fc, &m_z_face);
 
   // 3D vector dimension (time dep)
   std::vector<NcDim> dim_vect_fc;
@@ -105,39 +116,43 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, std::string ou
   dim_vect_fc.push_back(NcDim_y_fc);
   dim_vect_fc.push_back(NcDim_x_fc);
   // create attributes
-  createAttVector("u", "x-component velocity", "m s-1", dim_vect_fc, &(WGD_->u));
-  createAttVector("v", "y-component velocity", "m s-1", dim_vect_fc, &(WGD_->v));
-  createAttVector("w", "z-component velocity", "m s-1", dim_vect_fc, &(WGD_->w));
+
+  createAttVector("u", "x-component velocity", "m s-1", dim_vect_fc, &(m_WGD->u));
+  createAttVector("v", "y-component velocity", "m s-1", dim_vect_fc, &(m_WGD->v));
+  createAttVector("w", "z-component velocity", "m s-1", dim_vect_fc, &(m_WGD->w));
+
+  createAttVector("u0", "x-component initial velocity", "m s-1", dim_vect_fc, &(m_WGD->u0));
+  createAttVector("v0", "y-component initial velocity", "m s-1", dim_vect_fc, &(m_WGD->v0));
+  createAttVector("w0", "z-component initial velocity", "m s-1", dim_vect_fc, &(m_WGD->w0));
 
   // set cell-centered data dimensions
   // space dimensions
-  NcDim NcDim_x_cc = addDimension("x", WGD_->nx - 1);
-  NcDim NcDim_y_cc = addDimension("y", WGD_->ny - 1);
-  NcDim NcDim_z_cc = addDimension("z", WGD_->nz - 1);
+  NcDim NcDim_x_cc = addDimension("x", m_WGD->nx - 1);
+  NcDim NcDim_y_cc = addDimension("y", m_WGD->ny - 1);
+  NcDim NcDim_z_cc = addDimension("z", m_WGD->nz - 1);
 
   // create attributes space dimensions
   std::vector<NcDim> dim_vect_x_cc;
   dim_vect_x_cc.push_back(NcDim_x_cc);
-  createAttVector("x", "x-distance", "m", dim_vect_x_cc, &x);
+  createAttVector("x", "x-distance", "m", dim_vect_x_cc, &m_x);
   std::vector<NcDim> dim_vect_y_cc;
   dim_vect_y_cc.push_back(NcDim_y_cc);
-  createAttVector("y", "y-distance", "m", dim_vect_y_cc, &y);
+  createAttVector("y", "y-distance", "m", dim_vect_y_cc, &m_y);
   std::vector<NcDim> dim_vect_z_cc;
   dim_vect_z_cc.push_back(NcDim_z_cc);
-  createAttVector("z", "z-distance", "m", dim_vect_z_cc, &z);
-  createAttVector("z_face", "z location of the faces", "m", dim_vect_z_cc, &z_face);
-  createAttVector("dz_array", "dz size of the cells", "m", dim_vect_z_cc, &dz_array);
+  createAttVector("z", "z-distance", "m", dim_vect_z_cc, &m_z);
+  createAttVector("dz_array", "dz size of the cells", "m", dim_vect_z_cc, &m_dz_array);
 
   // create 2D vector (surface, indep of time)
   std::vector<NcDim> dim_vect_2d;
   dim_vect_2d.push_back(NcDim_y_cc);
   dim_vect_2d.push_back(NcDim_x_cc);
   // create attributes
-  createAttVector("terrain", "terrain height", "m", dim_vect_2d, &(WGD_->terrain));
-  createAttVector("z0_u", "terrain areo roughness, u", "m", dim_vect_2d, &(WGD_->z0_domain_u));
-  createAttVector("z0_v", "terrain areo roughness, v", "m", dim_vect_2d, &(WGD_->z0_domain_v));
+  createAttVector("terrain", "terrain height", "m", dim_vect_2d, &(m_WGD->terrain));
+  createAttVector("z0_u", "terrain areo roughness, u", "m", dim_vect_2d, &(m_WGD->z0_domain_u));
+  createAttVector("z0_v", "terrain areo roughness, v", "m", dim_vect_2d, &(m_WGD->z0_domain_v));
 
-  createAttVector("mixlength", "distance to nearest object", "m", { NcDim_z_cc, NcDim_y_cc, NcDim_x_cc }, &(WGD_->mixingLengths));
+  createAttVector("mixlength", "distance to nearest object", "m", { NcDim_z_cc, NcDim_y_cc, NcDim_x_cc }, &(m_WGD->mixingLengths));
 
   // 3D vector dimension (time dep)
   std::vector<NcDim> dim_vect_cc;
@@ -147,19 +162,19 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, std::string ou
   dim_vect_cc.push_back(NcDim_x_cc);
 
   // create attributes
-  createAttVector("icellflag", "icell flag value", "--", dim_vect_cc, &(WGD_->icellflag));
+  createAttVector("icellflag", "icell flag value", "--", dim_vect_cc, &(m_WGD->icellflag));
 
   // attributes for coefficients for SOR solver
-  createAttVector("e", "e cut-cell coefficient", "--", dim_vect_cc, &(WGD_->e));
-  createAttVector("f", "f cut-cell coefficient", "--", dim_vect_cc, &(WGD_->f));
-  createAttVector("g", "g cut-cell coefficient", "--", dim_vect_cc, &(WGD_->g));
-  createAttVector("h", "h cut-cell coefficient", "--", dim_vect_cc, &(WGD_->h));
-  createAttVector("m", "m cut-cell coefficient", "--", dim_vect_cc, &(WGD_->m));
-  createAttVector("n", "n cut-cell coefficient", "--", dim_vect_cc, &(WGD_->n));
+  createAttVector("e", "e cut-cell coefficient", "--", dim_vect_cc, &(m_WGD->e));
+  createAttVector("f", "f cut-cell coefficient", "--", dim_vect_cc, &(m_WGD->f));
+  createAttVector("g", "g cut-cell coefficient", "--", dim_vect_cc, &(m_WGD->g));
+  createAttVector("h", "h cut-cell coefficient", "--", dim_vect_cc, &(m_WGD->h));
+  createAttVector("m", "m cut-cell coefficient", "--", dim_vect_cc, &(m_WGD->m));
+  createAttVector("n", "n cut-cell coefficient", "--", dim_vect_cc, &(m_WGD->n));
 
   // attribute for the volume fraction (cut-cell)
-  createAttVector("building_volume_frac", "building volume fraction", "--", dim_vect_cc, &(WGD_->building_volume_frac));
-  createAttVector("terrain_volume_frac", "terrain volume fraction", "--", dim_vect_cc, &(WGD_->terrain_volume_frac));
+  createAttVector("building_volume_frac", "building volume fraction", "--", dim_vect_cc, &(m_WGD->building_volume_frac));
+  createAttVector("terrain_volume_frac", "terrain volume fraction", "--", dim_vect_cc, &(m_WGD->terrain_volume_frac));
 
   // create output fields
   addOutputFields();
@@ -167,32 +182,24 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, std::string ou
 
 
 // Save output at cell-centered values
-void WINDSOutputWorkspace::save(ptime timeOut)
+void WINDSOutputWorkspace::save(QEStime timeOut)
 {
 
   // set time
-  time = (double)output_counter;
+  timeCurrent = timeOut;
 
-  std::string s = to_iso_extended_string(timeOut);
-  std::copy(s.begin(), s.end(), timestamp.begin());
+  //std::string s = timeOut.getTimestamp();
+  //std::copy(s.begin(), s.end(), timestamp.begin());
 
   // save fields
   saveOutputFields();
-
-  // remmove time indep from output array after first save
-  if (output_counter == 0) {
-    rmTimeIndepFields();
-  }
-
-  // increment for next time insertion
-  output_counter += 1;
 };
 
 
 // [FM] Feb.28.2020 OBSOLETE
 void WINDSOutputWorkspace::setBuildingFields(NcDim *NcDim_t, NcDim *NcDim_building)
 {
-  int nBuildings = WGD_->allBuildingsV.size();
+  int nBuildings = m_WGD->allBuildingsV.size();
 
   building_rotation.resize(nBuildings, 0.0);
   canopy_rotation.resize(nBuildings, 0.0);
@@ -290,16 +297,19 @@ void WINDSOutputWorkspace::setAllOutputFields()
 {
   all_output_fields.clear();
   // all possible output fields need to be add to this list
-  all_output_fields = { "t",
-                        "times",
-                        "x",
+  all_output_fields = { "x",
                         "y",
                         "z",
+                        "x_face",
+                        "y_face",
                         "z_face",
                         "dz_array",
                         "u",
                         "v",
                         "w",
+                        "u0",
+                        "v0",
+                        "w0",
                         "icellflag",
                         "terrain",
                         "z0_u",
@@ -318,50 +328,52 @@ void WINDSOutputWorkspace::setAllOutputFields()
 // [FM] Feb.28.2020 OBSOLETE
 void WINDSOutputWorkspace::getBuildingFields()
 {
-  int nBuildings = WGD_->allBuildingsV.size();
+
+#if 0
+  int nBuildings = m_WGD->allBuildingsV.size();
 
   // information only needed once (at output_counter==0)
   if (output_counter == 0) {
     // copy time independent fields
     for (int id = 0; id < nBuildings; ++id) {
-      building_rotation[id] = WGD_->allBuildingsV[id]->building_rotation;
-      canopy_rotation[id] = WGD_->allBuildingsV[id]->canopy_rotation;
+      building_rotation[id] = m_WGD->allBuildingsV[id]->building_rotation;
+      canopy_rotation[id] = m_WGD->allBuildingsV[id]->canopy_rotation;
 
-      L[id] = WGD_->allBuildingsV[id]->L;
-      W[id] = WGD_->allBuildingsV[id]->W;
-      H[id] = WGD_->allBuildingsV[id]->H;
+      L[id] = m_WGD->allBuildingsV[id]->L;
+      W[id] = m_WGD->allBuildingsV[id]->W;
+      H[id] = m_WGD->allBuildingsV[id]->H;
 
-      height_eff[id] = WGD_->allBuildingsV[id]->height_eff;
-      base_height[id] = WGD_->allBuildingsV[id]->base_height;
+      height_eff[id] = m_WGD->allBuildingsV[id]->height_eff;
+      base_height[id] = m_WGD->allBuildingsV[id]->base_height;
 
-      building_cent_x[id] = WGD_->allBuildingsV[id]->building_cent_x;
-      building_cent_y[id] = WGD_->allBuildingsV[id]->building_cent_y;
+      building_cent_x[id] = m_WGD->allBuildingsV[id]->building_cent_x;
+      building_cent_y[id] = m_WGD->allBuildingsV[id]->building_cent_y;
 
-      i_start[id] = WGD_->allBuildingsV[id]->i_start;
-      i_end[id] = WGD_->allBuildingsV[id]->i_end;
-      j_start[id] = WGD_->allBuildingsV[id]->j_start;
-      j_end[id] = WGD_->allBuildingsV[id]->j_end;
-      k_end[id] = WGD_->allBuildingsV[id]->k_end;
+      i_start[id] = m_WGD->allBuildingsV[id]->i_start;
+      i_end[id] = m_WGD->allBuildingsV[id]->i_end;
+      j_start[id] = m_WGD->allBuildingsV[id]->j_start;
+      j_end[id] = m_WGD->allBuildingsV[id]->j_end;
+      k_end[id] = m_WGD->allBuildingsV[id]->k_end;
 
-      i_cut_start[id] = WGD_->allBuildingsV[id]->i_cut_start;
-      i_cut_end[id] = WGD_->allBuildingsV[id]->i_cut_end;
-      j_cut_start[id] = WGD_->allBuildingsV[id]->j_cut_start;
-      j_cut_end[id] = WGD_->allBuildingsV[id]->j_cut_end;
-      k_cut_end[id] = WGD_->allBuildingsV[id]->k_cut_end;
+      i_cut_start[id] = m_WGD->allBuildingsV[id]->i_cut_start;
+      i_cut_end[id] = m_WGD->allBuildingsV[id]->i_cut_end;
+      j_cut_start[id] = m_WGD->allBuildingsV[id]->j_cut_start;
+      j_cut_end[id] = m_WGD->allBuildingsV[id]->j_cut_end;
+      k_cut_end[id] = m_WGD->allBuildingsV[id]->k_cut_end;
 
-      i_building_cent[id] = WGD_->allBuildingsV[id]->i_building_cent;
-      j_building_cent[id] = WGD_->allBuildingsV[id]->j_building_cent;
+      i_building_cent[id] = m_WGD->allBuildingsV[id]->i_building_cent;
+      j_building_cent[id] = m_WGD->allBuildingsV[id]->j_building_cent;
     }
   }
 
   // copy time dependent fields
   for (int id = 0; id < nBuildings; ++id) {
-    length_eff[id] = WGD_->allBuildingsV[id]->length_eff;
-    width_eff[id] = WGD_->allBuildingsV[id]->width_eff;
+    length_eff[id] = m_WGD->allBuildingsV[id]->length_eff;
+    width_eff[id] = m_WGD->allBuildingsV[id]->width_eff;
 
-    upwind_dir[id] = WGD_->allBuildingsV[id]->upwind_dir;
-    Lr[id] = WGD_->allBuildingsV[id]->Lr;
+    upwind_dir[id] = m_WGD->allBuildingsV[id]->upwind_dir;
+    Lr[id] = m_WGD->allBuildingsV[id]->Lr;
   }
-
+#endif
   return;
 }

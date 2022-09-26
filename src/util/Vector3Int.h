@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -78,5 +79,24 @@ public:
   int &operator[](const int i)
   {
     return values[i];
+  }
+
+  Vector3Int operator-(const Vector3Int &v1)
+  {
+    return Vector3Int(values[0] - v1.values[0], values[1] - v1.values[1], values[2] - v1.values[2]);
+  }
+
+  friend Vector3Int operator-(const Vector3Int &v1, const Vector3Int &v2)
+  {
+    return Vector3Int(v1.values[0] - v2.values[0], v1.values[1] - v2.values[1], v1.values[2] - v2.values[2]);
+  }
+
+  friend std::ostream &operator<<(std::ostream &out, const Vector3Int &v)
+  {
+    out << "[";
+    for (int i(0); i < 2; i++)
+      out << v.values[i] << ", ";
+    out << v.values[2] << "]";
+    return out;
   }
 };

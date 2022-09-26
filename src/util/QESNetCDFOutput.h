@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -37,15 +38,11 @@
 #include <map>
 #include <netcdf>
 
-#include <boost/date_time/posix_time/posix_time.hpp>
-
 #include "NetCDFOutput.h"
+#include "QEStime.h"
 
 using namespace netCDF;
 using namespace netCDF::exceptions;
-
-using namespace boost::gregorian;
-using namespace boost::posix_time;
 
 // Attribute for scalar/vector for each type
 struct AttScalarInt
@@ -120,8 +117,6 @@ struct AttVectorChar
 class QESNetCDFOutput : public NetCDFOutput
 {
 public:
-  QESNetCDFOutput()
-  {}
   QESNetCDFOutput(std::string);
   virtual ~QESNetCDFOutput()
   {}
@@ -131,10 +126,12 @@ public:
    *
    * @note Can be called outside.
    */
-  virtual void save(ptime) = 0;
+  virtual void save(QEStime) = 0;
   virtual void save(float) {}
 
 protected:
+  QESNetCDFOutput() {}
+
   // create attribute scalar based on type of data
   void createAttScalar(std::string, std::string, std::string, std::vector<NcDim>, int *);
   void createAttScalar(std::string, std::string, std::string, std::vector<NcDim>, float *);
@@ -146,6 +143,7 @@ protected:
   void createAttVector(std::string, std::string, std::string, std::vector<NcDim>, std::vector<double> *);
   void createAttVector(std::string, std::string, std::string, std::vector<NcDim>, std::vector<char> *);
 
+  void setStartTime(QEStime);
 
   // add fields based on output_fields
   void addOutputFields();
@@ -159,10 +157,12 @@ protected:
   {}
   virtual bool validateFileOptions();
 
-  std::vector<char> timestamp; /**< :document this: */
+  NcDim NcDim_t;
+  NcDim NcDim_tstr;
   const int dateStrLen = 19; /**< :document this: */
-
-  int output_counter = 0; /**< :document this: */
+  QEStime timeStart;
+  QEStime timeCurrent;
+  bool flagStartTimeSet = false;
   double time = 0; /**< :document this: */
 
   std::vector<std::string> all_output_fields;
@@ -201,4 +201,8 @@ protected:
   std::vector<AttVectorDbl> output_vector_dbl;
   std::vector<AttVectorChar> output_vector_char;
   ///@}
+private:
+  std::string timestamp;
+  std::vector<char> timestamp_out; /**< :document this: */
+  int output_counter = 0; /**< :document this: */
 };

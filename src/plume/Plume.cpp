@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -110,7 +111,8 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   sim_dt = PID->plumeParams->timeStep;
 
   // time variables
-  simTime = 0.0;
+  simTimeStart = WGD->timestamp[0];
+  simTimeCurr = simTimeStart;
   simTimeIdx = 0;
 
   // other important time variables not from dispersion
@@ -149,26 +151,23 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 
   // now set the wall reflection function
   if (PID->BCs->wallReflection == "doNothing") {
-    wallReflection = &Plume::wallReflectionDoNothing;
+    wallReflect = new WallReflection_DoNothing();
   } else if (PID->BCs->wallReflection == "setInactive") {
-    wallReflection = &Plume::wallReflectionSetToInactive;
+    wallReflect = new WallReflection_SetToInactive();
   } else if (PID->BCs->wallReflection == "stairstepReflection") {
-    wallReflection = &Plume::wallReflectionFullStairStep;
+    wallReflect = new WallReflection_StairStep();
   } else {
     // this should not happend
     std::cerr << "[ERROR] unknown wall reflection setting" << std::endl;
     exit(EXIT_FAILURE);
   }
+
+  deposition = new Deposition(WGD);
 }
 
-void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std::vector<QESNetCDFOutput *> outputVec)
+void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD, std::vector<QESNetCDFOutput *> outputVec)
 {
-  auto StartTime = std::chrono::high_resolution_clock::now();
-
-  std::cout << "[Plume] \t Advecting particles at Time = " << simTime
-            << " s (iteration = " << simTimeIdx << "). \n";
-  std::cout << "\t\t Particles: Released = " << nParsReleased << " "
-            << "Active = " << particleList.size() << "." << std::endl;
+  auto startTimeAdvec = std::chrono::high_resolution_clock::now();
 
   // get the threshold velocity fluctuation to define rogue particles
   vel_threshold = 10.0 * getMaxVariance(TGD);
@@ -190,7 +189,14 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
     timers.startNewTimer("particle iteration");
   }
 
-  double nextUpdate = simTime + updateFrequency_timeLoop;
+  QEStime nextUpdate = simTimeCurr + updateFrequency_timeLoop;
+  float simTime = simTimeCurr - simTimeStart;
+
+  std::cout << "[Plume] \t Advecting particles from " << simTimeCurr << " to " << loopTimeEnd << "\n";
+  std::cout << "\t\t total run time = " << loopTimeEnd - simTimeCurr << " s \n";
+  std::cout << "\t\t simulation time = " << simTime << " s (iteration = " << simTimeIdx << "). \n";
+  std::cout << "\t\t Particles: Released = " << nParsReleased << " "
+            << "Active = " << particleList.size() << std::endl;
 
   // LA note: that this loop goes from 0 to nTimes-2, not nTimes-1. This is
   // because
@@ -207,9 +213,9 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
   //  tStep. At the same time, the current time output to consol output and to
   //  function calls need to also be set to tStep+1.
   // FMargairaz -> need clean-up
-  while (simTime < endTime) {
+  while (simTimeCurr < loopTimeEnd) {
     // need to release new particles -> add new particles to the number to move
-    int nParsToRelease = generateParticleList((float)simTime, WGD, TGD);
+    int nParsToRelease = generateParticleList(simTime, WGD, TGD);
 
     // number of active particle at the current time step.
     // list is scrubbed at the end of each time step (if flag turned true)
@@ -240,7 +246,7 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
 
     // the current time, updated in this loop with each new par_dt.
     // Will end at simTimes.at(simTimeIdx+1) at the end of this particle loop
-    double timeRemainder = endTime - simTime;
+    double timeRemainder = loopTimeEnd - simTimeCurr;
     if (timeRemainder > sim_dt) {
       timeRemainder = sim_dt;
     }
@@ -277,14 +283,15 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
 
     // incrementation of time and timestep
     simTimeIdx++;
-    simTime += timeRemainder;
+    simTimeCurr += timeRemainder;
+    simTime = simTimeCurr - simTimeStart;
 
     // netcdf output for a given simulation timestep
     // note that the first time is already output, so this is the time the loop
     // iteration
     //  is calculating, not the input time to the loop iteration
     for (size_t id_out = 0; id_out < outputVec.size(); id_out++) {
-      outputVec.at(id_out)->save(simTime);
+      outputVec.at(id_out)->save(simTimeCurr);
     }
 
     // For all particles that need to be removed from the particle
@@ -294,16 +301,14 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
     }
     // output the time, isRogueCount, and isNotActiveCount information for all
     // simulations, but only when the updateFrequency allows
-    if (std::abs(simTime - nextUpdate) < 0.0001 || (simTime == endTime)) {
+    if (simTimeCurr >= nextUpdate || (simTimeCurr == loopTimeEnd)) {
       if (verbose) {
-        std::cout << "Time = " << simTime << " s (iteration = " << simTimeIdx
-                  << "). Finished advection iteration. "
+        std::cout << "Time = " << simTimeCurr << " (sim time = " << simTime << " s, iteration = " << simTimeIdx << "). "
                   << "Particles: Released = " << nParsReleased << " "
                   << "Active = " << particleList.size() << " "
                   << "Rogue = " << isRogueCount << "." << std::endl;
       } else {
-        std::cout << "Time = " << simTime << " s (iteration = " << simTimeIdx
-                  << "). "
+        std::cout << "Time = " << simTimeCurr << " (sim time = " << simTime << " s, iteration = " << simTimeIdx << "). "
                   << "Particles: Released = " << nParsReleased << " "
                   << "Active = " << particleList.size() << "." << std::endl;
       }
@@ -316,7 +321,7 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
 
   }// end of time loop
 
-  std::cout << "[Plume] \t End of particles advection at Time = " << simTime
+  std::cout << "[Plume] \t End of particles advection at Time = " << simTimeCurr
             << " s (iteration = " << simTimeIdx << "). \n";
   std::cout << "\t\t Particles: Released = " << nParsReleased << " "
             << "Active = " << particleList.size() << "." << std::endl;
@@ -329,49 +334,20 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
     timers.printStoredTime("simulation time integration loop");
   }
 
-  // only outputs if the required booleans from input args are set
-  // LA note: the current time put in here is one past when the simulation time
-  // loop ends
-  //  this is because the loop always calculates info for one time ahead of the
-  //  loop time.
-  writeSimInfoFile(simTime);
-
-  auto EndTime = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> Elapsed = EndTime - StartTime;
+  auto endTimerAdvec = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> Elapsed = endTimerAdvec - startTimeAdvec;
 
   std::cout << "[QES-Plume]\t Advection.\n";
-  std::cout << "\t\t elapsed time: " << Elapsed.count() << " s" << endl;
+  std::cout << "\t\t elapsed time: " << Elapsed.count() << " s" << std::endl;
 
   return;
 }
 
-double Plume::calcCourantTimestep(const double &d,
-                                  const double &u,
+double Plume::calcCourantTimestep(const double &u,
                                   const double &v,
                                   const double &w,
                                   const double &timeRemainder)
 {
-  // if the Courant Number is set to 0.0, we want to exit using the
-  // timeRemainder (first time through that is the simTime)
-  if (CourantNum == 0.0) {
-    return timeRemainder;
-  }
-
-  double min_ds = std::min(dxy, dz);
-  double max_u = std::max({ u, v, w });
-  double CN = 0.0;
-  if (d > 15.0 * min_ds) {
-    CN = 1.0;
-  } else if (d > 8.0 * min_ds) {
-    CN = 0.5;
-  } else if (d > 4.0 * min_ds) {
-    CN = 1.0 / 3.0;
-  } else {
-    CN = 0.2;
-  }
-
-  return std::min(timeRemainder, CN * min_ds / max_u);
-  /* original code 
   // set the output dt_par val to the timeRemainder
   // then if any of the Courant number values end up smaller, use that value
   // instead
@@ -398,7 +374,48 @@ double Plume::calcCourantTimestep(const double &d,
   }
 
   return dt_par;
+}
+
+double Plume::calcCourantTimestep(const double &d,
+                                  const double &u,
+                                  const double &v,
+                                  const double &w,
+                                  const double &timeRemainder)
+{
+  // if the Courant Number is set to 0.0, we want to exit using the
+  // timeRemainder (first time through that is the simTime)
+  if (CourantNum == 0.0) {
+    return timeRemainder;
+  }
+
+  double min_ds = std::min(dxy, dz);
+  //double max_u = std::max({ u, v, w });
+  double max_u = sqrt(u * u + v * v + w * w);
+  double CN = 0.0;
+
+  /*
+    if (d > 6.0 * min_ds) {
+    //CN = 1.0;
+    return timeRemainder;
+  } else if (d > 4.0 * min_ds) {
+    CN = 0.5;
+  } else if (d > 2.0 * min_ds) {
+    CN = 1.0 / 3.0;
+  } else {
+    CN = 0.2;
+  }
   */
+
+  if (d > 6.0 * max_u * sim_dt) {
+    //CN = 1.0;
+    return timeRemainder;
+  } else if (d > 3.0 * max_u * sim_dt) {
+    CN = std::min(2.0 * CourantNum, 1.0);
+  } else {
+    CN = CourantNum;
+  }
+
+  return std::min(timeRemainder, CN * min_ds / max_u);
 }
 
 void Plume::getInputSources(PlumeInputData *PID)
@@ -406,8 +423,7 @@ void Plume::getInputSources(PlumeInputData *PID)
   int numSources_Input = PID->sources->sources.size();
 
   if (numSources_Input == 0) {
-    std::cerr << "ERROR (Dispersion::getInputSources): there are no sources in "
-                 "the input file!"
+    std::cerr << "[ERROR]\t(Dispersion::getInputSources): there are no sources in the input file!"
               << std::endl;
     exit(1);
   }
@@ -700,13 +716,10 @@ bool Plume::invert3(double &A_11,
   //  if so, how would we go about limiting that info? Would probably need to
   //  make the loop counter variables actual data members of the class
   if (std::abs(det) < 1e-10) {
-    // std::cout << "WARNING (Plume::invert3): matrix nearly singular" <<
-    // std::endl; std::cout << "abs(det) = \"" << std::abs(det) << "\",  A_11 =
-    // \"" << A_11 << "\", A_12 = \"" << A_12 << "\", A_13 = \""
-    //          << A_13 << "\", A_21 = \"" << A_21 << "\", A_22 = \"" << A_22 <<
-    //          "\", A_23 = \"" << A_23 << "\", A_31 = \""
-    //          << A_31 << "\" A_32 = \"" << A_32 << "\", A_33 = \"" << A_33 <<
-    //          "\"" << std::endl;
+    std::cerr << "WARNING (Plume::invert3): matrix nearly singular" << std::endl;
+    std::cerr << "abs(det) = \"" << std::abs(det) << "\",  A_11 =  \"" << A_11 << "\", A_12 = \"" << A_12 << "\", A_13 = \""
+              << A_13 << "\", A_21 = \"" << A_21 << "\", A_22 = \"" << A_22 << "\", A_23 = \"" << A_23 << "\", A_31 = \""
+              << A_31 << "\" A_32 = \"" << A_32 << "\", A_33 = \"" << A_33 << "\"" << std::endl;
 
     det = 10e10;
     A_11 = 0.0;
@@ -794,19 +807,13 @@ void Plume::setBCfunctions(std::string xBCtype, std::string yBCtype, std::string
   }
 
   if (xBCtype == "exiting") {
-    // the enforceWallBCs_x pointer function now points to the
-    // enforceWallBCs_exiting function
-    enforceWallBCs_x = &Plume::enforceWallBCs_exiting;
+    domainBC_x = new DomainBC_exiting(domainXstart, domainXend);
   } else if (xBCtype == "periodic") {
-    // the enforceWallBCs_x pointer function now points to the
-    // enforceWallBCs_periodic function
-    enforceWallBCs_x = &Plume::enforceWallBCs_periodic;
+    domainBC_x = new DomainBC_periodic(domainXstart, domainXend);
   } else if (xBCtype == "reflection") {
-    // the enforceWallBCs_x pointer function now points to the
-    // enforceWallBCs_reflection function
-    enforceWallBCs_x = &Plume::enforceWallBCs_reflection;
+    domainBC_x = new DomainBC_reflection(domainXstart, domainXend);
   } else {
-    std::cerr << "!!! Plume::setBCfunctions() error !!! input xBCtype \""
+    std::cerr << "[ERROR]\tPlume::setBCfunctions() input xBCtype \""
               << xBCtype
               << "\" has not been implemented in code! Available xBCtypes are "
               << "\"exiting\", \"periodic\", \"reflection\"" << std::endl;
@@ -814,19 +821,13 @@ void Plume::setBCfunctions(std::string xBCtype, std::string yBCtype, std::string
   }
 
   if (yBCtype == "exiting") {
-    // the enforceWallBCs_y pointer function now points to the
-    // enforceWallBCs_exiting function
-    enforceWallBCs_y = &Plume::enforceWallBCs_exiting;
+    domainBC_y = new DomainBC_exiting(domainYstart, domainYend);
   } else if (yBCtype == "periodic") {
-    // the enforceWallBCs_y pointer function now points to the
-    // enforceWallBCs_periodic function
-    enforceWallBCs_y = &Plume::enforceWallBCs_periodic;
+    domainBC_y = new DomainBC_periodic(domainYstart, domainYend);
   } else if (yBCtype == "reflection") {
-    // the enforceWallBCs_y pointer function now points to the
-    // enforceWallBCs_reflection function
-    enforceWallBCs_y = &Plume::enforceWallBCs_reflection;
+    domainBC_y = new DomainBC_reflection(domainYstart, domainYend);
   } else {
-    std::cerr << "!!! Plume::setBCfunctions() error !!! input yBCtype \""
+    std::cerr << "[ERROR]\tPlume::setBCfunctions() input yBCtype \""
               << yBCtype
               << "\" has not been implemented in code! Available yBCtypes are "
               << "\"exiting\", \"periodic\", \"reflection\"" << std::endl;
@@ -834,166 +835,16 @@ void Plume::setBCfunctions(std::string xBCtype, std::string yBCtype, std::string
   }
 
   if (zBCtype == "exiting") {
-    // the enforceWallBCs_z pointer function now points to the
-    // enforceWallBCs_exiting function
-    enforceWallBCs_z = &Plume::enforceWallBCs_exiting;
+    domainBC_z = new DomainBC_exiting(domainZstart, domainZend);
   } else if (zBCtype == "periodic") {
-    // the enforceWallBCs_z pointer function now points to the
-    // enforceWallBCs_periodic function
-    enforceWallBCs_z = &Plume::enforceWallBCs_periodic;
+    domainBC_z = new DomainBC_periodic(domainZstart, domainZend);
   } else if (zBCtype == "reflection") {
-    // the enforceWallBCs_z pointer function now points to the
-    // enforceWallBCs_reflection function
-    enforceWallBCs_z = &Plume::enforceWallBCs_reflection;
+    domainBC_z = new DomainBC_reflection(domainZstart, domainZend);
   } else {
-    std::cerr << "!!! Plume::setBCfunctions() error !!! input zBCtype \""
+    std::cerr << "[ERROR]\tPlume::setBCfunctions() input zBCtype \""
               << zBCtype
               << "\" has not been implemented in code! Available zBCtypes are "
               << "\"exiting\", \"periodic\", \"reflection\"" << std::endl;
     exit(EXIT_FAILURE);
   }
-}
-
-bool Plume::enforceWallBCs_exiting(double &pos,
-                                   double &velFluct,
-                                   double &velFluct_old,
-                                   const double &domainStart,
-                                   const double &domainEnd)
-{
-  // if it goes out of the domain, set isActive to false
-  if (pos <= domainStart || pos >= domainEnd) {
-    return false;
-  } else {
-    return true;
-  }
-}
-
-bool Plume::enforceWallBCs_periodic(double &pos,
-                                    double &velFluct,
-                                    double &velFluct_old,
-                                    const double &domainStart,
-                                    const double &domainEnd)
-{
-
-  double domainSize = domainEnd - domainStart;
-
-  /*
-        std::cout << "enforceWallBCs_periodic starting pos = \"" << pos << "\",
-     domainStart = \"" << domainStart << "\", domainEnd = \"" << domainEnd <<
-     "\"" << std::endl;
-  */
-
-  if (domainSize != 0) {
-    // before beginning of the domain => add domain length
-    while (pos < domainStart) {
-      pos = pos + domainSize;
-    }
-    // past end of domain => sub domain length
-    while (pos > domainEnd) {
-      pos = pos - domainSize;
-    }
-  }
-
-  /*
-    std::cout << "enforceWallBCs_periodic ending pos = \"" << pos << "\",
-    loopCountLeft = \"" << loopCountLeft << "\", loopCountRight = \"" <<
-    std::endl;
-  */
-  return true;
-}
-
-bool Plume::enforceWallBCs_reflection(double &pos,
-                                      double &velFluct,
-                                      double &velFluct_old,
-                                      const double &domainStart,
-                                      const double &domainEnd)
-{
-  /*
-  std::cout << "enforceWallBCs_reflection starting pos = \"" << pos << "\",
-  velFluct = \"" << velFluct << "\", velFluct_old = \"" << velFluct_old << "\",
-  domainStart = \"" << domainStart << "\", domainEnd = \"" << domainEnd << "\""
-  << std::endl;
-  */
-
-  int reflectCount = 0;
-  while ((pos < domainStart || pos > domainEnd) && reflectCount < 100) {
-    // past end of domain or before beginning of the domain
-    if (pos > domainEnd) {
-      pos = domainEnd - (pos - domainEnd);
-      velFluct = -velFluct;
-      velFluct_old = -velFluct_old;
-    } else if (pos < domainStart) {
-      pos = domainStart - (pos - domainStart);
-      velFluct = -velFluct;
-      velFluct_old = -velFluct_old;
-    }
-    reflectCount = reflectCount + 1;
-  }// while outside of domain
-
-  // if the velocity is so large that the particle would reflect more than 100
-  // times, the boundary condition could fail.
-  if (reflectCount == 100) {
-    if (pos > domainEnd) {
-      std::cout << "warning (Plume::enforceWallBCs_reflection): "
-                << "upper boundary condition failed! Setting isActive to "
-                   "false. pos = \""
-                << pos << "\"" << std::endl;
-      return false;
-    } else if (pos < domainStart) {
-      std::cout << "warning (Plume::enforceWallBCs_reflection): "
-                << "lower boundary condition failed! Setting isActive to "
-                   "false. xPos = \""
-                << pos << "\"" << std::endl;
-      return false;
-    }
-  }
-  /*
-    std::cout << "enforceWallBCs_reflection starting pos = \"" << pos << "\",
-    velFluct = \"" << velFluct << "\", velFluct_old = \"" << velFluct_old <<
-    "\", loopCountLeft = \"" << loopCountLeft << "\", loopCountRight = \"" <<
-    loopCountRight << "\", reflectCount = \"" << reflectCount << "\"" <<
-    std::endl;
-  */
-  return true;
-}
-
-void Plume::writeSimInfoFile(const double &current_time)
-{
-  // if this output is not desired, skip outputting these files
-  if (outputSimInfoFile == false) {
-    return;
-  }
-
-  std::cout << "writing simInfoFile" << std::endl;
-
-  // set some variables for use in the function
-  FILE *fzout;// changing file to which information will be written
-
-  // now write out the simulation information to the debug folder
-
-  // want a temporary variable to represent the caseBaseName, cause going to add
-  // on a timestep to the name
-  std::string saveBasename = caseBaseName;
-
-  // add timestep to saveBasename variable
-  saveBasename = saveBasename + "_" + std::to_string(sim_dt);
-
-  std::string outputFile = outputFolder + "/sim_info.txt";
-  fzout = fopen(outputFile.c_str(), "w");
-  fprintf(fzout, "\n");// a purposeful blank line
-  fprintf(fzout, "saveBasename     = %s\n", saveBasename.c_str());
-  fprintf(fzout, "\n");// a purposeful blank line
-  fprintf(fzout, "timestep         = %lf\n", sim_dt);
-  fprintf(fzout, "\n");// a purposeful blank line
-  fprintf(fzout, "current_time     = %lf\n", current_time);
-  fprintf(fzout, "rogueCount       = %i\n", isRogueCount);
-  fprintf(fzout, "isNotActiveCount = %i\n", isNotActiveCount);
-  fprintf(fzout, "\n");// a purposeful blank line
-  fprintf(fzout, "invarianceTol    = %lf\n", invarianceTol);
-  fprintf(fzout, "velThreshold     = %lf\n", vel_threshold);
-  fprintf(fzout, "\n");// a purposeful blank line
-  fclose(fzout);
-
-  // now that all is finished, clean up the file pointer
-  fzout = NULL;
 }

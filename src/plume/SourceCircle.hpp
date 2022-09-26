@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -38,7 +39,8 @@
 
 
 #include "SourceType.hpp"
-
+#include "winds/WINDSGeneralData.h"
+//#include "Particles.hpp"
 
 class SourceCircle : public SourceType
 {
@@ -50,7 +52,7 @@ private:
   double posY;
   double posZ;
   double radius;
-
+  double sourceStrength = 0.0;// total mass released (g)
 protected:
 public:
   // Default constructor
@@ -69,11 +71,21 @@ public:
     m_sShape = SourceShape::circle;
 
     setReleaseType();
+    setParticleType();
+    // Create particle factories
+    registerParticles();
+    /*
+    // Create a generic particle with attributes read from XML
+    Particles * particles;
+    particles->setParticleValues();
+*/
 
     parsePrimitive<double>(true, posX, "posX");
     parsePrimitive<double>(true, posY, "posY");
     parsePrimitive<double>(true, posZ, "posZ");
     parsePrimitive<double>(true, radius, "radius");
+
+    parsePrimitive<double>(false, sourceStrength, "sourceStrength");
   }
 
 

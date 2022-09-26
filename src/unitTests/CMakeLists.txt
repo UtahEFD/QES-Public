@@ -8,6 +8,8 @@ add_library(unitTestLib ${LIB_TYPE}
 #FILE(GLOB files "*.h")
 #INSTALL(FILES ${files} DESTINATION include/unitTests)
 
+cuda_add_executable(unitTestTime
+  mainTimeTest.cpp)
 
 cuda_add_executable(unitTestWind
   test_DTEHeightField.h test_DTEHeightField.cpp
@@ -25,6 +27,7 @@ cuda_add_executable(unitTestPlume
   mainPlumeTest.cpp)
 
 set(UNITTESTS 
+  unitTestTime
   unitTestWind
   unitTestTurbulence
   unitTestPlume)
@@ -39,6 +42,7 @@ foreach (unittest ${UNITTESTS})
   target_link_libraries(${unittest} unitTestLib)
   target_link_libraries(${unittest} ${Boost_PROGRAM_OPTIONS_LIBRARIES})
   target_link_libraries(${unittest} ${Boost_FILESYSTEM_LIBRARIES})
+  target_link_libraries(${unittest} ${Boost_DATE_TIME_LIBRARIES})
   target_link_libraries(${unittest} ${GDAL_LIBRARY})
   target_link_libraries(${unittest} ${NETCDF_LIBRARIES_CXX})
   target_link_libraries(${unittest} ${NETCDF_LIBRARIES_C})

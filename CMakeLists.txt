@@ -10,9 +10,13 @@ CMAKE_MINIMUM_REQUIRED (VERSION 3.9)
 LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 MESSAGE(STATUS "CMake Module Path: ${CMAKE_MODULE_PATH}")
 
-PROJECT(qesWinds)
+PROJECT(qesWinds VERSION 1.5.0)
 
-SET(QESWINDS_VERSION_INFO -${qesWinds_Toolkit_VERSION_MAJOR}.${MinVR_Toolkit_VERSION_MINOR})
+# This creates a variable we could use for tacking on to various folders
+# or install locations based on the version info.  It pulls the Verson information
+# from CMake based on the Version number provided in the PROJECT command.
+SET(QESWINDS_VERSION_INFO -${qesWinds_VERSION_MAJOR}.${qesWinds_VERSION_MINOR})
+MESSAGE(STATUS "Building qesWinds${QESWINDS_VERSION_INFO}")
 
 MESSAGE(STATUS "Building the '" ${CMAKE_BUILD_TYPE} "' version of qesWinds.")
 MESSAGE(STATUS "If you want something different, use -DCMAKE_BUILD_TYPE=Debug, Release, RelWithDebInfo, MinSizeRel.")
@@ -245,7 +249,6 @@ add_subdirectory(src/fire)
 add_subdirectory(scratch)
 add_subdirectory(qesFire)
 add_subdirectory(qesWinds)
-add_subdirectory(qesCanopy)
 add_subdirectory(qesPlume)
 add_subdirectory(qes)
 add_subdirectory(tests)

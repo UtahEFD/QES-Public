@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -56,7 +57,7 @@ public:
 
   int updateFrequency_particleLoop; /**< frequency to print out information during the particle loop of the solver. 
 				      Only used during debug mode */
-  int updateFrequency_timeLoop; /**< frequency to print out information during the time integration loop of the solver. */
+  float updateFrequency_timeLoop; /**< frequency to print out information during the time integration loop of the solver. */
 
   std::string interpMethod; /**< interpolation method:
 			       triLinear - tri linear interpolation (default)
@@ -76,7 +77,7 @@ public:
     parsePrimitive<double>(true, invarianceTol, "invarianceTol");
 
     parsePrimitive<int>(true, updateFrequency_particleLoop, "updateFrequency_particleLoop");
-    parsePrimitive<int>(true, updateFrequency_timeLoop, "updateFrequency_timeLoop");
+    parsePrimitive<float>(true, updateFrequency_timeLoop, "updateFrequency_timeLoop");
 
     interpMethod = "triLinear";
     parsePrimitive<std::string>(false, interpMethod, "interpolationMethod");
@@ -123,7 +124,7 @@ public:
       std::cerr << " updateFrequency_particleLoop = \"" << updateFrequency_particleLoop << "\"" << std::endl;
       exit(EXIT_FAILURE);
     }
-    if (updateFrequency_timeLoop < 1) {
+    if (updateFrequency_timeLoop < 0) {
       std::cerr << "(SimulationParameters::checkParsedValues): "
                 << "input updateFrequency_timeLoop must be 1 or greater!";
       std::cerr << " updateFrequency_timeLoop = \"" << updateFrequency_timeLoop << "\"" << std::endl;

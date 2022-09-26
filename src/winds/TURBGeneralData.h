@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -71,6 +72,9 @@ public:
   int nx, ny, nz;
   ///@}
 
+  long numcell_cent; /**< Total number of cell-centered values in domain */
+  long numcell_face; /**< Total number of face-centered values in domain */
+
   //nt - number of time instance in data
   int nt;
   // time vector
@@ -78,12 +82,11 @@ public:
 
   ///@{
   /** grid information */
-  std::vector<float> x_fc;
+  std::vector<float> x, y, z;
+
   std::vector<float> x_cc;
-  std::vector<float> y_fc;
-  std::vector<float> y_cc;
-  std::vector<float> z_fc;
-  std::vector<float> z_cc;
+  std::vector<float> z_face;
+  std::vector<float> dz_array;
   ///@}
 
   // index for fluid cell
@@ -106,16 +109,6 @@ public:
   std::vector<float> Gzx;
   std::vector<float> Gzy;
   std::vector<float> Gzz;
-  ///@}
-
-  ///@{
-  /** strain rate tensor */
-  std::vector<float> Sxx;
-  std::vector<float> Sxy;
-  std::vector<float> Sxz;
-  std::vector<float> Syy;
-  std::vector<float> Syz;
-  std::vector<float> Szz;
   ///@}
 
   std::vector<float> Lm; /**< mixing length */
@@ -153,12 +146,10 @@ public:
 protected:
   WINDSGeneralData *m_WGD;
 
-  void getDerivativesGPU(WINDSGeneralData *);
+  void getDerivativesGPU();
 
-  void getDerivatives();
   void derivativeVelocity();
 
-  void getStressTensor();
   void stressTensor();
 
   void divergenceStress();

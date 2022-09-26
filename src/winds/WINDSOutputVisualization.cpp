@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -49,7 +50,7 @@ WINDSOutputVisualization::WINDSOutputVisualization(WINDSGeneralData *WGD, WINDSI
     output_fields = all_output_fields;
     valid_output = true;
   } else {
-    output_fields = { "t", "x", "y", "z" };
+    output_fields = { "x", "y", "z" };
     output_fields.insert(output_fields.end(), fileOP.begin(), fileOP.end());
     valid_output = validateFileOptions();
   }
@@ -84,8 +85,6 @@ WINDSOutputVisualization::WINDSOutputVisualization(WINDSGeneralData *WGD, WINDSI
     y_out[j] = (j + 0.5) * WGD_->dy;// Location of face centers in y-dir
   }
 
-  timestamp.resize(dateStrLen, '0');
-
   // Output related data
   u_out.resize(numcell_cout, 0.0);
   v_out.resize(numcell_cout, 0.0);
@@ -96,24 +95,10 @@ WINDSOutputVisualization::WINDSOutputVisualization(WINDSGeneralData *WGD, WINDSI
   icellflag2_out.resize(numcell_cout, 0);
 
   // set cell-centered data dimensions
-  // time dimension
-  NcDim NcDim_t = addDimension("t");
-  NcDim NcDim_tstr = addDimension("dateStrLen", dateStrLen);
   // space dimensions
   NcDim NcDim_x = addDimension("x", WGD_->nx - 1);
   NcDim NcDim_y = addDimension("y", WGD_->ny - 1);
   NcDim NcDim_z = addDimension("z", WGD_->nz - 2);
-
-  // create attributes for time dimension
-  std::vector<NcDim> dim_vect_t;
-  dim_vect_t.push_back(NcDim_t);
-  createAttScalar("t", "time", "s", dim_vect_t, &time);
-
-  // create attributes for time dimension
-  std::vector<NcDim> dim_vect_tstr;
-  dim_vect_tstr.push_back(NcDim_t);
-  dim_vect_tstr.push_back(NcDim_tstr);
-  createAttVector("times", "date time", "-", dim_vect_tstr, &timestamp);
 
   // create attributes space dimensions
   std::vector<NcDim> dim_vect_x;
@@ -156,9 +141,7 @@ void WINDSOutputVisualization::setAllOutputFields()
 {
   all_output_fields.clear();
   // all possible output fields need to be add to this list
-  all_output_fields = { "t",
-                        "times",
-                        "x",
+  all_output_fields = { "x",
                         "y",
                         "z",
                         "u",
@@ -171,7 +154,7 @@ void WINDSOutputVisualization::setAllOutputFields()
 }
 
 // Save output at cell-centered values
-void WINDSOutputVisualization::save(ptime timeOut)
+void WINDSOutputVisualization::save(QEStime timeOut)
 {
   // get grid size (not output var size)
   int nx = WGD_->nx;
@@ -179,10 +162,7 @@ void WINDSOutputVisualization::save(ptime timeOut)
   int nz = WGD_->nz;
 
   // set time
-  time = (double)output_counter;
-
-  std::string s = to_iso_extended_string(timeOut);
-  std::copy(s.begin(), s.end(), timestamp.begin());
+  timeCurrent = timeOut;
 
   // get cell-centered values
   for (auto k = 1; k < nz - 1; k++) {
@@ -205,13 +185,4 @@ void WINDSOutputVisualization::save(ptime timeOut)
 
   // save the fields to NetCDF files
   saveOutputFields();
-
-  // remove x, y, z and terrain
-  // from output array after first save
-  if (output_counter == 0) {
-    rmTimeIndepFields();
-  }
-
-  // increment for next time insertion
-  output_counter += 1;
 };

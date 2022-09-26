@@ -15,15 +15,22 @@ CUDA_ADD_LIBRARY( qesplumecore
     InterpPowerLaw.cpp
     InterpTriLinear.cpp    
 
+    Deposition.cpp
+    
     Plume.cpp
     AdvectParticle.cpp
-    WallReflection.cpp
+    DepositParticle.cpp
     
     PlumeOutput.cpp
     PlumeOutputParticleData.cpp
 
     BoundaryConditions.hpp
     Particle.hpp
+    ParseParticle.hpp
+    ParticleFactories.hpp
+    ParticleSmall.hpp
+    ParticleLarge.hpp
+    ParticleHeavyGas.hpp
     
     ReleaseType.hpp
     ReleaseType_instantaneous.hpp
@@ -38,6 +45,10 @@ CUDA_ADD_LIBRARY( qesplumecore
     SourceCube.cpp SourceCube.hpp
     SourceFullDomain.cpp SourceFullDomain.hpp
 
+    DomainBoundaryConditions.cpp
+    
+    WallReflection.cpp
+    WallReflection_StairStep.cpp
 )
 
 #target_link_libraries (qesplumecore quicloader) 

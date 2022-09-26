@@ -344,10 +344,10 @@ WRFInput::WRFInput(const std::string &filename,
   nextSpace = subStr1.find(" ");
   std::string vString = subStr1.substr(0, nextSpace);
 
-  // Wait until WRF has run and placed the correct checksum and timestamp number in the file
-  // CHSUM0_FMW
-  // FRAME0_FMW
-  // int wrfCHSUM0_FMW = 0;
+  // In the WRF-QES Coupling mode, we need to wait until WRF has run
+  // and placed the correct checksum and timestamp number in the WRF
+  // file. These values are stored in the following WRF-SFIRE output
+  // variables: CHSUM0_FMW and FRAME0_FMW
   int wrfFRAME0_FMW = -1;
 
   NcDim fmwdim = wrfInputFile.getVar("U0_FMW").getDim(0);
@@ -359,21 +359,21 @@ WRFInput::WRFInput(const std::string &filename,
 
   if (m_performWRFRunCoupling) {
 
-    // Wait for WRF to start this...
+    // Wait for WRF to start the coupling...
     while (wrfFRAME0_FMW != 1) {
       std::cout << "Waiting for FRAME0_FMW to be initialized to 1 before starting the coupling with WRF..." << std::endl;
 
       // close file
       wrfInputFile.close();
 
-      usleep(1000000);// 1 sec
+      usleep(2000000); // 2 sec
 
       // re-open
       wrfInputFile.open(m_WRFFilename, NcFile::write);
       wrfInputFile.getVar("FRAME0_FMW").getVar(fmw_StartIdx, fmw_counts, &wrfFRAME0_FMW);
     }
 
-    std::cout << "WRF-QES Coupling: Frame = " << wrfFRAME0_FMW << std::endl;
+    std::cout << "WRF-QES Coupling: Received starting frame count = " << wrfFRAME0_FMW << std::endl;
     currWRFFRAME0Num = wrfFRAME0_FMW;
   }
 
@@ -454,25 +454,24 @@ WRFInput::WRFInput(const std::string &filename,
     float sr_x = sizeZSF_x / (sizeHGT_x + 1);
     float sr_y = sizeZSF_y / (sizeHGT_y + 1);
 
-
+    // This is the resolution of the fire mesh
     fm_dx = atm_dx / sr_x;
     fm_dy = atm_dy / sr_y;
-
-    std::cout << "Full Fire Mesh Size with border: " << fm_nx << " X " << fm_ny << std::endl;
 
     fm_nx = fm_nx - sr_x;
     fm_ny = fm_ny - sr_y;
 
-    // Then dxf=DX/sr_x, dyf=DY/sr_y
+    
 
-    // for now, set dz = 1
-    fm_dz = 1.0f;
+    // Need to work towards pulling these values from the XML file to
+    // allow user control of the discretization
+    
+    // this parameter needs to come from xml... 
+    fm_dz = 12.0f;
 
     std::cout << "WRF Fire Mesh dimensions (nx, ny): " << fm_nx << " by " << fm_ny << std::endl;
     std::cout << "WRF Fire Mesh Resolution (dx, dy): (" << fm_dx << ", " << fm_dy << ")" << std::endl;
-
     std::cout << "\ttotal domain size: " << fm_nx * fm_dx << "m by " << fm_ny * fm_dy << "m" << std::endl;
-
 
     std::vector<size_t> startIdx = { 0, 0, 0, 0 };
     std::vector<size_t> counts = { 1,
@@ -494,7 +493,6 @@ WRFInput::WRFInput(const std::string &filename,
     fmHeight.resize(fm_nx * fm_ny);
     wrfInputFile.getVar("ZSF").getVar(startIdx, counts, fmHeight.data());
 
-
     double fm_minWRFAlt = std::numeric_limits<double>::max(),
            fm_maxWRFAlt = std::numeric_limits<double>::min();
 
@@ -508,15 +506,26 @@ WRFInput::WRFInput(const std::string &filename,
         if (fmHeight[l_idx] < fm_minWRFAlt) fm_minWRFAlt = fmHeight[l_idx];
       }
     }
-
-    std::cout << "Terrain Min Ht: " << fm_minWRFAlt << ", Max Ht: " << fm_maxWRFAlt << std::endl;
+    std::cout << "Fire Mesh Min Ht: " << fm_minWRFAlt << ", Max Ht: " << fm_maxWRFAlt << std::endl;
 
     // if specified, use the max height... otherwise, pick one
     // that's about twice the max height to give room for the flow
-    fm_nz = (int)ceil(fm_maxWRFAlt * 2.0);// this ONLY works
+    
+    // fm_nz = (int)ceil(fm_maxWRFAlt * 2.0);// this ONLY works
                                           // if dz=1.0
 
-    std::cout << "Domain nz: " << fm_nz << std::endl;
+    // Should only need to be concerned about the difference between
+    // the max and min height here, rather than building off the max
+    // height.
+    float heightRange = fm_maxWRFAlt - fm_minWRFAlt;
+    std::cout << "Terrain height range: " << heightRange << std::endl;
+
+    // use 110% of height range for now
+    int numZCells = (int)floor((heightRange * 1.10)/ fm_dz) + 1;
+    std::cout << "With dz = " << fm_dz << ", nz = " << numZCells << std::endl;
+    fm_nz = numZCells;
+
+    std::cout << "Setting domain nz: " << fm_nz << std::endl;
 
     //
     // override any zone information?  Need to fix these use cases
@@ -1037,8 +1046,10 @@ WRFInput::WRFInput(const std::string &filename,
     // Use nz * dz
     maxWRFAlt = 90 * 3.0;// again, only works with dz=1
   } else {
-    maxWRFAlt = fm_nz;// again, only works with dz=1
+    maxWRFAlt = fm_nz * fm_dz;// again, only works with dz=1
   }
+
+  std::cout << "fm_nz set to " << fm_nz << std::endl;
 
   std::vector<double> atm_hgt(atm_nx * atm_ny);
   wrfInputFile.getVar("HGT").getVar(atm_startIdx, atm_counts, atm_hgt.data());

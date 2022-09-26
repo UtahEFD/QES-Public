@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -40,6 +41,7 @@
 #include <cmath>
 #include <cstring>
 
+#include "util/QEStime.h"
 #include "util/calcTime.h"
 #include "util/Vector3.h"
 //#include "Matrix3.h"
@@ -58,6 +60,13 @@
 #include "InterpNearestCell.h"
 #include "InterpPowerLaw.h"
 #include "InterpTriLinear.h"
+
+#include "DomainBoundaryConditions.h"
+
+#include "Deposition.h"
+
+#include "WallReflection.h"
+#include "WallReflection_StairStep.h"
 
 #include "Particle.hpp"
 
@@ -93,7 +102,7 @@ public:
   // LA future work: Need to add a CFL condition where the user specifies a courant number that varies from 0 to 1
   //  that is used to do an additional time remainder time integration loop for each particle, forcing particles to only
   //  move one cell at a time.
-  void run(float, WINDSGeneralData *, TURBGeneralData *, std::vector<QESNetCDFOutput *>);
+  void run(QEStime, WINDSGeneralData *, TURBGeneralData *, std::vector<QESNetCDFOutput *>);
 
   int getTotalParsToRelease() const { return totalParsToRelease; }// accessor
 
@@ -102,11 +111,27 @@ public:
   int getNumNotActiveParticles() const { return isNotActiveCount; }// accessor
   int getNumCurrentParticles() const { return particleList.size(); }// accessor
 
+  QEStime getSimTimeStart() const { return simTimeStart; }
+  QEStime getSimTimeCurrent() const { return simTimeCurr; }
+
   void showCurrentStatus();
 
   // This the storage for all particles
   // the sources can set these values, then the other values are set using urb and turb info using these values
   std::list<Particle *> particleList;
+
+  Interp *interp;
+
+  Deposition *deposition;
+
+  // these values are calculated from the urb and turb grids by dispersion
+  // they are used for applying boundary conditions at the walls of the domain
+  double domainXstart;// the domain starting x value, a copy of the value found by dispersion
+  double domainXend;// the domain ending x value, a copy of the value found by dispersion
+  double domainYstart;// the domain starting y value, a copy of the value found by dispersion
+  double domainYend;// the domain ending y value, a copy of the value found by dispersion
+  double domainZstart;// the domain starting z value, a copy of the value found by dispersion
+  double domainZend;// the domain ending z value, a copy of the value found by dispersion
 
 protected:
   // QES grid information
@@ -118,6 +143,7 @@ protected:
   double dz;// a copy of the urb grid dz value, eventually could become an array
   double dxy;//a copy of the urb grid dz value, eventually could become an array
 
+  /*
   // these values are calculated from the urb and turb grids by dispersion
   // they are used for applying boundary conditions at the walls of the domain
   double domainXstart;// the domain starting x value, a copy of the value found by dispersion
@@ -126,12 +152,18 @@ protected:
   double domainYend;// the domain ending y value, a copy of the value found by dispersion
   double domainZstart;// the domain starting z value, a copy of the value found by dispersion
   double domainZend;// the domain ending z value, a copy of the value found by dispersion
+  */
 
-  Interp *interp;
+  WallReflection *wallReflect;
+
+  DomainBC *domainBC_x;
+  DomainBC *domainBC_y;
+  DomainBC *domainBC_z;
 
   // time variables
   double sim_dt;// the simulation timestep
-  double simTime;
+  QEStime simTimeStart;
+  QEStime simTimeCurr;
   int simTimeIdx;
 
   // some overall metadata for the set of particles
@@ -186,63 +218,23 @@ protected:
   // this function moves (advects) one particle
   void advectParticle(double, std::list<Particle *>::iterator, WINDSGeneralData *, TURBGeneralData *);
 
-  /* reflection functions in WallReflection.cpp */
-  // main function pointer
-  bool (Plume::*wallReflection)(const WINDSGeneralData *WGD,
-                                double &xPos,
-                                double &yPos,
-                                double &zPos,
-                                double &disX,
-                                double &disY,
-                                double &disZ,
-                                double &uFluct,
-                                double &vFluct,
-                                double &wFluct,
-                                double &uFluct_old,
-                                double &vFluct_old,
-                                double &wFluct_old);
-  // reflection on walls (stair step)
-  bool wallReflectionFullStairStep(const WINDSGeneralData *WGD,
-                                   double &xPos,
-                                   double &yPos,
-                                   double &zPos,
-                                   double &disX,
-                                   double &disY,
-                                   double &disZ,
-                                   double &uFluct,
-                                   double &vFluct,
-                                   double &wFluct,
-                                   double &uFluct_old,
-                                   double &vFluct_old,
-                                   double &wFluct_old);
-  // reflection -> set particle inactive when entering a wall
-  bool wallReflectionSetToInactive(const WINDSGeneralData *WGD,
-                                   double &xPos,
-                                   double &yPos,
-                                   double &zPos,
-                                   double &disX,
-                                   double &disY,
-                                   double &disZ,
-                                   double &uFluct,
-                                   double &vFluct,
-                                   double &wFluct,
-                                   double &uFluct_old,
-                                   double &vFluct_old,
-                                   double &wFluct_old);
-  // reflection -> this function will do nothing
-  bool wallReflectionDoNothing(const WINDSGeneralData *WGD,
-                               double &xPos,
-                               double &yPos,
-                               double &zPos,
-                               double &disX,
-                               double &disY,
-                               double &disZ,
-                               double &uFluct,
-                               double &vFluct,
-                               double &wFluct,
-                               double &uFluct_old,
-                               double &vFluct_old,
-                               double &wFluct_old);
+
+  void depositParticle(double,
+                       double,
+                       double,
+                       double,
+                       double,
+                       double,
+                       double,
+                       double,
+                       double,
+                       double,
+                       double,
+                       double,
+                       double,
+                       std::list<Particle *>::iterator,
+                       WINDSGeneralData *,
+                       TURBGeneralData *);
 
   // function for calculating the individual particle timestep from the courant number, the current velocity fluctuations,
   // and the grid size. Forces particles to always move only at one timestep at at time.
@@ -304,55 +296,16 @@ protected:
   // a function used at constructor time to set the pointer function to the desired BC type
   void setBCfunctions(std::string xBCtype, std::string yBCtype, std::string zBCtype);
 
-  // A pointer to the wallBC function for the x direction.
-  // Which function it points at is determined by setBCfunctions and the input xBCtype
-  bool (Plume::*enforceWallBCs_x)(double &pos,
-                                  double &velFluct,
-                                  double &velFluct_old,
-                                  const double &domainStart,
-                                  const double &domainEnd);
-  // A pointer to the wallBC function for the y direction.
-  // Which function it points at is determined by setBCfunctions and the input yBCtype
-  bool (Plume::*enforceWallBCs_y)(double &pos,
-                                  double &velFluct,
-                                  double &velFluct_old,
-                                  const double &domainStart,
-                                  const double &domainEnd);
-  // A pointer to the wallBC function for the z direction.
-  // Which function it points at is determined by setBCfunctions and the input zBCtype
-  bool (Plume::*enforceWallBCs_z)(double &pos,
-                                  double &velFluct,
-                                  double &velFluct_old,
-                                  const double &domainStart,
-                                  const double &domainEnd);
-  // Boundary condition functions:
-  bool enforceWallBCs_exiting(double &pos,
-                              double &velFluct,
-                              double &velFluct_old,
-                              const double &domainStart,
-                              const double &domainEnd);
-  bool enforceWallBCs_periodic(double &pos,
-                               double &velFluct,
-                               double &velFluct_old,
-                               const double &domainStart,
-                               const double &domainEnd);
-  bool enforceWallBCs_reflection(double &pos,
-                                 double &velFluct,
-                                 double &velFluct_old,
-                                 const double &domainStart,
-                                 const double &domainEnd);
 
 private:
   Plume();
-
-  // this is for writing an output simulation info file separate from the regular command line output
-  void writeSimInfoFile(const double &current_time);
 };
 
 inline void Plume::showCurrentStatus()
 {
   std::cout << "----------------------------------------------------------------- \n";
-  std::cout << "Current simulation time: " << simTime << "\n";
+  std::cout << "Current simulation time: " << simTimeCurr << "\n";
+  std::cout << "Simulation run time: " << simTimeCurr - simTimeStart << "\n";
   std::cout << "Total number of particles released: " << nParsReleased << "\n";
   std::cout << "Current number of particles in simulation: " << particleList.size() << "\n";
   std::cout << "Number of rogue particles: " << isRogueCount << "\n";

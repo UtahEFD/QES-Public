@@ -6,7 +6,6 @@
 #include <boost/foreach.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
@@ -19,8 +18,6 @@
 #include "winds/WINDSGeneralData.h"
 #include "winds/WINDSOutputVisualization.h"
 #include "winds/WINDSOutputWorkspace.h"
-
-#include "winds/WINDSOutputWRF.h"
 
 #include "winds/TURBGeneralData.h"
 #include "winds/TURBOutput.h"
@@ -37,9 +34,6 @@
 
 
 namespace pt = boost::property_tree;
-
-using namespace boost::gregorian;
-using namespace boost::posix_time;
 
 /**
  * This function takes in a filename and attempts to open and parse it.
@@ -85,9 +79,9 @@ int main(int argc, char *argv[])
 
   // Parse the base XML QUIC file -- contains simulation parameters
   //WINDSInputData* WID = parseXMLTree(arguments.qesFile);
-  WINDSInputData *WID = new WINDSInputData(arguments.qesFile);
+  WINDSInputData *WID = new WINDSInputData(arguments.qesWindsParamFile);
   if (!WID) {
-    std::cerr << "[ERROR] QUIC Input file: " << arguments.qesFile << " not able to be read successfully." << std::endl;
+    std::cerr << "[ERROR] QUIC Input file: " << arguments.qesWindsParamFile << " not able to be read successfully." << std::endl;
     exit(EXIT_FAILURE);
   }
 
@@ -106,7 +100,7 @@ int main(int argc, char *argv[])
   // Checking if
   if (arguments.compTurb && !WID->turbParams) {
     std::cerr << "[ERROR] Turbulence model is turned on without turbParams in QES Intput file "
-              << arguments.qesFile << std::endl;
+              << arguments.qesWindsParamFile << std::endl;
     exit(EXIT_FAILURE);
   }
 
@@ -161,7 +155,7 @@ int main(int argc, char *argv[])
   }
   */
 
-  std::cout << "Running time step: " << to_iso_extended_string(WGD->timestamp[0]) << std::endl;
+  std::cout << "Running time step: " << WGD->timestamp[0] << std::endl;
 
   // //////////////////////////////////////////
   // Run the QES-Winds Solver

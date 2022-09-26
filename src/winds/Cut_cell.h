@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -57,19 +58,6 @@ private:
 public:
   friend class test_CutCell;
   friend class DTEHeightField;
-
-  /**
-   * This function calculates area fraction coefficients used in the cut-cell method.
-   *
-   * It takes in a pointer to cell and terrain information (intersection points) and after sorting them for each
-   * face of the cell and calculating coefficients, it sets them to the related solver coefficient (e,f,g,h,m,n)
-   *
-   * @param cells :document this:
-   * @param DTEHF :document this:
-   * @param WID :document this:
-   * @param WGD :document this:
-   */
-  void calculateCoefficient(Cell *cells, const DTEHeightField *DTEHF, const WINDSInputData *WID, WINDSGeneralData *WGD);
 
   /**
    * This function takes in intersection points for each face and reorder them based on angle.

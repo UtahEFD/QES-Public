@@ -1,11 +1,39 @@
-#include <iostream>
+/****************************************************************************
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
+ *
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
+ *
+ * This file is part of QES
+ *
+ * GPL-3.0 License
+ *
+ * QES is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
 
-#include <boost/foreach.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
+#include <iostream>
 
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
+
+#include "util/QEStool.h"
 
 #include "util/QESNetCDFOutput.h"
 
@@ -33,8 +61,6 @@
 #include "plume/PlumeOutput.h"
 #include "plume/PlumeOutputParticleData.h"
 
-
-namespace pt = boost::property_tree;
 
 Solver *setSolver(const int, WINDSInputData *, WINDSGeneralData *);
 
@@ -64,28 +90,20 @@ int main(int argc, char *argv[])
   // ///////////////////////////////////
 
   // Parse the base XML QUIC file -- contains simulation parameters
-  WINDSInputData *WID = new WINDSInputData(arguments.inputWINDSFile);
+  WINDSInputData *WID = new WINDSInputData(arguments.qesWindsParamFile);
   if (!WID) {
-    std::cerr << "[ERROR] QES Input file: " << arguments.inputWINDSFile
-              << " not able to be read successfully." << std::endl;
-    exit(EXIT_FAILURE);
+    QEStool::error("QES Input file: " + arguments.qesWindsParamFile
+                   + " not able to be read successfully.");
   }
   // parse xml settings
 
   PlumeInputData *PID = nullptr;
-  if (arguments.compPlume) PID = new PlumeInputData(arguments.inputPlumeFile);
-  //if ( !PID ) {
-  //    std::cerr << "[Error] QES input file: " << arguments.inputPlumeFile
-  //              << " not able to be read successfully." << std::endl;
-  //    exit(EXIT_FAILURE);
-  //}
-
+  if (arguments.compPlume) PID = new PlumeInputData(arguments.qesPlumeParamFile);
 
   // Checking if
   if (arguments.compTurb && !WID->turbParams) {
-    std::cerr << "[ERROR] Turbulence model is turned on without turbParams in QES Intput file "
-              << arguments.inputWINDSFile << std::endl;
-    exit(EXIT_FAILURE);
+    QEStool::error("Turbulence model is turned on without turbParams in QES Intput file "
+                   + arguments.qesWindsParamFile);
   }
 
 
@@ -95,8 +113,7 @@ int main(int argc, char *argv[])
       WID->simParams->DTE_heightField->outputOBJ(arguments.filenameTerrain);
       std::cout << "OBJ created....\n";
     } else {
-      std::cerr << "[ERROR] No dem file specified as input\n";
-      return -1;
+      QEStool::error("No dem file specified as input");
     }
   }
 
@@ -132,7 +149,7 @@ int main(int argc, char *argv[])
     plume = new Plume(PID, WGD, TGD);
 
     // always supposed to output lagrToEulOutput data
-    outputPlume.push_back(new PlumeOutput(PID, WGD, plume, arguments.outputPlumeFile));
+    outputPlume.push_back(new PlumeOutput(PID, plume, arguments.outputPlumeFile));
     if (arguments.doParticleDataOutput == true) {
       outputPlume.push_back(new PlumeOutputParticleData(PID, plume, arguments.outputParticleDataFile));
     }
@@ -172,13 +189,21 @@ int main(int argc, char *argv[])
     // Output the various files requested from the simulation run
     // (netcdf wind velocity, icell values, etc...
     // /////////////////////////////
-    for (auto id_out = 0u; id_out < outputVec.size(); id_out++) {
-      outputVec.at(id_out)->save(WGD->timestamp[0]);// need to replace 0.0 with timestep
+    for (auto outItr = outputVec.begin(); outItr != outputVec.end(); ++outItr) {
+      (*outItr)->save(WGD->timestamp[index]);
     }
 
     // Run plume advection model
     if (plume != nullptr) {
-      plume->run(PID->plumeParams->simDur, WGD, TGD, outputPlume);
+      QEStime endtime;
+      if (WGD->totalTimeIncrements == 1) {
+        endtime = WGD->timestamp[index] + PID->plumeParams->simDur;
+      } else if (index == WGD->totalTimeIncrements - 1) {
+        endtime = WGD->timestamp[index] + (WGD->timestamp[index] - WGD->timestamp[index - 1]);
+      } else {
+        endtime = WGD->timestamp[index + 1];
+      }
+      plume->run(endtime, WGD, TGD, outputPlume);
     }
   }
 
@@ -207,8 +232,7 @@ Solver *setSolver(const int solveType, WINDSInputData *WID, WINDSGeneralData *WG
     std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
     solver = new SharedMemory(WID, WGD);
   } else {
-    std::cerr << "[ERROR] invalid solve type\n";
-    exit(EXIT_FAILURE);
+    QEStool::error("Invalid solve type");
   }
   return solver;
 }

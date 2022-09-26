@@ -14,10 +14,10 @@
 filename='../QES-data/PowerLawBLFlow_xDir';
 
 % dimensions of the 3D domain
-lx=100;ly=100;lz=20;
+lx=200;ly=100;lz=20;
 
 % grid resolution in x and y set to have 50 cells
-nx=103;ny=103;
+nx=203;ny=103;
 % grid resolution in z is set to have:
 % 141 faces in the plume domain -> 2 extra face on top (above) and bottom (below)
 % -> 140 cell within the plume domain -> 2 extra cell on top (above) and bottom (below)
@@ -99,20 +99,20 @@ ustar = 0.4*z_cc.*dudz;
 %ustar = 0.4*p*a*z_cc.^p;
 %ustar = b/0.4*ones(size(z_cc)); 
 %ustar = sqrt(b*p*a*z_cc.^(n+p-1));
-ustar(1) = -ustar(2);
+ustar(1) = ustar(2);
 ustar(end) = ustar(end-1);
 
 %uw = -b*z_cc.^n.*dudz;
 uw = -ustar.^2;
-uw(1) = -uw(2);
+uw(1) = uw(2);
 uw(end) = uw(end-1);
 
 CsigU=2.5;
 CsigV=2.3;
-CsigW=1.3;
+CsigW=1.2;
 
 k = (ustar/0.55).^2;
-k(1) = -k(2);
+k(1) = k(2);
 k(end) = k(end-1);
 
 %nu = 0.4.*z_cc.*ustar;
@@ -139,14 +139,14 @@ for kk=2:nz-1
     %tyy(:,:,kk) = 2.0/3.0*k(kk) * (CsigV*0.55)^2;
     %tzz(:,:,kk) = 2.0/3.0*k(kk) * (CsigW*0.55)^2;
 end
-txx(:,:,1) = -txx(:,:,2);
-tyy(:,:,1) = -tyy(:,:,2);
-tzz(:,:,1) = -tzz(:,:,2);
+txx(:,:,1) = txx(:,:,2);
+tyy(:,:,1) = tyy(:,:,2);
+tzz(:,:,1) = tzz(:,:,2);
 
 for kk=2:nz-1
     txz(:,:,kk) = -ustar(kk)^2;%nu(kk)*dudz(kk);
 end
-txz(:,:,1) = -txz(:,:,2);
+txz(:,:,1) = txz(:,:,2);
 
 CoEps = zeros(nx-1,ny-1,nz-1);
 tke = zeros(nx-1,ny-1,nz-1);

@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -35,7 +36,8 @@
  */
 
 #include "SourceLine.hpp"
-
+#include "winds/WINDSGeneralData.h"
+//#include "Interp.h"
 
 void SourceLine::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
@@ -79,7 +81,8 @@ int SourceLine::emitParticles(const float dt, const float currTime, std::list<Pa
   if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
     for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
-      Particle *cPar = new Particle();
+      //Particle *cPar = new Particle();
+      Particle *cPar = particleTypeFactory->Create(protoParticle->tag);
 
       // generate random point on line between m_pt0 and m_pt1
       double diffX = posX_1 - posX_0;
@@ -87,9 +90,26 @@ int SourceLine::emitParticles(const float dt, const float currTime, std::list<Pa
       double diffZ = posZ_1 - posZ_0;
 
       float t = drand48();
+
+      // Now cPar is a generic particle, only created once (in setParticleType()).
+      // If physical quantities should change per particle, the setParticleType() call should be moved here.
       cPar->xPos_init = posX_0 + t * diffX;
       cPar->yPos_init = posY_0 + t * diffY;
       cPar->zPos_init = posZ_0 + t * diffZ;
+      //int cellId2d = interp->getCellId2d(cPar->xPos_init, cPar->yPos_init);
+      //cPar->zPos_init = posZ_0 + t * diffZ + WGD->terrain[cellId2d];
+
+
+      cPar->d = protoParticle->d;
+      cPar->d_m = (1.0E-6) * protoParticle->d;
+      cPar->rho = protoParticle->rho;
+      cPar->depFlag = protoParticle->depFlag;
+
+      cPar->m = sourceStrength / m_rType->m_numPar;
+      cPar->m_kg = sourceStrength / m_rType->m_numPar * (1.0E-3);
+
+      //std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
+
 
       cPar->tStrt = currTime;
 

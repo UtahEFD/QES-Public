@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -42,6 +43,7 @@
 
 #include "util/doesFolderExist.h"
 #include "util/ArgumentParsing.h"
+#include "util/QEStool.h"
 
 class PlumeArgs : public ArgumentParsing
 {
@@ -61,19 +63,21 @@ public:
      */
   void processArguments(int argc, char *argv[]);
 
-  std::string inputQESFile = "";
+  //bool debug = false;
+  bool verbose = false;
+
+  std::string qesPlumeParamFile = "";
+
+  std::string netCDFFileBasename = ""; /**< Base name for all NetCDF output files */
+
   std::string projectQESFiles = "";
   std::string inputWINDSFile = "";
   std::string inputTURBFile = "";
-  std::string outputFolder = "";
-  std::string caseBaseName = "";
+
   // going to assume concentration is always output. So these next options are like choices for additional debug output
   bool doEulDataOutput;
   bool doParticleDataOutput;
   bool doSimInfoFileOutput;
-  // LA future work: this one should probably be replaced by cmake arguments at compiler time
-  bool debug = false;
-  bool verbose = false;
 
   // output file variables created from the outputFolder and caseBaseName
   std::string outputEulerianFile;

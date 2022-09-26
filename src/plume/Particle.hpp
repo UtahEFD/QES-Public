@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -28,16 +29,25 @@
  ****************************************************************************/
 
 /** @file Particle.hpp 
- * @brief This class represents information stored for each particle
+ * @brief This class represents information stored for each particle 
  */
 
 #pragma once
 
-#include "util/Vector3.h"
+#include <cmath>
+#include "ParseParticle.hpp"
+/*
+enum ParticleType {
+  tracer,
+  small,
+  large,
+  heavygas
+};
+*/
 
 class Particle
 {
-
+protected:
 public:
   // initializer
   Particle()
@@ -53,8 +63,14 @@ public:
     // density of particle
     rho = 0.0;
 
+    // tag
+    tag = "ParticleTracer";// tagged as "tracer" so when particle type is unspecified in XML, it defaults to tracer
+
+
     // (1 - fraction) particle deposited
     wdepos = 1.0;
+    depFlag = false;
+
     // (1 - fraction) particle decay
     wdecay = 1.0;
   }
@@ -73,22 +89,27 @@ public:
     // density of particle
     rho = rho_part;
 
+    // tag
+    tag = "ParticleTracer";// tagged as "tracer" so when particle type is unspecified in XML, it defaults to tracer
+
     // (1 - fraction) particle deposited
     wdepos = 1.0;
+    depFlag = false;
+
     // (1 - fraction) particle deposited
     wdecay = 1.0;
   }
 
   // destructor
-  ~Particle()
+  virtual ~Particle()
   {
   }
 
-  // the point info variables
-  // LA: I'm used to making stuff like this private and creating a bunch of accessor functions
-  //  so that they all get edited together. But so long as we use them correctly, this isn't a problem
+  ParticleType parType;
 
-  // values set by emitParticles() by each source
+
+  std::string tag;// particle type tag
+
   // the initial position for the particle, to not be changed after the simulation starts
   double xPos_init;// the initial x component of position for the particle
   double yPos_init;// the initial y component of position for the particle
@@ -115,6 +136,18 @@ public:
   double uFluct;// u component
   double vFluct;// v component
   double wFluct;// w component
+
+  // Particle displacements for each time step
+  double disX;
+  double disY;
+  double disZ;
+
+  // Total velocities (mean plus fluct) for each time step
+  double uTot;
+  double vTot;
+  double wTot;
+
+  double CoEps;
 
   // The velocity fluctuation for a particle from the last iteration
   double uFluct_old;// u component
@@ -148,6 +181,7 @@ public:
   double Sc;// Schmidt number
   double taud;// characteristic relaxation time [s]
   double vd;// deposition velocity [m/s]
+  bool depFlag;// whether a particle deposits
 
   // settling vatiables
   double dstar;// dimensionless grain diameter
@@ -158,23 +192,6 @@ public:
   // decay varables
   double wdecay;// (1 - fraction) particle decayed [0,1]
 
-  void setSettlingVelocity(const double &, const double &);
 
-private:
+  virtual void setSettlingVelocity(const double &, const double &){};
 };
-
-inline void Particle::setSettlingVelocity(const double &rhoAir, const double &nuAir)
-{
-  if (d > 0) {
-    //dimensionless grain diameter
-    dstar = d_m * pow(9.81 / pow(nuAir, 2.0) * (rho / rhoAir - 1.), 1.0 / 3.0);
-    // drag coefficent
-    Cd = (432.0 / pow(dstar, 3.0)) * pow(1.0 + 0.022 * pow(dstar, 3.0), 0.54) + 0.47 * (1.0 - exp(-0.15 * pow(dstar, 0.45)));
-    // dimensionless settling velociy
-    wstar = pow((4.0 * dstar) / (3.0 * Cd), 0.5);
-    // settling velocity
-    vs = wstar * pow(9.81 * nuAir * (rho / rhoAir - 1.0), 1.0 / 3.0);
-  } else {
-    vs = 0.0;
-  }
-}

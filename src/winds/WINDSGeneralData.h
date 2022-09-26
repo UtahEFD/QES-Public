@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -41,6 +42,12 @@
 #define MAX_S(x, y) ((x) > (y) ? (x) : (y))
 
 #include "WINDSInputData.h"
+
+#include "WindProfilerType.h"
+#include "WindProfilerWRF.h"
+#include "WindProfilerBarnCPU.h"
+#include "WindProfilerBarnGPU.h"
+
 #include "Building.h"
 #include "Canopy.h"
 #include "CanopyElement.h"
@@ -54,10 +61,7 @@
 #include "Cut_cell.h"
 #include "Wall.h"
 #include "util/NetCDFInput.h"
-
-#include <boost/date_time/posix_time/posix_time.hpp>
-namespace bt = boost::posix_time;
-
+#include "util/QEStime.h"
 
 #ifdef HAS_OPTIX
 #include "OptixRayTrace.h"
@@ -65,8 +69,6 @@ namespace bt = boost::posix_time;
 
 using namespace netCDF;
 using namespace netCDF::exceptions;
-
-namespace bt = boost::posix_time;
 
 class WINDSInputData;
 
@@ -87,7 +89,7 @@ public:
   void mergeSort(std::vector<float> &effective_height,
                  std::vector<int> &building_id);
 
-  void mergeSortTime(std::vector<time_t> &sensortime,
+  void mergeSortTime(std::vector<QEStime> &sensortime,
                      std::vector<int> &sensortime_id);
 
   void applyWindProfile(const WINDSInputData *, int, int);
@@ -147,6 +149,8 @@ public:
   float dxy; /**< Minimum value between dx and dy */
 
   int wrf_nx, wrf_ny;
+
+  float halo_x, halo_y;
   int halo_index_x, halo_index_y;
 
   long numcell_cout; /**< :document this: */
@@ -157,35 +161,34 @@ public:
   // std::vector<size_t> start; /**< :document this: */
   // std::vector<size_t> count; /**< :document this: */
 
-
   ///@{
-  /** :document this: */
+  /** :Values of z0 for u and v components: */
   std::vector<float> z0_domain_u, z0_domain_v;
   ///@}
 
-  std::vector<int> ibuilding_flag; /**< :document this: */
-  std::vector<int> building_id; /**< :document this: */
-  std::vector<Building *> allBuildingsV; /**< :document this: */
+  std::vector<int> ibuilding_flag; /**< :Building number flag: */
+  std::vector<int> building_id; /**< :Building ID: */
+  std::vector<Building *> allBuildingsV; /**< :Vector contains all of the building elements: */
 
   float z0; /**< In wallLogBC */
 
-  std::vector<float> dz_array; /**< :document this: */
+  std::vector<float> dz_array; /**< :Array contain dz values: */
   ///@{
-  /** :document this: */
+  /** :Location of center of cell in x,y and z directions: */
   std::vector<float> x, y, z;
   ///@}
-  std::vector<float> z_face; /**< :document this: */
-  // std::vector<float> x_out,y_out,z_out;
+  std::vector<float> z_face; /**< :Location of the bottom face of the cell in z-direction: */
 
-  std::vector<time_t> sensortime; /**< :document this: */
+  std::vector<QEStime> sensortime; /**< :document this: */
   std::vector<int> sensortime_id;
+  // FM TEMPORARY!!!!!!!!!!!!!
+  std::vector<int> time_id;
 
   // time variables
   int nt; /**< :document this: */
   int totalTimeIncrements; /**< :document this: */
   std::vector<float> dt_array; /**< :document this: */
-  std::vector<time_t> epochtime; /**< :document this: */
-  std::vector<bt::ptime> timestamp; /**< :document this: */
+  std::vector<QEStime> timestamp; /**< :document this: */
 
 
   ///@{
@@ -208,9 +211,15 @@ public:
   ///@}
 
   ///@{
-  /** Normal component of the solid elements (Building or Terrain) */
+  /** Normal components of the cut surface for the solid elements (Building or Terrain) */
   std::vector<float> ni, nj, nk;
   ///@}
+  ///@{
+  /** Tangential components of the cut surface for the solid elements (Building or Terrain) */
+  std::vector<float> ti, tj, tk;
+  ///@}
+  std::vector<float> wall_distance; /**< :Distance of the cell center from the cut face: */
+  std::vector<int> center_id; /**< :Defines whether a cell center is inside a solid (0) or air (1): */
   std::vector<float> terrain; /**< :document this: */
   std::vector<int> terrain_id;
   std::vector<int> terrain_face_id; /**< Sensor function (inputWindProfile) */
@@ -235,6 +244,8 @@ public:
 
   // Sensor* sensor;      may not need this now
 
+  // wind profiler class
+  WindProfilerType *windProfiler; /**< pointer to the wind profiler class, used to interp wind */
 
   int id; /**< :document this: */
 
@@ -264,6 +275,7 @@ public:
   std::vector<int> wall_below_indices; /**< Indices of the cells with wall bellow boundary condition */
   std::vector<int> wall_back_indices; /**< Indices of the cells with wall in back boundary condition */
   std::vector<int> wall_front_indices; /**< Indices of the cells with wall in front boundary condition */
+  std::vector<int> wall_indices; /**< Indices of the cells with wall on at least one side */
 
   Mesh *mesh; /**< In Terrain functions */
 

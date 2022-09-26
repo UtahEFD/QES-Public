@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -50,14 +51,13 @@ void CPUSolver::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool sol
   /***************************************************************
    *********   Divergence of the initial velocity field   ********
    ***************************************************************/
-
+  itermax = WID->simParams->maxIterations;
   int icell_face;// cell-face index
   int icell_cent;// cell-centered index
 
-  R.resize(WGD->numcell_cent, 0.0);
-
-  lambda.resize(WGD->numcell_cent, 0.0);
-  lambda_old.resize(WGD->numcell_cent, 0.0);
+  //R.resize(WGD->numcell_cent, 0.0);
+  //lambda.resize(WGD->numcell_cent, 0.0);
+  //lambda_old.resize(WGD->numcell_cent, 0.0);
 
   for (int k = 1; k < WGD->nz - 2; k++) {
     for (int j = 0; j < WGD->ny - 1; j++) {
@@ -66,7 +66,7 @@ void CPUSolver::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool sol
         icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
 
         // Calculate divergence of initial velocity field
-        R[icell_cent] = (-2 * pow(alpha1, 2.0)) * (((WGD->u0[icell_face + 1] - WGD->u0[icell_face]) / WGD->dx) + ((WGD->v0[icell_face + WGD->nx] - WGD->v0[icell_face]) / WGD->dy) + ((WGD->w0[icell_face + WGD->nx * WGD->ny] - WGD->w0[icell_face]) / WGD->dz_array[k]));
+        R[icell_cent] = (-2 * pow(alpha1, 2.0)) * (((WGD->e[icell_cent] * WGD->u0[icell_face + 1] - WGD->f[icell_cent] * WGD->u0[icell_face]) * WGD->dx) + ((WGD->g[icell_cent] * WGD->v0[icell_face + WGD->nx] - WGD->h[icell_cent] * WGD->v0[icell_face]) * WGD->dy) + ((WGD->m[icell_cent] * WGD->dz_array[k] * 0.5 * (WGD->dz_array[k] + WGD->dz_array[k + 1]) * WGD->w0[icell_face + WGD->nx * WGD->ny] - WGD->n[icell_cent] * WGD->dz_array[k] * 0.5 * (WGD->dz_array[k] + WGD->dz_array[k - 1]) * WGD->w0[icell_face])));
       }
     }
   }
@@ -84,6 +84,7 @@ void CPUSolver::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool sol
     int iter = 0;
     float error;
     float max_error = 1.0;
+    int i_max, j_max, k_max;
 
     std::cout << "Solving...\n";
     while (iter < itermax && max_error > tol) {
@@ -121,28 +122,24 @@ void CPUSolver::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool sol
         }
       }
 
+
       //int i_max, j_max, k_max;
       // Error calculation
       max_error = 0.0;// Reset error value before error calculation
-      for (int k = 0; k < WGD->nz - 1; k++) {
+      for (int k = 1; k < WGD->nz - 1; k++) {
         for (int j = 0; j < WGD->ny - 1; j++) {
           for (int i = 0; i < WGD->nx - 1; i++) {
             int icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);// Lineralized index for cell centered values
             error = fabs(lambda[icell_cent] - lambda_old[icell_cent]);
             if (error > max_error) {
-              //i_max = i;
-              //j_max = j;
-              //k_max = k;
               max_error = error;
             }
           }
         }
       }
-      //std::cout << "i_max:   " << i_max << std::endl;
-      //std::cout << "j_max:   " << j_max << std::endl;
-      //std::cout << "k_max:   " << k_max << std::endl;
       iter += 1;
     }
+
     std::cout << "Solved!\n";
 
     std::cout << "Number of iterations:" << iter << "\n";// Print the number of iterations
