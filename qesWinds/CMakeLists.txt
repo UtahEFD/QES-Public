@@ -31,7 +31,7 @@ function(add_sanity_test_CPU infile_prefix)
 endfunction()
 
 function(add_sanity_test_GPU infile_prefix)
-  add_test(NAME GPU_${infile_prefix} COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds -q ${CMAKE_SOURCE_DIR}/regressionTests/runTests/${infile_prefix}.xml -s 2 -o test_${infile_prefix}_GPU WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+  add_test(NAME GPU_${infile_prefix} COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds -q ${CMAKE_SOURCE_DIR}/tests/runTestsFiles/${infile_prefix}.xml -s 2 -o test_${infile_prefix}_GPU WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 endfunction()
 
 # sanity tests

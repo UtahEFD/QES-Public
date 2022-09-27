@@ -97,7 +97,7 @@ public:
     parseElement<FileOptions>(false, fileOptions, "fileOptions");
     parseElement<MetParams>(false, metParams, "metParams");
     parseElement<TURBParams>(false, turbParams, "turbParams");
-    parseElement<Buildings>(false, buildingsParams, "buildings");
+    parseElement<Buildings>(false, buildingsParams, "buildingsParams");
     parseElement<Canopies>(false, canopies, "canopies");
   }
 };

@@ -52,7 +52,7 @@
     <turbUpperBound> 15.0 </turbUpperBound>
   </turbParams>
 
-  <buildings>
+  <buildingsParams>
     <wallRoughness>0.01</wallRoughness>                 <!-- Building wall roughness-->
     <rooftopFlag> 2 </rooftopFlag> 			<!-- Rooftop flag (0-none, 1-log profile (default), 2-vortex) -->
     <upwindCavityFlag> 2 </upwindCavityFlag> 		<!-- Upwind cavity flag (0-none, 1-Rockle, 2-MVP (default), 3-HMVP) -->
@@ -63,7 +63,7 @@
     <SHPFile>shapefile/7x11array.shp</SHPFile>          <!-- Address to shapefile location-->
     <SHPBuildingLayer>7x11array</SHPBuildingLayer>      <!-- Name of building layer in shapefile-->
     <SHPHeightField>Height</SHPHeightField>             <!-- Name of building height field in shapefile -->
-  </buildings>
+  </buildingsParams>
 
   <fileOptions>
     <outputFlag>1</outputFlag>
