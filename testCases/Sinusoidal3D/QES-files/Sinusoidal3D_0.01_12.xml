@@ -1,3 +1,4 @@
+<QESPlumeParameters>
 <plumeParameters>
 	<simDur> 12.0 </simDur>
 	<timeStep> 0.01 </timeStep>
@@ -38,3 +39,5 @@
   	<zBCtype>periodic</zBCtype>
     <wallReflection>doNothing</wallReflection>
 </boundaryConditions>
+</QESPlumeParameters>
+
