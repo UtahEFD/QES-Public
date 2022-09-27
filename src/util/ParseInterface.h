@@ -197,12 +197,12 @@ public:
   virtual void parseValues() = 0;
 
   /**
-   * This function takes in an URBInputData variable and uses it
+   * This function takes in an WINDSInputData variable and uses it
    * as the base to parse the ptree
    * @param UID the object that will serve as the base level of the xml parser
    */
   virtual void parseTree(pt::ptree t) {}
-  void parseTreeBase(pt::ptree t, const std::string root);
+  void parseXML(const std::string fileName, const std::string root);
 };
 
 template<typename T>
@@ -337,8 +337,18 @@ inline void ParseInterface::parseMultiPolymorphs(bool isReq, std::vector<T *> &e
     throw(ParseException("Could not find " + treeParents + "::" + poly.tag));
 }
 
-inline void ParseInterface::parseTreeBase(pt::ptree t, const std::string root)
+inline void ParseInterface::parseXML(const std::string fileName, const std::string root)
 {
+  pt::ptree t;
+
+  try {
+    pt::read_xml(fileName, t);
+  } catch (boost::property_tree::xml_parser::xml_parser_error &e) {
+    std::cerr << "Error reading tree in " << fileName << "\n";
+    exit(EXIT_FAILURE);
+  }
+
+
   auto child = t.get_child_optional(root);
   if (child) {
     setTree(*child);

@@ -84,6 +84,8 @@ public:
     canopies = 0;
 
     QESfs::set_file_path(fileName);
+    parseXML(fileName, "QESWindsParameters");
+    /*
     pt::ptree tree;
 
     try {
@@ -95,6 +97,7 @@ public:
 
     //parseTree(tree);
     parseTreeBase(tree, "QESWindsParameters");
+    */
   }
 
   /**

@@ -70,7 +70,8 @@ public:
 
   Sensor(const std::string fileName)
   {
-    pt::ptree tree;
+    parseXML(fileName, "sensor");
+    /*pt::ptree tree;
 
     try {
       pt::read_xml(fileName, tree);
@@ -79,7 +80,7 @@ public:
       exit(EXIT_FAILURE);
     }
 
-    parseTree(tree);
+    parseTree(tree);*/
   }
 
 

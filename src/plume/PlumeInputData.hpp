@@ -48,6 +48,8 @@ public:
     partOutParams = 0;
     sources = 0;
 
+    parseXML(fileName, "QESPlumeParameters");
+    /*
     pt::ptree tree;
 
     try {
@@ -59,6 +61,7 @@ public:
     }
 
     parseTree(tree);
+    */
   }
 
   virtual void parseValues()
