@@ -1,3 +1,4 @@
+<QESWindsParameters>
 <simulationParameters>
 
 	<DEM>../GISFiles/RxCADRE_fromWRF.tif</DEM>			<!-- Address to DEM location-->
@@ -6855,4 +6856,6 @@
   <outputFields>w</outputFields>
   <outputFields>icell</outputFields> 
 </fileOptions>
+
+</QESWindsParameters>
 
