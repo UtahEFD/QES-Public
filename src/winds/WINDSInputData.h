@@ -62,7 +62,7 @@ public:
   FileOptions *fileOptions; /**< :document this: */
   MetParams *metParams; /**< :document this: */
   TURBParams *turbParams; /**< :document this: */
-  Buildings *buildings; /**< :document this: */
+  Buildings *buildingsParams; /**< :document this: */
   Canopies *canopies; /**< :document this: */
 
   WINDSInputData()
@@ -70,7 +70,7 @@ public:
     fileOptions = 0;
     metParams = 0;
     turbParams = 0;
-    buildings = 0;
+    buildingsParams = 0;
     canopies = 0;
   }
 
@@ -80,7 +80,7 @@ public:
     fileOptions = 0;
     metParams = 0;
     turbParams = 0;
-    buildings = 0;
+    buildingsParams = 0;
     canopies = 0;
 
     QESfs::set_file_path(fileName);
@@ -93,7 +93,8 @@ public:
       exit(EXIT_FAILURE);
     }
 
-    parseTree(tree);
+    //parseTree(tree);
+    parseTreeBase(tree, "QESWindsParameters");
   }
 
   /**
@@ -105,7 +106,7 @@ public:
     parseElement<FileOptions>(false, fileOptions, "fileOptions");
     parseElement<MetParams>(false, metParams, "metParams");
     parseElement<TURBParams>(false, turbParams, "turbParams");
-    parseElement<Buildings>(false, buildings, "buildings");
+    parseElement<Buildings>(false, buildingsParams, "buildings");
     parseElement<Canopies>(false, canopies, "canopies");
   }
 
@@ -121,6 +122,9 @@ public:
   {
     setTree(t);
     setParents("root");
+    //auto child = t.get_child_optional("QESWindsParameters");
+    //setTree(*child);
+    //setParents("root::QESWindsParameters");
     parseValues();
   }
 };

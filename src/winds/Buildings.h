@@ -53,6 +53,12 @@ public:
   int numPolygonNodes; /**< number of polygon nodes */
   std::vector<Building *> buildings; /**< vector containing Building objects */
   float wallRoughness; /**< wall roughness metric */
+  int rooftopFlag = 1; /**< :Rooftop flag (0-none, 1-log profile (default), 2-vortex): */
+  int upwindCavityFlag = 2; /**< :Upwind cavity flag (0-none, 1-Rockle, 2-MVP (default), 3-HMVP): */
+  int streetCanyonFlag = 1; /**< :Street canyon flag (0-none, 1-Roeckle w/ Fackrel (default)): */
+  int streetIntersectionFlag = 0; /**< :Street intersection flag (0-off, 1-on): */
+  int wakeFlag = 2; /**< :Wake flag (0-none, 1-Rockle, 2-Modified Rockle (default), 3-Area Scaled): */
+  int sidewallFlag = 1; /**< :Sidewall flag (0-off, 1-on (default)): */
 
   // SHP File parameters
   std::string shpFile; /**< SHP file name */
@@ -63,11 +69,18 @@ public:
 
   virtual void parseValues()
   {
+    parsePrimitive<float>(true, wallRoughness, "wallRoughness");
+    parsePrimitive<int>(true, rooftopFlag, "rooftopFlag");
+    parsePrimitive<int>(true, upwindCavityFlag, "upwindCavityFlag");
+    parsePrimitive<int>(true, streetCanyonFlag, "streetCanyonFlag");
+    parsePrimitive<int>(true, streetIntersectionFlag, "streetIntersectionFlag");
+    parsePrimitive<int>(true, wakeFlag, "wakeFlag");
+    parsePrimitive<int>(true, sidewallFlag, "sidewallFlag");
+
     parsePrimitive<int>(false, numBuildings, "numBuildings");
     parsePrimitive<int>(false, numPolygonNodes, "numPolygonNodes");
     parseMultiPolymorphs(false, buildings, Polymorph<Building, RectangularBuilding>("rectangularBuilding"));
     parseMultiPolymorphs(false, buildings, Polymorph<Building, PolygonQUICBuilding>("QUICBuilding"));
-    parsePrimitive<float>(true, wallRoughness, "wallRoughness");
     parsePrimitive<float>(false, heightFactor, "heightFactor");
 
     shpFile = "";

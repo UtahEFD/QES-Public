@@ -113,12 +113,13 @@ public:
   // Function to return the actual particle object
   Particle *Create(std::string particleType)
   {
-    //     std::cout << "Element of ParticleTypeContainer are: " << std::endl;
+    /*
+    std::cout << "Element of ParticleTypeContainer are: " << std::endl;
     for (auto const &pair : ParticleTypeContainer) {
-      //  std::cout << "{" << pair.first << ": " << pair.second << "}\n";
+      std::cout << "{" << pair.first << ": " << pair.second << "}\n";
     }
-    //      std::cout << " ParticleTypeContainer.at(particleType) is: " << ParticleTypeContainer.at(particleType) << std::endl;
-
+    std::cout << " ParticleTypeContainer.at(particleType) is: " << ParticleTypeContainer.at(particleType) << std::endl;
+    */
     //      std::cout << "Calling create() from the " << particleType << " factory" << std::endl;
     return ParticleTypeContainer.at(particleType)->create();
     //      std::cout << "done calling create() from the " << particleType << " factory" << std::endl;

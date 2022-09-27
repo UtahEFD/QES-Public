@@ -78,10 +78,10 @@ void PolyBuilding::rooftop(const WINDSInputData *WID, WINDSGeneralData *WGD)
   float u0_roof, v0_roof;
 
   // check which rooftop method to use
-  if (WID->simParams->rooftopFlag == 1) {
+  if (WID->buildingsParams->rooftopFlag == 1) {
     // everything uses log-law
     rooftop_method = 1;
-  } else if (WID->simParams->rooftopFlag == 2) {
+  } else if (WID->buildingsParams->rooftopFlag == 2) {
     // rectangulare building can use rooftop vortex
     if (rectangular_flag && rooftop_flag == 1) {
       rooftop_method = 2;

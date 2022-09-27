@@ -44,7 +44,6 @@ using namespace netCDF::exceptions;
 
 NetCDFInput ::NetCDFInput(std::string input_file)
 {
-
   std::cout << "[NetCDFInput] \t Reading " << input_file << std::endl;
   infile = new NcFile(input_file, NcFile::read);
 }

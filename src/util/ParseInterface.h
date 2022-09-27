@@ -202,8 +202,8 @@ public:
    * @param UID the object that will serve as the base level of the xml parser
    */
   virtual void parseTree(pt::ptree t) {}
+  void parseTreeBase(pt::ptree t, const std::string root);
 };
-
 
 template<typename T>
 inline void ParseInterface::parseTaglessValues(std::vector<T> &eles)
@@ -335,4 +335,16 @@ inline void ParseInterface::parseMultiPolymorphs(bool isReq, std::vector<T *> &e
   }
   if (isReq && eles.size() == 0)
     throw(ParseException("Could not find " + treeParents + "::" + poly.tag));
+}
+
+inline void ParseInterface::parseTreeBase(pt::ptree t, const std::string root)
+{
+  auto child = t.get_child_optional(root);
+  if (child) {
+    setTree(*child);
+    setParents("root::" + root);
+    parseValues();
+  } else {
+    throw(ParseException("Could not find root::" + root));
+  }
 }

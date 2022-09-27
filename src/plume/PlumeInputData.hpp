@@ -77,11 +77,11 @@ public:
      */
   void parseTree(pt::ptree t)
   {
-    setTree(t);
-    setParents("root");
-    //auto child = t.get_child_optional("QESPlume");
-    //setTree(*child);
-    //setParents("root::QESPlume");
+    //setTree(t);
+    //setParents("root");
+    auto child = t.get_child_optional("QESPlumeParameters");
+    setTree(*child);
+    setParents("root::QESPlumeParameters");
     parseValues();
   }
 };

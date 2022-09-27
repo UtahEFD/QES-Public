@@ -125,8 +125,11 @@ public:
    */
   void parseTree(pt::ptree t)
   {
-    setTree(t);
-    setParents("root");
+    //setTree(t);
+    //setParents("root");
+    auto child = t.get_child_optional("sensor");
+    setTree(*child);
+    setParents("root::sensor");
     parseValues();
   }
 

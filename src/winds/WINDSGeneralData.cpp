@@ -41,21 +41,6 @@
 
 WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 {
-  if (WID->simParams->upwindCavityFlag == 1) {
-    lengthf_coeff = 2.0;
-  } else {
-    lengthf_coeff = 1.5;
-  }
-
-  // Determines how wakes behind buildings are calculated
-  if (WID->simParams->wakeFlag > 1) {
-    cavity_factor = 1.1;
-    wake_factor = 0.1;
-  } else {
-    cavity_factor = 1.0;
-    wake_factor = 0.0;
-  }
-
   // converting the domain rotation to radians from degrees -- input
   // assumes degrees
   theta = (WID->simParams->domainRotation * pi / 180.0);
@@ -72,7 +57,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   nx = WID->simParams->domain[0];
   ny = WID->simParams->domain[1];
   nz = WID->simParams->domain[2];
-
   // Modify the domain size to fit the Staggered Grid used in the solver
   nx += 1;// +1 for Staggered grid
   ny += 1;// +1 for Staggered grid
@@ -374,8 +358,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     }
   }
   z0 = 0.03;
-  if (WID->buildings)
-    z0 = WID->buildings->wallRoughness;
+  if (WID->buildingsParams)
+    z0 = WID->buildingsParams->wallRoughness;
 
   // /////////////////////////
   // Definition of the grid
@@ -724,18 +708,34 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   // Add all the Building* that were read in from XML to this list
   // too -- could be RectBuilding, PolyBuilding, whatever is derived
   // from Building in the end...
-  if (WID->buildings) {
+  if (WID->buildingsParams) {
+    if (WID->buildingsParams->upwindCavityFlag == 1) {
+      lengthf_coeff = 2.0;
+    } else {
+      lengthf_coeff = 1.5;
+    }
+
+    // Determines how wakes behind buildings are calculated
+    if (WID->buildingsParams->wakeFlag > 1) {
+      cavity_factor = 1.1;
+      wake_factor = 0.1;
+    } else {
+      cavity_factor = 1.0;
+      wake_factor = 0.0;
+    }
+
+
     auto buildingsetup_start = std::chrono::high_resolution_clock::now();// Start recording execution time
     //
-    if (WID->buildings->SHPData) {
+    if (WID->buildingsParams->SHPData) {
       std::cout << "Creating buildings from shapefile..." << std::flush;
 
 
       float corner_height, min_height;
 
       std::vector<float> shpDomainSize(2), minExtent(2);
-      WID->buildings->SHPData->getLocalDomain(shpDomainSize);
-      WID->buildings->SHPData->getMinExtent(minExtent);
+      WID->buildingsParams->SHPData->getLocalDomain(shpDomainSize);
+      WID->buildingsParams->SHPData->getMinExtent(minExtent);
 
       // printf("\tShapefile Origin = (%.6f,%.6f)\n", minExtent[0], minExtent[1]);
 
@@ -746,25 +746,25 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         minExtent[1] -= (minExtent[1] - WID->simParams->UTMy);
       }
 
-      for (size_t pIdx = 0u; pIdx < WID->buildings->SHPData->m_polygons.size(); pIdx++) {
+      for (size_t pIdx = 0u; pIdx < WID->buildingsParams->SHPData->m_polygons.size(); pIdx++) {
 
         // convert the global polys to local domain coordinates
-        for (auto lIdx = 0u; lIdx < WID->buildings->SHPData->m_polygons[pIdx].size(); lIdx++) {
-          WID->buildings->SHPData->m_polygons[pIdx][lIdx].x_poly -= minExtent[0];
-          WID->buildings->SHPData->m_polygons[pIdx][lIdx].y_poly -= minExtent[1];
+        for (auto lIdx = 0u; lIdx < WID->buildingsParams->SHPData->m_polygons[pIdx].size(); lIdx++) {
+          WID->buildingsParams->SHPData->m_polygons[pIdx][lIdx].x_poly -= minExtent[0];
+          WID->buildingsParams->SHPData->m_polygons[pIdx][lIdx].y_poly -= minExtent[1];
         }
 
         // Setting base height for buildings if there is a DEM file
         if (WID->simParams->DTE_heightField && WID->simParams->DTE_mesh) {
           // Get base height of every corner of building from terrain height
-          min_height = WID->simParams->DTE_mesh->getHeight(WID->buildings->SHPData->m_polygons[pIdx][0].x_poly,
-                                                           WID->buildings->SHPData->m_polygons[pIdx][0].y_poly);
+          min_height = WID->simParams->DTE_mesh->getHeight(WID->buildingsParams->SHPData->m_polygons[pIdx][0].x_poly,
+                                                           WID->buildingsParams->SHPData->m_polygons[pIdx][0].y_poly);
           if (min_height < 0) {
             min_height = 0.0;
           }
-          for (size_t lIdx = 1u; lIdx < WID->buildings->SHPData->m_polygons[pIdx].size(); lIdx++) {
-            corner_height = WID->simParams->DTE_mesh->getHeight(WID->buildings->SHPData->m_polygons[pIdx][lIdx].x_poly,
-                                                                WID->buildings->SHPData->m_polygons[pIdx][lIdx].y_poly);
+          for (size_t lIdx = 1u; lIdx < WID->buildingsParams->SHPData->m_polygons[pIdx].size(); lIdx++) {
+            corner_height = WID->simParams->DTE_mesh->getHeight(WID->buildingsParams->SHPData->m_polygons[pIdx][lIdx].x_poly,
+                                                                WID->buildingsParams->SHPData->m_polygons[pIdx][lIdx].y_poly);
 
             if (corner_height < min_height && corner_height >= 0.0) {
               min_height = corner_height;
@@ -775,17 +775,18 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
           base_height.push_back(0.0);
         }
 
-        for (size_t lIdx = 0u; lIdx < WID->buildings->SHPData->m_polygons[pIdx].size(); lIdx++) {
-          WID->buildings->SHPData->m_polygons[pIdx][lIdx].x_poly += WID->simParams->halo_x;
-          WID->buildings->SHPData->m_polygons[pIdx][lIdx].y_poly += WID->simParams->halo_y;
+        for (size_t lIdx = 0u; lIdx < WID->buildingsParams->SHPData->m_polygons[pIdx].size(); lIdx++) {
+          WID->buildingsParams->SHPData->m_polygons[pIdx][lIdx].x_poly += WID->simParams->halo_x;
+          WID->buildingsParams->SHPData->m_polygons[pIdx][lIdx].y_poly += WID->simParams->halo_y;
         }
 
         // Loop to create each of the polygon buildings read in from the shapefile
         int bId = allBuildingsV.size();
 
         // allBuildingsV.push_back(new PolyBuilding(WID, this, pIdx));
-        allBuildingsV.push_back(new PolyBuilding(WID->buildings->SHPData->m_polygons[pIdx],
-                                                 WID->buildings->SHPData->m_features[WID->buildings->shpHeightField][pIdx] * WID->buildings->heightFactor,
+        allBuildingsV.push_back(new PolyBuilding(WID->buildingsParams->SHPData->m_polygons[pIdx],
+                                                 WID->buildingsParams->SHPData->m_features[WID->buildingsParams->shpHeightField][pIdx]
+                                                   * WID->buildingsParams->heightFactor,
                                                  base_height[bId],
                                                  bId));
         building_id.push_back(bId);
@@ -798,9 +799,9 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     std::cout << "Consolidating building data..." << std::endl;
 
     float corner_height, min_height;
-    for (size_t i = 0; i < WID->buildings->buildings.size(); i++) {
+    for (size_t i = 0; i < WID->buildingsParams->buildings.size(); i++) {
 
-      allBuildingsV.push_back(WID->buildings->buildings[i]);
+      allBuildingsV.push_back(WID->buildingsParams->buildings[i]);
       int j = allBuildingsV.size() - 1;
       building_id.push_back(j);
 
@@ -835,7 +836,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       effective_height.push_back(allBuildingsV[j]->height_eff);
     }
 
-
     // We want to sort ALL buildings here...  use the allBuildingsV to
     // do this... (remember some are canopies) so we may need a
     // virtual function in the Building class to get the appropriate
@@ -849,6 +849,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     std::chrono::duration<float> elapsed_cut = buildingsetup_finish - buildingsetup_start;
     std::cout << "Elapsed time for building setup : " << elapsed_cut.count() << " s\n";
   }
+
 
   // Add all the Canopy* to it (they are derived from Building)
   canopy = 0;
@@ -1257,59 +1258,61 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     canopy->applyCanopyVegetation(this);
   }
 
-  ///////////////////////////////////////////
-  //   Upwind Cavity Parameterization     ///
-  ///////////////////////////////////////////
-  if (WID->simParams->upwindCavityFlag > 0) {
-    std::cout << "Applying upwind cavity parameterization...\n";
-    for (size_t i = 0; i < allBuildingsV.size(); i++) {
-      allBuildingsV[building_id[i]]->upwindCavity(WID, this);
+  if (WID->buildingsParams) {
+    ///////////////////////////////////////////
+    //   Upwind Cavity Parameterization     ///
+    ///////////////////////////////////////////
+    if (WID->buildingsParams->upwindCavityFlag > 0) {
+      std::cout << "Applying upwind cavity parameterization...\n";
+      for (size_t i = 0; i < allBuildingsV.size(); i++) {
+        allBuildingsV[building_id[i]]->upwindCavity(WID, this);
+      }
     }
-  }
 
-  //////////////////////////////////////////////////
-  //   Far-Wake and Cavity Parameterizations     ///
-  //////////////////////////////////////////////////
-  if (WID->simParams->wakeFlag > 0) {
-    std::cout << "Applying wake behind building parameterization...\n";
-    for (size_t i = 0; i < allBuildingsV.size(); i++) {
-      allBuildingsV[building_id[i]]->polygonWake(WID, this, building_id[i]);
+    //////////////////////////////////////////////////
+    //   Far-Wake and Cavity Parameterizations     ///
+    //////////////////////////////////////////////////
+    if (WID->buildingsParams->wakeFlag > 0) {
+      std::cout << "Applying wake behind building parameterization...\n";
+      for (size_t i = 0; i < allBuildingsV.size(); i++) {
+        allBuildingsV[building_id[i]]->polygonWake(WID, this, building_id[i]);
+      }
     }
-  }
 
-  ///////////////////////////////////////////
-  //   Street Canyon Parameterization     ///
-  ///////////////////////////////////////////
-  if (WID->simParams->streetCanyonFlag == 1) {
-    std::cout << "Applying street canyon parameterization...\n";
-    for (size_t i = 0; i < allBuildingsV.size(); i++) {
-      allBuildingsV[building_id[i]]->streetCanyon(this);
+    ///////////////////////////////////////////
+    //   Street Canyon Parameterization     ///
+    ///////////////////////////////////////////
+    if (WID->buildingsParams->streetCanyonFlag == 1) {
+      std::cout << "Applying street canyon parameterization...\n";
+      for (size_t i = 0; i < allBuildingsV.size(); i++) {
+        allBuildingsV[building_id[i]]->streetCanyon(this);
+      }
+    } else if (WID->buildingsParams->streetCanyonFlag == 2) {
+      std::cout << "Applying street canyon parameterization...\n";
+      for (size_t i = 0; i < allBuildingsV.size(); i++) {
+        allBuildingsV[building_id[i]]->streetCanyonModified(this);
+      }
     }
-  } else if (WID->simParams->streetCanyonFlag == 2) {
-    std::cout << "Applying street canyon parameterization...\n";
-    for (size_t i = 0; i < allBuildingsV.size(); i++) {
-      allBuildingsV[building_id[i]]->streetCanyonModified(this);
+
+    ///////////////////////////////////////////
+    //      Sidewall Parameterization       ///
+    ///////////////////////////////////////////
+    if (WID->buildingsParams->sidewallFlag > 0) {
+      std::cout << "Applying sidewall parameterization...\n";
+      for (size_t i = 0; i < allBuildingsV.size(); i++) {
+        allBuildingsV[building_id[i]]->sideWall(WID, this);
+      }
     }
-  }
-
-  ///////////////////////////////////////////
-  //      Sidewall Parameterization       ///
-  ///////////////////////////////////////////
-  if (WID->simParams->sidewallFlag > 0) {
-    std::cout << "Applying sidewall parameterization...\n";
-    for (size_t i = 0; i < allBuildingsV.size(); i++) {
-      allBuildingsV[building_id[i]]->sideWall(WID, this);
-    }
-  }
 
 
-  ///////////////////////////////////////////
-  //      Rooftop Parameterization        ///
-  ///////////////////////////////////////////
-  if (WID->simParams->rooftopFlag > 0) {
-    std::cout << "Applying rooftop parameterization...\n";
-    for (size_t i = 0; i < allBuildingsV.size(); i++) {
-      allBuildingsV[building_id[i]]->rooftop(WID, this);
+    ///////////////////////////////////////////
+    //      Rooftop Parameterization        ///
+    ///////////////////////////////////////////
+    if (WID->buildingsParams->rooftopFlag > 0) {
+      std::cout << "Applying rooftop parameterization...\n";
+      for (size_t i = 0; i < allBuildingsV.size(); i++) {
+        allBuildingsV[building_id[i]]->rooftop(WID, this);
+      }
     }
   }
 
@@ -1324,7 +1327,7 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
   ///////////////////////////////////////////
   //         Street Intersection          ///
   ///////////////////////////////////////////
-  /*if (WID->simParams->streetCanyonFlag > 0 && WID->simParams->streetIntersectionFlag > 0 && allBuildingsV.size() > 0)
+  /*if (WID->buildingsParams->streetCanyonFlag > 0 && WID->buildingsParams->streetIntersectionFlag > 0 && allBuildingsV.size() > 0)
     {
     std::cout << "Applying Blended Region Parameterization...\n";
     allBuildingsV[0]->streetIntersection (WID, this);
