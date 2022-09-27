@@ -197,11 +197,11 @@ public:
   virtual void parseValues() = 0;
 
   /**
-   * This function takes in an WINDSInputData variable and uses it
+   * This function read and parse the XML with root 'root'
    * as the base to parse the ptree
-   * @param UID the object that will serve as the base level of the xml parser
+   * @param fileName xml file
+   * @param root base level of xml
    */
-  virtual void parseTree(pt::ptree t) {}
   void parseXML(const std::string fileName, const std::string root);
 };
 

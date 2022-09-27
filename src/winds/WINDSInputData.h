@@ -84,20 +84,8 @@ public:
     canopies = 0;
 
     QESfs::set_file_path(fileName);
+    // read and parse the XML
     parseXML(fileName, "QESWindsParameters");
-    /*
-    pt::ptree tree;
-
-    try {
-      pt::read_xml(fileName, tree);
-    } catch (boost::property_tree::xml_parser::xml_parser_error &e) {
-      std::cerr << "Error reading tree in " << fileName << "\n";
-      exit(EXIT_FAILURE);
-    }
-
-    //parseTree(tree);
-    parseTreeBase(tree, "QESWindsParameters");
-    */
   }
 
   /**
@@ -111,23 +99,5 @@ public:
     parseElement<TURBParams>(false, turbParams, "turbParams");
     parseElement<Buildings>(false, buildingsParams, "buildings");
     parseElement<Canopies>(false, canopies, "canopies");
-  }
-
-  /**
-   * Parses the main XML for our QUIC projects.
-   *
-   * Initializes the XML structure and parses the main
-   * XML file used to represent projects in the QUIC system.
-   *
-   * @param t :document this:
-   */
-  void parseTree(pt::ptree t)
-  {
-    setTree(t);
-    setParents("root");
-    //auto child = t.get_child_optional("QESWindsParameters");
-    //setTree(*child);
-    //setParents("root::QESWindsParameters");
-    parseValues();
   }
 };
