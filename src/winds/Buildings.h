@@ -49,10 +49,10 @@ class Buildings : public ParseInterface
 {
 private:
 public:
-  int numBuildings; /**< number of Building objects */
-  int numPolygonNodes; /**< number of polygon nodes */
+  int numBuildings = 0; /**< number of Building objects */
+  int numPolygonNodes = 0; /**< number of polygon nodes */
   std::vector<Building *> buildings; /**< vector containing Building objects */
-  float wallRoughness; /**< wall roughness metric */
+  float wallRoughness = 0.001; /**< wall roughness metric */
   int rooftopFlag = 1; /**< :Rooftop flag (0-none, 1-log profile (default), 2-vortex): */
   int upwindCavityFlag = 2; /**< :Upwind cavity flag (0-none, 1-Rockle, 2-MVP (default), 3-HMVP): */
   int streetCanyonFlag = 1; /**< :Street canyon flag (0-none, 1-Roeckle w/ Fackrel (default)): */
@@ -69,6 +69,8 @@ public:
 
   virtual void parseValues()
   {
+    buildings.clear();
+
     parsePrimitive<float>(true, wallRoughness, "wallRoughness");
     parsePrimitive<int>(true, rooftopFlag, "rooftopFlag");
     parsePrimitive<int>(true, upwindCavityFlag, "upwindCavityFlag");

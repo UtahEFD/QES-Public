@@ -358,8 +358,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     }
   }
   z0 = 0.03;
-  if (WID->buildingsParams)
-    z0 = WID->buildingsParams->wallRoughness;
 
   // /////////////////////////
   // Definition of the grid
@@ -709,6 +707,9 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   // too -- could be RectBuilding, PolyBuilding, whatever is derived
   // from Building in the end...
   if (WID->buildingsParams) {
+
+    z0 = WID->buildingsParams->wallRoughness;
+
     if (WID->buildingsParams->upwindCavityFlag == 1) {
       lengthf_coeff = 2.0;
     } else {
@@ -796,6 +797,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       }
       std::cout << "[done]" << std::endl;
     }
+
     std::cout << "Consolidating building data..." << std::endl;
 
     float corner_height, min_height;

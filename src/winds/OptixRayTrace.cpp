@@ -45,7 +45,6 @@ OptixRayTrace::OptixRayTrace(std::vector<Triangle *> tris)
 
   createContext();
 
-
   if (!TEST) {
     buildAS(tris);
   }

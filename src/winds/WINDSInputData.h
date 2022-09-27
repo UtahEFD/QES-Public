@@ -58,12 +58,12 @@
 class WINDSInputData : public ParseInterface
 {
 public:
-  SimulationParameters *simParams; /**< :document this: */
-  FileOptions *fileOptions; /**< :document this: */
-  MetParams *metParams; /**< :document this: */
-  TURBParams *turbParams; /**< :document this: */
-  Buildings *buildingsParams; /**< :document this: */
-  Canopies *canopies; /**< :document this: */
+  SimulationParameters *simParams = nullptr; /**< :document this: */
+  FileOptions *fileOptions = nullptr; /**< :document this: */
+  MetParams *metParams = nullptr; /**< :document this: */
+  TURBParams *turbParams = nullptr; /**< :document this: */
+  Buildings *buildingsParams = nullptr; /**< :document this: */
+  Canopies *canopies = nullptr; /**< :document this: */
 
   WINDSInputData()
   {

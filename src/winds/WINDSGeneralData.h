@@ -130,9 +130,9 @@ public:
   const float pi = 4.0f * atan(1.0); /**< pi constant */
   const float vk = 0.4; /**< Von Karman's constant */
 
-  float cavity_factor; /**< :document this: */
-  float wake_factor; /**< :document this: */
-  float lengthf_coeff; /**< :document this: */
+  float cavity_factor = 1.0; /**< :document this: */
+  float wake_factor = 0.0; /**< :document this: */
+  float lengthf_coeff = 1.5; /**< :document this: */
   float theta; /**< :document this: */
   int icell_face;
   int icell_cent;
