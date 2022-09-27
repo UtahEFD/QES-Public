@@ -32,7 +32,6 @@
 
 #pragma once
 
-#include "util/ParseInterface.h"
 #include "util/Vector3.h"
 #include "Ray.h"
 #include "HitRecord.h"
