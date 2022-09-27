@@ -1,0 +1,55 @@
+<QESWindsParameters>
+  <simulationParameters>
+
+    <halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
+    <halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
+
+    <domain>200 200 100</domain>					<!-- Number of cells in x,y and z directions-->
+    <cellSize> 2.0 2.0 2.0 </cellSize> 				<!-- Mesh resolution (meters)-->
+    <verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-custom grid)-->
+    
+    <totalTimeIncrements> 0 </totalTimeIncrements> 			<!-- Number of time steps-->
+    
+    <logLawFlag> 0 </logLawFlag> 					<!-- Log Law flag to apply the log law (0-off (default), 1-on) -->
+
+    <maxIterations> 500 </maxIterations> 				<!-- Maximum number of iterations (default = 500) -->
+    <tolerance> 1E-9 </tolerance> 					<!-- Convergence criteria, error threshold (default = 1e-9) -->
+    <meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (original QES) (default), 1-Cut-cell method -->
+
+    <domainRotation> 0 </domainRotation>  				<!-- Rotation angle of domain relative to true north -->
+    <UTMx> 0 </UTMx> 						<!-- x component (m) in UTM -->
+    <UTMy> 0 </UTMy> 						<!-- y component (m) in UTM -->
+    <UTMZone> 1 </UTMZone> 						<!-- UTM zone that domain located -->
+    <UTMZoneLetter> 17 </UTMZoneLetter>
+
+    <readCoefficientsFlag> 0 </readCoefficientsFlag> 		<!-- Reading solver coefficients flag (0-calculate coefficients (default), 1-read coefficients from the file) -->
+    <!--COEFF>test_windsWk.nc</COEFF-->					<!-- Address to coefficients file location --> 
+  </simulationParameters>                     				<!-- End of simulation parameters -->
+
+  <metParams>
+    <z0_domain_flag> 0 </z0_domain_flag>           			<!-- Distribution of sueface roughness for domain (0-uniform (default), 1-custom -->
+    <sensorName>sensor1.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+    <sensorName>sensor2.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+    <sensorName>sensor3.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+  </metParams>
+
+  <turbParams>
+    <method>3</method> <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
+    <samples>10000</samples> <!~- Samples per air cell for ray-traced mixing length calculations -->
+    <save>true</save> <!-- Save 2 to file -->    
+    <LMfile>QU_inner_mixlength.nc</LMfile> <!-- Address to mixing lethng location--> 
+  </turbParams>
+
+  <fileOptions>
+    <outputFlag>1</outputFlag>
+    <outputFields>all</outputFields> 
+    <outputFields>v</outputFields> 
+    <outputFields>w</outputFields>
+    <outputFields>icell</outputFields> 
+    <massConservedFlag> 0 </massConservedFlag>
+    <sensorVelocityFlag> 0 </sensorVelocityFlag>
+    <staggerdVelocityFlag> 0 </staggerdVelocityFlag>
+  </fileOptions>
+  
+</QESWindsParameters>
+
