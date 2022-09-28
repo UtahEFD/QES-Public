@@ -43,7 +43,7 @@
 #include "SimulationParameters.h"
 #include "FileOptions.h"
 #include "MetParams.h"
-#include "Buildings.h"
+#include "BuildingsParams.h"
 #include "Canopies.h"
 #include "TURBParams.h"
 
@@ -62,7 +62,7 @@ public:
   FileOptions *fileOptions = nullptr; /**< :document this: */
   MetParams *metParams = nullptr; /**< :document this: */
   TURBParams *turbParams = nullptr; /**< :document this: */
-  Buildings *buildingsParams = nullptr; /**< :document this: */
+  BuildingsParams *buildingsParams = nullptr; /**< :document this: */
   Canopies *canopies = nullptr; /**< :document this: */
 
   WINDSInputData()
@@ -97,7 +97,7 @@ public:
     parseElement<FileOptions>(false, fileOptions, "fileOptions");
     parseElement<MetParams>(false, metParams, "metParams");
     parseElement<TURBParams>(false, turbParams, "turbParams");
-    parseElement<Buildings>(false, buildingsParams, "buildingsParams");
+    parseElement<BuildingsParams>(false, buildingsParams, "buildingsParams");
     parseElement<Canopies>(false, canopies, "canopies");
   }
 };

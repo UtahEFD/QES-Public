@@ -45,7 +45,7 @@
  * @brief Contains data and variables that pertain to all buildings
  * along with a list of all buildings pulled from an input xml file.
  */
-class Buildings : public ParseInterface
+class BuildingsParams : public ParseInterface
 {
 private:
 public:
