@@ -35,15 +35,11 @@
 #include <iostream>
 #include <string>
 
-class QEStool
-{
-public:
-  static void error(std::string);
-  static void warning(std::string);
-  //static void verbose(std::string);
+namespace QEStool {
+void splashScreen();
+void error(std::string);
+void warning(std::string);
+void setVerbose();
+void verbose(std::string);
 
-
-private:
-  QEStool()
-  {}
-};
+};// namespace QEStool

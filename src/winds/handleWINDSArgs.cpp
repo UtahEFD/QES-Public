@@ -77,7 +77,10 @@ void WINDSArgs::processArguments(int argc, char *argv[])
   }
 
   verbose = isSet("verbose");
-  if (verbose) std::cout << "Verbose Output: ON" << std::endl;
+  if (verbose) {
+    std::cout << "Verbose Output: ON" << std::endl;
+    QEStool::setVerbose();
+  }
 
   solveWind = isSet("windsolveroff");
   if (solveWind) std::cout << "the wind fields are not being calculated" << std::endl;

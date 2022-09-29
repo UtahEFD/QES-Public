@@ -32,24 +32,43 @@
 
 #include "QEStool.h"
 
-void QEStool::error(std::string out)
+namespace QEStool {
+namespace {
+  bool verbose_flag = false;
+}
+void splashScreen()
+{
+  std::cout << "##############################################################" << std::endl;
+  std::cout << "#                                                            #" << std::endl;
+  std::cout << "#                      Welcome to QES                        #" << std::endl;
+  std::cout << "#                                                            #" << std::endl;
+  std::cout << "##############################################################" << std::endl;
+  std::cout << "version X.X.X (2022)" << std::endl;
+#ifdef HAS_OPTIX
+  std::cout << "OptiX is available!" << std::endl;
+#endif
+}
+
+
+void error(std::string out)
 {
   std::cerr << "[ERROR]\t" << out << std::endl;
   exit(EXIT_FAILURE);
-  return;
 }
 
-void QEStool::warning(std::string out)
+void warning(std::string out)
 {
   std::cerr << "[WARNING]\t" << out << std::endl;
-  return;
 }
 
-/*
-void QEStool::verbose(std::string out)
+void setVerbose()
+{
+  verbose_flag = true;
+}
+
+void verbose(std::string out)
 {
   if (verbose_flag)
     std::cout << out << std::endl;
-  return;
 }
-*/
+}// namespace QEStool

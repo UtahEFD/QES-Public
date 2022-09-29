@@ -67,18 +67,11 @@ using namespace netCDF::exceptions;
 ////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char **argv)
 {
+  QEStool::splashScreen();
+
   // set up timer information for the simulation runtime
   calcTime timers;
   timers.startNewTimer("QES-Plume total runtime");// start recording execution time
-
-
-  // print a nice little welcome message
-  std::cout << std::endl;
-  std::cout << "##############################################################" << std::endl;
-  std::cout << "#                                                            #" << std::endl;
-  std::cout << "#                   Welcome to QES-PLUME                     #" << std::endl;
-  std::cout << "#                                                            #" << std::endl;
-  std::cout << "##############################################################" << std::endl;
 
   // parse command line arguments
   PlumeArgs arguments;
