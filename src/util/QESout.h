@@ -28,47 +28,18 @@
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file QEStool.cpp */
+/** @file QESout.h */
 
-#include "QEStool.h"
+#pragma once
 
-namespace QEStool {
-namespace {
-  bool verbose_flag = false;
-}
-void splashScreen()
-{
-  std::cout << "##############################################################" << std::endl;
-  std::cout << "#                                                            #" << std::endl;
-  std::cout << "#                      Welcome to QES                        #" << std::endl;
-  std::cout << "#                                                            #" << std::endl;
-  std::cout << "##############################################################" << std::endl;
-  std::cout << "version X.X.X (2022)" << std::endl;
-#ifdef HAS_OPTIX
-  std::cout << "OptiX is available!" << std::endl;
-#endif
-}
+#include <iostream>
+#include <string>
 
+namespace QESout {
+void splashScreen();
+void error(std::string);
+void warning(std::string);
+void setVerbose();
+void verbose(std::string);
 
-void error(std::string out)
-{
-  std::cerr << "[ERROR]\t" << out << std::endl;
-  exit(EXIT_FAILURE);
-}
-
-void warning(std::string out)
-{
-  std::cerr << "[WARNING]\t" << out << std::endl;
-}
-
-void setVerbose()
-{
-  verbose_flag = true;
-}
-
-void verbose(std::string out)
-{
-  if (verbose_flag)
-    std::cout << out << std::endl;
-}
-}// namespace QEStool
+};// namespace QESout

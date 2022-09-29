@@ -46,7 +46,7 @@
 #include "plume/handlePlumeArgs.hpp"
 #include "plume/PlumeInputData.hpp"
 #include "util/NetCDFInput.h"
-#include "util/QEStool.h"
+#include "util/QESout.h"
 
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
@@ -67,7 +67,7 @@ using namespace netCDF::exceptions;
 ////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char **argv)
 {
-  QEStool::splashScreen();
+  QESout::splashScreen();
 
   // set up timer information for the simulation runtime
   calcTime timers;
@@ -80,7 +80,7 @@ int main(int argc, char **argv)
   // parse xml settings
   PlumeInputData *PID = new PlumeInputData(arguments.qesPlumeParamFile);
   if (!PID)
-    QEStool::error("QES-Plume input file: " + arguments.qesPlumeParamFile + " not able to be read successfully.");
+    QESout::error("QES-Plume input file: " + arguments.qesPlumeParamFile + " not able to be read successfully.");
 
   // Create instance of QES-winds General data class
   WINDSGeneralData *WGD = new WINDSGeneralData(arguments.inputWINDSFile);

@@ -73,7 +73,7 @@ void PlumeArgs::processArguments(int argc, char *argv[])
   if (qesPlumeParamFile != "")
     std::cout << "qesPlumeParamFile set to " << qesPlumeParamFile << std::endl;
   else
-    QEStool::error("qesPlumeParamFile not specified");
+    QESout::error("qesPlumeParamFile not specified");
 
 
   if (isSet("projectQESFiles", projectQESFiles)) {
@@ -84,10 +84,10 @@ void PlumeArgs::processArguments(int argc, char *argv[])
     outputParticleDataFile = projectQESFiles + "_particleInfo.nc";
   } else {
     if (!isSet("inputWINDSFile", inputWINDSFile)) {
-      QEStool::error("inputWINDSFile not specified!");
+      QESout::error("inputWINDSFile not specified!");
     }
     if (!isSet("inputTURBFile", inputTURBFile)) {
-      QEStool::error("inputTURBFile not specified!");
+      QESout::error("inputTURBFile not specified!");
     }
 
     isSet("outbasename", netCDFFileBasename);
@@ -97,7 +97,7 @@ void PlumeArgs::processArguments(int argc, char *argv[])
       outputFile = netCDFFileBasename + "_plumeOut.nc";
       outputParticleDataFile = netCDFFileBasename + "_particleInfo.nc";
     } else {
-      QEStool::error("No output basename set -> output turned off ");
+      QESout::error("No output basename set -> output turned off ");
     }
   }
 
