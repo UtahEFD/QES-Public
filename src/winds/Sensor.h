@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -69,16 +70,8 @@ public:
 
   Sensor(const std::string fileName)
   {
-    pt::ptree tree;
-
-    try {
-      pt::read_xml(fileName, tree);
-    } catch (boost::property_tree::xml_parser::xml_parser_error &e) {
-      std::cerr << "Error reading tree in" << fileName << "\n";
-      exit(EXIT_FAILURE);
-    }
-
-    parseTree(tree);
+    // read and parse the XML
+    parseXML(fileName, "sensor");
   }
 
 
@@ -118,17 +111,6 @@ public:
     parsePrimitive<float>(false, site_lat, "site_lat");
     parseMultiElements<TimeSeries>(false, TS, "timeSeries");
   }
-
-  /**
-   * :document this:
-   */
-  void parseTree(pt::ptree t)
-  {
-    setTree(t);
-    setParents("root");
-    parseValues();
-  }
-
 
   /**
    * Computes the wind velocity profile using Barnes scheme at the site's sensor.

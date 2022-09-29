@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -44,14 +45,20 @@
  * @brief Contains data and variables that pertain to all buildings
  * along with a list of all buildings pulled from an input xml file.
  */
-class Buildings : public ParseInterface
+class BuildingsParams : public ParseInterface
 {
 private:
 public:
-  int numBuildings; /**< number of Building objects */
-  int numPolygonNodes; /**< number of polygon nodes */
+  int numBuildings = 0; /**< number of Building objects */
+  int numPolygonNodes = 0; /**< number of polygon nodes */
   std::vector<Building *> buildings; /**< vector containing Building objects */
-  float wallRoughness; /**< wall roughness metric */
+  float wallRoughness = 0.001; /**< wall roughness metric */
+  int rooftopFlag = 1; /**< :Rooftop flag (0-none, 1-log profile (default), 2-vortex): */
+  int upwindCavityFlag = 2; /**< :Upwind cavity flag (0-none, 1-Rockle, 2-MVP (default), 3-HMVP): */
+  int streetCanyonFlag = 1; /**< :Street canyon flag (0-none, 1-Roeckle w/ Fackrel (default)): */
+  int streetIntersectionFlag = 0; /**< :Street intersection flag (0-off, 1-on): */
+  int wakeFlag = 2; /**< :Wake flag (0-none, 1-Rockle, 2-Modified Rockle (default), 3-Area Scaled): */
+  int sidewallFlag = 1; /**< :Sidewall flag (0-off, 1-on (default)): */
 
   // SHP File parameters
   std::string shpFile; /**< SHP file name */
@@ -62,11 +69,20 @@ public:
 
   virtual void parseValues()
   {
+    buildings.clear();
+
+    parsePrimitive<float>(true, wallRoughness, "wallRoughness");
+    parsePrimitive<int>(true, rooftopFlag, "rooftopFlag");
+    parsePrimitive<int>(true, upwindCavityFlag, "upwindCavityFlag");
+    parsePrimitive<int>(true, streetCanyonFlag, "streetCanyonFlag");
+    parsePrimitive<int>(true, streetIntersectionFlag, "streetIntersectionFlag");
+    parsePrimitive<int>(true, wakeFlag, "wakeFlag");
+    parsePrimitive<int>(true, sidewallFlag, "sidewallFlag");
+
     parsePrimitive<int>(false, numBuildings, "numBuildings");
     parsePrimitive<int>(false, numPolygonNodes, "numPolygonNodes");
     parseMultiPolymorphs(false, buildings, Polymorph<Building, RectangularBuilding>("rectangularBuilding"));
     parseMultiPolymorphs(false, buildings, Polymorph<Building, PolygonQUICBuilding>("QUICBuilding"));
-    parsePrimitive<float>(true, wallRoughness, "wallRoughness");
     parsePrimitive<float>(false, heightFactor, "heightFactor");
 
     shpFile = "";

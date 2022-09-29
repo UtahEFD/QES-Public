@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -43,9 +44,6 @@
 void Wall::defineWalls(WINDSGeneralData *WGD)
 {
 
-  //float dx = WGD->dx;
-  //float dy = WGD->dy;
-  //float dz = WGD->dz;
   int nx = WGD->nx;
   int ny = WGD->ny;
   int nz = WGD->nz;
@@ -135,7 +133,6 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
     for (auto i = 0; i < nx - 1; i++) {
       for (auto j = 0; j < ny - 1; j++) {
         int icell_cent = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
-        //int icell_face = i + j * nx + k * nx * ny;
 
         if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
 
@@ -352,36 +349,6 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
         if (WGD->icellflag[icell_cent] == 7 || WGD->icellflag[icell_cent] == 8) {
           WGD->wall_indices.push_back(icell_cent);
         }
-
-        /*if (WGD->icellflag[icell_cent] == 1) {
-          if (WGD->icellflag[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] == 0 || WGD->icellflag[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] == 2) {
-            WGD->wall_indices.push_back(icell_cent);
-          }
-          // Wall above
-          if (WGD->icellflag[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)] == 0 || WGD->icellflag[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)] == 2) {
-            WGD->wall_indices.push_back(icell_cent);
-          }
-          // Wall in back
-          if (WGD->icellflag[icell_cent - 1] == 0 || WGD->icellflag[icell_cent - 1] == 2) {
-            if (i > 0) {
-              WGD->wall_indices.push_back(icell_cent);
-            }
-          }
-          // Wall in front
-          if (WGD->icellflag[icell_cent + 1] == 0 || WGD->icellflag[icell_cent + 1] == 2) {
-            WGD->wall_indices.push_back(icell_cent);
-          }
-          // Wall on right
-          if (WGD->icellflag[icell_cent - (WGD->nx - 1)] == 0 || WGD->icellflag[icell_cent - (WGD->nx - 1)] == 2) {
-            if (j > 0) {
-              WGD->wall_indices.push_back(icell_cent);
-            }
-          }
-          // Wall on left
-          if (WGD->icellflag[icell_cent + (WGD->nx - 1)] == 0 || WGD->icellflag[icell_cent + (WGD->nx - 1)] == 2) {
-            WGD->wall_indices.push_back(icell_cent);
-          }
-        }*/
       }
     }
   }
@@ -605,21 +572,10 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
         dist2 = sqrt(pow((WGD->x[second_i] - WGD->x[i]), 2.0) + pow((WGD->y[second_j] - WGD->y[j]), 2.0)
                      + pow((WGD->z[second_k] - WGD->z[k]), 2.0))
                 + WGD->wall_distance[WGD->wall_indices[id]];
-        // If the cell distance from surface is in a way that creates negative velocity
-        /*if (i != first_i || j != first_j || k != first_k) {
-          int icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-          WGD->u0[icell_face] = 0.0;
-          WGD->v0[icell_face] = 0.0;
-          WGD->w0[icell_face] = 0.0;
-        }*/
 
         if (((log(dist2 / dist1) / log(dist1 / WGD->z0)) <= 1.0) && dist1 > WGD->z0) {
           condition = false;
         } else {
-          /*int icell_face = first_i + first_j * WGD->nx + first_k * WGD->nx * WGD->ny;
-          WGD->u0[icell_face] = 0.0;
-          WGD->v0[icell_face] = 0.0;
-          WGD->w0[icell_face] = 0.0;*/
           count += 1;
         }
       }
@@ -692,23 +648,6 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
       new_ustar = WGD->vk * vel_mag1 / log(dist1 / WGD->z0);
       ustar_wall = new_ustar;
     }
-
-    /*if (first_i == 169 && first_j == 111 && first_k == 13) {
-      std::cout << "dist1:  " << dist1 << std::endl;
-      std::cout << "dist2:  " << dist2 << std::endl;
-      std::cout << "vel_mag1:  " << vel_mag1 << std::endl;
-      std::cout << "vel_mag2:  " << vel_mag2 << std::endl;
-      std::cout << "i:  " << i << std::endl;
-      std::cout << "j:  " << j << std::endl;
-      std::cout << "k:  " << k << std::endl;
-      std::cout << "second_i:  " << second_i << std::endl;
-      std::cout << "second_j:  " << second_j << std::endl;
-      std::cout << "second_k:  " << second_k << std::endl;
-      std::cout << "WGD->ti[WGD->wall_indices[id]]:  " << WGD->ti[WGD->wall_indices[id]] << std::endl;
-      std::cout << "WGD->tj[WGD->wall_indices[id]]:  " << WGD->tj[WGD->wall_indices[id]] << std::endl;
-      std::cout << "WGD->tk[WGD->wall_indices[id]]:  " << WGD->tk[WGD->wall_indices[id]] << std::endl;
-    }*/
-
 
     // Turn the velocity magnitude in the tangential direction to Cartesian grid (U0 = ut + un (un = 0))
     WGD->u0[first_id] = vel_mag1 * WGD->ti[WGD->wall_indices[id]];

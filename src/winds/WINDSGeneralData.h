@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -129,9 +130,9 @@ public:
   const float pi = 4.0f * atan(1.0); /**< pi constant */
   const float vk = 0.4; /**< Von Karman's constant */
 
-  float cavity_factor; /**< :document this: */
-  float wake_factor; /**< :document this: */
-  float lengthf_coeff; /**< :document this: */
+  float cavity_factor = 1.0; /**< :document this: */
+  float wake_factor = 0.0; /**< :document this: */
+  float lengthf_coeff = 1.5; /**< :document this: */
   float theta; /**< :document this: */
   int icell_face;
   int icell_cent;
@@ -159,7 +160,6 @@ public:
 
   // std::vector<size_t> start; /**< :document this: */
   // std::vector<size_t> count; /**< :document this: */
-
 
   ///@{
   /** :Values of z0 for u and v components: */
@@ -237,8 +237,6 @@ public:
   /** Declaration of final velocity field components (u,v,w) */
   std::vector<float> u, v, w;
   ///@}
-
-  std::vector<float> depcvol;
 
   // local Mixing class and data
   LocalMixing *localMixing; /**< :document this: */

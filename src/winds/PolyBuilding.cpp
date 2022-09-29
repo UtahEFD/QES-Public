@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -50,8 +51,8 @@
 PolyBuilding::PolyBuilding(const WINDSInputData *WID, WINDSGeneralData *WGD, int id)
   : Building()
 {
-  polygonVertices = WID->buildings->SHPData->m_polygons[id];
-  H = WID->buildings->SHPData->m_features[WID->buildings->shpHeightField][id] * WID->buildings->heightFactor;
+  polygonVertices = WID->buildingsParams->SHPData->m_polygons[id];
+  H = WID->buildingsParams->SHPData->m_features[WID->buildingsParams->shpHeightField][id] * WID->buildingsParams->heightFactor;
   base_height = WGD->base_height[id];
 
   ID = id;
@@ -1527,8 +1528,6 @@ float PolyBuilding::calculateArea(WINDSGeneralData *WGD, std::vector<cutVert> &f
   int k = 0;
   if (face_points.size() != 0) {
     k = cutcell_index / ((WGD->nx - 1) * (WGD->ny - 1));
-    //unused: int j = (cutcell_index - k * (WGD->nx - 1) * (WGD->ny - 1)) / (WGD->nx - 1);
-    //unused: int i = cutcell_index - k * (WGD->nx - 1) * (WGD->ny - 1) - j * (WGD->nx - 1);
     // calculate area fraction coefficient for each face of the cut-cell
     for (auto i = 0u; i < face_points.size() - 1; i++) {
       coeff += (0.5 * (face_points[i + 1].y_cut + face_points[i].y_cut) * (face_points[i + 1].z_cut - face_points[i].z_cut)) / (WGD->dy * WGD->dz_array[k]) + (0.5 * (face_points[i + 1].x_cut + face_points[i].x_cut) * (face_points[i + 1].z_cut - face_points[i].z_cut)) / (WGD->dx * WGD->dz_array[k]) + (0.5 * (face_points[i + 1].x_cut + face_points[i].x_cut) * (face_points[i + 1].y_cut - face_points[i].y_cut)) / (WGD->dx * WGD->dy);
