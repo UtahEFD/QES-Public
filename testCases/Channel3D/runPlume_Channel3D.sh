@@ -42,11 +42,11 @@ matlab -nodisplay -nosplash -nodesktop -r "run('Channel3D_testcase.m');exit;"
 
 cd ../../../build/
 
-./qesPlume/qesPlume -q ../testCases/Channel3D/QES-files/Channel3D_1.83_18.3.xml -u ../testCases/Channel3D/QES-data/Channel3D_windsWk.nc -t ../testCases/Channel3D/QES-data/Channel3D_turbOut.nc -o ../testCases/Channel3D/QES-data/ -b Channel3D_1.83_18.3 -l
+./qesPlume/qesPlume -q ../testCases/Channel3D/QES-files/Channel3D_1.83_18.3.xml -w ../testCases/Channel3D/QES-data/Channel3D_windsWk.nc -t ../testCases/Channel3D/QES-data/Channel3D_turbOut.nc -o ../testCases/Channel3D/QES-data/Channel3D_1.83_18.3 -l
 
-./qesPlume/qesPlume -q ../testCases/Channel3D/QES-files/Channel3D_0.183_18.3.xml -u ../testCases/Channel3D/QES-data/Channel3D_windsWk.nc -t ../testCases/Channel3D/QES-data/Channel3D_turbOut.nc -o ../testCases/Channel3D/QES-data/ -b Channel3D_0.183_18.3 -l
+./qesPlume/qesPlume -q ../testCases/Channel3D/QES-files/Channel3D_0.183_18.3.xml -w ../testCases/Channel3D/QES-data/Channel3D_windsWk.nc -t ../testCases/Channel3D/QES-data/Channel3D_turbOut.nc -o ../testCases/Channel3D/QES-data/Channel3D_0.183_18.3 -l
 
-./qesPlume/qesPlume -q ../testCases/Channel3D/QES-files/Channel3D_0.00183_18.3.xml -u ../testCases/Channel3D/QES-data/Channel3D_windsWk.nc -t ../testCases/Channel3D/QES-data/Channel3D_turbOut.nc -o ../testCases/Channel3D/QES-data/ -b Channel3D_0.00183_18.3  -l 
+./qesPlume/qesPlume -q ../testCases/Channel3D/QES-files/Channel3D_0.00183_18.3.xml -w ../testCases/Channel3D/QES-data/Channel3D_windsWk.nc -t ../testCases/Channel3D/QES-data/Channel3D_turbOut.nc -o ../testCases/Channel3D/QES-data/Channel3D_0.00183_18.3  -l 
 
 cd - 
 

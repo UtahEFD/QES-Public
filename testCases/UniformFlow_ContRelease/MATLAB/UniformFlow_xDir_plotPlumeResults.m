@@ -30,8 +30,8 @@ for k=1:nProf
     grid on
     xlabel('$y/H$')
     
-    %tmpstr=sprintf('(%s) $x/H=$%.3f',cStr(k),d2plotLat.xoH(k));
-    tmpstr=sprintf('(%s)',cStr(k));
+    tmpstr=sprintf('(%s) $x/H=$%.3f',cStr(k),d2plotLat.xoH(k));
+    %tmpstr=sprintf('(%s)',cStr(k));
     htext=text(0.05,0.92,tmpstr,'Units','normalized');
     set(htext,'interpreter','latex','FontSize',fsize,'BackgroundColor','w');
 end
@@ -50,7 +50,8 @@ for k=1:nProf
     grid on
     xlabel('$C^*$')
     
-    tmpstr=sprintf('(%s) $x/H=$%.3f',cStr(k+nProf),d2plotLat.xoH(k));
+    %tmpstr=sprintf('(%s) $x/H=$%.3f',cStr(k+nProf),d2plotLat.xoH(k));
+    tmpstr=sprintf('(%s)',cStr(k+nProf));
     htext=text(0.05,0.92,tmpstr,'Units','normalized');
     set(htext,'interpreter','latex','FontSize',fsize,'BackgroundColor','w');
 end
@@ -69,6 +70,10 @@ for k=1:nProf
        haxes(k).XTick=haxes(k+nProf).YTick;
     end
 end
+haxes(3).YLim(2)=15;
+haxes(3).YTick=0:3:15;
+haxes(3+nProf).XLim(2)=15;
+haxes(3+nProf).XTick=0:3:15;
 
 currentPlotName=sprintf('plotOutput/%s_ModelComp',caseNamePlume);
 save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)

@@ -1,3 +1,4 @@
+<QESPlumeParameters>
 <simulationParameters>
   
   <halo_x> 0.0 </halo_x>
@@ -93,3 +94,5 @@
   <zBCtype>exiting</zBCtype>
   <wallReflection>stairstepReflection</wallReflection>
 </boundaryConditions>
+</QESPlumeParameters>
+

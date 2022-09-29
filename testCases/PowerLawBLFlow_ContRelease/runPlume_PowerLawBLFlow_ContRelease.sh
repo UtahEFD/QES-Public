@@ -23,12 +23,14 @@ date
 sacct -j $SLURM_JOBID
 echo '----------------------------------------------------------------------------'
 echo 'setting environment'
-module load cuda/10.2
-module load gcc/8.1.0
-module load cmake/3.15.3
-module load gdal/3.0.1
-module load boost/1.69.0
-module load netcdf-cxx
+module load cuda/11.4
+module load cmake/3.21.4
+module load gcc/8.5.0
+module load boost/1.77.0
+module load intel-oneapi-mpi/2021.4.0
+module load gdal/3.3.3
+module load netcdf-c/4.8.1
+module load netcdf-cxx/4.2
 module load matlab
 ulimit -c unlimited -s
 module list
@@ -40,13 +42,13 @@ matlab -nodisplay -nosplash -nodesktop -r "run('PowerLawBLFlow_xDir_inputFiles.m
 
 cd ../../../build
 
-./qesPlume/qesPlume -q ../testCases/PowerLawBLFlow_ContRelease/QES-files/PowerLawBLFlow_xDir_ContRelease.xml -u ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_xDir_windsWk.nc -t ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_xDir_turbOut.nc -o ../testCases/PowerLawBLFlow_ContRelease/QES-data/ -b PowerLawBLFlow_xDir_ContRelease
+./qesPlume/qesPlume -q ../testCases/PowerLawBLFlow_ContRelease/QES-files/PowerLawBLFlow_xDir_ContRelease.xml -w ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_xDir_windsWk.nc -t ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_xDir_turbOut.nc -o ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_xDir_ContRelease
 
-./qesPlume/qesPlume -q ../testCases/PowerLawBLFlow_ContRelease/QES-files/PowerLawBLFlow_yDir_ContRelease.xml -u ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_yDir_windsWk.nc -t ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_yDir_turbOut.nc -o ../testCases/PowerLawBLFlow_ContRelease/QES-data/ -b PowerLawBLFlow_yDir_ContRelease
+./qesPlume/qesPlume -q ../testCases/PowerLawBLFlow_ContRelease/QES-files/PowerLawBLFlow_yDir_ContRelease.xml -w ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_yDir_windsWk.nc -t ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_yDir_turbOut.nc -o ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_yDir_ContRelease
 
 cd -
 
-matlab -nodisplay -nosplash -nodesktop -r "run('PowerLawBLFlow_xDir_mainPlumeResults.m'); run('PowerLawBLFlow_yDir_mainPlumeResults.m'); exit;"
+matlab -nodisplay -nosplash -nodesktop -r "run('PowerLawBLFlow_xDir_mainPlumeResults.m'); clear; run('PowerLawBLFlow_yDir_mainPlumeResults.m'); exit;"
 
 cd ..
 

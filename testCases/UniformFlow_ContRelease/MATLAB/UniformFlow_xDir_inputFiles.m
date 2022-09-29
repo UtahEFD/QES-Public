@@ -1,5 +1,4 @@
- 
-%% ========================================================================
+ %% ========================================================================
 % setup:
 
 %file name to save netCDF (must contain path)
@@ -27,8 +26,9 @@ z_cc=-0.5*dz:dz:lz+0.5*dz;
 % set Uniform Flow param:
 uMean = 2.0; % m/s
 uStar = 0.174; % m/s
-H=70; % m;
-C0 = 4.0;
+H=70; % m
+C0 = 5.7;
+zi=1000; % m
 
 %% ========================================================================
 % QES-WINDS data:
@@ -75,33 +75,29 @@ writeNetCDFFile_winds(filename,nx,ny,nz,x_cc,y_cc,z_cc,u,v,w,icellflag_out);
 
 k = (uStar/0.55)^2;
 
-sigU=0.0;%2.50*uStar;
-sigV=1.78*uStar;
-sigW=1.27*uStar;
-
 % cell-center data:
 CoEps = zeros(nx-1,ny-1,nz-1);
 tke = zeros(nx-1,ny-1,nz-1);
 
-for kk=2:nz-1
-    CoEps(:,:,kk)=5.7*(sqrt(k)*0.55)^3/(0.4*H);
-    tke(:,:,kk)=k;
+txx = zeros(nx-1,ny-1,nz-1);
+tyy = zeros(nx-1,ny-1,nz-1);
+tzz = zeros(nx-1,ny-1,nz-1);
+
+txz = zeros(nx-1,ny-1,nz-1);
+
+for kk=1:nz-1
+    CoEps(:,:,kk) = C0*(uStar)^3/(0.4*z_cc(kk)) * (1-0.85*z_cc(kk)/zi)^(3/2);
+    tke(:,:,kk) = k;
+    
+    txx(:,:,kk) = (2.50*uStar)^2 * (1-z_cc(kk)/zi)^(3/2);
+    tyy(:,:,kk) = (1.78*uStar)^2 * (1-z_cc(kk)/zi)^(3/2);
+    tzz(:,:,kk) = (1.27*uStar)^2 * (1-z_cc(kk)/zi)^(3/2);
+
+    txz(:,:,kk) = -uStar^2 * (1-z_cc(kk)/zi)^(3/2);
 end
-CoEps(:,:,1)=-CoEps(:,:,2);
-tke(:,:,1)=-tke(:,:,2);
-
-% data for NetCDF file
-txx = sigU^2 * ones(nx-1,ny-1,nz-1);
-tyy = sigV^2 * ones(nx-1,ny-1,nz-1);
-tzz = sigW^2 * ones(nx-1,ny-1,nz-1);
-
-txz = -(uStar)^2*ones(nx-1,ny-1,nz-1);
 
 txy = zeros(nx-1,ny-1,nz-1);
 tyz = zeros(nx-1,ny-1,nz-1);
 
 % now save the netcdf turb output
 writeNetCDFFile_turb(filename,x_cc,y_cc,z_cc,CoEps,tke,txx,txy,txz,tyy,tyz,tzz);
-
-
-

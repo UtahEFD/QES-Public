@@ -1,3 +1,4 @@
+<QESPlumeParameters>
 <plumeParameters>
   <simDur> 222.0 </simDur>
   <timeStep> 2.2200000  </timeStep>
@@ -38,3 +39,5 @@
   <zBCtype>reflection</zBCtype>
   <wallReflection>doNothing</wallReflection>
 </boundaryConditions>
+</QESPlumeParameters>
+

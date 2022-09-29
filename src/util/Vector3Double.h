@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -38,7 +39,6 @@
 
 #include <type_traits>
 #include <iostream>
-#include "util/ParseInterface.h"
 
 
 #define FLOATS_ARE_EQUAL(x, y) (((x) - (y)) < 0.000001 && ((x) - (y)) > -0.000001)
@@ -178,7 +178,7 @@ public:
   // return the length of the vector
   double length(void) const
   {
-    return sqrt(values[0] * values[0] + values[0] * values[0] + values[0] * values[0]);
+    return sqrt(values[0] * values[0] + values[1] * values[1] + values[2] * values[2]);
   }
 
   // multiplication by scaler

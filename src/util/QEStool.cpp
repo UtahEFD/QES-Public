@@ -28,38 +28,28 @@
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file GIStool.h */
+/** @file QEStool.cpp */
 
-#pragma once
+#include "QEStool.h"
 
-#include <math.h>
-#include <algorithm>
-
-class GIStool
+void QEStool::error(std::string out)
 {
-public:
-  /**
-   * Converts UTM to lat/lon and vice versa of the sensor coordiantes.
-   *
-   * @param rlon :document this:
-   * @param rlat :document this:
-   * @param rx :document this:
-   * @param ry :document this:
-   * @param UTM_PROJECTION_ZONE :document this:
-   * @param iway :document this:
-   */
-  static void UTMConverter(float &rlon, float &rlat, float &rx, float &ry, int &UTM_PROJECTION_ZONE, int iway);
+  std::cerr << "[ERROR]\t" << out << std::endl;
+  exit(EXIT_FAILURE);
+  return;
+}
 
-  /**
-   * Calculates the convergence value based on lat/lon input.
-   *
-   * @param lon :document this:
-   * @param lat :document this:
-   * @param site_UTM_zone :document this:
-   * @param convergense :document this:
-   */
-  static void getConvergence(float &lon, float &lat, int &site_UTM_zone, float &convergence);
+void QEStool::warning(std::string out)
+{
+  std::cerr << "[WARNING]\t" << out << std::endl;
+  return;
+}
 
-private:
-  GIStool() {}
-};
+/*
+void QEStool::verbose(std::string out)
+{
+  if (verbose_flag)
+    std::cout << out << std::endl;
+  return;
+}
+*/

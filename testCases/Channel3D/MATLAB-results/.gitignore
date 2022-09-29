@@ -1,8 +1,0 @@
-# Figure files
-plotOutput
-plotOutput/*.pdf
-plotOutput/*.fig
-plotOutput/*.png
-*.pdf
-*.fig
-*.png

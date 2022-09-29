@@ -71,7 +71,7 @@ turbInputFile = sprintf("../QES-data/%s_turbOut.nc",caseBaseName);
 %%% set the input concentration files
 % plumeConcInputFiles = strings(nCase,1);
 % for k = 1:nCaseFolders
-%     plumeConcInputFiles(k) = sprintf("%s/%s/%s_conc.nc",plumeOutputFolder,caseFolders(k),caseBaseName);
+%     plumeConcInputFiles(k) = sprintf("%s/%s/%s_plumeOut.nc",plumeOutputFolder,caseFolders(k),caseBaseName);
 % end
 
 
@@ -135,7 +135,7 @@ delta_wFluct_variances_Lim_LES = [0 0.03];
 
 % now input the conc and particleInfo files
 for k = 1:nCases
-    fileName = sprintf("../QES-data/%s_conc.nc",caseNamesFile(k));
+    fileName = sprintf("../QES-data/%s_plumeOut.nc",caseNamesFile(k));
     [plumeConc_data.(caseNames(k)),plumeConc_varnames.(caseNames(k))] = readNetCDF(fileName);
     fileName = sprintf("../QES-data/%s_particleInfo.nc",caseNamesFile(k));
     [plumeParInfo_data.(caseNames(k)),plumeParInfo_varnames.(caseNames(k))] = readNetCDF(fileName);

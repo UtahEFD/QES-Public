@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -99,12 +100,12 @@ void GIStool::UTMConverter(float &rlon, float &rlat, float &rx, float &ry, int &
 
 
   int ILONGLAT2UTM = 0, IUTM2LONGLAT = 1;
-  float PI = 3.141592653589793;
-  float degrad = PI / 180.0;
-  float raddeg = 180.0 / PI;
-  float semimaj = 6378206.40;
-  float semimin = 6356583.80;
-  float scfa = 0.99960;
+  const float PI = 3.141592653589793;
+  const float degrad = PI / 180.0;
+  const float raddeg = 180.0 / PI;
+  const float semimaj = 6378206.40;
+  const float semimin = 6356583.80;
+  const float scfa = 0.99960;
 
   /*
     some extracts about UTM:
@@ -135,8 +136,8 @@ void GIStool::UTMConverter(float &rlon, float &rlat, float &rx, float &ry, int &
     southern hemisphere.
     */
 
-  float north = 0.0;
-  float east = 500000.0;
+  const float north = 0.0;
+  const float east = 500000.0;
 
   float e2, e4, e6, ep2, xx, yy, dlat, dlon, zone, cm, cmr, delam;
   float f1, f2, f3, f4, rm, rn, t, c, a, e1, u, rlat1, dlat1, c1, t1, rn1, r1, d;

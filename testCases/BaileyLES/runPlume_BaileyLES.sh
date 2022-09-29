@@ -42,13 +42,13 @@ matlab -nodisplay -nosplash -nodesktop -r "run('BaileyLES_testcase.m');exit;"
 
 cd ../../../build/
 
-./qesPlume/qesPlume -q ../testCases/BaileyLES/QES-files/BaileyLES_22.2_222.xml -u ../testCases/BaileyLES/QES-data/BaileyLES_windsWk.nc -t ../testCases/BaileyLES/QES-data/BaileyLES_turbOut.nc -o ../testCases/BaileyLES/QES-data/ -b BaileyLES_22.2_222 -l
+./qesPlume/qesPlume -q ../testCases/BaileyLES/QES-files/BaileyLES_22.2_222.xml -w ../testCases/BaileyLES/QES-data/BaileyLES_windsWk.nc -t ../testCases/BaileyLES/QES-data/BaileyLES_turbOut.nc -o ../testCases/BaileyLES/QES-data/BaileyLES_22.2_222 -l
 
-./qesPlume/qesPlume -q ../testCases/BaileyLES/QES-files/BaileyLES_2.22_222.xml -u ../testCases/BaileyLES/QES-data/BaileyLES_windsWk.nc -t ../testCases/BaileyLES/QES-data/BaileyLES_turbOut.nc -o ../testCases/BaileyLES/QES-data/ -b BaileyLES_2.22_222 -l;
+./qesPlume/qesPlume -q ../testCases/BaileyLES/QES-files/BaileyLES_2.22_222.xml -w ../testCases/BaileyLES/QES-data/BaileyLES_windsWk.nc -t ../testCases/BaileyLES/QES-data/BaileyLES_turbOut.nc -o ../testCases/BaileyLES/QES-data/BaileyLES_2.22_222 -l;
 
-./qesPlume/qesPlume -q ../testCases/BaileyLES/QES-files/BaileyLES_0.222_222.xml -u ../testCases/BaileyLES/QES-data/BaileyLES_windsWk.nc -t ../testCases/BaileyLES/QES-data/BaileyLES_turbOut.nc -o ../testCases/BaileyLES/QES-data/ -b BaileyLES_0.222_222 -l;
+./qesPlume/qesPlume -q ../testCases/BaileyLES/QES-files/BaileyLES_0.222_222.xml -w ../testCases/BaileyLES/QES-data/BaileyLES_windsWk.nc -t ../testCases/BaileyLES/QES-data/BaileyLES_turbOut.nc -o ../testCases/BaileyLES/QES-data/BaileyLES_0.222_222 -l;
 
-./qesPlume/qesPlume -q ../testCases/BaileyLES/QES-files/BaileyLES_0.0222_222.xml -u ../testCases/BaileyLES/QES-data/BaileyLES_windsWk.nc -t ../testCases/BaileyLES/QES-data/BaileyLES_turbOut.nc -o ../testCases/BaileyLES/QES-data/ -b BaileyLES_0.0222_222 -l;
+./qesPlume/qesPlume -q ../testCases/BaileyLES/QES-files/BaileyLES_0.0222_222.xml -w ../testCases/BaileyLES/QES-data/BaileyLES_windsWk.nc -t ../testCases/BaileyLES/QES-data/BaileyLES_turbOut.nc -o ../testCases/BaileyLES/QES-data/BaileyLES_0.0222_222 -l;
 
 cd - 
 

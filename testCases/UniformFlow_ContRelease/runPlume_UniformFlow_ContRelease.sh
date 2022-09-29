@@ -23,12 +23,14 @@ date
 sacct -j $SLURM_JOBID
 echo '----------------------------------------------------------------------------'
 echo 'setting environment'
-module load cuda/10.2
-module load gcc/8.1.0
-module load cmake/3.15.3
-module load gdal/3.0.1
-module load boost/1.69.0
-module load netcdf-cxx
+module load cuda/11.4
+module load cmake/3.21.4
+module load gcc/8.5.0
+module load boost/1.77.0
+module load intel-oneapi-mpi/2021.4.0
+module load gdal/3.3.3
+module load netcdf-c/4.8.1
+module load netcdf-cxx/4.2
 module load matlab
 ulimit -c unlimited -s
 module list
@@ -40,9 +42,9 @@ matlab -nodisplay -nosplash -nodesktop -r "run('UniformFlow_xDir_inputFiles.m');
 
 cd ../../../build
 
-./qesPlume/qesPlume -q ../testCases/UniformFlow_ContRelease/QES-files/UniformFlow_xDir_ContRelease.xml -u ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_xDir_windsWk.nc -t ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_xDir_turbOut.nc -o ../testCases/UniformFlow_ContRelease/QES-data/ -b UniformFlow_xDir_ContRelease
+./qesPlume/qesPlume -q ../testCases/UniformFlow_ContRelease/QES-files/UniformFlow_xDir_ContRelease.xml -w ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_xDir_windsWk.nc -t ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_xDir_turbOut.nc -o ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_xDir_ContRelease
 
-./qesPlume/qesPlume -q ../testCases/UniformFlow_ContRelease/QES-files/UniformFlow_yDir_ContRelease.xml -u ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_yDir_windsWk.nc -t ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_yDir_turbOut.nc -o ../testCases/UniformFlow_ContRelease/QES-data/ -b UniformFlow_yDir_ContRelease
+./qesPlume/qesPlume -q ../testCases/UniformFlow_ContRelease/QES-files/UniformFlow_yDir_ContRelease.xml -w ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_yDir_windsWk.nc -t ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_yDir_turbOut.nc -o ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_yDir_ContRelease
 
 cd - 
 
