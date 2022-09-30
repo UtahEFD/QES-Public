@@ -160,17 +160,7 @@ public:
     }
     parsePrimitive<int>(false, verticalStretching, "verticalStretching");
     parseMultiPrimitives<float>(false, dz_value, "dz_value");
-<<<<<<< HEAD
     parsePrimitive<unsigned int>(false, totalTimeIncrements, "totalTimeIncrements");
-    parsePrimitive<int>(false, rooftopFlag, "rooftopFlag");
-    parsePrimitive<int>(false, upwindCavityFlag, "upwindCavityFlag");
-    parsePrimitive<int>(false, streetCanyonFlag, "streetCanyonFlag");
-    parsePrimitive<int>(false, streetIntersectionFlag, "streetIntersectionFlag");
-    parsePrimitive<int>(false, wakeFlag, "wakeFlag");
-    parsePrimitive<int>(false, sidewallFlag, "sidewallFlag");
-=======
-    parsePrimitive<int>(false, totalTimeIncrements, "totalTimeIncrements");
->>>>>>> fm-xml-rework
     parsePrimitive<int>(false, logLawFlag, "logLawFlag");
     parsePrimitive<int>(false, maxIterations, "maxIterations");
     parsePrimitive<double>(false, tolerance, "tolerance");
