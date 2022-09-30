@@ -1,3 +1,4 @@
+<sensor>
 <site_coord_flag> 1 </site_coord_flag> 		<!-- Sensor site coordinate system (1=QES (default), 2=UTM, 3=Lat/Lon) -->
 <site_xcoord> 1.0  </site_xcoord> 		<!-- x component of site location in QES domain (m) (if site_coord_flag = 1) -->
 <site_ycoord> 1.0 </site_ycoord> 		<!-- y component of site location in QES domain (m) (if site_coord_flag = 1)-->
@@ -14,3 +15,5 @@
     <speed> 5.0 </speed> 			<!-- Measured speed at the sensor height -->
     <direction> 270.0 </direction> 		<!-- Wind direction of sensor -->
 </timeSeries>
+</sensor>
+

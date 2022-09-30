@@ -1,3 +1,4 @@
+<QESWindsParameters>
 <simulationParameters>
     <DEM>../GISFiles/GaussianHill_200x200.tiff</DEM>		<!-- Address to DEM location-->
 
@@ -78,4 +79,6 @@
   <outputFields>w</outputFields>
   <outputFields>icell</outputFields> 
 </fileOptions>
+
+</QESWindsParameters>
 

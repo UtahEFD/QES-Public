@@ -3,7 +3,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library (qesutil ${LIB_TYPE}
   ArgumentParsing.cpp ArgumentParsing.h
-  ParseInterface.cpp ParseInterface.h
+  ParseInterface.h
   ParseException.h
   
   ESRIShapefile.cpp ESRIShapefile.h

@@ -27,3 +27,24 @@ Runs using similar arguments to qesWinds. From the build folder, run: ./tests/co
 The -q command specifies which input file you want to use (example: "../data/InputFiles/FlatTerrain.xml".
 The -s command now specifies which comparison to run. 1 compares all solvers, 2 compares the Dynamic Parallel solver and
 CPU solvers, 3 compares the Global Memory and CPU solvers, and 4 compares the Shared Memory and CPU solvers.
+
+# QES regeression tests suites.
+
+
+## Run tests 
+By default ENABLE_GPU_TESTS is true. Test are run using:
+```
+make test
+```
+
+Other tests are available: ENABLE_CPU_TESTS, ENABLE_LONG_SANITY_TESTS, ENABLE_ALL_TESTS. Tests can be turned on using:
+```
+cmake -DXXX=true ..
+```
+where XXX is the options above.
+
+List of test: 
+- short tests: FlatTerrain, GaussianHill, OklahomaCity)
+- long tests: SaltLakeCity, RxCADRE
+
+## Regression tests

@@ -4,7 +4,7 @@
     <halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
     <halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
 
-    <domain>500 500 500</domain>					<!-- Number of cells in x,y and z directions-->
+    <domain>200 200 100</domain>					<!-- Number of cells in x,y and z directions-->
     <cellSize> 2.0 2.0 2.0 </cellSize> 				<!-- Mesh resolution (meters)-->
     <verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-custom grid)-->
     
@@ -32,37 +32,6 @@
     <sensorName>sensor2.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
     <sensorName>sensor3.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
   </metParams>
-
-  <!--buildingsParams>
-      <wallRoughness>0.01</wallRoughness>  
-      <rooftopFlag> 1 </rooftopFlag> 		
-      <upwindCavityFlag> 0 </upwindCavityFlag>
-      <streetCanyonFlag> 0 </streetCanyonFlag> 	
-      <streetIntersectionFlag> 0 </streetIntersectionFlag>
-      <wakeFlag> 2 </wakeFlag> 			
-      <sidewallFlag> 0 </sidewallFlag> 		
-      <SHPFile>../scratch/building.shp</SHPFile>
-      <SHPBuildingLayer>building</SHPBuildingLayer>
-      <SHPHeightField>H</SHPHeightField>
-      <heightFactor> 1.0 </heightFactor>
-      </buildingsParams-->
-
-  <!--canopies>
-      <num_canopies> 1 </num_canopies>
-      <landuseFlag> 0 </landuseFlag>
-      <landuseVegetationFlag> 0 </landuseVegetationFlag>
-      <landuseUrbanFlag> 0 </landuseUrbanFlag>
-      <canopy>
-      <attenuationCoefficient> 1.97 </attenuationCoefficient>
-      <height> 10.0 </height>
-      <baseHeight> 0 </baseHeight>
-      <xStart> 90.0 </xStart>
-      <yStart> 90.0 </yStart>
-      <length> 20.0 </length>
-      <width> 20.0 </width>
-      <canopyRotation> 0.0 </canopyRotation>
-      </canopy>
-      </canopies-->
 
   <turbParams>
     <method>3</method> <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->

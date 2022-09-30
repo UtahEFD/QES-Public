@@ -26,11 +26,11 @@ class PlumeInputData : public ParseInterface
 {
 
 public:
-  PlumeParameters *plumeParams;
-  CollectionParameters *colParams;
-  ParticleOutputParameters *partOutParams;
-  Sources *sources;
-  BoundaryConditions *BCs;
+  PlumeParameters *plumeParams = nullptr;
+  CollectionParameters *colParams = nullptr;
+  ParticleOutputParameters *partOutParams = nullptr;
+  Sources *sources = nullptr;
+  BoundaryConditions *BCs = nullptr;
 
 
   PlumeInputData()
@@ -48,17 +48,8 @@ public:
     partOutParams = 0;
     sources = 0;
 
-    pt::ptree tree;
-
-    try {
-      pt::read_xml(fileName, tree);
-    } catch (boost::property_tree::xml_parser::xml_parser_error &e) {
-      std::cerr << "Error reading tree in" << fileName << "\n";
-      std::cerr << "QES-Plume input file was not able to be read successfully." << std::endl;
-      exit(EXIT_FAILURE);
-    }
-
-    parseTree(tree);
+    // read and parse the XML
+    parseXML(fileName, "QESPlumeParameters");
   }
 
   virtual void parseValues()
@@ -66,23 +57,8 @@ public:
     parseElement<PlumeParameters>(true, plumeParams, "plumeParameters");
     parseElement<CollectionParameters>(true, colParams, "collectionParameters");
     parseElement<ParticleOutputParameters>(false, partOutParams, "particleOutputParameters");
-
     parseElement<Sources>(false, sources, "sources");
     parseElement<BoundaryConditions>(true, BCs, "boundaryConditions");
-  }
-  /**
-     * This function takes in an URBInputData variable and uses it
-     * as the base to parse the ptree
-     * @param UID the object that will serve as the base level of the xml parser
-     */
-  void parseTree(pt::ptree t)
-  {
-    setTree(t);
-    setParents("root");
-    //auto child = t.get_child_optional("QESPlume");
-    //setTree(*child);
-    //setParents("root::QESPlume");
-    parseValues();
   }
 };
 #endif

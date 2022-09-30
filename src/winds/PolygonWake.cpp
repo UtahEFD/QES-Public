@@ -177,7 +177,7 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
 
 
   // if rectangular building and rooftop vortex, recalculate the top of the wake
-  if (rectangular_flag && WID->simParams->rooftopFlag == 2) {
+  if (rectangular_flag && WID->buildingsParams->rooftopFlag == 2) {
     int id_valid = -1;
     int bldg_upwind = 0;
 

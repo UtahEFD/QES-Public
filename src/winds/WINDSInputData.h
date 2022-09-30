@@ -43,7 +43,7 @@
 #include "SimulationParameters.h"
 #include "FileOptions.h"
 #include "MetParams.h"
-#include "Buildings.h"
+#include "BuildingsParams.h"
 #include "Canopies.h"
 #include "TURBParams.h"
 
@@ -58,19 +58,19 @@
 class WINDSInputData : public ParseInterface
 {
 public:
-  SimulationParameters *simParams; /**< :document this: */
-  FileOptions *fileOptions; /**< :document this: */
-  MetParams *metParams; /**< :document this: */
-  TURBParams *turbParams; /**< :document this: */
-  Buildings *buildings; /**< :document this: */
-  Canopies *canopies; /**< :document this: */
+  SimulationParameters *simParams = nullptr; /**< :document this: */
+  FileOptions *fileOptions = nullptr; /**< :document this: */
+  MetParams *metParams = nullptr; /**< :document this: */
+  TURBParams *turbParams = nullptr; /**< :document this: */
+  BuildingsParams *buildingsParams = nullptr; /**< :document this: */
+  Canopies *canopies = nullptr; /**< :document this: */
 
   WINDSInputData()
   {
     fileOptions = 0;
     metParams = 0;
     turbParams = 0;
-    buildings = 0;
+    buildingsParams = 0;
     canopies = 0;
   }
 
@@ -80,20 +80,12 @@ public:
     fileOptions = 0;
     metParams = 0;
     turbParams = 0;
-    buildings = 0;
+    buildingsParams = 0;
     canopies = 0;
 
     QESfs::set_file_path(fileName);
-    pt::ptree tree;
-
-    try {
-      pt::read_xml(fileName, tree);
-    } catch (boost::property_tree::xml_parser::xml_parser_error &e) {
-      std::cerr << "Error reading tree in " << fileName << "\n";
-      exit(EXIT_FAILURE);
-    }
-
-    parseTree(tree);
+    // read and parse the XML
+    parseXML(fileName, "QESWindsParameters");
   }
 
   /**
@@ -105,22 +97,7 @@ public:
     parseElement<FileOptions>(false, fileOptions, "fileOptions");
     parseElement<MetParams>(false, metParams, "metParams");
     parseElement<TURBParams>(false, turbParams, "turbParams");
-    parseElement<Buildings>(false, buildings, "buildings");
+    parseElement<BuildingsParams>(false, buildingsParams, "buildingsParams");
     parseElement<Canopies>(false, canopies, "canopies");
-  }
-
-  /**
-   * Parses the main XML for our QUIC projects.
-   *
-   * Initializes the XML structure and parses the main
-   * XML file used to represent projects in the QUIC system.
-   *
-   * @param t :document this:
-   */
-  void parseTree(pt::ptree t)
-  {
-    setTree(t);
-    setParents("root");
-    parseValues();
   }
 };

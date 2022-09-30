@@ -1,3 +1,4 @@
+<QESWindsParameters>
 <simulationParameters>
   <domain>280 160 40 </domain>
   <cellSize> 1.0 1.0 1.0 </cellSize> <!-- Meters-->
@@ -59,4 +60,6 @@
   <outputFlag>1</outputFlag>
   <outputFields>all</outputFields> 
 </fileOptions>
+
+</QESWindsParameters>
 

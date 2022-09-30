@@ -1,3 +1,4 @@
+<QESWindsParameters>
 <simulationParameters>
   <domain>200 200 200 </domain>
   <cellSize> 1.0 1.0 1.0 </cellSize> <!-- Meters-->
@@ -66,4 +67,6 @@
   <sensorVelocityFlag> 0 </sensorVelocityFlag>
   <staggerdVelocityFlag> 0 </staggerdVelocityFlag>
 </fileOptions>
+
+</QESWindsParameters>
 

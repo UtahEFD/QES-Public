@@ -1,3 +1,4 @@
+<QESWindsParameters>
 <simulationParameters>
   <DEM>/scratch/Gangnam/w001001.adf</DEM>					<!-- Address to DEM location-->
   <WRF>/scratch/Gangnam/Seoul_wrfout_d03_2018-08-01_00_00_00</WRF>
@@ -155,3 +156,5 @@
   <outputFlag>1</outputFlag>
   <outputFields>all</outputFields>
 </fileOptions>
+</QESWindsParameters>
+

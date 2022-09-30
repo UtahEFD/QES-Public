@@ -126,7 +126,7 @@ void PolyBuilding::upwindCavity(const WINDSInputData *WID, WINDSGeneralData *WGD
       Lf_face.push_back(abs(WGD->lengthf_coeff * face_length[counter] * cos(upwind_rel_dir[id]) / (1 + 0.8 * face_length[counter] / H)));
 
       // High-rise Modified Vortex Parameterization (HMVP) (Bagal et al. (2004))
-      if (WID->simParams->upwindCavityFlag == 3) {
+      if (WID->buildingsParams->upwindCavityFlag == 3) {
         vortex_height = MIN_S(face_length[counter], H);
         retarding_height = H;
       } else {
@@ -178,7 +178,7 @@ void PolyBuilding::upwindCavity(const WINDSInputData *WID, WINDSGeneralData *WGD
               rz_end = length_factor * x_ellipse_u;
               icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
               icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-              if (WID->simParams->upwindCavityFlag == 1)// Rockle parameterization
+              if (WID->buildingsParams->upwindCavityFlag == 1)// Rockle parameterization
               {
                 if ((x_u - x_intersect_u >= x_ellipse_u) && (x_u - x_intersect_u <= 0.1 * WGD->dxy)
                     && (WGD->icellflag[icell_cent] != 0) && (WGD->icellflag[icell_cent] != 2)) {
@@ -187,7 +187,7 @@ void PolyBuilding::upwindCavity(const WINDSInputData *WID, WINDSGeneralData *WGD
               } else {
                 if ((x_u - x_intersect_u >= xrz_u) && (x_u - x_intersect_u < rz_end)
                     && (WGD->icellflag[icell_cent] != 0) && (WGD->icellflag[icell_cent] != 2)) {
-                  if (WID->simParams->upwindCavityFlag == 3)// High-rise Modified Vortex Parameterization (HMVP) (Bagal et al. (2004))
+                  if (WID->buildingsParams->upwindCavityFlag == 3)// High-rise Modified Vortex Parameterization (HMVP) (Bagal et al. (2004))
                   {
                     WGD->u0[icell_face] *= ((x_u - x_intersect_u - xrz_u) * (retarding_factor - 1.0) / (rz_end - xrz_u) + 1.0);
                   } else// Modified Vortex Parameterization (MVP)
@@ -218,7 +218,7 @@ void PolyBuilding::upwindCavity(const WINDSInputData *WID, WINDSGeneralData *WGD
               rz_end = length_factor * x_ellipse_v;
               icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
               icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-              if (WID->simParams->upwindCavityFlag == 1)// Rockle parameterization
+              if (WID->buildingsParams->upwindCavityFlag == 1)// Rockle parameterization
               {
                 if ((x_v - x_intersect_v >= x_ellipse_v) && (x_v - x_intersect_v <= 0.1 * WGD->dxy)
                     && (WGD->icellflag[icell_cent] != 0) && (WGD->icellflag[icell_cent] != 2)) {
@@ -227,7 +227,7 @@ void PolyBuilding::upwindCavity(const WINDSInputData *WID, WINDSGeneralData *WGD
               } else {
                 if ((x_v - x_intersect_v >= xrz_v) && (x_v - x_intersect_v < rz_end)
                     && (WGD->icellflag[icell_cent] != 0) && (WGD->icellflag[icell_cent] != 2)) {
-                  if (WID->simParams->upwindCavityFlag == 3)// High-rise Modified Vortex Parameterization (HMVP) (Bagal et al. (2004))
+                  if (WID->buildingsParams->upwindCavityFlag == 3)// High-rise Modified Vortex Parameterization (HMVP) (Bagal et al. (2004))
                   {
                     WGD->v0[icell_face] *= ((x_v - x_intersect_v - xrz_v) * (retarding_factor - 1.0) / (rz_end - xrz_v) + 1.0);
                   } else// Modified Vortex Parameterization (MVP)
@@ -257,7 +257,7 @@ void PolyBuilding::upwindCavity(const WINDSInputData *WID, WINDSGeneralData *WGD
               x_ellipse_w = -Lf_face[counter] * sqrt((1 - pow(y_w / abs(yf2[id]), 2.0)) * (1 - pow(z_front / (height_factor * vortex_height), 2.0)));
               icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
               icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-              if (WID->simParams->upwindCavityFlag == 1)// Rockle parameterization
+              if (WID->buildingsParams->upwindCavityFlag == 1)// Rockle parameterization
               {
                 if ((x_w - x_intersect_w >= x_ellipse_w) && (x_w - x_intersect_w <= 0.1 * WGD->dxy)
                     && (WGD->icellflag[icell_cent] != 0) && (WGD->icellflag[icell_cent] != 2)) {

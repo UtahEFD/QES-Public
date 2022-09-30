@@ -435,33 +435,31 @@ int main(int argc, char *argv[])
 
 WINDSInputData *parseXMLTree(const std::string fileName)
 {
-  pt::ptree tree;
+
 
   try {
+    pt::ptree tree;
     pt::read_xml(fileName, tree);
   } catch (boost::property_tree::xml_parser::xml_parser_error &e) {
     std::cerr << "Error reading tree in" << fileName << "\n";
     return (WINDSInputData *)0;
   }
 
-  WINDSInputData *xmlRoot = new WINDSInputData();
-  xmlRoot->parseTree(tree);
+  WINDSInputData *xmlRoot = new WINDSInputData(fileName);
   return xmlRoot;
 }
 
 Sensor *parseSensors(const std::string fileName)
 {
-  pt::ptree tree1;
-
   try {
+    pt::ptree tree1;
     pt::read_xml(fileName, tree1);
   } catch (boost::property_tree::xml_parser::xml_parser_error &e) {
     std::cerr << "Error reading tree in" << fileName << "\n";
     return (Sensor *)0;
   }
 
-  Sensor *xmlRoot = new Sensor();
-  xmlRoot->parseTree(tree1);
+  Sensor *xmlRoot = new Sensor(fileName);
   return xmlRoot;
 }
 

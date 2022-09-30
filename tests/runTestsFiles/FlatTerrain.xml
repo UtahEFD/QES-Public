@@ -1,28 +1,23 @@
 <QESWindsParameters>
   <simulationParameters>
-    <DEM>../../scratch/Bare_Earth/be45123a1/w001001.adf</DEM>				<!-- Address to DEM location-->	
 
-    <halo_x> 40.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
-    <halo_y> 40.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
+    <halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
+    <halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
 
-    <domain> 1240 1240 80 </domain>					<!-- Number of cells in x,y and z directions-->
-    <cellSize> 1.0 1.0 2.0 </cellSize> 				<!-- Mesh resolution (meters)-->
+    <domain>200 200 200 </domain>					<!-- Number of cells in x,y and z directions-->
+    <cellSize> 1.0 1.0 1.0 </cellSize> 				<!-- Mesh resolution (meters)-->
     <verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-costum grid)-->
 
     <totalTimeIncrements> 1 </totalTimeIncrements> 			<!-- Number of time steps-->
-    <!-- Sidewall flag (0-off, 1-on (default)) -->
-    <logLawFlag> 0 </logLawFlag> 					<!-- Log Law flag to apply the log law (0-off (default), 1-on) -->
+    
     <maxIterations> 500 </maxIterations> 				<!-- Maximum number of iterations (default = 500) -->
-    <tolerance> 1e-9 </tolerance> 					<!-- Convergence criteria (default = 1e-9) -->
+    <tolerance> 1e-9 </tolerance> 					<!-- Convergence criteria, error threshold (default = 1e-9) -->
     <meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (original QES) (default), 1-Cut-cell method -->
     <domainRotation> 0 </domainRotation>  				<!-- Rotation angle of domain relative to true north -->
-    <originFlag> 0 </originFlag>					<!-- Origin flag (0- DEM coordinates (default), 1- UTM coordinates) -->
-    <DEMDistancex> 3000.0 </DEMDistancex> 				<!-- x component (m) of origin in DEM coordinates (if originFlag = 0) -->
-    <DEMDistancey> 7500.0 </DEMDistancey> 				<!-- y component (m) of origin in DEM coordinates (if originFlag = 0) -->
-    <UTMx> 423873.58 </UTMx> 					<!-- x component (m) of origin in UTM DEM coordinates (if originFlag = 1)-->
-    <UTMy> 506843.93 </UTMy> 					<!-- y component (m) of origin in UTM DEM coordinates (if originFlag = 1)-->
-    <UTMZone> 10 </UTMZone> 					<!-- UTM zone that domain located -->
-    <UTMZoneLetter> 12 </UTMZoneLetter>
+    <UTMx> 0 </UTMx> 						<!-- x component (m) in UTM -->
+    <UTMy> 0 </UTMy> 						<!-- y component (m) in UTM -->
+    <UTMZone> 1 </UTMZone> 						<!-- UTM zone that domain located -->
+    <UTMZoneLetter> 17 </UTMZoneLetter>
     <readCoefficientsFlag> 0 </readCoefficientsFlag> 		<!-- Reading solver coefficients flag (0-calculate coefficients (default), 1-read coefficients from the file) -->
     <!--COEFF>test_windsWk.nc</COEFF-->					<!-- Address to coefficients file location --> 
   </simulationParameters>                     				<!-- End of simulation parameters -->
@@ -50,14 +45,15 @@
 
   </metParams>								<!-- End of meteorological parameters -->
   <turbParams>
-    <method>0</method>
+    <method>3</method>
+    <samples>2000</samples>
   </turbParams>
   <fileOptions>
     <outputFlag>1</outputFlag>
     <outputFields>u</outputFields> 
     <outputFields>v</outputFields> 
     <outputFields>w</outputFields>
-    <outputFields>icell</outputFields> 
+    <outputFields>icell</outputFields>  
   </fileOptions>
 
 </QESWindsParameters>

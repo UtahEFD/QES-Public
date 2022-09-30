@@ -1,3 +1,4 @@
+<sensor>
 <site_coord_flag> 2 </site_coord_flag> 			<!-- Sensor site coordinate system (1=QUIC (default), 2=UTM, 3=Lat/Lon) -->
 <site_xcoord> 1.0  </site_xcoord> 				<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
 <site_ycoord> 1.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->
@@ -642,4 +643,6 @@
 	<direction> 218.84 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
 
+
+</sensor>
 
