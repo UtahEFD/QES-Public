@@ -35,6 +35,18 @@
 #include <math.h>
 #include <algorithm>
 
+struct UTM
+{
+  float x;
+  float y;
+  unsigned int zone;
+  bool N_HEMISPHERE;
+
+  UTM(float rx, float ry, unsigned int rz, bool rh = true)
+    : x(rx), y(ry), zone(rz), N_HEMISPHERE(rh) {}
+};
+
+
 class GIStool
 {
 public:
@@ -46,9 +58,10 @@ public:
    * @param rx :document this:
    * @param ry :document this:
    * @param UTM_PROJECTION_ZONE :document this:
+   * @param N_HEMISPHERE :document this:
    * @param iway :document this:
    */
-  static void UTMConverter(float &rlon, float &rlat, float &rx, float &ry, int &UTM_PROJECTION_ZONE, int iway);
+  static void UTMConverter(float &rlon, float &rlat, float &rx, float &ry, int &UTM_PROJECTION_ZONE, bool N_HEMISPHERE, int iway);
 
   /**
    * Calculates the convergence value based on lat/lon input.

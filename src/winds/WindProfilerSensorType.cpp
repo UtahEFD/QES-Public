@@ -120,6 +120,8 @@ void WindProfilerSensorType::sensorsProfiles(const WINDSInputData *WID, WINDSGen
     TimeSeries *ts = WID->metParams->sensors[i]->TS[time_id[i]];
 
     average__one_overL += ts->site_one_overL / num_sites;
+
+    // THIS SOULD NOT BE HERE!!! AND ITS NOT FINISHED
     if (WID->simParams->UTMx != 0 && WID->simParams->UTMy != 0) {
       if (WID->metParams->sensors[i]->site_coord_flag == 1) {
         WID->metParams->sensors[i]->site_UTM_x = WID->metParams->sensors[i]->site_xcoord * acos(WGD->theta)
@@ -129,22 +131,24 @@ void WindProfilerSensorType::sensorsProfiles(const WINDSInputData *WID, WINDSGen
                                                  + WID->metParams->sensors[i]->site_ycoord * acos(WGD->theta)
                                                  + WID->simParams->UTMy;
         WID->metParams->sensors[i]->site_UTM_zone = WID->simParams->UTMZone;
-        // Calling UTMConverter function to convert UTM coordinate to lat/lon and vice versa (located in Sensor.cpp)
+        // Calling UTMConverter function to convert UTM coordinate to lat/lon and vice versa
         GIStool::UTMConverter(WID->metParams->sensors[i]->site_lon,
                               WID->metParams->sensors[i]->site_lat,
                               WID->metParams->sensors[i]->site_UTM_x,
                               WID->metParams->sensors[i]->site_UTM_y,
                               WID->metParams->sensors[i]->site_UTM_zone,
+                              true,
                               1);
       }
 
       if (WID->metParams->sensors[i]->site_coord_flag == 2) {
-        // Calling UTMConverter function to convert UTM coordinate to lat/lon and vice versa (located in Sensor.cpp)
+        // Calling UTMConverter function to convert UTM coordinate to lat/lon and vice versa
         GIStool::UTMConverter(WID->metParams->sensors[i]->site_lon,
                               WID->metParams->sensors[i]->site_lat,
                               WID->metParams->sensors[i]->site_UTM_x,
                               WID->metParams->sensors[i]->site_UTM_y,
                               WID->metParams->sensors[i]->site_UTM_zone,
+                              true,
                               1);
         WID->metParams->sensors[i]->site_xcoord = WID->metParams->sensors[i]->site_UTM_x - WID->simParams->UTMx;
         WID->metParams->sensors[i]->site_ycoord = WID->metParams->sensors[i]->site_UTM_y - WID->simParams->UTMy;
