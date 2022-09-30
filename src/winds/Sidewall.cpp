@@ -62,14 +62,14 @@ void PolyBuilding::sideWall(const WINDSInputData *WID, WINDSGeneralData *WGD)
   float y_pref;
   int right_flag, left_flag;// 1, dependent face eligible for parameterization; 0, not eligible
   int index_previous, index_next;// Previous or next vertex
-  float x_start_left, x_end_left, x_start_right, x_end_right;// Start and end point of each left/right faces in x-direction
-  float y_start_left, y_end_left, y_start_right, y_end_right;// Start and end point of each left/right faces in y-direction
-  float face_length;// Length of the face
-  float face_dir;// Direction of the face
+  float x_start_left(0), x_end_left(0), x_start_right(0), x_end_right(0);// Start and end point of each left/right faces in x-direction
+  float y_start_left(0), y_end_left(0), y_start_right(0), y_end_right(0);// Start and end point of each left/right faces in y-direction
+  float face_length(0.0);// Length of the face
+  float face_dir(0.0);// Direction of the face
   int i_start_right, j_start_right;// i and j indices of the starting point for right face
   int i_start_left, j_start_left;// i and j indices of the starting point for left face
-  float u0_right, v0_right;// u0 and v0 values for the right face
-  float u0_left, v0_left;// u0 and v0 values for the left face
+  float u0_right(0.0), v0_right(0.0);// u0 and v0 values for the right face
+  float u0_left(0.0), v0_left(0.0);// u0 and v0 values for the left face
   float x_p, y_p;
   float shell_width, shell_width_calc;
   float x, y;

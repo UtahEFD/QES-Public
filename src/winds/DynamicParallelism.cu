@@ -349,16 +349,12 @@ DynamicParallelism::DynamicParallelism(const WINDSInputData *WID, WINDSGeneralDa
 
 void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind)
 {
-  auto startTotal = std::chrono::high_resolution_clock::now();// Start
-  // recording
-  // execution
-  // time
   itermax = WID->simParams->maxIterations;
   int numblocks = (WGD->numcell_cent / BLOCKSIZE) + 1;
 
   std::vector<float> value(WGD->numcell_cent, 0.0);
   std::vector<float> bvalue(numblocks, 0.0);
-  float *d_u0, *d_v0, *d_w0;
+  //float *d_u0, *d_v0, *d_w0;
   float *d_value, *d_bvalue;
   float *d_u, *d_v, *d_w;
   int *d_icellflag;

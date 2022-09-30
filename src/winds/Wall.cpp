@@ -361,31 +361,31 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
 
   std::cout << "Applying log law parameterization..." << std::flush;
 
-  float dx = WGD->dx;
-  float dy = WGD->dy;
-  float dz = WGD->dz;
-  int nx = WGD->nx;
-  int ny = WGD->ny;
+  //float dx = WGD->dx;
+  //float dy = WGD->dy;
+  //float dz = WGD->dz;
+  //int nx = WGD->nx;
+  //int ny = WGD->ny;
   //int nz = WGD->nz;
-  const float z0 = WGD->z0;
-  std::vector<float> &u0 = WGD->u0;
-  std::vector<float> &v0 = WGD->v0;
-  std::vector<float> &w0 = WGD->w0;
+  //const float z0 = WGD->z0;
+  //std::vector<float> &u0 = WGD->u0;
+  //std::vector<float> &v0 = WGD->v0;
+  //std::vector<float> &w0 = WGD->w0;
 
   float ustar_wall;// velocity gradient at the wall
   float new_ustar;// new ustar value calculated
   float vel_mag1;// velocity magnitude at the nearest cell to wall in perpendicular direction
   float vel_mag2;// velocity magnitude at the second cell near wall in perpendicular direction
-  float dist1;// distance of the center of the nearest cell in perpendicular direction from wall
-  float dist2;// distance of the center of second near cell in perpendicular direction from wall
+  float dist1(0.0);// distance of the center of the nearest cell in perpendicular direction from wall
+  float dist2(0.0);// distance of the center of second near cell in perpendicular direction from wall
   float wind_dir;// wind direction in parallel planes to wall
-  int icell_cent;
+  //int icell_cent;
   float s_behind, s_front, s_right, s_left, s_below, s_above, s_cut;// Area of each face and the cut-cell filled by solid
-  int first_i, first_j, first_k;
-  int second_i, second_j, second_k;
+  int first_i(0), first_j(0), first_k(0);
+  int second_i(0), second_j(0), second_k(0);
 
   // Loop through all the cells
-  for (auto i = 0; i < WGD->wall_indices.size(); i++) {
+  for (auto i = 0u; i < WGD->wall_indices.size(); i++) {
     if (WGD->ni[WGD->wall_indices[i]] == 0.0 && WGD->nj[WGD->wall_indices[i]] == 0.0 && WGD->nk[WGD->wall_indices[i]] == 0.0) {
       int k = WGD->wall_indices[i] / ((WGD->nx - 1) * (WGD->ny - 1));
       s_behind = WGD->f[WGD->wall_indices[i]] * (WGD->dy * WGD->dz_array[k]) * (WGD->dx * WGD->dx);
@@ -410,13 +410,13 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
   float dot_product;
   float ut, vt, wt;// Velocity components in tangential direction
   float un, vn, wn;
-  int first_id, second_id, cell_id;
+  int first_id, second_id;// cell_id;
   float vel_tan_mag;
   float coeff;
   int count;
   float max_dist;
   // Loop through all the cut-cells
-  for (auto id = 0; id < WGD->wall_indices.size(); id++) {
+  for (auto id = 0u; id < WGD->wall_indices.size(); id++) {
     int k = WGD->wall_indices[id] / ((WGD->nx - 1) * (WGD->ny - 1));
     int j = (WGD->wall_indices[id] - k * (WGD->nx - 1) * (WGD->ny - 1)) / (WGD->nx - 1);
     int i = WGD->wall_indices[id] - k * (WGD->nx - 1) * (WGD->ny - 1) - j * (WGD->nx - 1);
@@ -472,7 +472,7 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
 
       if (WGD->nk[WGD->wall_indices[id]] >= 0.0) {
         z_buffer = WGD->z[k] + WGD->nk[WGD->wall_indices[id]] * coeff * WGD->dz_array[k];
-        for (auto kk = 0; kk < WGD->z.size(); kk++) {
+        for (auto kk = 0u; kk < WGD->z.size(); kk++) {
           second_k = kk + 1;
           if (z_buffer <= WGD->z_face[kk + 1]) {
             break;
@@ -480,7 +480,7 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
         }
       } else {
         z_buffer = WGD->z[k] + WGD->nk[WGD->wall_indices[id]] * coeff * WGD->dz_array[k];
-        for (auto kk = 0; kk < WGD->z.size(); kk++) {
+        for (auto kk = 0u; kk < WGD->z.size(); kk++) {
           second_k = kk + 1;
           if (z_buffer <= WGD->z_face[kk + 1]) {
             break;
@@ -531,14 +531,14 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
 
         if (WGD->nk[WGD->wall_indices[id]] >= 0.0) {
           z_buffer = WGD->z[k] + WGD->nk[WGD->wall_indices[id]] * coeff * WGD->dz_array[k];
-          for (auto kk = 0; kk < WGD->z.size(); kk++) {
+          for (auto kk = 0u; kk < WGD->z.size(); kk++) {
             first_k = kk + 1;
             if (z_buffer <= WGD->z[kk + 1]) {
               break;
             }
           }
           z_buffer = WGD->z[k] + WGD->nk[WGD->wall_indices[id]] * (coeff + 1) * WGD->dz_array[k];
-          for (auto kk = 0; kk < WGD->z.size(); kk++) {
+          for (auto kk = 0u; kk < WGD->z.size(); kk++) {
             second_k = kk + 1;
             if (z_buffer <= WGD->z_face[kk + 1]) {
               break;
@@ -546,21 +546,22 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
           }
         } else {
           z_buffer = WGD->z[k] + WGD->nk[WGD->wall_indices[id]] * coeff * WGD->dz_array[k];
-          for (auto kk = 0; kk < WGD->z.size(); kk++) {
+          for (auto kk = 0u; kk < WGD->z.size(); kk++) {
             first_k = kk + 1;
             if (z_buffer <= WGD->z_face[kk + 1]) {
               break;
             }
           }
           z_buffer = WGD->z[k] + WGD->nk[WGD->wall_indices[id]] * (coeff + 1) * WGD->dz_array[k];
-          for (auto kk = 0; kk < WGD->z.size(); kk++) {
+          for (auto kk = 0u; kk < WGD->z.size(); kk++) {
             second_k = kk - 1;
             if (z_buffer <= WGD->z[kk]) {
               break;
             }
           }
         }
-        if (first_i > WGD->nx - 2 || first_i < 0 || first_j > WGD->ny - 2 || first_j < 0 || first_k > WGD->nz - 3 || first_k < 1 || second_i > WGD->nx - 2 || second_i < 0 || second_j > WGD->ny - 2 || second_j < 0 || second_k > WGD->nz - 3 || second_k < 1) {
+        if (first_i > WGD->nx - 2 || first_i < 0 || first_j > WGD->ny - 2 || first_j < 0 || first_k > WGD->nz - 3 || first_k < 1
+            || second_i > WGD->nx - 2 || second_i < 0 || second_j > WGD->ny - 2 || second_j < 0 || second_k > WGD->nz - 3 || second_k < 1) {
           break;
         }
 
@@ -582,7 +583,8 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
     }
 
 
-    if (first_i > WGD->nx - 2 || first_i < 0 || first_j > WGD->ny - 2 || first_j < 0 || first_k > WGD->nz - 3 || first_k < 1 || second_i > WGD->nx - 2 || second_i < 0 || second_j > WGD->ny - 2 || second_j < 0 || second_k > WGD->nz - 3 || second_k < 1) {
+    if (first_i > WGD->nx - 2 || first_i < 0 || first_j > WGD->ny - 2 || first_j < 0 || first_k > WGD->nz - 3 || first_k < 1
+        || second_i > WGD->nx - 2 || second_i < 0 || second_j > WGD->ny - 2 || second_j < 0 || second_k > WGD->nz - 3 || second_k < 1) {
       continue;
     }
 

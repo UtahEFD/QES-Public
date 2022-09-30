@@ -56,7 +56,7 @@ public:
   Vector3 grid; /**< :Cell sizes in each direction: */
   int verticalStretching = 0; /**< :Defines grid type in z-direction (0-unifrom (default), 1-custom): */
   std::vector<float> dz_value; /**< :Array holding values of dz if the verticalStretching is 1: */
-  int totalTimeIncrements; /**< :Total number of time steps: */
+  unsigned int totalTimeIncrements; /**< :Total number of time steps: */
   int rooftopFlag = 1; /**< :Rooftop flag (0-none, 1-log profile (default), 2-vortex): */
   int upwindCavityFlag = 2; /**< :Upwind cavity flag (0-none, 1-Rockle, 2-MVP (default), 3-HMVP): */
   int streetCanyonFlag = 1; /**< :Street canyon flag (0-none, 1-Roeckle w/ Fackrel (default)): */
@@ -166,7 +166,7 @@ public:
     }
     parsePrimitive<int>(false, verticalStretching, "verticalStretching");
     parseMultiPrimitives<float>(false, dz_value, "dz_value");
-    parsePrimitive<int>(false, totalTimeIncrements, "totalTimeIncrements");
+    parsePrimitive<unsigned int>(false, totalTimeIncrements, "totalTimeIncrements");
     parsePrimitive<int>(false, rooftopFlag, "rooftopFlag");
     parsePrimitive<int>(false, upwindCavityFlag, "upwindCavityFlag");
     parsePrimitive<int>(false, streetCanyonFlag, "streetCanyonFlag");

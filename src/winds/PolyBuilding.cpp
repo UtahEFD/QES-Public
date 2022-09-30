@@ -273,7 +273,7 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
     j_face_second.resize(polygonVertices.size(), 1);
 
     // Loop to find the maximum and minimum in x and y directions and calculate slope of the line between each two points of polygon
-    for (auto id = 0; id < polygonVertices.size() - 1; id++) {
+    for (auto id = 0u; id < polygonVertices.size() - 1; id++) {
       // Find the maximum and minimum in x direction of each line of the polygon
       if (polygonVertices[id].x_poly < polygonVertices[id + 1].x_poly) {
         x_min_face[id] = polygonVertices[id].x_poly;
@@ -308,10 +308,10 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
       }
     }
 
-    int number = 0;
+    unsigned int number = 0;
 
     // The main loop going through all points in polygon and processing cut-cells
-    for (auto id = 0; id < polygonVertices.size() - 1; id++) {
+    for (auto id = 0u; id < polygonVertices.size() - 1; id++) {
       if (skip_id.size() != 0) {
         if (id == skip_id[number]) {
           if (number < skip_id.size()) {
@@ -442,10 +442,13 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
               y2j_intersect = y2j;
             }
 
-            int count = 0;
+            unsigned int count = 0;
             // Loop to calculate all the intersection points in case the next line is in the current cell
             // The loop is complete once the second point of a line is outside of the cell
-            while (x2i >= polygonVertices[index_next + 1].x_poly && x1i <= polygonVertices[index_next + 1].x_poly && count != polygonVertices.size() - 2 && y2j >= polygonVertices[index_next + 1].y_poly && y1j <= polygonVertices[index_next + 1].y_poly && index_next != polygonVertices.size() - 1) {
+            while (x2i >= polygonVertices[index_next + 1].x_poly && x1i <= polygonVertices[index_next + 1].x_poly
+                   && count != polygonVertices.size() - 2
+                   && y2j >= polygonVertices[index_next + 1].y_poly && y1j <= polygonVertices[index_next + 1].y_poly
+                   && index_next != polygonVertices.size() - 1) {
               // Add the second point to solid points in the cell
               face_intersect.push_back(cutVert(polygonVertices[index_next + 1].x_poly, polygonVertices[index_next + 1].y_poly, 0.0));
               // Add the ID to the list to skip it in the process

@@ -65,8 +65,9 @@ void PolyBuilding::streetCanyonModified(WINDSGeneralData *WGD)
   int i_u, j_v;
   float x_u, y_u, x_v, y_v, x_w, y_w;
 
-  float canyon_center(0.0), canyon_width(0.0);
   // FM -> needed for generalization (TODO)
+  //float canyon_center(0.0);
+  float canyon_width(0.0);
   //float canyon_R(0.0), canyon_L(0.0);
   //int canyon_R_flag(0), canyon_L_flag(0);// flag: 0 = undefined, 1=shear, 2=blending
   float x_pos, y_pos, z_pos;
@@ -141,7 +142,7 @@ void PolyBuilding::streetCanyonModified(WINDSGeneralData *WGD)
       //canyon_R_flag = -1;
 
       canyon_width = std::abs(yi[id] - yi[id + 1]);
-      canyon_center = 0.5 * (yi[id] + yi[id + 1]);
+      //canyon_center = 0.5 * (yi[id] + yi[id + 1]);
 
       // Loop through y locations along each face in rotated coordinates
       for (auto y_id = 0; y_id <= 2 * ceil(std::abs(yi[id] - yi[id + 1]) / WGD->dxy); y_id++) {

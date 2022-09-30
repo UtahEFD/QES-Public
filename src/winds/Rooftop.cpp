@@ -50,32 +50,35 @@
 void PolyBuilding::rooftop(const WINDSInputData *WID, WINDSGeneralData *WGD)
 {
   float tol = 30 * M_PI / 180.0;// Rooftop criteria for vortex parameterization
-  float wing_tol = 70 * M_PI / 180.0;// Rooftop criteria for delta wing parameterization
+  //unused-variable:float wing_tol = 70 * M_PI / 180.0;// Rooftop criteria for delta wing parameterization
 
   int rooftop_method = 0;
 
-  int k_ref;
+  int k_ref(0);
   float R_scale;
   float R_cx;
   float vd;
-  float z_ref;
-  int k_end_v;
+  float z_ref(0.0);
+  int k_end_v(0);
   int u_flag, v_flag, w_flag;
-  float x_u, x_v, x_w, y_u, y_v, y_w;
+  float x_u, y_u;
+  float x_v, y_v;
+  //unused-variable:float x_w, y_w;
   float h_x, h_y, hd_u, hd_v;
-  float h_xu, h_yu, h_xv, h_yv, h_xw, h_yw;
-  float hd_wx, hd_wy;
+  //unused-variable:float h_xu, h_yu, h_xv, h_yv, h_xw, h_yw;
+  //unused-variable:float hd_wx, hd_wy;
   float z_ref_u, z_ref_v;
-  int k_shell_u, k_shell_v, k_shell_w;
+  int k_shell_u, k_shell_v;//k_shell_w;
   float denom_u, denom_v;
-  float velocity_mag, velocity_mag_u, velocity_mag_v;
+  //unused-variable:float velocity_mag;
+  float velocity_mag_u, velocity_mag_v;
   float z_roof;
   float shell_heightu_part, shell_heightv_part;
   float shell_height_u, shell_height_v;
   std::vector<int> perpendicular_flag;
 
-  float roof_angle;
-  float u0_roof, v0_roof;
+  //unused-variable:float roof_angle;
+  float u0_roof(0.0), v0_roof(0.0);
 
   // check which rooftop method to use
   if (WID->simParams->rooftopFlag == 1) {
@@ -110,7 +113,7 @@ void PolyBuilding::rooftop(const WINDSInputData *WID, WINDSGeneralData *WGD)
 
   float x_front = 0.0;
   float y_front = 0.0;
-  int ns_flag = 0;
+  //unused-variable:int ns_flag = 0;
 
   // Loop to calculate x and y values of each polygon point in rotated coordinates
   for (size_t id = 0; id < polygonVertices.size(); id++) {
