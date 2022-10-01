@@ -240,6 +240,17 @@ endif (DOXYGEN_FOUND)
 enable_testing() # once
 include(CTest)
 
+function(link_external_libraries exec)
+  target_link_libraries(${exec} ${Boost_PROGRAM_OPTIONS_LIBRARIES})
+  target_link_libraries(${exec} ${Boost_DATE_TIME_LIBRARIES})
+  target_link_libraries(${exec} ${Boost_FILESYSTEM_LIBRARIES})
+  target_link_libraries(${exec} ${GDAL_LIBRARY})
+  target_link_libraries(${exec} ${NETCDF_LIBRARIES_CXX})
+  target_link_libraries(${exec} ${NETCDF_LIBRARIES_C})
+  target_link_libraries(${exec} cudadevrt)
+  target_link_libraries(${exec} ${CUDA_LIBRARIES})
+endfunction()
+
 add_subdirectory(src/util)
 add_subdirectory(src/winds)
 add_subdirectory(src/plume)
