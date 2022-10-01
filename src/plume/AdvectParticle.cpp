@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -245,7 +246,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     // now check to see if the value is rogue or not
     if (std::abs(uFluct) >= vel_threshold || isnan(uFluct)) {
       std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
-      std::cerr << "responsible uFluct was \"" << uFluct << "\"" << std::endl;
+      std::cerr << "uFluct = " << uFluct << ", CoEps = " << CoEps << std::endl;
       uFluct = 0.0;
       isActive = false;
       isRogue = true;
@@ -253,7 +254,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     }
     if (std::abs(vFluct) >= vel_threshold || isnan(vFluct)) {
       std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
-      std::cerr << "responsible vFluct was \"" << vFluct << "\"" << std::endl;
+      std::cerr << "vFluct = " << vFluct << ", CoEps = " << CoEps << std::endl;
       vFluct = 0.0;
       isActive = false;
       isRogue = true;
@@ -261,7 +262,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     }
     if (std::abs(wFluct) >= vel_threshold || isnan(wFluct)) {
       std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
-      std::cerr << "responsible wFluct was \"" << wFluct << "\"" << std::endl;
+      std::cerr << "wFluct = " << wFluct << ", CoEps = " << CoEps << std::endl;
       wFluct = 0.0;
       isActive = false;
       isRogue = true;
@@ -281,16 +282,10 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     disY = (vMean + vFluct) * par_dt;
     disZ = (wMean + wFluct) * par_dt;
 
-    // LDU 5/2/22: CHANGE THIS BACK WHEN DONE MAKING FRAME2 FIGS. FORWARD DISPERSION IS + disX etc, BACKWARD DISPERSION IS - disX etc.
-
-    xPos = xPos + disX;// for forward (normal) dispersion
+    xPos = xPos + disX;
     yPos = yPos + disY;
     zPos = zPos + disZ;
 
-    /*xPos = xPos - disX; // for backward dispersion (footprint study)
-    yPos = yPos - disY;
-    zPos = zPos - disZ;
-    */
     uTot = uMean + uFluct;
     vTot = vMean + vFluct;
     wTot = wMean + wFluct;
@@ -302,13 +297,13 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
 
     // check and do wall (building and terrain) reflection (based in the method)
     if (isActive == true) {
-      isActive = (this->*wallReflection)(WGD, xPos, yPos, zPos, disX, disY, disZ, uFluct, vFluct, wFluct, uFluct_old, vFluct_old, wFluct_old);
+      isActive = wallReflect->reflect(WGD, this, xPos, yPos, zPos, disX, disY, disZ, uFluct, vFluct, wFluct);
     }
 
     // now apply boundary conditions
-    if (isActive == true) isActive = (this->*enforceWallBCs_x)(xPos, uFluct, uFluct_old, domainXstart, domainXend);
-    if (isActive == true) isActive = (this->*enforceWallBCs_y)(yPos, vFluct, vFluct_old, domainYstart, domainYend);
-    if (isActive == true) isActive = (this->*enforceWallBCs_z)(zPos, wFluct, wFluct_old, domainZstart, domainZend);
+    if (isActive == true) isActive = domainBC_x->enforce(xPos, uFluct);
+    if (isActive == true) isActive = domainBC_y->enforce(yPos, vFluct);
+    if (isActive == true) isActive = domainBC_z->enforce(zPos, wFluct);
 
     // now update the old values to be ready for the next particle time iteration
     // the current values are already set for the next iteration by the above calculations

@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -41,7 +42,7 @@
 
 // note that this sets the output file and the bool for whether to do output, in the netcdf inherited classes
 // in this case, output should always be done, so the bool for whether to do output is set to true
-PlumeOutput::PlumeOutput(PlumeInputData *PID, WINDSGeneralData *WGD, Plume *plume_ptr, std::string output_file)
+PlumeOutput::PlumeOutput(const PlumeInputData *PID, Plume *plume_ptr, std::string output_file)
   : QESNetCDFOutput(output_file)
 {
 
@@ -181,13 +182,14 @@ PlumeOutput::PlumeOutput(PlumeInputData *PID, WINDSGeneralData *WGD, Plume *plum
   // setup information:
   // --------------------------------------------------------
 
+  /* moved to depostion class
   int nbrFace = WGD->wall_below_indices.size()
                 + WGD->wall_above_indices.size()
                 + WGD->wall_back_indices.size()
                 + WGD->wall_front_indices.size()
                 + WGD->wall_left_indices.size()
                 + WGD->wall_right_indices.size();
-
+  */
 
   // --------------------------------------------------------
   // setup the netcdf output information storage
@@ -197,7 +199,7 @@ PlumeOutput::PlumeOutput(PlumeInputData *PID, WINDSGeneralData *WGD, Plume *plum
 
   // setup desired output fields string
   // LA future work: can be added in fileOptions at some point
-  output_fields = { "x", "y", "z", "pBox", "conc", "tAvg", "depcvol" };
+  output_fields = { "x", "y", "z", "pBox", "conc", "tAvg", "xDep", "yDep", "zDep", "depcvol" };
 
   // set data dimensions, which in this case are cell-centered dimensions
   // space dimensions
@@ -236,25 +238,25 @@ PlumeOutput::PlumeOutput(PlumeInputData *PID, WINDSGeneralData *WGD, Plume *plum
   createAttVector("conc", "concentration", "g m-3", dim_vect_3d, &conc);
 
   // face dimensions
-  NcDim NcDim_nFace = addDimension("nFace", nbrFace);
+  NcDim NcDim_nFace = addDimension("nFace", m_plume->deposition->nbrFace);
   //NcDim NcDim_x = addDimension("x",nBoxesX);
   //NcDim NcDim_y = addDimension("y",nBoxesY);
   //NcDim NcDim_z = addDimension("z",nBoxesZ);
 
-  NcDim NcDim_xDep = addDimension("xDep", WGD->nx - 1);
-  NcDim NcDim_yDep = addDimension("yDep", WGD->ny - 1);
-  NcDim NcDim_zDep = addDimension("zDep", WGD->nz - 1);
+  NcDim NcDim_xDep = addDimension("xDep", m_plume->deposition->x.size());
+  NcDim NcDim_yDep = addDimension("yDep", m_plume->deposition->y.size());
+  NcDim NcDim_zDep = addDimension("zDep", m_plume->deposition->z.size());
 
 
   std::vector<NcDim> dim_vect_xDep;
   dim_vect_xDep.push_back(NcDim_xDep);
-  createAttVector("xDep", "x-distance, deposition grid", "m", dim_vect_xDep, &(WGD->x));
+  createAttVector("xDep", "x-distance, deposition grid", "m", dim_vect_xDep, &(m_plume->deposition->x));
   std::vector<NcDim> dim_vect_yDep;
   dim_vect_yDep.push_back(NcDim_yDep);
-  createAttVector("yDep", "y-distance, deposition grid", "m", dim_vect_yDep, &(WGD->y));
+  createAttVector("yDep", "y-distance, deposition grid", "m", dim_vect_yDep, &(m_plume->deposition->y));
   std::vector<NcDim> dim_vect_zDep;
   dim_vect_zDep.push_back(NcDim_zDep);
-  createAttVector("zDep", "z-distance, deposition grid", "m", dim_vect_zDep, &(WGD->z));
+  createAttVector("zDep", "z-distance, deposition grid", "m", dim_vect_zDep, &(m_plume->deposition->z));
 
   std::vector<NcDim> dim_vectDep;
   dim_vectDep.push_back(NcDim_t);
@@ -262,7 +264,7 @@ PlumeOutput::PlumeOutput(PlumeInputData *PID, WINDSGeneralData *WGD, Plume *plum
   dim_vectDep.push_back(NcDim_yDep);
   dim_vectDep.push_back(NcDim_xDep);
 
-  createAttVector("depcvol", "deposited mass", "g", dim_vectDep, &(WGD->depcvol));
+  createAttVector("depcvol", "deposited mass", "g", dim_vectDep, &(m_plume->deposition->depcvol));
 
   // create attributes space dimensions
   std::vector<NcDim> dim_vect_face;

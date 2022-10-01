@@ -1,14 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -260,7 +261,7 @@ public:
     parType = ParticleType::small;
     parsePrimitive<double>(true, rho, "particleDensity");
     parsePrimitive<double>(true, d, "particleDiameter");
-    parsePrimitive<bool>(false, depFlag, "depositionFlag");
+    parsePrimitive<bool>(true, depFlag, "depositionFlag");
     d_m = d * (1.0E-6);
     m_kg = m * (1.0E-3);
   }
@@ -307,7 +308,7 @@ public:
     parType = ParticleType::large;
     parsePrimitive<double>(true, rho, "particleDensity");
     parsePrimitive<double>(true, d, "particleDiameter");
-    parsePrimitive<bool>(false, depFlag, "depositionFlag");
+    parsePrimitive<bool>(true, depFlag, "depositionFlag");
     d_m = d * (1.0E-6);
     m_kg = m * (1.0E-3);
   }
@@ -354,7 +355,7 @@ public:
     parType = ParticleType::heavygas;
     parsePrimitive<double>(true, rho, "particleDensity");
     parsePrimitive<double>(true, d, "particleDiameter");
-    parsePrimitive<bool>(false, depFlag, "depositionFlag");
+    parsePrimitive<bool>(true, depFlag, "depositionFlag");
     d_m = d * (1.0E-6);
     m_kg = m * (1.0E-3);
   }

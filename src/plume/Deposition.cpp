@@ -28,40 +28,35 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Sources.hpp 
- * @brief This class contains data and variables that set flags and
- * settngs read from the xml.
- *
- * @note Child of ParseInterface
- * @sa ParseInterface
+/** @file Deposition.cpp
+ * @brief
  */
 
-#pragma once
+#include "Deposition.h"
 
-#include "SourceType.hpp"
-#include "SourcePoint.hpp"
-#include "SourceLine.hpp"
-#include "SourceCircle.hpp"
-#include "SourceCube.hpp"
-#include "SourceFullDomain.hpp"
-
-#include "util/ParseInterface.h"
-
-
-class Sources : public ParseInterface
+Deposition::Deposition(const WINDSGeneralData *WGD)
 {
-private:
-public:
-  int numSources;// number of sources, you fill in source information for each source next
-  std::vector<SourceType *> sources;// source type and the collection of all the different sources from input
+  numcell_cent = WGD->numcell_cent;
 
-  virtual void parseValues()
-  {
-    parsePrimitive<int>(true, numSources, "numSources");
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourcePoint>("SourcePoint"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceLine>("SourceLine"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceCircle>("SourceCircle"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceCube>("SourceCube"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceFullDomain>("SourceFullDomain"));
+  x.resize(WGD->nx - 1);
+  for (auto k = 0u; k < x.size(); ++k) {
+    x[k] = WGD->x[k];
   }
-};
+  y.resize(WGD->ny - 1);
+  for (auto k = 0u; k < y.size(); ++k) {
+    y[k] = WGD->y[k];
+  }
+  z.resize(WGD->nz - 1);
+  for (auto k = 0u; k < z.size(); ++k) {
+    z[k] = WGD->z[k];
+  }
+
+  depcvol.resize(numcell_cent, 0.0);
+
+  nbrFace = WGD->wall_below_indices.size()
+            + WGD->wall_above_indices.size()
+            + WGD->wall_back_indices.size()
+            + WGD->wall_front_indices.size()
+            + WGD->wall_left_indices.size()
+            + WGD->wall_right_indices.size();
+}

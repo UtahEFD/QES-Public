@@ -28,40 +28,62 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Sources.hpp 
- * @brief This class contains data and variables that set flags and
- * settngs read from the xml.
- *
- * @note Child of ParseInterface
- * @sa ParseInterface
+/** @file DoaminBoundaryConditions.h 
+ * @brief 
  */
 
 #pragma once
 
-#include "SourceType.hpp"
-#include "SourcePoint.hpp"
-#include "SourceLine.hpp"
-#include "SourceCircle.hpp"
-#include "SourceCube.hpp"
-#include "SourceFullDomain.hpp"
+#include <string>
+#include <iostream>
 
-#include "util/ParseInterface.h"
-
-
-class Sources : public ParseInterface
+class DomainBC
 {
 private:
-public:
-  int numSources;// number of sources, you fill in source information for each source next
-  std::vector<SourceType *> sources;// source type and the collection of all the different sources from input
+  DomainBC()
+  {}
 
-  virtual void parseValues()
+protected:
+  double domainStart;
+  double domainEnd;
+
+public:
+  DomainBC(double dS, double dE)
   {
-    parsePrimitive<int>(true, numSources, "numSources");
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourcePoint>("SourcePoint"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceLine>("SourceLine"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceCircle>("SourceCircle"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceCube>("SourceCube"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceFullDomain>("SourceFullDomain"));
+    domainStart = dS;
+    domainEnd = dE;
   }
+  ~DomainBC()
+  {}
+  virtual bool enforce(double &, double &) = 0;
+};
+
+class DomainBC_exiting : public DomainBC
+{
+public:
+  DomainBC_exiting(double dS, double dE)
+    : DomainBC(dS, dE)
+  {}
+
+  bool enforce(double &, double &);
+};
+
+class DomainBC_periodic : public DomainBC
+{
+public:
+  DomainBC_periodic(double dS, double dE)
+    : DomainBC(dS, dE)
+  {}
+
+  bool enforce(double &, double &);
+};
+
+class DomainBC_reflection : public DomainBC
+{
+public:
+  DomainBC_reflection(double dS, double dE)
+    : DomainBC(dS, dE)
+  {}
+
+  bool enforce(double &, double &);
 };

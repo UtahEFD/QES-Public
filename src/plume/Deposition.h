@@ -28,40 +28,54 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Sources.hpp 
- * @brief This class contains data and variables that set flags and
- * settngs read from the xml.
- *
- * @note Child of ParseInterface
- * @sa ParseInterface
+/** @file Deposition.h
+ * @brief
  */
 
 #pragma once
 
-#include "SourceType.hpp"
-#include "SourcePoint.hpp"
-#include "SourceLine.hpp"
-#include "SourceCircle.hpp"
-#include "SourceCube.hpp"
-#include "SourceFullDomain.hpp"
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <list>
+#include <cmath>
+#include <cstring>
 
-#include "util/ParseInterface.h"
+#include "util/QEStime.h"
+#include "util/calcTime.h"
+#include "util/Vector3.h"
+//#include "Matrix3.h"
+#include "Random.h"
 
+#include "util/QESNetCDFOutput.h"
+#include "PlumeOutput.h"
+#include "PlumeOutputParticleData.h"
 
-class Sources : public ParseInterface
+#include "PlumeInputData.hpp"
+
+#include "winds/WINDSGeneralData.h"
+#include "winds/TURBGeneralData.h"
+
+#include "Interp.h"
+#include "InterpNearestCell.h"
+#include "InterpPowerLaw.h"
+#include "InterpTriLinear.h"
+
+class Deposition
 {
 private:
-public:
-  int numSources;// number of sources, you fill in source information for each source next
-  std::vector<SourceType *> sources;// source type and the collection of all the different sources from input
+  Deposition()
+  {}
 
-  virtual void parseValues()
-  {
-    parsePrimitive<int>(true, numSources, "numSources");
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourcePoint>("SourcePoint"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceLine>("SourceLine"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceCircle>("SourceCircle"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceCube>("SourceCube"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceFullDomain>("SourceFullDomain"));
-  }
+public:
+  Deposition(const WINDSGeneralData *);
+  ~Deposition()
+  {}
+
+  long numcell_cent; /**< Total number of cell-centered values in domain */
+
+  std::vector<float> x, y, z;
+  std::vector<float> depcvol;
+
+  int nbrFace;
 };
