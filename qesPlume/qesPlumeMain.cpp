@@ -1,3 +1,32 @@
+/****************************************************************************
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
+ *
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
+ *
+ * This file is part of QES-Plume
+ *
+ * GPL-3.0 License
+ *
+ * QES-Plume is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Plume is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
 
 #include <iostream>
 #include <netcdf>
@@ -17,6 +46,7 @@
 #include "plume/handlePlumeArgs.hpp"
 #include "plume/PlumeInputData.hpp"
 #include "util/NetCDFInput.h"
+#include "util/QEStool.h"
 
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
@@ -55,13 +85,9 @@ int main(int argc, char **argv)
   arguments.processArguments(argc, argv);
 
   // parse xml settings
-  PlumeInputData *PID = new PlumeInputData(arguments.inputQESFile);
-
-  //PlumeInputData* PID = parseXMLTree(arguments.inputQESFile);
-  //if ( !PID ) {
-  //    std::cerr << "QES-Plume input file: " << arguments.inputQESFile << " not able to be read successfully." << std::endl;
-  //    exit(EXIT_FAILURE);
-  //}
+  PlumeInputData *PID = new PlumeInputData(arguments.qesPlumeParamFile);
+  if (!PID)
+    QEStool::error("QES-Plume input file: " + arguments.qesPlumeParamFile + " not able to be read successfully.");
 
   // Create instance of QES-winds General data class
   WINDSGeneralData *WGD = new WINDSGeneralData(arguments.inputWINDSFile);
@@ -74,7 +100,7 @@ int main(int argc, char **argv)
   // create output instance
   std::vector<QESNetCDFOutput *> outputVec;
   // always supposed to output lagrToEulOutput data
-  outputVec.push_back(new PlumeOutput(PID, WGD, plume, arguments.outputFile));
+  outputVec.push_back(new PlumeOutput(PID, plume, arguments.outputFile));
   if (arguments.doParticleDataOutput == true) {
     outputVec.push_back(new PlumeOutputParticleData(PID, plume, arguments.outputParticleDataFile));
   }

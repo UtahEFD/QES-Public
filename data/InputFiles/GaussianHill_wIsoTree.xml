@@ -1,3 +1,4 @@
+<QESWindsParameters>
 <simulationParameters>
   <domain>200 200 200 </domain>
   <cellSize> 1.0 1.0 1.0 </cellSize> <!-- Meters-->
@@ -20,7 +21,7 @@
   <UTMY> 0 </UTMY>
   <UTMZone> 1 </UTMZone>
   <UTMZoneLetter> 17 </UTMZoneLetter>
-  <DEM>../data/GISFiles/GaussianHill_200x200.tiff</DEM>
+  <DEM>../GISFiles/GaussianHill_200x200.tiff</DEM>
 </simulationParameters>
 <metParams>
   <z0_domain_flag> 0 </z0_domain_flag>            <!-- Distribution of sueface roughness for domain (0-uniform, 1-custom -->
@@ -67,4 +68,6 @@
   <sensorVelocityFlag> 0 </sensorVelocityFlag>
   <staggerdVelocityFlag> 0 </staggerdVelocityFlag>
 </fileOptions>
+
+</QESWindsParameters>
 

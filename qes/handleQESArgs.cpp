@@ -2,11 +2,11 @@
 
 QESArgs::QESArgs()
   : verbose(false),
-    inputWINDSFile(""), inputPlumeFile(""),
+    qesWindsParamFile(""), qesPlumeParamFile(""),
     netCDFFileBasename(""),
     solveWind(false), compTurb(false), compPlume(false),
-    solveType(1), compareType(0),
-    visuOutput(false), wkspOutput(false), terrainOut(false),
+    solveType(1),
+    visuOutput(true), wkspOutput(false), terrainOut(false),
     turbOutput(false),
     doParticleDataOutput(false)
 {
@@ -15,10 +15,9 @@ QESArgs::QESArgs()
 
   reg("windsolveroff", "Turns off the wind solver and wind output", ArgumentParsing::NONE, 'x');
   reg("solvetype", "selects the method for solving the windfield", ArgumentParsing::INT, 's');
-  reg("juxtapositiontype", "selects a second solve method to compare to the original solve type", ArgumentParsing::INT, 'j');
 
-  reg("windproj", "Specifies the QES Proj file", ArgumentParsing::STRING, 'q');
-  reg("plumeproj", "Specifies the QES Proj file", ArgumentParsing::STRING, 'p');
+  reg("qesWindsParamFile", "Specifies the QES Proj file", ArgumentParsing::STRING, 'q');
+  reg("qesPlumeParamFile", "Specifies the QES Proj file", ArgumentParsing::STRING, 'p');
 
   reg("turbcomp", "Turns on the computation of turbulent fields", ArgumentParsing::NONE, 't');
 
@@ -49,8 +48,8 @@ void QESArgs::processArguments(int argc, char *argv[])
   verbose = isSet("verbose");
   if (verbose) std::cout << "Verbose Output: ON" << std::endl;
 
-  isSet("windproj", inputWINDSFile);
-  if (inputWINDSFile != "") std::cout << "QES proj set to " << inputWINDSFile << std::endl;
+  isSet("qesWindsParamFile", qesWindsParamFile);
+  if (qesWindsParamFile != "") std::cout << "qesWindsParamFile set to " << qesWindsParamFile << std::endl;
 
   solveWind = isSet("windsolveroff");
   if (solveWind) std::cout << "the wind fields are not being calculated" << std::endl;
@@ -65,31 +64,23 @@ void QESArgs::processArguments(int argc, char *argv[])
   else if (solveType == Shared_M)
     std::cout << "Solving with: Shared memory solver (GPU)" << std::endl;
 
-  isSet("juxtapositiontype", compareType);
-  if (compareType == CPU_Type)
-    std::cout << "Comparing against: CPU" << std::endl;
-  else if (compareType == DYNAMIC_P)
-    std::cout << "Comparing against: GPU" << std::endl;
-
   compTurb = isSet("turbcomp");
 
-  isSet("plumeproj", inputPlumeFile);
-  if (inputPlumeFile == "x") {
-    inputPlumeFile = inputWINDSFile;
-  }
-  if (inputPlumeFile != "") {
+  isSet("qesPlumeParamFile", qesPlumeParamFile);
+
+  if (qesPlumeParamFile != "") {
+    std::cout << "qesPlumeParamFile set to " << qesPlumeParamFile << std::endl;
     compTurb = true;
     std::cout << "Turbulence model: ON" << std::endl;
     compPlume = true;
     std::cout << "Plume model: ON" << std::endl;
-    std::cout << "Plume file set to " << inputPlumeFile << std::endl;
   } else if (compTurb) {
     std::cout << "Turbulence model: ON" << std::endl;
   }
 
   isSet("outbasename", netCDFFileBasename);
   if (netCDFFileBasename != "") {
-    visuOutput = isSet("visuout");
+    //visuOutput = isSet("visuout");
     if (visuOutput) {
       netCDFFileVisu = netCDFFileBasename;
       netCDFFileVisu.append("_windsOut.nc");
@@ -124,7 +115,7 @@ void QESArgs::processArguments(int argc, char *argv[])
     //    outputEulerianFile = outputFolder + caseBaseName + "_eulerianData.nc";
     //}
     if (compPlume) {
-      outputPlumeFile = netCDFFileBasename + "_conc.nc";
+      outputPlumeFile = netCDFFileBasename + "_plumeOut.nc";
 
       doParticleDataOutput = isSet("doParticleDataOutput");
 

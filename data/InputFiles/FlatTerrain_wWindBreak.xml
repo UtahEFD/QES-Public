@@ -1,3 +1,4 @@
+<QESWindsParameters>
 <simulationParameters>
   <domain>200 200 200 </domain>
   <cellSize> 1.0 1.0 0.25 </cellSize> <!-- Meters-->
@@ -36,7 +37,7 @@
 	  <reciprocal> 0 </reciprocal>
 	  <height> 10 </height>
 	  <speed> 5 </speed>
-	  <direction> 225 </direction> 
+	  <direction> 270 </direction> 
     </timeSeries>
   </sensor>
 </metParams>
@@ -60,4 +61,6 @@
   <outputFlag>1</outputFlag>
   <outputFields>all</outputFields> 
 </fileOptions>
+
+</QESWindsParameters>
 

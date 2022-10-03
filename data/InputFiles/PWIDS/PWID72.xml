@@ -1,3 +1,4 @@
+<sensor>
 <site_coord_flag> 2 </site_coord_flag> 			<!-- Sensor site coordinate system (1=QUIC (default), 2=UTM, 3=Lat/Lon) -->
 <site_xcoord> 1.0  </site_xcoord> 				<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
 <site_ycoord> 1.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->
@@ -6,31 +7,59 @@
 <site_UTM_zone> 12 </site_UTM_zone> 				<!-- UTM zone of the sensor site (if site_coord_flag = 2)-->
 
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
-	<timeStamp>2013-05-06T22:30:00</timeStamp>
+	<timeStamp>2013-05-06T21:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 3.92 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 113.77 </direction> 				<!-- Wind direction of sensor -->
+	<speed> 2.89 </speed> 						<!-- Measured speed at the sensor height -->
+	<direction> 249.69 </direction> 				<!-- Wind direction of sensor -->
+</timeSeries>
+<timeSeries>									<!-- Start of timestep informastion for a sensor -->
+	<timeStamp>2013-05-07T19:00:00</timeStamp>
+	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
+	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
+	<height> 2.0 </height> 					<!-- Height of the sensor -->
+	<speed> 2.40 </speed> 						<!-- Measured speed at the sensor height -->
+	<direction> 96.06 </direction> 				<!-- Wind direction of sensor -->
+</timeSeries>
+
+
+
+<timeSeries>									<!-- Start of timestep informastion for a sensor -->
+	<timeStamp>2013-05-08T19:00:00</timeStamp>
+	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
+	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
+	<height> 2.0 </height> 					<!-- Height of the sensor -->
+	<speed> 2.08 </speed> 						<!-- Measured speed at the sensor height -->
+	<direction> 190.61 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
 
 
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
+	<timeStamp>2013-05-08T19:30:00</timeStamp>
+	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
+	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
+	<height> 2.0 </height> 					<!-- Height of the sensor -->
+	<speed> 2.11 </speed> 						<!-- Measured speed at the sensor height -->
+	<direction> 269.55 </direction> 				<!-- Wind direction of sensor -->
+</timeSeries>
+<timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-08T20:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 2.29 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 253.53 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
-
-
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-08T20:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 1.58 </speed> 						<!-- Measured speed at the sensor height -->
@@ -39,160 +68,144 @@
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-08T21:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 1.37 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 153.81 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
+
+
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-08T21:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 1.39 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 125.91 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
-<timeSeries>									<!-- Start of timestep informastion for a sensor -->
-	<timeStamp>2013-05-08T22:00:00</timeStamp>
-	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
-	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
-	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 2.1 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 190.82 </direction> 				<!-- Wind direction of sensor -->
-</timeSeries>
 
 
-<timeSeries>									<!-- Start of timestep informastion for a sensor -->
-	<timeStamp>2013-05-08T22:30:00</timeStamp>
-	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
-	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
-	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 1.77 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 149.82 </direction> 				<!-- Wind direction of sensor -->
-</timeSeries>
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-09T20:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 2.50 </speed> 						<!-- Measured speed at the sensor height -->
+	<speed> 2.5 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 57.85 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-09T21:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 4.50 </speed> 						<!-- Measured speed at the sensor height -->
+	<speed> 4.5 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 129.43 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
-
-
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-09T21:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 2.55 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 156.25 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
-	<timeStamp>2013-05-09T22:00:00</timeStamp>
+	<timeStamp>2013-05-10T19:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 2.94 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 193.66 </direction> 				<!-- Wind direction of sensor -->
+	<speed> 3.58 </speed> 						<!-- Measured speed at the sensor height -->
+	<direction> 104.6 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
+
+
+
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
-	<timeStamp>2013-05-09T22:30:00</timeStamp>
+	<timeStamp>2013-05-10T19:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 1.29 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 144.45 </direction> 				<!-- Wind direction of sensor -->
+	<speed> 2.69 </speed> 						<!-- Measured speed at the sensor height -->
+	<direction> 156.49 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-10T20:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 2.92 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 168.85 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
-
-
-
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-10T20:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 3.08 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 210.80 </direction> 				<!-- Wind direction of sensor -->
+	<direction> 210.79 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-10T21:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 3.45 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 238.40 </direction> 				<!-- Wind direction of sensor -->
+	<direction> 238.4 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
+
+
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-10T21:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 3.10 </speed> 						<!-- Measured speed at the sensor height -->
+	<speed> 3.1 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 154.29 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
-	<timeStamp>2013-05-10T22:00:00</timeStamp>
+	<timeStamp>2013-05-11T19:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 3.55 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 250.20 </direction> 				<!-- Wind direction of sensor -->
+	<speed> 1.95 </speed> 						<!-- Measured speed at the sensor height -->
+	<direction> 216.24 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
-
-
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
-	<timeStamp>2013-05-10T22:30:00</timeStamp>
+	<timeStamp>2013-05-11T19:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 3.80 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 208.13 </direction> 				<!-- Wind direction of sensor -->
+	<speed> 2.1 </speed> 						<!-- Measured speed at the sensor height -->
+	<direction> 195.18 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-11T20:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 2.47 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 180.52 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
+
+
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-11T20:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 2.00 </speed> 						<!-- Measured speed at the sensor height -->
@@ -201,226 +214,226 @@
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-11T21:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 2.84 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 110.25 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
-
-
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-11T21:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 2.15 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 284.67 </direction> 				<!-- Wind direction of sensor -->
+	<direction> 284.66 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
-	<timeStamp>2013-05-11T22:00:00</timeStamp>
+	<timeStamp>2013-05-12T19:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 2.06 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 274.60 </direction> 				<!-- Wind direction of sensor -->
+	<speed> 2.64 </speed> 						<!-- Measured speed at the sensor height -->
+	<direction> 239.51 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
+
+
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
-	<timeStamp>2013-05-11T22:30:00</timeStamp>
+	<timeStamp>2013-05-12T19:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 1.27 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 225.36 </direction> 				<!-- Wind direction of sensor -->
+	<speed> 2.36 </speed> 						<!-- Measured speed at the sensor height -->
+	<direction> 255.65 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-12T20:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 2.39 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 230.86 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
-
-
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-12T20:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 2.70 </speed> 						<!-- Measured speed at the sensor height -->
+	<speed> 2.7 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 242.31 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-12T21:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 2.85 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 216.70 </direction> 				<!-- Wind direction of sensor -->
+	<direction> 216.7 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
+
+
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-12T21:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 2.56 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 125.51 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
-	<timeStamp>2013-05-12T22:00:00</timeStamp>
+	<timeStamp>2013-05-13T19:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 2.82 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 58.25 </direction> 				<!-- Wind direction of sensor -->
+	<speed> 3.98 </speed> 						<!-- Measured speed at the sensor height -->
+	<direction> 203.55 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
-
-
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
-	<timeStamp>2013-05-12T22:30:00</timeStamp>
+	<timeStamp>2013-05-13T19:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 2.15 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 166.14 </direction> 				<!-- Wind direction of sensor -->
+	<speed> 3.28 </speed> 						<!-- Measured speed at the sensor height -->
+	<direction> 224.96 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-13T20:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 3.19 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 183.22 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
+
+
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-13T20:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 3.40 </speed> 						<!-- Measured speed at the sensor height -->
+	<speed> 3.4 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 145.28 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-13T21:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 2.74 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 175.13 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
-
-
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-13T21:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 2.65 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 173.62 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
-	<timeStamp>2013-05-13T22:00:00</timeStamp>
+	<timeStamp>2013-05-14T19:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 3.66 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 173.34 </direction> 				<!-- Wind direction of sensor -->
+	<speed> 2.51 </speed> 						<!-- Measured speed at the sensor height -->
+	<direction> 108.1 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
+
+
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
-	<timeStamp>2013-05-13T22:30:00</timeStamp>
+	<timeStamp>2013-05-14T19:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 2.92 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 167.9 </direction> 				<!-- Wind direction of sensor -->
+	<speed> 1.83 </speed> 						<!-- Measured speed at the sensor height -->
+	<direction> 163.19 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-14T20:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 2.51 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 98.74 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
-
-
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-14T20:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 2.9 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 142.70 </direction> 				<!-- Wind direction of sensor -->
+	<direction> 142.7 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-14T21:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 2.94 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 150.60 </direction> 				<!-- Wind direction of sensor -->
+	<direction> 150.6 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
+
+
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-14T21:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 2.27 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 197.51 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
-	<timeStamp>2013-05-14T22:00:00</timeStamp>
+	<timeStamp>2013-05-15T19:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 1.37 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 159.84 </direction> 				<!-- Wind direction of sensor -->
+	<speed> 2.11 </speed> 						<!-- Measured speed at the sensor height -->
+	<direction> 201.84 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
-
-
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
-	<timeStamp>2013-05-14T22:30:00</timeStamp>
+	<timeStamp>2013-05-15T19:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 1.57 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 162.67 </direction> 				<!-- Wind direction of sensor -->
+	<speed> 2.45 </speed> 						<!-- Measured speed at the sensor height -->
+	<direction> 199.41 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-15T20:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 2.88 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 201.49 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
+
+
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-15T20:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 3.23 </speed> 						<!-- Measured speed at the sensor height -->
@@ -429,56 +442,54 @@
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-15T21:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 3.15 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 197.81 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
-
-
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-15T21:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 2.62 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 230.89 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
-	<timeStamp>2013-05-15T22:00:00</timeStamp>
+	<timeStamp>2013-05-16T19:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 3.16 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 229.71 </direction> 				<!-- Wind direction of sensor -->
+	<speed> 2.07 </speed> 						<!-- Measured speed at the sensor height -->
+	<direction> 92.37 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
+
+
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
-	<timeStamp>2013-05-15T22:30:00</timeStamp>
+	<timeStamp>2013-05-16T19:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 4.30 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 244.48 </direction> 				<!-- Wind direction of sensor -->
+	<speed> 1.54 </speed> 						<!-- Measured speed at the sensor height -->
+	<direction> 188.64 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-16T20:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 2.07 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 231.39 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
-
-
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-16T20:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 1.45 </speed> 						<!-- Measured speed at the sensor height -->
@@ -487,88 +498,71 @@
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-16T21:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 2.84 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 161.33 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
+
+
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-16T21:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 4.70 </speed> 						<!-- Measured speed at the sensor height -->
+	<speed> 4.7 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 31.89 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
-	<timeStamp>2013-05-16T22:00:00</timeStamp>
+	<timeStamp>2013-05-17T19:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 4.52 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 145.63 </direction> 				<!-- Wind direction of sensor -->
+	<speed> 5.29 </speed> 						<!-- Measured speed at the sensor height -->
+	<direction> 50.99 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
-
-
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
-	<timeStamp>2013-05-16T22:30:00</timeStamp>
+	<timeStamp>2013-05-17T19:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 4.43 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 151.37 </direction> 				<!-- Wind direction of sensor -->
+	<speed> 5.17 </speed> 						<!-- Measured speed at the sensor height -->
+	<direction> 51.03 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-17T20:00:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 4.93 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 116.38 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
+
+
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-17T20:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 4.96 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 64.80 </direction> 				<!-- Wind direction of sensor -->
+	<direction> 64.8 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
-
-
-
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
 	<timeStamp>2013-05-17T21:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
+	<siteZ0> 0.03 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 	<height> 2.0 </height> 					<!-- Height of the sensor -->
 	<speed> 7.06 </speed> 						<!-- Measured speed at the sensor height -->
 	<direction> 194.09 </direction> 				<!-- Wind direction of sensor -->
 </timeSeries>
-<timeSeries>									<!-- Start of timestep informastion for a sensor -->
-	<timeStamp>2013-05-17T22:00:00</timeStamp>
-	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
-	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
-	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 7.43 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 148.25 </direction> 				<!-- Wind direction of sensor -->
-</timeSeries>
-<timeSeries>									<!-- Start of timestep informastion for a sensor -->
-	<timeStamp>2013-05-17T22:30:00</timeStamp>
-	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
-	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
-	<height> 2.0 </height> 					<!-- Height of the sensor -->
-	<speed> 5.57 </speed> 						<!-- Measured speed at the sensor height -->
-	<direction> 258.80 </direction> 				<!-- Wind direction of sensor -->
-</timeSeries>
 
+
+</sensor>
 

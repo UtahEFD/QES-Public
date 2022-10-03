@@ -1,5 +1,6 @@
+<QESWindsParameters>
 <simulationParameters>
-    <DEM>../data/GISFiles/GaussianHill_200x200.tiff</DEM>		<!-- Address to DEM location-->
+    <DEM>../GISFiles/GaussianHill_200x200.tiff</DEM>		<!-- Address to DEM location-->
 
   	<halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
@@ -78,4 +79,6 @@
   <outputFields>w</outputFields>
   <outputFields>icell</outputFields> 
 </fileOptions>
+
+</QESWindsParameters>
 

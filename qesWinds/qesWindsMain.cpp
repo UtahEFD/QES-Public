@@ -1,9 +1,40 @@
+/****************************************************************************
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
+ *
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
+ *
+ * This file is part of QES-Winds
+ *
+ * GPL-3.0 License
+ *
+ * QES-Winds is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Winds is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
 #include <iostream>
 
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
 
 #include "util/QESNetCDFOutput.h"
+#include "util/QEStool.h"
 
 #include "winds/handleWINDSArgs.h"
 
@@ -49,17 +80,15 @@ int main(int argc, char *argv[])
 
   // Parse the base XML QUIC file -- contains simulation parameters
   //WINDSInputData* WID = parseXMLTree(arguments.quicFile);
-  WINDSInputData *WID = new WINDSInputData(arguments.qesFile);
+  WINDSInputData *WID = new WINDSInputData(arguments.qesWindsParamFile);
   if (!WID) {
-    std::cerr << "[ERROR] QES Input file: " << arguments.qesFile << " not able to be read successfully." << std::endl;
-    exit(EXIT_FAILURE);
+    QEStool::error("QES Input file: " + arguments.qesWindsParamFile + " not able to be read successfully.");
   }
 
   // Checking if
   if (arguments.compTurb && !WID->turbParams) {
-    std::cerr << "[ERROR] Turbulence model is turned on without turbParams in QES Intput file "
-              << arguments.qesFile << std::endl;
-    exit(EXIT_FAILURE);
+    QEStool::error("Turbulence model is turned on without turbParams in QES Intput file "
+                   + arguments.qesWindsParamFile);
   }
 
 
@@ -69,8 +98,7 @@ int main(int argc, char *argv[])
       WID->simParams->DTE_heightField->outputOBJ(arguments.filenameTerrain);
       std::cout << "OBJ created....\n";
     } else {
-      std::cerr << "[ERROR] No dem file specified as input\n";
-      return -1;
+      QEStool::error("No dem file specified as input");
     }
   }
 
@@ -101,7 +129,7 @@ int main(int argc, char *argv[])
   // Run the QES-Winds Solver
   //
   // //////////////////////////////////////////
-  Solver *solver, *solverC = nullptr;
+  Solver *solver = nullptr;
   if (arguments.solveType == CPU_Type) {
     std::cout << "Run Serial Solver (CPU) ..." << std::endl;
     solver = new CPUSolver(WID, WGD);
@@ -115,24 +143,7 @@ int main(int argc, char *argv[])
     std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
     solver = new SharedMemory(WID, WGD);
   } else {
-    std::cerr << "[ERROR] invalid solve type\n";
-    exit(EXIT_FAILURE);
-  }
-
-  //check for comparison
-  if (arguments.compareType) {
-    if (arguments.compareType == CPU_Type)
-      solverC = new CPUSolver(WID, WGD);
-    else if (arguments.compareType == DYNAMIC_P)
-      solverC = new DynamicParallelism(WID, WGD);
-    else if (arguments.compareType == Global_M)
-      solverC = new GlobalMemory(WID, WGD);
-    else if (arguments.compareType == Shared_M)
-      solverC = new SharedMemory(WID, WGD);
-    else {
-      std::cerr << "[ERROR] invalid comparison type\n";
-      exit(EXIT_FAILURE);
-    }
+    QEStool::error("Invalid solve type");
   }
 
   int numIterations = 1;
@@ -153,30 +164,12 @@ int main(int argc, char *argv[])
     WGD->applyParametrizations(WID);
 
     solver->resetLambda();
-    /*
-      solver->lambda.clear();
-      solver->lambda_old.clear();
-      solver->lambda.resize(WGD->numcell_cent, 0.0);
-      solver->lambda_old.resize(WGD->numcell_cent, 0.0);
-      solver->R.clear();
-      solver->R.resize(WGD->numcell_cent, 0.0);
-    */
 
     // Applying the log law and solver iteratively
     if (WID->simParams->logLawFlag == 1) {
       WID->simParams->maxIterations = tempMaxIter;
       solver->solve(WID, WGD, !arguments.solveWind);
-      //solver->lambda_old = solver->lambda;
-      solver->copyLambda();
 
-      /*for (int i = 0; i < numIterations; i++) {
-        WID->simParams->maxIterations = 500;
-        WGD->wall->wallLogBC(WGD, false);
-        // Run WINDS simulation code
-        solver->solve(WID, WGD, !arguments.solveWind);
-
-        solver->lambda_old = solver->lambda;
-      }*/
       WGD->u0 = WGD->u;
       WGD->v0 = WGD->v;
       WGD->w0 = WGD->w;
