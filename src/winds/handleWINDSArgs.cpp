@@ -77,7 +77,10 @@ void WINDSArgs::processArguments(int argc, char *argv[])
   }
 
   verbose = isSet("verbose");
-  if (verbose) std::cout << "Verbose Output: ON" << std::endl;
+  if (verbose) {
+    std::cout << "Verbose Output: ON" << std::endl;
+    QESout::setVerbose();
+  }
 
   solveWind = isSet("windsolveroff");
   if (solveWind) std::cout << "the wind fields are not being calculated" << std::endl;
@@ -102,7 +105,7 @@ void WINDSArgs::processArguments(int argc, char *argv[])
   if (qesWindsParamFile != "")
     std::cout << "qesWindsParamFile set to " << qesWindsParamFile << std::endl;
   else
-    QEStool::error("qesWindsParamFile not specified");
+    QESout::error("qesWindsParamFile not specified");
 
   isSet("outbasename", netCDFFileBasename);
   if (netCDFFileBasename != "") {
@@ -137,7 +140,7 @@ void WINDSArgs::processArguments(int argc, char *argv[])
     }
 
   } else {
-    QEStool::warning("No output basename set -> output turned off ");
+    QESout::warning("No output basename set -> output turned off ");
     visuOutput = false;
     wkspOutput = false;
     turbOutput = false;

@@ -34,70 +34,86 @@
 
 #include "GIStool.h"
 
-void GIStool::UTMConverter(float &rlon, float &rlat, float &rx, float &ry, int &UTM_PROJECTION_ZONE, int iway)
-{
+/****************************************************************************************************************
 
+  S p e c f e m 3 D  V e r s i o n  2 . 1
+  ---------------------------------------
 
-  /*
+  Main authors: Dimitri Komatitsch and Jeroen Tromp
+  Princeton University, USA and CNRS / INRIA / University of Pau (c) Princeton University / 
+  California Institute of Technology and CNRS / INRIA / University of Pau
+  July 2012
 
-                  S p e c f e m 3 D  V e r s i o n  2 . 1
-                  ---------------------------------------
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  he Free Software Foundation; either version 2 of the License, or
+  (at your option) aWGD->ny later version.
 
-             Main authors: Dimitri Komatitsch and Jeroen Tromp
-       Princeton University, USA and CNRS / INRIA / University of Pau
-    (c) Princeton University / California Institute of Technology and CNRS / INRIA / University of Pau
-                                July 2012
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) aWGD->ny later version.
+  You should have received a copy of the GNU General Public License along
+  with this program; if not, write to the Free Software Foundation, Inc.,
+  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT AWGD->ny WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+  UTM (Universal Transverse Mercator) projection from the USGS
 
-    You should have received a copy of the GNU General Public License along
-    with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
-  */
-
-  /*
-    UTM (Universal Transverse Mercator) projection from the USGS
-  */
-
-
-  /*
   convert geodetic longitude and latitude to UTM, and back
   use iway = ILONGLAT2UTM for long/lat to UTM, IUTM2LONGLAT for UTM to lat/long
   a list of UTM zones of the world is available at www.dmap.co.uk/utmworld.htm
-  */
 
-
-  /*
-        CAMx v2.03
-
-        UTM_GEO performs UTM to geodetic (long/lat) translation, and back.
-
-        This is a Fortran version of the BASIC program "Transverse Mercator
-        Conversion", Copyright 1986, Norman J. Berls (Stefan Musarra, 2/94)
-        Based on algorithm taken from "Map Projections Used by the USGS"
-        by John P. SWGD->nyder, Geological Survey Bulletin 1532, USDI.
-
-        Input/Output arguments:
-
+  CAMx v2.03
+  
+  UTM_GEO performs UTM to geodetic (long/lat) translation, and back.
+  
+  This is a Fortran version of the BASIC program "Transverse Mercator
+  Conversion", Copyright 1986, Norman J. Berls (Stefan Musarra, 2/94)
+  Based on algorithm taken from "Map Projections Used by the USGS"
+  by John P. SWGD->nyder, Geological Survey Bulletin 1532, USDI.
+  
+  Input/Output arguments:
+    
            rlon                  Longitude (deg, negative for West)
            rlat                  Latitude (deg)
            rx                    UTM easting (m)
            ry                    UTM northing (m)
-           UTM_PROJECTION_ZONE  UTM zone
+           UTM_PROJECTION_ZONE   UTM zone
            iway                  Conversion type
                                  ILONGLAT2UTM = geodetic to UTM
                                  IUTM2LONGLAT = UTM to geodetic
-  */
 
+  some extracts about UTM:
+  
+  There are 60 longitudinal projection zones numbered 1 to 60 starting at 180Â°W.
+  Each of these zones is 6 degrees wide, apart from a few exceptions around Norway and Svalbard.
+  There are 20 latitudinal zones spanning the latitudes 80Â°S to 84Â°N and denoted
+  by the letters C to X, ommitting the letter O.
+  Each of these is 8 degrees south-north, apart from zone X which is 12 degrees south-north.
+  
+  To change the UTM zone and the hemisphere in which the
+  calculations are carried out, need to change the fortran code and recompile. The UTM zone is described
+  actually by the central meridian of that zone, i.e. the longitude at the midpoint of the zone, 3 degrees
+  from either zone boundary.
+  To change hemisphere need to change the "north" variable:
+  - north=0 for northern hemisphere and
+  - north=10000000 (10000km) for southern hemisphere. values must be in metres i.e. north=10000000.
+  
+  Note that the UTM grids are actually Mercators which
+  employ the standard UTM scale factor 0.9996 and set the
+  Easting Origin to 500,000;
+  the Northing origin in the southern
+  hemisphere is kept at 0 rather than set to 10,000,000
+  and this gives a uniform scale across the equator if the
+  normal convention of selecting the Base Latitude (origin)
+  at the equator (0 deg.) is followed.  Northings are
+  positive in the northern hemisphere and negative in the
+  southern hemisphere.
+****************************************************************************************************************/
+
+void GIStool::UTMConverter(float &rlon, float &rlat, float &rx, float &ry, int &UTM_PROJECTION_ZONE, bool N_HEMISPHERE, int iway)
+{
 
   int ILONGLAT2UTM = 0, IUTM2LONGLAT = 1;
   const float PI = 3.141592653589793;
@@ -107,36 +123,15 @@ void GIStool::UTMConverter(float &rlon, float &rlat, float &rx, float &ry, int &
   const float semimin = 6356583.80;
   const float scfa = 0.99960;
 
-  /*
-    some extracts about UTM:
+  //To change hemisphere need to change the "north" variable:
+  float north = 0.0;
+  if (N_HEMISPHERE)
+    //- north=0 for northern hemisphere and
+    north = 0.0;
+  else
+    //- north=10000000 (10000km) for southern hemisphere
+    north = 10000000.0;
 
-    There are 60 longitudinal projection zones numbered 1 to 60 starting at 180Â°W.
-    Each of these zones is 6 degrees wide, apart from a few exceptions around Norway and Svalbard.
-    There are 20 latitudinal zones spanning the latitudes 80Â°S to 84Â°N and denoted
-    by the letters C to X, ommitting the letter O.
-    Each of these is 8 degrees south-north, apart from zone X which is 12 degrees south-north.
-
-    To change the UTM zone and the hemisphere in which the
-    calculations are carried out, need to change the fortran code and recompile. The UTM zone is described
-    actually by the central meridian of that zone, i.e. the longitude at the midpoint of the zone, 3 degrees
-    from either zone boundary.
-    To change hemisphere need to change the "north" variable:
-    - north=0 for northern hemisphere and
-    - north=10000000 (10000km) for southern hemisphere. values must be in metres i.e. north=10000000.
-
-    Note that the UTM grids are actually Mercators which
-    employ the standard UTM scale factor 0.9996 and set the
-    Easting Origin to 500,000;
-    the Northing origin in the southern
-    hemisphere is kept at 0 rather than set to 10,000,000
-    and this gives a uniform scale across the equator if the
-    normal convention of selecting the Base Latitude (origin)
-    at the equator (0 deg.) is followed.  Northings are
-    positive in the northern hemisphere and negative in the
-    southern hemisphere.
-    */
-
-  const float north = 0.0;
   const float east = 500000.0;
 
   float e2, e4, e6, ep2, xx, yy, dlat, dlon, zone, cm, cmr, delam;
@@ -193,7 +188,7 @@ void GIStool::UTMConverter(float &rlon, float &rlat, float &rx, float &ry, int &
     f1 = (1.0 - (e2 / 4.0) - 3.0 * (e4 / 64.0) - 5.0 * (e6 / 256)) * rlat;
     f2 = 3.0 * (e2 / 8.0) + 3.0 * (e4 / 32.0) + 45.0 * (e6 / 1024.0);
     f2 = f2 * sin(2.0 * rlat);
-    f3 = 15.0 * (e4 / 256.0) * 45.0 * (e6 / 1024.0);
+    f3 = 15.0 * (e4 / 256.0) + 45.0 * (e6 / 1024.0);
     f3 = f3 * sin(4.0 * rlat);
     f4 = 35.0 * (e6 / 3072.0);
     f4 = f4 * sin(6.0 * rlat);
@@ -255,7 +250,7 @@ void GIStool::UTMConverter(float &rlon, float &rlat, float &rx, float &ry, int &
 
       f1 = rn1 * tan(rlat1) / r1;
       f2 = pow(d, 2.0) / 2.0;
-      f3 = 5.0 * 3.0 * t1 + 10.0 * c1 - 4.0 * pow(c1, 2.0) - 9.0 * ep2;
+      f3 = 5.0 + 3.0 * t1 + 10.0 * c1 - 4.0 * pow(c1, 2.0) - 9.0 * ep2;
       f3 = f3 * pow(d, 2.0) * pow(d, 2.0) / 24.0;
       f4 = 61.0 + 90.0 * t1 + 298.0 * c1 + 45.0 * pow(t1, 2.0) - 252.0 * ep2 - 3.0 * pow(c1, 2.0);
       f4 = f4 * pow(pow(d, 2.0), 3.0) / 720.0;
@@ -289,7 +284,6 @@ void GIStool::UTMConverter(float &rlon, float &rlat, float &rx, float &ry, int &
     rlat = rlat_save;
   }
 }
-
 
 void GIStool::getConvergence(float &lon, float &lat, int &site_UTM_zone, float &convergence)
 {

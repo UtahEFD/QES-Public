@@ -28,22 +28,18 @@
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file QEStool.h */
+/** @file QESout.h */
 
 #pragma once
 
 #include <iostream>
 #include <string>
 
-class QEStool
-{
-public:
-  static void error(std::string);
-  static void warning(std::string);
-  //static void verbose(std::string);
+namespace QESout {
+void splashScreen();
+void error(std::string);
+void warning(std::string);
+void setVerbose();
+void verbose(std::string);
 
-
-private:
-  QEStool()
-  {}
-};
+};// namespace QESout

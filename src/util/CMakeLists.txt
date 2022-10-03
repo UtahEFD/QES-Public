@@ -9,7 +9,7 @@ add_library (qesutil ${LIB_TYPE}
   ESRIShapefile.cpp ESRIShapefile.h
   GIStool.cpp
 
-  QEStool.cpp
+  QESout.cpp
   
   doesFolderExist.h
   calcTime.cpp calcTime.h

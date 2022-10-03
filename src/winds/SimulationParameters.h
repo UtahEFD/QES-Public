@@ -56,7 +56,7 @@ public:
   Vector3 grid; /**< :Cell sizes in each direction: */
   int verticalStretching = 0; /**< :Defines grid type in z-direction (0-unifrom (default), 1-custom): */
   std::vector<float> dz_value; /**< :Array holding values of dz if the verticalStretching is 1: */
-  int totalTimeIncrements; /**< :Total number of time steps: */
+  unsigned int totalTimeIncrements; /**< :Total number of time steps: */
   int logLawFlag = 0; /**< :Log Law flag to apply the log law (0-off (default), 1-on): */
   int maxIterations = 500; /**< :Maximum number of iterations (default = 500): */
   double tolerance = 1e-9; /**< :Convergence criteria, error threshold (default = 1e-9): */
@@ -160,7 +160,7 @@ public:
     }
     parsePrimitive<int>(false, verticalStretching, "verticalStretching");
     parseMultiPrimitives<float>(false, dz_value, "dz_value");
-    parsePrimitive<int>(false, totalTimeIncrements, "totalTimeIncrements");
+    parsePrimitive<unsigned int>(false, totalTimeIncrements, "totalTimeIncrements");
     parsePrimitive<int>(false, logLawFlag, "logLawFlag");
     parsePrimitive<int>(false, maxIterations, "maxIterations");
     parsePrimitive<double>(false, tolerance, "tolerance");
