@@ -40,7 +40,7 @@
 enum CanopyType {
   Homogeneous,
   IsolatedTree,
-  Vineyard
+  ROC
 };
 
 /**

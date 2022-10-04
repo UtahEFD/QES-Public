@@ -1,11 +1,11 @@
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library(unitTestLib ${LIB_TYPE} util.h util.cpp)
-
+add_library(unitTestLib ${LIB_TYPE} 
+  util.h util.cpp)
 
 #FILE(GLOB files "*.h")
-#INSTALL(FILES ${ files } DESTINATION include / unitTests)
+#INSTALL(FILES ${files} DESTINATION include/unitTests)
 
 cuda_add_executable(unitTestTime
   mainTimeTest.cpp)
