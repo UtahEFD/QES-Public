@@ -40,7 +40,6 @@
 
 #include "CanopyElement.h"
 
-
 // forward declaration of WINDSInputData and WINDSGeneralData, which
 // will be used by the derived classes and thus included there in the
 // C++ files
@@ -71,9 +70,6 @@ public:
 
   void applyCanopyVegetation(WINDSGeneralData *WGD);
   void applyCanopyWake(WINDSGeneralData *WGD);
-
-  void applyCanopyTurbulenceWake(WINDSGeneralData *WGD, TURBGeneralData *);
-
 
   /*
    * For all Canopy classes derived, this need to be defined

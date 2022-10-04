@@ -40,7 +40,7 @@
 enum CanopyType {
   Homogeneous,
   IsolatedTree,
-  Vineyard
+  ROC
 };
 
 /**
@@ -105,8 +105,6 @@ public:
   virtual void setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, int building_number) = 0;
   virtual void canopyVegetation(WINDSGeneralData *wgd, int building_id) = 0;
   virtual void canopyWake(WINDSGeneralData *wgd, int building_id) = 0;
-
-  virtual void canopyTurbulenceWake(WINDSGeneralData *, TURBGeneralData *, int) {}
 
   virtual int getCellFlagCanopy() = 0;
   virtual int getCellFlagWake() = 0;

@@ -201,20 +201,6 @@ void Canopy::applyCanopyWake(WINDSGeneralData *WGD)
   return;
 }
 
-void Canopy::applyCanopyTurbulenceWake(WINDSGeneralData *WGD, TURBGeneralData *TGD)
-{
-
-  if (wakeFlag == 1) {
-    for (size_t i = 0; i < allCanopiesV.size(); ++i) {
-      // for now this does the canopy stuff for us
-      //allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
-      allCanopiesV[canopy_id[i]]->canopyTurbulenceWake(WGD, TGD, canopy_id[i]);
-    }
-  }
-
-  return;
-}
-
 // Function to apply the urban canopy parameterization
 // Based on the version contain Lucas Ulmer's modifications
 void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)

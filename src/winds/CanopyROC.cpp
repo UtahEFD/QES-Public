@@ -1,11 +1,11 @@
-#include "CanopyVineyard.h"
+#include "CanopyROC.h"
 
 #include "WINDSInputData.h"
 #include "WINDSGeneralData.h"
 #include "TURBGeneralData.h"
 
 
-void CanopyVineyard::orthog_vec(float d, float P[2], float Lx[2], float Ly[2], float row_ortho[2])
+void CanopyROC::orthog_vec(float d, float P[2], float Lx[2], float Ly[2], float row_ortho[2])
 {
 
   float alph = 1 + pow((Ly[1] - Ly[0]) / (Lx[1] - Lx[0]), 2);
@@ -51,7 +51,7 @@ void CanopyVineyard::orthog_vec(float d, float P[2], float Lx[2], float Ly[2], f
   row_ortho[1] = o_signed[1];
 }
 /*
-float CanopyVineyard::UV2compass(float u, float v){
+float CanopyROC::UV2compass(float u, float v){
 
   if (u>0 && v>0){
     
@@ -65,7 +65,7 @@ float CanopyVineyard::UV2compass(float u, float v){
 */
 
 
-void CanopyVineyard::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, int building_id)
+void CanopyROC::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, int building_id)
 {
   // When THIS canopy calls this function, we need to do the
   // following:
@@ -192,7 +192,7 @@ void CanopyVineyard::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *W
   float sensor_distance = 99999;
   float curr_dist;
   int num_sites = WID->metParams->sensors.size();
-  int nearest_sensor_i;// index of the sensor nearest to vineyard block centroid
+  int nearest_sensor_i;// index of the sensor nearest to ROC block centroid
   for (auto i = 0; i < num_sites; i++) {
     curr_dist = sqrt(pow((building_cent_x - WID->metParams->sensors[i]->site_xcoord), 2) + pow((building_cent_y - WID->metParams->sensors[i]->site_ycoord), 2));
     if (curr_dist < sensor_distance) {
@@ -214,7 +214,7 @@ void CanopyVineyard::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *W
 }
 
 
-void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
+void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
 {
 
   std::vector<float> u0_modified, v0_modified;
@@ -293,7 +293,7 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   }
   float d_dw = (rowSpacing - rowWidth) / sin(betaAngle * M_PI / 180);
 
-  // Find appropriate reference node for finding U_h (at the centroid of the vineyard block)
+  // Find appropriate reference node for finding U_h (at the centroid of the ROC block)
   // Ref velocity for top shear zone
   int k_top = 0;
   while (WGD->z_face[k_top] < (H + WGD->terrain[i_building_cent + j_building_cent * (WGD->nx - 1)])) {
@@ -523,7 +523,7 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
 
       // BEGIN PARAMETERIZATIONS
 
-      if (WGD->canopy->canopy_bot_index[icell_2d] < WGD->canopy->canopy_top_index[icell_2d]) {// if i'm inside the canopy (vineyard block) polygon
+      if (WGD->canopy->canopy_bot_index[icell_2d] < WGD->canopy->canopy_top_index[icell_2d]) {// if i'm inside the canopy (ROC block) polygon
         icell_face_ref = (i - 1 + i_start) + (j - 1 + j_start) * WGD->nx + zref_k * WGD->nx * WGD->ny;
 
         // Calculate the stability correction quantities that aren't height dependent (for vo parameterization)
@@ -804,38 +804,12 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   return;
 }
 
-void CanopyVineyard::canopyWake(WINDSGeneralData *WGD, int building_id)
+void CanopyROC::canopyWake(WINDSGeneralData *WGD, int building_id)
 {
 
 
   // Need local distance and total alpha upwind. Then can calculate alpha_local and multiply it by alpha_upwind_total
 
   return;
-}
-
-void CanopyVineyard::canopyTurbulenceWake(WINDSGeneralData *WGD, TURBGeneralData *TGD, int building_id)
-{
-
-  //float tkeMax = 0.5;// To be modeled/assimilated from NWP output later
-  std::cout << "tkeMax = " << tkeMax << std::endl;
-  for (auto i = 0; i < WGD->nx - 1; i++) {
-
-    for (auto j = 0; j < WGD->ny - 1; j++) {
-      for (auto k = 0; k < WGD->nz - 1; k++) {
-        int icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-
-        if (fabs(vineLm[icell_cent]) > 0.) {
-          //TGD->Lm[icell_cent] = vineLm[icell_cent];
-          TGD->Lm[icell_cent] = vineLm[icell_cent] * fabs(cos(upwind_dir_unit * M_PI / 180.)) + TGD->Lm[icell_cent] * (1 - abs(cos(upwind_dir_unit * M_PI / 180.)));
-        }
-        if (fabs(tkeFac[icell_cent]) > 0.) {
-          TGD->tke[icell_cent] = tkeFac[icell_cent] * tkeMax;
-          TGD->nuT[icell_cent] = 0.55 * sqrt(TGD->tke[icell_cent]) * TGD->Lm[icell_cent];
-        }
-      }
-    }
-  }
-  tkeFac.clear();
-  vineLm.clear();
 }
 

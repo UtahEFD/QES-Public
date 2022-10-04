@@ -242,7 +242,6 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
   // derived turbulence quantities
   tke.resize(numcell_cent, 0);
   CoEps.resize(numcell_cent, 0);
-  nuT.resize(numcell_cent, 0);
   // std::cout << "\t\t Memory allocation completed.\n";
 
   if (flagCompDivStress) {
@@ -367,7 +366,6 @@ TURBGeneralData::TURBGeneralData(const std::string inputFile, WINDSGeneralData *
   // derived turbulence quantities
   tke.resize(numcell_cent, 0);
   CoEps.resize(numcell_cent, 0);
-  nuT.resize(numcell_cent, 0);
 
   // comp of the divergence of the stress tensor
   tmp_dtoxdx.resize(numcell_cent, 0);
@@ -453,7 +451,6 @@ TURBGeneralData::TURBGeneralData(WINDSGeneralData *WGDin)
   // derived turbulence quantities
   tke.resize(numcell_cent, 0);
   CoEps.resize(numcell_cent, 0);
-  nuT.resize(numcell_cent, 0);
 
   // comp of the divergence of the stress tensor
   tmp_dtoxdx.resize(numcell_cent, 0);
@@ -515,14 +512,6 @@ void TURBGeneralData::run()
   std::cout << "\t\t Computing Derivatives (Strain Rate)..." << std::endl;
   derivativeVelocity();
   // std::cout<<"\t\t Derivatives computed."<<std::endl;
-
-  std::cout << "\t\t Computing local mixing length model..." << std::endl;
-  getTurbulentViscosity();
-
-  if (m_WGD->canopy) {
-    std::cout << "Applying canopy wake parameterization...\n";
-    m_WGD->canopy->applyCanopyTurbulenceWake(m_WGD, this);
-  }
 
   std::cout << "\t\t Computing Stess Tensor..." << std::endl;
   stressTensor();
@@ -673,12 +662,11 @@ void TURBGeneralData::derivativeVelocity()
   return;
 }
 
-void TURBGeneralData::getTurbulentViscosity()
+void TURBGeneralData::stressTensor()
 {
   float tkeBound = turbUpperBound * uStar * uStar;
 
   for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
-
     int cellID = *it;
 
     float Sxx = Gxx[cellID];
@@ -697,52 +685,14 @@ void TURBGeneralData::getTurbulentViscosity()
 
     NU_T = LM * LM * sqrt(2.0 * SijSij);
     TKE = pow((NU_T / (cPope * LM)), 2.0);
-    //    std::cout << "gTV check7" << std::endl;
 
-    if (TKE > tkeBound)
+    if (TKE > tkeBound) {
       TKE = tkeBound;
+      NU_T = cPope * sqrt(TKE) * LM;
+    }
 
-    nuT[cellID] = NU_T;
-    //   std::cout << "gTV check8" << std::endl;
     CoEps[cellID] = 5.7 * pow(sqrt(TKE) * cPope, 3.0) / (LM);
     tke[cellID] = TKE;
-
-    //  std::cout << "gTV check9" << std::endl;
-  }
-  return;
-}
-
-void TURBGeneralData::stressTensor()
-{
-  float tkeBound = turbUpperBound * uStar * uStar;
-
-  for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
-    int cellID = *it;
-
-    float Sxx = Gxx[cellID];
-    float Syy = Gyy[cellID];
-    float Szz = Gzz[cellID];
-    float Sxy = 0.5 * (Gxy[cellID] + Gyx[cellID]);
-    float Sxz = 0.5 * (Gxz[cellID] + Gzx[cellID]);
-    float Syz = 0.5 * (Gyz[cellID] + Gzy[cellID]);
-
-    //float NU_T = 0.0;
-    //float TKE = 0.0;
-    float NU_T = nuT[cellID];
-    float TKE = tke[cellID];
-    float LM = Lm[cellID];
-
-    //
-    float SijSij = Sxx * Sxx + Syy * Syy + Szz * Szz + 2.0 * (Sxy * Sxy + Sxz * Sxz + Syz * Syz);
-
-    //NU_T = LM * LM * sqrt(2.0 * SijSij);
-    //TKE = pow((NU_T / (cPope * LM)), 2.0);
-
-    if (TKE > tkeBound)
-      TKE = tkeBound;
-
-    CoEps[cellID] = 5.7 * pow(sqrt(TKE) * cPope, 3.0) / (LM);
-    //tke[cellID] = TKE;
 
     txx[cellID] = (2.0 / 3.0) * TKE - 2.0 * (NU_T * Sxx);
     tyy[cellID] = (2.0 / 3.0) * TKE - 2.0 * (NU_T * Syy);

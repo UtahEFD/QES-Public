@@ -4,10 +4,10 @@
 #include "util/ParseInterface.h"
 #include "Canopy.h"
 
-class CanopyVineyard : public CanopyElement
+class CanopyROC : public CanopyElement
 {
 public:
-  CanopyVineyard()
+  CanopyROC()
   {
   }
 
@@ -94,7 +94,6 @@ public:
   void orthog_vec(float, float[2], float[2], float[2], float[2]);
   void canopyVegetation(WINDSGeneralData *wgd, int building_id);
   void canopyWake(WINDSGeneralData *wgd, int building_id);
-  void canopyTurbulenceWake(WINDSGeneralData *, TURBGeneralData *, int);
   int getCellFlagCanopy();
   int getCellFlagWake();
   float P2L(float[2], float[2], float[2]);
@@ -119,7 +118,7 @@ private:
   //float d = 0.0;	   // from upwind profile
   float stdw;// upstream vertical variance
   float uustar;// upstream ustar
-  float d_v;// displacement height for whole vineyard (depends on wind angle)
+  float d_v;// displacement height for whole ROC (depends on wind angle)
   float rowSpacing;
   float rowWidth;
   float rowAngle;
@@ -133,17 +132,17 @@ private:
   float tkeMax;
 };
 
-inline int CanopyVineyard::getCellFlagCanopy()
+inline int CanopyROC::getCellFlagCanopy()
 {
   return 26;
 }
 
-inline int CanopyVineyard::getCellFlagWake()
+inline int CanopyROC::getCellFlagWake()
 {
   return 27;
 }
 
-inline float CanopyVineyard::P2L(float P[2], float Lx[2], float Ly[2])
+inline float CanopyROC::P2L(float P[2], float Lx[2], float Ly[2])
 {
   return abs((Lx[1] - Lx[0]) * (Ly[0] - P[1]) - (Lx[0] - P[0]) * (Ly[1] - Ly[0])) / sqrt(pow(Lx[1] - Lx[0], 2) + pow(Ly[1] - Ly[0], 2));
 }
