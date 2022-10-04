@@ -9,9 +9,9 @@
 #include "util/ArgumentParsing.h"
 
 enum solverTypes : int { CPU_Type = 1,
-  DYNAMIC_P = 2,
-  Global_M = 3,
-  Shared_M = 4 };
+                         DYNAMIC_P = 2,
+                         Global_M = 3,
+                         Shared_M = 4 };
 
 class QESArgs : public ArgumentParsing
 {
@@ -33,15 +33,15 @@ public:
   bool verbose;
 
   // input files (from the command line)
-  std::string inputWINDSFile = "";
-  std::string inputPlumeFile = "";
+  std::string qesWindsParamFile = "";
+  std::string qesPlumeParamFile = "";
 
   // Base name for all NetCDF output files
   std::string netCDFFileBasename = "";
 
   // flag to turn on/off different modules
   bool solveWind, compTurb, compPlume;
-  int solveType, compareType;
+  int solveType;
 
   // QES_WINDS output files:
   bool visuOutput, wkspOutput, terrainOut;
