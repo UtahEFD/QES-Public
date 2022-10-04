@@ -5,6 +5,7 @@
 # This software is distributed under the MIT License, expressed in: LICENSE.txt.
 
 CMAKE_MINIMUM_REQUIRED (VERSION 3.9)
+CMAKE_POLICY(SET CMP0074 NEW)
 
 # cmake_policy(SET CMP0048 NEW)
 LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" "${CMAKE_SOURCE_DIR}/cmake/Modules/")
@@ -91,7 +92,7 @@ endif()
 FIND_PACKAGE(Boost REQUIRED filesystem date_time program_options system thread unit_test_framework chrono timer)
 IF(${Boost_FOUND})
   INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
-  MESSAGE(STATUS "Found Boost Libraries in ${Boost_LIBRARY_DIR}, Version ${Boost_VERSION}")
+  MESSAGE(STATUS "Found Boost Libraries in ${Boost_LIBRARIES}, Version ${Boost_VERSION}")
 ENDIF()
 
 SET(NETCDF_CXX "YES")
@@ -105,8 +106,8 @@ ENDIF(NetCDF_FOUND)
 # SET(CMAKE_PREFIX_PATH /uufs/chpc.utah.edu/sys/installdir/gdal/2.4.0)
 FIND_PACKAGE(GDAL REQUIRED)
 IF (${GDAL_FOUND})
-  INCLUDE_DIRECTORIES(${GDAL_INCLUDE_DIR})
   MESSAGE(STATUS "Found GDAL: ${GDAL_INCLUDE_DIR}")
+  INCLUDE_DIRECTORIES(${GDAL_INCLUDE_DIR})
 ENDIF(${GDAL_FOUND})
 
 SET(CUDA_SEPARABLE_COMPILATION ON)
@@ -119,10 +120,10 @@ set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_52;-rdc=true;" )
 FIND_PACKAGE(CUDA REQUIRED)
 
 IF(CUDA_FOUND)
-  INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
-#   INCLUDE_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/samples/common/inc)
-  LINK_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/lib64)
   MESSAGE(STATUS "CUDA Libraries: ${CUDA_LIBRARIES}")
+  INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
+  #INCLUDE_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/samples/common/inc)
+  LINK_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/lib64)
 ELSE (CUDA_FOUND)
   MESSAGE(FATAL_ERROR "CUDA is required for compiling this project.  Please install CUDA or re-run cmake with -i to specify the CUDA directories.")
 ENDIF(CUDA_FOUND)
@@ -227,7 +228,7 @@ if (DOXYGEN_FOUND)
         COMMENT "Generating API documentation with Doxygen"
         VERBATIM )
 else (DOXYGEN_FOUND)
-  message("Doxygen need to be installed to generate the doxygen documentation")
+  MESSAGE(WARNING "Doxygen need to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
 
 #
