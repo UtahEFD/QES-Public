@@ -44,7 +44,7 @@
 <turbParams>
   <method>0</method>
 </turbParams>
-<canopies>
+<vegetationParams>
   <num_canopies>1</num_canopies>
   <Windbreak>
     <opticalPorosity>0.1</opticalPorosity>
@@ -56,7 +56,7 @@
     <width>1.0</width>
     <canopyRotation>0.0</canopyRotation>
   </Windbreak>
-</canopies>
+</vegetationParams>
 <fileOptions>
   <outputFlag>1</outputFlag>
   <outputFields>all</outputFields> 

@@ -44,7 +44,7 @@
 <localMixingParam>
   <method>0</method>
 </localMixingParam>
-<canopies>
+<vegetationParams>
   <num_canopies>1</num_canopies>
   <IsolatedTree>
     <attenuationCoefficient>3.0</attenuationCoefficient>
@@ -55,7 +55,7 @@
     <yCenter>100.0</yCenter>
     <width>10.0</width>
   </IsolatedTree>
-</canopies>
+</vegetationParams>
 <fileOptions>
   <outputFlag>1</outputFlag>
   <outputFields>u</outputFields> 

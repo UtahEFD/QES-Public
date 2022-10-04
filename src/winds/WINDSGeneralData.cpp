@@ -855,7 +855,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
   // Add all the Canopy* to it (they are derived from Building)
   canopy = 0;
-  if (WID->canopies) {
+  if (WID->vegetationParams) {
     canopy = new Canopy(WID, this);
     canopy->setCanopyElements(WID, this);
   }

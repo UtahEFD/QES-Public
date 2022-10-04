@@ -46,7 +46,7 @@
 #include "WINDSGeneralData.h"
 
 
-class Canopies : public ParseInterface
+class VegetationParams : public ParseInterface
 {
 private:
 public:

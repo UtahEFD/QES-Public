@@ -44,7 +44,7 @@
 <turbParams>
   <method>0</method>
 </turbParams>
-<canopies>
+<vegetationParams>
   <num_canopies>1</num_canopies>
   <IsolatedTree>
     <attenuationCoefficient>2.68</attenuationCoefficient>
@@ -55,7 +55,7 @@
     <yCenter>80.0</yCenter>
     <width>20.0</width>
   </IsolatedTree>
-</canopies>
+</vegetationParams>
 <fileOptions>
   <outputFlag>1</outputFlag>
   <outputFields>all</outputFields> 

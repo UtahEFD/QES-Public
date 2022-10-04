@@ -53,7 +53,7 @@
 	</sensor>                      					<!-- End of sensor section -->
 
 </metParams>								<!-- End of meteorological parameters -->
-<canopies>
+<vegetationParams>
   <num_canopies>1</num_canopies>
   <CanopyHomogeneous>
     <attenuationCoefficient>1.0</attenuationCoefficient>
@@ -65,7 +65,7 @@
     <width>80.0</width>
     <canopyRotation>0.0</canopyRotation>
   </CanopyHomogeneous>
-</canopies>
+</vegetationParams>
 <turbParams>
   <method>3</method> <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
   <samples>2000</samples> <!-- Samples per air cell for ray-traced mixing length calculations -->

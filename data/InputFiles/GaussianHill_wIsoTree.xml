@@ -48,7 +48,7 @@
   <save>false</save>     <!-- Save 2 to file -->
   <LMfile>mixlength.nc</LMfile>  <!-- Address to mixing lethng location-->
 </localMixingParam>
-<canopies>
+<vegetationParams>
   <num_canopies>1</num_canopies>
     <IsolatedTree>
       <attenuationCoefficient>3.0</attenuationCoefficient>
@@ -59,7 +59,7 @@
       <yCenter>100.0</yCenter>
       <width>10.0</width>
     </IsolatedTree>
-</canopies>
+</vegetationParams>
 <fileOptions>
   <outputFlag>1</outputFlag>
   <outputFields>all</outputFields> 

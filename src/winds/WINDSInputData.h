@@ -44,7 +44,7 @@
 #include "FileOptions.h"
 #include "MetParams.h"
 #include "BuildingsParams.h"
-#include "Canopies.h"
+#include "VegetationParams.h"
 #include "TURBParams.h"
 
 /**
@@ -63,7 +63,7 @@ public:
   MetParams *metParams = nullptr; /**< :document this: */
   TURBParams *turbParams = nullptr; /**< :document this: */
   BuildingsParams *buildingsParams = nullptr; /**< :document this: */
-  Canopies *canopies = nullptr; /**< :document this: */
+  VegetationParams *vegetationParams = nullptr; /**< :document this: */
 
   WINDSInputData()
   {
@@ -71,7 +71,7 @@ public:
     metParams = 0;
     turbParams = 0;
     buildingsParams = 0;
-    canopies = 0;
+    vegetationParams = 0;
   }
 
   WINDSInputData(const std::string fileName)
@@ -81,7 +81,7 @@ public:
     metParams = 0;
     turbParams = 0;
     buildingsParams = 0;
-    canopies = 0;
+    vegetationParams = 0;
 
     QESfs::set_file_path(fileName);
     // read and parse the XML
@@ -98,6 +98,6 @@ public:
     parseElement<MetParams>(false, metParams, "metParams");
     parseElement<TURBParams>(false, turbParams, "turbParams");
     parseElement<BuildingsParams>(false, buildingsParams, "buildingsParams");
-    parseElement<Canopies>(false, canopies, "canopies");
+    parseElement<VegetationParams>(false, vegetationParams, "vegetationParams");
   }
 };
