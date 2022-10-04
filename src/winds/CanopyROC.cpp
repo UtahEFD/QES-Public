@@ -414,18 +414,15 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
 
 
   float a_uwv[N_e + 1];// the attenuation due to one row (to be raised to N_e, where N_e is number of rows in entry region)
-  float tkeFac_uwv[N_e + 1];
   int nx = WGD->nx;
   int ny = WGD->ny;
   int nz = WGD->nz;
   int np_cc_v = (nz - 1) * (ny - 1) * (nx - 1);
 
-  tkeFac.resize(np_cc_v, 0);
   vineLm.resize(np_cc_v, 0);
   float a_uw = 1;
 
   float a_local;// the attenuation due to the closest upwind row only
-  float tkeFac_local;
   float u_c0, v_c0;// u0 and v0 rotated into row-aligned coordinates
   float u_c, v_c;// altered (parameterized) u and v, in row-aligned coordinates
 
@@ -600,13 +597,10 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
               szt_local = spreadrate_bot * (d_dw * N_e + d_dw_local) + 0.00001;
             }
             a_local = 1 * (a_exp * (0.5 * (1 - a_obf) * tanh(1.5 * (szo_bot - z_rel) / szt_local) + 0.5 * (1 + a_obf)) + (1 - a_exp));// there should be a "fac" where the 1* is (matching fac isn't working right now)
-            tkeFac_local = 1 * (a_exp * (0.5 * (1 - pow(a_obf, 2)) * tanh(1.5 * (szo_bot - z_rel) / szt_local) + 0.5 * (1 + pow(a_obf, 2))) + (1 - a_exp));// should be a "fac" where the 1* is
             a_uwv[0] = 1;
-            tkeFac_uwv[0] = 1;
             for (int n = 1; n < N_e + 1; n++) {//create vector for sheltering from all rows in entry region
               szt_uw = spreadrate_bot * (d_dw * n) + 0.00001;
               a_uwv[n] = 1 * (a_exp * (0.5 * (1 - a_obf) * tanh(1.5 * (szo_bot - z_rel) / szt_uw) + 0.5 * (1 + a_obf)) + (1 - a_exp));//should be a "fac" where the 1* is
-              tkeFac_uwv[n] = 1 * (a_exp * (0.5 * (1 - pow(a_obf, 2)) * tanh(1.5 * (szo_bot - z_rel) / szt_uw) + 0.5 * (1 + pow(a_obf, 2))) + (1 - a_exp));//should be a "fac" where the 1* is
             }
 
             // Sparse understory, above mid-canopy
@@ -617,13 +611,10 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
               szt_local = spreadrate_top * (d_dw * N_e + d_dw_local) + 0.00001;
             }
             a_local = (a_exp * (0.5 * (1 - a_obf) * tanh(1.5 * (z_rel - szo_top) / szt_local) + 0.5 * (1 + a_obf)) + (1 - a_exp));
-            tkeFac_local = (a_exp * (0.5 * (1 - pow(a_obf, 2)) * tanh(1.5 * (z_rel - szo_top) / szt_local) + 0.5 * (1 + pow(a_obf, 2))) + (1 - a_exp));
             a_uwv[0] = 1;
-            tkeFac_uwv[0] = 1;
             for (int n = 1; n < N_e + 1; n++) {
               szt_uw = spreadrate_top * (d_dw * n) + 0.00001;
               a_uwv[n] = (a_exp * (0.5 * (1 - a_obf) * tanh(1.5 * (z_rel - szo_top_uw) / szt_uw) + 0.5 * (1 + a_obf)) + (1 - a_exp));
-              tkeFac_uwv[n] = (a_exp * (0.5 * (1 - pow(a_obf, 2)) * tanh(1.5 * (z_rel - szo_top_uw) / szt_uw) + 0.5 * (1 + pow(a_obf, 2))) + (1 - a_exp));
             }
 
             // No understory space, all heights
@@ -634,20 +625,16 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
               szt_local = spreadrate_top * (d_dw * N_e + d_dw_local) + 0.00001;
             }
             a_local = (a_exp * (0.5 * (1 - a_obf) * tanh(1.5 * (z_rel - szo_top) / szt_local) + 0.5 * (1 + a_obf)) + (1 - a_exp));
-            tkeFac_local = (a_exp * (0.5 * (1 - pow(a_obf, 2)) * tanh(1.5 * (z_rel - szo_top) / szt_local) + 0.5 * (1 + pow(a_obf, 2))) + (1 - a_exp));
             a_uwv[0] = 1;
-            tkeFac_uwv[0] = 1;
             for (int n = 1; n < N_e + 1; n++) {
               szt_uw = spreadrate_top * (d_dw * n) + 0.00001;
               a_uwv[n] = (a_exp * (0.5 * (1 - a_obf) * tanh(1.5 * (z_rel - szo_top_uw) / szt_uw) + 0.5 * (1 + a_obf)) + (1 - a_exp));
-              tkeFac_uwv[n] = (a_exp * (0.5 * (1 - pow(a_obf, 2)) * tanh(1.5 * (z_rel - szo_top_uw) / szt_uw) + 0.5 * (1 + pow(a_obf, 2))) + (1 - a_exp));
             }
           }
 
 
           // APPLY BLEED FLOW PARAMETERIZATION INSIDE THE ACTUAL VEGETATION
           if (BF_flag == 1 && dv_c > rowSpacing && ld < rowWidth) {// if my x-y position indicates i'm on a vine
-            tkeFac[icell_cent] = 1;// tke is tkeMax above the fence (will be overwritten inside the fence)
             if ((z_rel >= understory_height) && (z_rel <= H)) {// if my z position indicates i'm inside the actual vegetation
 
               // Am I in entry region or /quilibrated region?
@@ -656,10 +643,8 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
                 WGD->icellflag[icell_cent] = 28;
 
                 u_c = u_c0 * a_obf;
-                tkeFac[icell_cent] = pow(a_obf, 2);
                 for (int n = 0; n <= N; n++) {
                   u_c *= a_uwv[n];
-                  tkeFac[icell_cent] *= tkeFac_uwv[n];
                 }
 
               }
@@ -668,10 +653,8 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
 
                 WGD->icellflag[icell_cent] = 28;
                 u_c = u_c0 * a_obf;
-                tkeFac[icell_cent] = pow(a_obf, 2);
                 for (int n = 0; n <= N_e; n++) {
                   u_c *= a_uwv[n];
-                  tkeFac[icell_cent] *= tkeFac_uwv[n];
                 }
               }
             }// end bleed flow z if
@@ -686,10 +669,8 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
             if (N <= N_e && dv_c > rowSpacing) {// i'm in entry region
 
               u_c = u_c0 * a_local;
-              tkeFac[icell_cent] = tkeFac_local;
               for (int n = 0; n <= N; n++) {
                 u_c *= a_uwv[n];
-                tkeFac[icell_cent] *= tkeFac_uwv[n];
               }
 
               szt_Lm = spreadrate_top * (d_dw_local) + 0.00001;
@@ -703,10 +684,8 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
             else if (N > N_e && dv_c > rowSpacing) {// if i'm in equilibrated region
 
               u_c = u_c0 * a_local;
-              tkeFac[icell_cent] = tkeFac_local;
               for (int n = 0; n <= N_e; n++) {
                 u_c *= a_uwv[n];
-                tkeFac[icell_cent] *= tkeFac_uwv[n];
               }
 
               szt_Lm = spreadrate_top * (d_dw_local) + 0.00001;
