@@ -124,7 +124,6 @@ void CanopyROC::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, i
               WGD->canopy->canopy_bot_index[icell_2d] = k;
               WGD->canopy->canopy_bot[icell_2d] = WGD->terrain[icell_2d] + base_height;
               WGD->canopy->canopy_base[icell_2d] = WGD->z_face[k - 1];
-              //std::cout << "canopy_bot[" << icell_2d <<"] = " << WGD->canopy->canopy_bot[icell_2d] << "canopy_bot_index[" << icell_2d <<"] = " << WGD->canopy->canopy_bot_index[icell_2d] << std::endl;
               break;
             }
           }
@@ -204,9 +203,6 @@ void CanopyROC::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, i
   rL = WID->metParams->sensors[nearest_sensor_i]->TS[0]->site_one_overL;// uses first time step value only - figure out how to get current time step inside this function
 
   z0_site = WID->metParams->sensors[nearest_sensor_i]->TS[0]->site_z0;
-  //std::cout << "z0_site = " << z0_site << "\n";
-  //std::cout << "rL = " << rL << "\n";
-  //std::cout << "nearest_sensor_i = " << nearest_sensor_i << "\n";
 
   a_obf = pow(beta, 0.4);
 
@@ -219,18 +215,13 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
 
   std::vector<float> u0_modified, v0_modified;
   std::vector<int> u0_mod_id, v0_mod_id;
-  //std::cout << "checkpoint 1 \n";
-
-  //std::cout << "VINEYARD PARAMETERIZATION STARTING \n";
 
   int icell_face = i_building_cent + j_building_cent * WGD->nx + (WGD->nz - 5) * WGD->nx * WGD->ny;
   float u0_uw = WGD->u0[icell_face];// u velocity at the centroid, 5 nodes from the top of domain (avoids effect of nearby wakes)
   float v0_uw = WGD->v0[icell_face];// v velocity at the centroid, 5 nodes from the top of domain
-  //std::cout << "is u0_uw a nan? " << isnan(u0_uw) << "  is v0_uw a nan? " << isnan(v0_uw) << "\n";
 
   upwind_dir_unit = atan2(v0_uw, u0_uw) * 180. / M_PI + 180.;// degrees on the unit circle
 
-  //std::cout << "v0_uw = " << v0_uw << "u0_uw = " << u0_uw << "upwind_dir_unit = " << upwind_dir_unit << std::endl;
 
   // Create unit wind vector
   float M0_uw, u0n_uw, v0n_uw;
@@ -277,10 +268,6 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
     }
   }
 
-  // Keep this (LDU 220323)
-  //std::cout << "idS = " << idS << " idE = " << idE << "\n";
-  //std::cout << "x,y of upwindest vertex = " << polygonVertices[idS].x_poly << " , " << polygonVertices[idS].y_poly << "\n";
-  //std::cout << "x,y of downwindest vertex = " << polygonVertices[idE].x_poly << " , " << polygonVertices[idE].y_poly << "\n";
 
   // Find streamwise distance between rows (d_dw):
   float betaAngle = acos(rd[0] * u0n_uw + rd[1] * v0n_uw) * 180 / M_PI;// acute angle between wd and row vector, in degrees
@@ -346,16 +333,6 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   int N_e = (int)N_e_float;
   N_e += 2;// tuned to Torkelson PIV
 
-  std::cout << "l_e = " << l_e << ", N_e = " << N_e << ", L_c = " << L_c << ", M0_h = " << M0_h << ", uustar = " << uustar << "\n";
-  int terrQi = 241;
-  int terrQj = 550;
-  int icell_2d_source = (terrQi) + (terrQj) * (WGD->nx - 1);
-  std::cout << "TERRAIN HEIGHT (ROAD) AT i = " << terrQi << " j = " << terrQj << " is: " << WGD->terrain[icell_2d_source] << std::endl;
-  terrQi = 501;
-  terrQj = 550;
-  icell_2d_source = (terrQi) + (terrQj) * (WGD->nx - 1);
-  std::cout << "TERRAIN HEIGHT (VINE) AT i = " << terrQi << " j = " << terrQj << " is: " << WGD->terrain[icell_2d_source] << std::endl;
-
   // Spread rate calculations
   float udelt = (1 - pow(a_obf, N_e + 1));
   float uave = (1 + pow(a_obf, N_e + 1)) / 2;
@@ -365,18 +342,14 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   float spreadupstream_top = 2 * stdw / M0_h;
   float spreadupstream_bot = 2 * stdw / M0_uh;
 
-  //std::cout << "a_obf = " << a_obf << " spreadclassicmix = " << spreadclassicmix << " spreadupstream_top = " << spreadupstream_top << " \n";
 
   // Avoid divide-by-zero for the no-understory case (where M0_uh will be 0)
   if (abs(M0_uh) < 0.000001) {
     spreadupstream_bot = spreadupstream_top;
   }
-  //std::cout << " M0_h = " << M0_h << " spreadupstream_top = " << spreadupstream_top << "\n";
-  //std::cout << " M0_uh = " << M0_uh << " spreadupstream_bot = " << spreadupstream_bot << "\n";
 
   float spreadrate_top = sqrt(pow(spreadclassicmix, 2) + pow(spreadupstream_top, 2));
   float spreadrate_bot = sqrt(pow(spreadclassicmix, 2) + pow(spreadupstream_bot, 2));
-  std::cout << "spreadrate_top = " << spreadrate_top << "spreadrate_bot = " << spreadrate_bot << "\n";
 
   // Shear zone origin (initialized to H but parameterized later)
   float szo_top = H;
@@ -439,9 +412,6 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
       // base of the canopy
       z_b = WGD->canopy->canopy_base[icell_2d];
 
-      //if (i+i_start == 434 && j+j_start == 385){
-      //  std::cout << "TERRAIN HEIGHT AT posX posY = " << WGD->terrain[icell_2d] << std::endl;
-      //}
       // calculate row-orthogonal distance to upwind-est row, dv_c
       float cxy[2] = { (i - 1 + i_start) * WGD->dx, (j - 1 + j_start) * WGD->dy };// current x position
 
@@ -487,7 +457,6 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
 
       float szo_slope = fit_a * (rowSpacing / H) / ((rowSpacing / H) + fit_b) + fit_c;
       //float szo_slope = -0.43;
-      //std::cout << "szo_slope = " << szo_slope << std::endl;
       szo_top = std::max(szo_slope * ld + H, 0.0f);
       float szo_top_uw = std::max(szo_slope * (rowSpacing - rowWidth) + H, 0.0f);// origin right before the next row, e.g. at a distance of "rowSpacing" orthogonally from nearest upwind row
 
@@ -553,23 +522,6 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
         vH_c = ustar_v_c / WGD->vk * (log((H - d_v) / z0_site) - psiH);
         a_v = (H / abs(vH_c + 0.00001)) * (abs(ustar_v_c) / WGD->vk) * (1 / (H - d_v) - dpsiH);// abs() here because the attenuation coefficient should be always positive. add 0.00001 to avoid divide by zero
 
-        /*
-        if (i + i_start == i_building_cent && j + j_start == j_building_cent) {
-          
-          std::cout << "i = " << i_building_cent << "j = " << j_building_cent << "\n";
-          std::cout << "canopy_bot_index[" << icell_2d << "] = " << WGD->canopy->canopy_bot_index[icell_2d] << std::endl;
-          std::cout << "z_b = " << z_b << std::endl;
-          std::cout << "vref_c = " << vref_c << "\n";
-          std::cout << "ustar_v_c = " << ustar_v_c << "\n";
-          std::cout << "vH_c = " << vH_c << "\n";
-          std::cout << "a_v = " << a_v << "\n";
-          std::cout << "z0_site = " << z0_site << "\n";
-          std::cout << "rL = " << rL << "\n";
-          std::cout << "zref = " << zref << "\n";
-          std::cout << "zref_k = " << zref_k << "\n";
-          std::cout << "d_v = " << d_v << "\n";
-        }
-*/
 
         // MAIN Z-LOOP
         for (auto k = WGD->canopy->canopy_bot_index[icell_2d]; k < (WGD->nz - 1); k++) {
@@ -706,9 +658,6 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
             if (understory_height == 0) {// if no understory space
               if (UD_zone_flag && dv_c_dw > rowSpacing && ((rowSpacing - ld) < l_ud) && (z_rel <= z_ud)) {// if i'm ALSO in the UD zone
                 WGD->icellflag[icell_cent] = 31;
-                if (i + i_start == 65 && j + j_start == 75 && k < 20) {
-                  std::cout << "k = " << k << " u_c = " << u_c << " u_c after = " << u_c + u_def * (1 - exp(br * (z_ud - z_rel))) << " deficit: " << u_def << " beta = " << beta << " a_obf = " << a_obf << " rowWidth = " << rowWidth << " l_ud = " << l_ud << " Cd = " << Cd << std::endl;
-                }
 
                 u_c = u_c + u_def * (1 - exp(br * (z_ud - z_rel)));
               }
@@ -718,16 +667,10 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
                 WGD->icellflag[icell_cent] = 31;
 
                 if (z_rel > z_mid) {// upper half of UD zone
-                  if (i + i_start == 65 && j + j_start == 75 && k < 20) {
-                    std::cout << "k = " << k << " u_c = " << u_c << " u_c after = " << u_c + u_def * (1 - exp(brTOP * (z_udTOP - z_rel))) << " deficit: " << u_def << " beta = " << beta << " a_obf = " << a_obf << " rowWidth = " << rowWidth << " l_ud = " << l_ud << " Cd = " << Cd << std::endl;
-                  }
 
                   u_c = u_c + u_def * (1 - exp(brTOP * (z_udTOP - z_rel)));
 
                 } else {// lower half of UD zone
-                  if (i + i_start == 65 && j + j_start == 75 && k < 20) {
-                    std::cout << "k = " << k << " u_c = " << u_c << " u_c after = " << u_c + u_def * (1 - exp(brBOT * (z_rel - z_udBOT))) << " deficit: " << u_def << " beta = " << beta << " a_obf = " << a_obf << " rowWidth = " << rowWidth << " l_ud = " << l_ud << " Cd = " << Cd << std::endl;
-                  }
 
                   u_c = u_c + u_def * (1 - exp(brBOT * (z_rel - z_udBOT)));
                 }
