@@ -264,6 +264,7 @@ add_subdirectory(qesPlume)
 add_subdirectory(qes)
 add_subdirectory(tests)
 
+option(ENABLE_UNITTESTS "Enables unitests" OFF)
 option(ENABLE_ALL_TESTS "Enables all tests for an extensive test run" OFF) # will not override CPU/GPU selection
 option(ENABLE_SANITY_TESTS "Enables tests that simply check if qesWinds runs on input w/o runtime errors" ON)
 option(ENABLE_LONG_SANITY_TESTS "Enables the longer sanity tests" OFF)
