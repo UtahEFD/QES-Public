@@ -25,13 +25,12 @@ cuda_add_executable(unitTestPlume
   test_PlumeGeneralData.h test_PlumeGeneralData.cpp test_PlumeGeneralData.cu
   mainPlumeTest.cpp)
 
-if (ENABLE_UNITTESTS)
+
 set(UNITTESTS
   unitTestTime
   unitTestWind
   unitTestTurbulence
   unitTestPlume)
-endif (ENABLE_UNITTESTS)
 
 foreach (unittest ${UNITTESTS})
   target_link_libraries(${unittest} qesplumecore)
@@ -42,8 +41,10 @@ foreach (unittest ${UNITTESTS})
   ENDIF()
   target_link_libraries(${unittest} unitTestLib)
   link_external_libraries(${unittest})
-  
-  add_test(${unittest} ${unittest})
+
+  if (ENABLE_UNITTESTS)
+    add_test(${unittest} ${unittest})
+  endif (ENABLE_UNITTESTS)
 endforeach(unittest)
 
 #add_test(unitTest unitTest)

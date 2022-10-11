@@ -48,9 +48,6 @@ void QESArgs::processArguments(int argc, char *argv[])
   verbose = isSet("verbose");
   if (verbose) std::cout << "Verbose Output: ON" << std::endl;
 
-  isSet("qesWindsParamFile", qesWindsParamFile);
-  if (qesWindsParamFile != "") std::cout << "qesWindsParamFile set to " << qesWindsParamFile << std::endl;
-
   solveWind = isSet("windsolveroff");
   if (solveWind) std::cout << "the wind fields are not being calculated" << std::endl;
 
@@ -63,6 +60,9 @@ void QESArgs::processArguments(int argc, char *argv[])
     std::cout << "Solving with: Global memory solver (GPU)" << std::endl;
   else if (solveType == Shared_M)
     std::cout << "Solving with: Shared memory solver (GPU)" << std::endl;
+
+  isSet("qesWindsParamFile", qesWindsParamFile);
+  if (qesWindsParamFile != "") std::cout << "qesWindsParamFile set to " << qesWindsParamFile << std::endl;
 
   compTurb = isSet("turbcomp");
 
@@ -125,7 +125,8 @@ void QESArgs::processArguments(int argc, char *argv[])
     }
 
   } else {
-    std::cout << "No output basename set -> output turned off " << std::endl;
+
+    QESout::warning("No output basename set -> output turned off");
     visuOutput = false;
     wkspOutput = false;
     turbOutput = false;

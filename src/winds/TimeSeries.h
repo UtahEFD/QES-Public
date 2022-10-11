@@ -34,6 +34,7 @@
 
 #include "util/ParseInterface.h"
 #include "util/QEStime.h"
+#include "util/QESout.h"
 
 class URBInputData;
 class URBGeneralData;
@@ -85,9 +86,10 @@ public:
 
 
     if (timeStamp == "" && timeEpoch == -1) {
-      std::cout << "[WARNING] no timestamp provided to sensor\n";
-      std::cout << "          using system UTC time: " << time << std::endl;
-      //time = "2020-01-01T00:00";
+      std::stringstream mess;
+      mess << "No timestamp -> "
+           << "using system UTC time (" << time << ")";
+      QESout::warning(mess.str());
     } else if (timeStamp != "" && timeEpoch == -1) {
       time = timeStamp;
     } else if (timeEpoch != -1 && timeStamp == "") {

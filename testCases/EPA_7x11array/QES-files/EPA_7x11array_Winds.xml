@@ -30,6 +30,7 @@
       <site_xcoord> 35  </site_xcoord> 			<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
       <site_ycoord> 200 </site_ycoord> 			<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->
       <timeSeries>					<!-- Start of timestep informastion for a sensor -->
+	<timeStamp>2020-01-01T01:00:00</timeStamp>	<!-- Start of timestep informastion for a sensor -->
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
 	<siteZ0> 0.02 </siteZ0> 			<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 			<!-- Reciprocal Monin-Obukhov Length (1/m) -->
