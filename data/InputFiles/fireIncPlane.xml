@@ -1,3 +1,4 @@
+
 <simulationParameters>
   <DEM>../GISFiles/InclinePlane.tiff</DEM>
   	<halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
@@ -59,6 +60,7 @@
 		<height> 10.0 </height>
 		<speed> 10 </speed>
 		<direction> 90 </direction>
+	    </timeSeries>
 	</sensor>                      					<!-- End of sensor section -->
 </metParams>
 
@@ -69,6 +71,7 @@
   <!--LMfile>Fire_mixlength.nc</LMfile--> <!-- Address to mixing lethng location--> 
 <!--/localMixingParam-->
 <fires>
+	<fireDur> 100 </fireDur>
 	<numFires> 1 </numFires>
 	<fuelType> 3 </fuelType>
 	<fmc> 0.050 </fmc>
@@ -86,10 +89,11 @@
 <fileOptions>
 	<outputFlag>1</outputFlag>
 	<outputFields>all</outputFields> 
-	<outputFields>v</outputFields> 
-	<outputFields>w</outputFields>
-	<outputFields>icell</outputFields>
+	<!--outputFields>v</outputFields--> 
+	<!--outputFields>w</outputFields-->
+	<!--outputFields>icell</outputFields-->
 	<!--massConservedFlag> 0 </massConservedFlag-->
 	<!--sensorVelocityFlag> 0 </sensorVelocityFlag-->
 	<!--staggerdVelocityFlag> 0 </staggerdVelocityFlag-->
 </fileOptions>
+

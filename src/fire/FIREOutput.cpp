@@ -4,7 +4,8 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd,Fire* fire,std::string output_file)
     : QESNetCDFOutput(output_file)
 {
 
-    output_fields={"t","x","y","z","u","v","w","icell","terrain",
+  std::cout << "[FireOutput] set up NetCDF file " << output_file <<std::endl;
+    output_fields={"t_f","x_f","y_f","z_f","u_f","v_f","w_f","icell_f","terrain_f",
                    "burn","fuel"};
 
     // copy of wgd pointer
@@ -22,29 +23,34 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd,Fire* fire,std::string output_file)
     for (auto k=1; k<nz-1; k++) {
         z_out[k-1] = wgd_->z[k]; 
     }
-  
+
+    x_out.resize(nx - 1);
+    for (auto i = 0; i < nx - 1; i++) {
+      x_out[i] = (i + 0.5) * wgd_->dx;// Location of face centers in x-dir
+    }
+
+    y_out.resize(ny - 1);
+    for (auto j = 0; j < ny - 1; j++) {
+      y_out[j] = (j + 0.5) * wgd_->dy;// Location of face centers in y-dir
+    }
+    
     // Output data container
     u_out.resize( numcell_cout, 0.0 );
     v_out.resize( numcell_cout, 0.0 );
     w_out.resize( numcell_cout, 0.0 );
     icellflag_out.resize( numcell_cout, 0.0 );
 
+    std::cout << "test 1" << std::endl;
     // set cell-centered data dimensions
-    // time dimension
-    /* NcDim NcDim_t=addDimension("t");
-    NcDim NcDim_tstr = addDimension("dateStrLen", dateStrLen);
-    */
     // space dimensions
-    NcDim NcDim_x=addDimension("x",wgd_->nx-1);
-    NcDim NcDim_y=addDimension("y",wgd_->ny-1);
-    NcDim NcDim_z=addDimension("z",wgd_->nz-2);
+    NcDim NcDim_x=addDimension("xdim",wgd_->nx-1);
+    NcDim NcDim_y=addDimension("ydim",wgd_->ny-1);
+    NcDim NcDim_z=addDimension("zdim",wgd_->nz-2);
 
-    /*
-      // create attributes for time dimension
-    std::vector<NcDim> dim_vect_t;
-    dim_vect_t.push_back(NcDim_t);
-    createAttScalar("t","time","s",dim_vect_t,&time);
+    std::cout << "dimensions added" << std::endl;
+
     
+    /*
     // create attributes for time dimension
     std::vector<NcDim> dim_vect_tstr;
     dim_vect_tstr.push_back(NcDim_t);
@@ -55,20 +61,28 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd,Fire* fire,std::string output_file)
     // create attributes space dimensions
     std::vector<NcDim> dim_vect_x;
     dim_vect_x.push_back(NcDim_x);
-    createAttVector("x","x-distance","m",dim_vect_x,&(wgd_->x));
+    createAttVector("x_f","x-distance","m",dim_vect_x,&x_out);
     std::vector<NcDim> dim_vect_y;
     dim_vect_y.push_back(NcDim_y);
-    createAttVector("y","y-distance","m",dim_vect_y,&(wgd_->y));
+    createAttVector("y_f","y-distance","m",dim_vect_y,&y_out);
     std::vector<NcDim> dim_vect_z;
     dim_vect_z.push_back(NcDim_z);
-    createAttVector("z","z-distance","m",dim_vect_z,&z_out);
+    createAttVector("z_f","z-distance","m",dim_vect_z,&z_out);
+
+
+    
+    // create attributes for time dimension
+    std::vector<NcDim> dim_vect_t;
+    dim_vect_t.push_back(NcDim_t);
+    createAttScalar("t_f","time","s",dim_vect_t,&time);
+
     
     // create 2D vector (x,y- time independent)
     std::vector<NcDim> dim_vect_2d;
     dim_vect_2d.push_back(NcDim_y);
     dim_vect_2d.push_back(NcDim_x);
     // create attributes
-    createAttVector("terrain","terrain height","m",dim_vect_2d,&(wgd_->terrain));
+    createAttVector("terrain_f","terrain height","m",dim_vect_2d,&(wgd_->terrain));
     createAttVector("fuel","fuel type","--",dim_vect_2d,&(fire_->fuel_map));
 
     // create 3D vector (x,y,t)
@@ -79,6 +93,8 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd,Fire* fire,std::string output_file)
     // create attributes
     createAttVector("burn","burn flag value","--",dim_vect_3d,&(fire_->burn_out));
     
+    std::cout << "burn added" << std::endl;
+    
     // create 4D vector (x,y,z,t)
     std::vector<NcDim> dim_vect_4d;
     dim_vect_4d.push_back(NcDim_t);
@@ -86,10 +102,11 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd,Fire* fire,std::string output_file)
     dim_vect_4d.push_back(NcDim_y);
     dim_vect_4d.push_back(NcDim_x);
     // create attributes for velocity
-    createAttVector("u","x-component velocity","m s-1",dim_vect_4d,&u_out);
-    createAttVector("v","y-component velocity","m s-1",dim_vect_4d,&v_out);
-    createAttVector("w","z-component velocity","m s-1",dim_vect_4d,&w_out);
-    createAttVector("icell","icell flag value","--",dim_vect_4d,&icellflag_out);
+    createAttVector("u_f","x-component velocity","m s-1",dim_vect_4d,&u_out);
+    createAttVector("v_f","y-component velocity","m s-1",dim_vect_4d,&v_out);
+    createAttVector("w_f","z-component velocity","m s-1",dim_vect_4d,&w_out);
+    createAttVector("icell_f","icell flag value","--",dim_vect_4d,&icellflag_out);
+
   
     // create output fields
     addOutputFields();
@@ -98,7 +115,7 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd,Fire* fire,std::string output_file)
 
 
 // Save output at cell-centered values
-void FIREOutput::save(float timeOut)
+void FIREOutput::save(QEStime timeOut)
 {
     // get grid size (not output var size)
     int nx = wgd_->nx;
@@ -106,7 +123,7 @@ void FIREOutput::save(float timeOut)
     int nz = wgd_->nz;
 
     // set time
-    time = (double)timeOut;
+    timeCurrent = timeOut;
 
     
 

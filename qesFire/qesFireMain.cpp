@@ -1,3 +1,33 @@
+/****************************************************************************
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
+ *
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2022 Matthew Moody
+ *
+ * This file is part of QES
+ *
+ * GPL-3.0 License
+ *
+ * QES is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
 #include <iostream>
 
 #include <boost/foreach.hpp>
@@ -7,10 +37,10 @@
 
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
-
+#include "util/QEStool.h"
 #include "util/QESNetCDFOutput.h"
 
-#include "winds/handleWINDSArgs.h"
+#include "handleQESArgs.h"
 
 #include "winds/WINDSInputData.h"
 #include "winds/WINDSGeneralData.h"
@@ -54,7 +84,7 @@ int main(int argc, char *argv[])
     // Command line arguments are processed in a uniform manner using
     // cross-platform code.  Check the WINDSArgs class for details on
     // how to extend the arguments.
-    WINDSArgs arguments;
+    QESArgs arguments;
     arguments.processArguments(argc, argv);
 
   // ///////////////////////////////////
@@ -87,6 +117,7 @@ int main(int argc, char *argv[])
   // Generate the general WINDS data from all inputs
   WINDSGeneralData *WGD = new WINDSGeneralData(WID, arguments.solveType);
 
+  
   // create WINDS output classes
   std::vector<QESNetCDFOutput *> outputVec;
   if (arguments.visuOutput) {
@@ -95,6 +126,8 @@ int main(int argc, char *argv[])
   if (arguments.wkspOutput) {
     outputVec.push_back(new WINDSOutputWorkspace(WGD, arguments.netCDFFileWksp));
   }
+  
+    
 
     // Generate the general TURB data from WINDS data
     // based on if the turbulence output file is defined
@@ -105,7 +138,7 @@ int main(int argc, char *argv[])
     if (arguments.compTurb && arguments.turbOutput) {
         outputVec.push_back(new TURBOutput(TGD,arguments.netCDFFileTurb));
     }
-
+  
   // //////////////////////////////////////////
   //
   // Run the QES-Winds Solver
@@ -129,29 +162,7 @@ int main(int argc, char *argv[])
   }
 
 
-    // Reset icellflag values
-    WGD->resetICellFlag();
-    int index = 0;
-    // Create initial velocity field from the new sensors
-    WGD->applyWindProfile(WID, index, arguments.solveType);
-    
-    // Apply parametrizations
-    WGD->applyParametrizations(WID);
 
-    // Run WINDS simulation code
-    solver->solve(WID, WGD, !arguments.solveWind );
-
-    std::cout << "Solver done!\n";
-
-    // /////////////////////////////
-    //
-    // Run turbulence
-    //
-    // /////////////////////////////
-
-    if(TGD != nullptr) {
-        TGD->run();
-    }
 
     // /////////////////////////////
     //
@@ -162,111 +173,115 @@ int main(int argc, char *argv[])
     /** 
      * Create Fire Mapper
      **/
-    auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time
+
     Fire* fire = new Fire(WID, WGD);
-    auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
-	    
-    std::chrono::duration<float> elapsed = finish - start;
-    std::cout << "Fire Map created: elapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time
-
-    // create FIREOutput manager
+ 
+      // create FIREOutput manager
+    /*
     FIREOutput* fireOutput = new FIREOutput(WGD,fire,arguments.netCDFFileFire);
-  
-    // set base w in fire model to initial w0
-    //fire->w_base = w0;
+    */
     
-    // Run initial solver to generate full field
-    solver->solve(WID, WGD, !arguments.solveWind);
+    std::vector<QESNetCDFOutput *> outFire;
+    std::cout << "test" << std::endl;
+    outFire.push_back(new FIREOutput(WGD, fire, arguments.netCDFFileFireOut));
 
-    // save initial fields in solver and fire
-    //if (output != nullptr) {
-    //    WGD->save();
-    //}
-    // save initial fields to reset after each time+fire loop
-    std::vector<float> u0 = WGD->u0;
-    std::vector<float> v0 = WGD->v0;
-    std::vector<float> w0 = WGD->w0;
+
+    // time variables
+    QEStime simTimeStart = WGD->timestamp[0];
+    QEStime simTimeCurr = simTimeStart;
 
     // save any fire data (at time 0)
-    fireOutput->save(0.0);
-	
-    // Run WINDS simulation code
-    std::cout<<"===================="<<std::endl;
-    double t = 0;
+  /*
+    outputFire->save(simTimeStart);
+  */    
+    std::vector<float> Fu0;
+        std::vector<float> Fv0;
+        std::vector<float> Fw0;
+
+	// Loop  for sensor time data
+    for (int index = 0; index < WGD->totalTimeIncrements; index++) {
+      std::cout << "----------------------------------------" << std::endl;
+      std::cout << "New Sensor Data" << std::endl;
+      std::cout << "----------------------------------------" << std::endl;
+      
+          // Reset icellflag values
+      WGD->resetICellFlag();
+
+      // Create initial velocity field from the new sensors
+      WGD->applyWindProfile(WID, index, arguments.solveType);
     
-    std::cout<<"total time inc: :"<<WID->simParams->totalTimeIncrements<<std::endl;
-    while (t<WID->simParams->totalTimeIncrements) {
-        
-        std::cout<<"Processing time t = "<<t<<std::endl;
-        // re-set initial fields after first time step
-        if (t>0) {
-		// Reset icellflag values
-    		 WGD->resetICellFlag();
-	    
-	     WGD->u0 = u0;
-	     WGD->v0 = v0;
-	     WGD->w0 = w0;
-		 std::cout<<"Wind field reset to initial"<<std::endl;
-	   
-	    /*
-	    WID->metParams->z0_domain_flag=1;
-	    WID->metParams->sensors[0]->inputWindProfile(WID, WGD);
-            solver->solve(WID, WGD, !arguments.solveWind);
-	    */
+      // Apply parametrizations
+      WGD->applyParametrizations(WID);
 
-	// Generate the general WINDS data from all inputs
-    // WINDSGeneralData* WGD = new WINDSGeneralData(WID, arguments.solveType);
-	    // Apply parametrizations
-    // WGD->applyParametrizations(WID);
+      // Run WINDS simulation code
+      solver->solve(WID, WGD, !arguments.solveWind );
 
-    // Run WINDS simulation code
-    // solver->solve(WID, WGD, !arguments.solveWind );
+      std::cout << "Solver done!\n";
 
-    // std::cout << "Solver done!\n";
-        }
+      
+      // Run turbulence
+      //
+ 
+      if(TGD != nullptr) {
+        TGD->run();
+      }
+      
+      // save initial fields to reset after each time+fire loop
+      Fu0 = WGD->u0;
+      Fv0 = WGD->v0;
+      Fw0 = WGD->w0;
+      
+      // Run fire model
+      simTimeCurr = WGD->timestamp[index];
+      QEStime endtime;
+      if (WGD->totalTimeIncrements == 1){
+	endtime = WGD->timestamp[index] + WID->fires->fireDur;
+      } else if (index == WGD->totalTimeIncrements - 1) {
+	endtime = WGD->timestamp[index] + (WGD->timestamp[index] - WGD->timestamp[index-1]);
+      } else {
+        endtime = WGD->timestamp[index+1];
+      }
 
-        // loop 2 times for fire
-        int loop = 0;
-        while (loop<1) {
-            // run Balbi model to get new spread rate and fire properties
-            fire->run(solver, WGD);
-	    //WGD->applyParametrizations(WID);
-            // calculate plume potential
-	    auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time
+    while (simTimeCurr < endtime) {
+        // run ROS model to get new spread rate and fire properties
+        fire->run(solver, WGD);
+
+        // calculate plume potential
+	auto start = std::chrono::high_resolution_clock::now(); // Start recording executiontime
 	    
-	    fire->potential(WGD);
+	fire->potential(WGD);
 	    
-	    auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
+	auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
 	    
-    	    std::chrono::duration<float> elapsed = finish - start;
-    	    std::cout << "Plume solve: elapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time
-	    /**
-            * Apply parameterizations and run wind solver 
-	    **/
+    	std::chrono::duration<float> elapsed = finish - start;
+    	std::cout << "Plume solve: elapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time
+	/**
+        * Run run wind solver 
+	**/
 	     
-	    solver->solve(WID, WGD, !arguments.solveWind);
-	    // run wind solver
-            // solver->solve(WID, WGD, !arguments.solveWind);
+	solver->solve(WID, WGD, !arguments.solveWind);
 
-
-            
-
-	    	    
-            //increment fire loop
-            loop += 1;
-   	            
-            std::cout<<"--------------------"<<std::endl;
-        }
-        
+	fire->run(solver, WGD);
         // move the fire
         fire->move(solver, WGD);
         
-        // save any fire data
-        fireOutput->save(fire->time);
+
  
         // advance time 
-        t = fire->time;
-        
+        simTimeCurr += fire->dt;
+	std::cout << "time = " << simTimeCurr <<endl;
+
+
+	// save any fire data
+	for (auto outItr = outFire.begin(); outItr != outFire.end(); ++outItr){
+	  (*outItr)->save(simTimeCurr);
+	}
+
+	// reset wind fields
+	WGD->u0 = Fu0;
+	WGD->v0 = Fv0;
+	WGD->w0 = Fw0;
+    }        
 
     }
 

@@ -2,6 +2,7 @@ include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
 CUDA_ADD_EXECUTABLE( qesFire
+handleQESArgs.cpp
   qesFireMain.cpp
   )
 

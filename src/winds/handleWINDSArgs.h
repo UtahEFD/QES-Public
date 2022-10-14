@@ -84,9 +84,9 @@ public:
   std::string netCDFFileWksp = ""; /**< netCDFFile for working field used by Plume */
   std::string netCDFFileTurb = ""; /**< netCDFFile for turbulence field used by Plume */
   std::string filenameTerrain = ""; /**< Filename for terrain output */
+  
   std::string netCDFFileFire = ""; /**< netCDFFile for fire output */
 
   bool fireMode; /**< Boolean to treat WRF input in fire mode */
-
 private:
 };
