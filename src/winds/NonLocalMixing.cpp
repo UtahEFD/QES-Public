@@ -72,7 +72,6 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
   // int kk;
 
   int icell_face, icell_cent;
-  int icell_face_cl, icell_cent_cl;
 
   std::vector<float> Lr_face, Lr_node;
   std::vector<int> perpendicular_flag;
@@ -508,8 +507,8 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
                   // check if position in domain
                   if (i_cl < WGD->nx - 2 && i_cl > 0 && j_cl < WGD->ny - 2 && j_cl > 0) {
                     // index for centerline
-                    icell_cent_cl = i_cl + j_cl * (nx - 1) + k * (ny - 1) * (nx - 1);
-                    icell_face_cl = i_cl + j_cl * nx + k * ny * nx;
+                    //int icell_cent_cl = i_cl + j_cl * (nx - 1) + k * (ny - 1) * (nx - 1);
+                    int icell_face_cl = i_cl + j_cl * nx + k * ny * nx;
 
                     // velocity interpolated at the center line
                     u_h = 0.5 * (WGD->u[icell_face_cl] + WGD->u[icell_face_cl + 1]);

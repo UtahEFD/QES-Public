@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include "util/ArgumentParsing.h"
+#include "util/QESout.h"
 
 enum solverTypes : int { CPU_Type = 1,
                          DYNAMIC_P = 2,

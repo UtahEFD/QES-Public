@@ -77,9 +77,9 @@ float test_PlumeGeneralData::testFunction_linearX(WINDSGeneralData *WGD, float x
   // a = 2 * 2pi/Lx
   float a = 2.0 * 2.0 * M_PI / (WGD->nx * WGD->dx);
   // b = 6 * 2pi/Ly
-  float b = 6.0 * 2.0 * M_PI / (WGD->ny * WGD->dy);
+  //float b = 6.0 * 2.0 * M_PI / (WGD->ny * WGD->dy);
   // c = 4 * 2pi/Lz
-  float c = 4.0 * 2.0 * M_PI / ((WGD->nz - 1) * WGD->dz);
+  //float c = 4.0 * 2.0 * M_PI / ((WGD->nz - 1) * WGD->dz);
 
   return a * x;
 }
@@ -87,11 +87,11 @@ float test_PlumeGeneralData::testFunction_linearX(WINDSGeneralData *WGD, float x
 float test_PlumeGeneralData::testFunction_linearY(WINDSGeneralData *WGD, float x, float y, float z)
 {
   // a = 2 * 2pi/Lx
-  float a = 2.0 * 2.0 * M_PI / (WGD->nx * WGD->dx);
+  //float a = 2.0 * 2.0 * M_PI / (WGD->nx * WGD->dx);
   // b = 6 * 2pi/Ly
   float b = 6.0 * 2.0 * M_PI / (WGD->ny * WGD->dy);
   // c = 4 * 2pi/Lz
-  float c = 4.0 * 2.0 * M_PI / ((WGD->nz - 1) * WGD->dz);
+  //float c = 4.0 * 2.0 * M_PI / ((WGD->nz - 1) * WGD->dz);
 
   return b * y;
 }
@@ -99,9 +99,9 @@ float test_PlumeGeneralData::testFunction_linearY(WINDSGeneralData *WGD, float x
 float test_PlumeGeneralData::testFunction_linearZ(WINDSGeneralData *WGD, float x, float y, float z)
 {
   // a = 2 * 2pi/Lx
-  float a = 2.0 * 2.0 * M_PI / (WGD->nx * WGD->dx);
+  //float a = 2.0 * 2.0 * M_PI / (WGD->nx * WGD->dx);
   // b = 6 * 2pi/Ly
-  float b = 6.0 * 2.0 * M_PI / (WGD->ny * WGD->dy);
+  //float b = 6.0 * 2.0 * M_PI / (WGD->ny * WGD->dy);
   // c = 4 * 2pi/Lz
   float c = 4.0 * 2.0 * M_PI / ((WGD->nz - 1) * WGD->dz);
 
@@ -249,8 +249,8 @@ std::string test_PlumeGeneralData::timeInterpCPU(WINDSGeneralData *WGD, TURBGene
     zArray.push_back(disZ(mersenne_engine));
   }
 
-  bool verbose = false;
-  float tol(1.0e-2);
+  //bool verbose = false;
+  //float tol(1.0e-2);
 
   auto interpStartTime = std::chrono::high_resolution_clock::now();
   for (size_t it = 0; it < xArray.size(); ++it) {
@@ -287,12 +287,12 @@ void test_PlumeGeneralData::testCPU(int length)
   invar.resize(length, { 0.0, 0.0, 0.0 });
 
   auto cpuStartTime = std::chrono::high_resolution_clock::now();
-  for (size_t it = 0; it < length; ++it) {
+  for (auto it = 0; it < length; ++it) {
     bool tt = vectorMath::invert3(A[it]);
     vectorMath::matmult(A[it], b[it], x[it]);
   }
 
-  for (size_t it = 0; it < length; ++it) {
+  for (auto it = 0; it < length; ++it) {
     vectorMath::makeRealizable(10e-4, tau[it]);
     vectorMath::calcInvariants(tau[it], invar[it]);
   }

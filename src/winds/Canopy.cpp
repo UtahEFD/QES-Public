@@ -43,8 +43,7 @@
 
 Canopy::Canopy(const WINDSInputData *WID, WINDSGeneralData *WGD)
 {
-  wakeFlag = WID->canopies->wakeFlag;
-
+  wakeFlag = WID->vegetationParams->wakeFlag;
   nx_canopy = WGD->nx - 1;
   ny_canopy = WGD->ny - 1;
   nz_canopy = WGD->nz - 1;
@@ -79,7 +78,7 @@ void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
 {
   auto canopysetup_start = std::chrono::high_resolution_clock::now();// Start recording execution time
 
-  if (WID->canopies->SHPData) {
+  if (WID->vegetationParams->SHPData) {
 
     std::cout << "Creating canopies from shapefile..." << std::flush;
 
@@ -87,8 +86,8 @@ void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
     // FM CLEANUP - NOT USED
     // float corner_height, min_height;
     std::vector<float> shpDomainSize(2), minExtent(2);
-    WID->canopies->SHPData->getLocalDomain(shpDomainSize);
-    WID->canopies->SHPData->getMinExtent(minExtent);
+    WID->vegetationParams->SHPData->getLocalDomain(shpDomainSize);
+    WID->vegetationParams->SHPData->getMinExtent(minExtent);
 
     //printf("\tShapefile Origin = (%.6f,%.6f)\n", minExtent[0], minExtent[1]);
 
@@ -99,12 +98,12 @@ void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
       minExtent[1] -= (minExtent[1] - WID->simParams->UTMy);
     }
 
-    for (auto pIdx = 0u; pIdx < WID->canopies->SHPData->m_polygons.size(); pIdx++) {
+    for (auto pIdx = 0u; pIdx < WID->vegetationParams->SHPData->m_polygons.size(); pIdx++) {
 
       // convert the global polys to local domain coordinates
-      for (auto lIdx = 0u; lIdx < WID->canopies->SHPData->m_polygons[pIdx].size(); lIdx++) {
-        WID->canopies->SHPData->m_polygons[pIdx][lIdx].x_poly -= minExtent[0];
-        WID->canopies->SHPData->m_polygons[pIdx][lIdx].y_poly -= minExtent[1];
+      for (auto lIdx = 0u; lIdx < WID->vegetationParams->SHPData->m_polygons[pIdx].size(); lIdx++) {
+        WID->vegetationParams->SHPData->m_polygons[pIdx][lIdx].x_poly -= minExtent[0];
+        WID->vegetationParams->SHPData->m_polygons[pIdx][lIdx].y_poly -= minExtent[1];
       }
 
       // Setting base height for tree if there is a DEM file (TODO)
@@ -114,19 +113,19 @@ void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
         //base_height.push_back(0.0);
       }
 
-      for (auto lIdx = 0u; lIdx < WID->canopies->SHPData->m_polygons[pIdx].size(); lIdx++) {
-        WID->canopies->SHPData->m_polygons[pIdx][lIdx].x_poly += WID->simParams->halo_x;
-        WID->canopies->SHPData->m_polygons[pIdx][lIdx].y_poly += WID->simParams->halo_y;
+      for (auto lIdx = 0u; lIdx < WID->vegetationParams->SHPData->m_polygons[pIdx].size(); lIdx++) {
+        WID->vegetationParams->SHPData->m_polygons[pIdx][lIdx].x_poly += WID->simParams->halo_x;
+        WID->vegetationParams->SHPData->m_polygons[pIdx][lIdx].y_poly += WID->simParams->halo_y;
       }
 
       // Loop to create each of the polygon buildings read in from the shapefile
       int cId = allCanopiesV.size();
       //allCanopiesV.push_back(new CanopyIsolatedTree(WID, WGD, pIdx));
-      allCanopiesV.push_back(new CanopyIsolatedTree(WID->canopies->SHPData->m_polygons[pIdx],
-                                                    WID->canopies->SHPData->m_features["H"][pIdx],
-                                                    WID->canopies->SHPData->m_features["D"][pIdx],
+      allCanopiesV.push_back(new CanopyIsolatedTree(WID->vegetationParams->SHPData->m_polygons[pIdx],
+                                                    WID->vegetationParams->SHPData->m_features["H"][pIdx],
+                                                    WID->vegetationParams->SHPData->m_features["D"][pIdx],
                                                     0.0,
-                                                    WID->canopies->SHPData->m_features["LAI"][pIdx],
+                                                    WID->vegetationParams->SHPData->m_features["LAI"][pIdx],
                                                     cId));
       canopy_id.push_back(cId);
       allCanopiesV[cId]->setPolyBuilding(WGD);
@@ -136,9 +135,9 @@ void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
     std::cout << "[done]" << std::endl;
   }
 
-  for (size_t i = 0; i < WID->canopies->canopies.size(); i++) {
+  for (size_t i = 0; i < WID->vegetationParams->canopies.size(); i++) {
     int cId = allCanopiesV.size();
-    allCanopiesV.push_back(WID->canopies->canopies[i]);
+    allCanopiesV.push_back(WID->vegetationParams->canopies[i]);
 
     for (auto pIdx = 0u; pIdx < allCanopiesV[cId]->polygonVertices.size(); pIdx++) {
       allCanopiesV[cId]->polygonVertices[pIdx].x_poly += WID->simParams->halo_x;

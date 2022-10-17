@@ -1,3 +1,4 @@
+<QESWindsParameters>
 <simulationParameters>
 
   <!-- Specifies the WRF-SFIRE Output file that will be read in by QES-Winds 
@@ -101,4 +102,6 @@ Shouldn't need when loading WRF output though.
   <outputFields>w</outputFields>
   <outputFields>icell</outputFields> 
 </fileOptions>
+
+</QESWindsParameters>
 

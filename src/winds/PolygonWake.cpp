@@ -81,7 +81,7 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
   int i_u, j_u, i_v, j_v, i_w, j_w;// i and j indices for x, y and z directions
   float xp, yp;
   float xu, yu, xv, yv, xw, yw;
-  float dn_u, dn_v, dn_w;// Length of cavity zone
+  float dn_u(0.0), dn_v(0.0), dn_w(0.0);// Length of cavity zone
   float farwake_vel;
   std::vector<double> u_temp, v_temp;
   //u_temp.resize(WGD->nx * WGD->ny, 0.0);
@@ -89,11 +89,11 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
   std::vector<double> u0_modified, v0_modified;
   std::vector<int> u0_mod_id, v0_mod_id;
   float R_scale, R_cx, vd, hd, shell_height;
-  int k_bottom, k_top;
+  int k_bottom(0), k_top(0);
   int tall_flag = 0;
-  float z_s;// Saddle point height
-  float x_sep;// In-canyon separation-point location
-  int k_s;// Index of the saddle point in vetical dir
+  float z_s(0.0);// Saddle point height
+  float x_sep(0.0);// In-canyon separation-point location
+  int k_s(0);// Index of the saddle point in vetical dir
 
 
   int index_building_face = i_building_cent + j_building_cent * WGD->nx + (k_end)*WGD->nx * WGD->ny;
@@ -177,7 +177,7 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
 
 
   // if rectangular building and rooftop vortex, recalculate the top of the wake
-  if (rectangular_flag && WID->simParams->rooftopFlag == 2) {
+  if (rectangular_flag && WID->buildingsParams->rooftopFlag == 2) {
     int id_valid = -1;
     int bldg_upwind = 0;
 
@@ -254,7 +254,7 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
         }
 
         // Checking bounds of length over height and width over height
-        if (L_over_H = 3.0) {
+        if (L_over_H >= 3.0) {
           L_over_H = 3.0;
         }
         if (L_over_H < 0.3) {

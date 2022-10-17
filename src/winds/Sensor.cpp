@@ -56,6 +56,12 @@ using namespace std;
 
 void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, int index, int solverType)
 {
+
+#if 1
+  std::cerr << "THIS FUNCTION IS OBSOLETE" << std::endl;
+  exit(EXIT_FAILURE);
+#else
+
   auto start_InputWindProfile = std::chrono::high_resolution_clock::now();// Finish recording execution time
 
   const float vk = 0.4;// Von Karman's constant
@@ -78,8 +84,8 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
   std::vector<int> time_id(num_sites, -1);
 
   // loop to find which timestep of each sensor is related to the running timestep of the code
-  for (auto i = 0; i < WID->metParams->sensors.size(); i++) {
-    for (auto j = 0; j < WID->metParams->sensors[i]->TS.size(); j++) {
+  for (auto i = 0u; i < WID->metParams->sensors.size(); i++) {
+    for (auto j = 0u; j < WID->metParams->sensors[i]->TS.size(); j++) {
       if (WGD->sensortime[index] == WID->metParams->sensors[i]->TS[j]->time) {
         time_id[i] = j;
       }
@@ -87,7 +93,7 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
   }
 
   // loop to adjust the namber of sensors have information for the running timestep of the code
-  for (auto i = 0; i < time_id.size(); i++) {
+  for (auto i = 0u; i < time_id.size(); i++) {
     if (time_id[i] == -1) {
       num_sites -= 1;
     }
@@ -634,10 +640,15 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
 
   std::chrono::duration<float> elapsed_InputWindProfile = end_InputWindProfile - start_InputWindProfile;
   std::cout << "Elapsed time for input wind profile: " << elapsed_InputWindProfile.count() << " s\n";
+#endif
 }
 
 void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData *WGD, std::vector<std::vector<float>> u_prof, std::vector<std::vector<float>> v_prof, int num_sites, std::vector<int> available_sensor_id, float asl_percent, float abl_height)
 {
+#if 1
+  std::cerr << "THIS FUNCTION IS OBSOLETE" << std::endl;
+  exit(EXIT_FAILURE);
+#else
   std::vector<float> x, y;
   x.resize(WGD->nx);
   for (size_t i = 0; i < WGD->nx; i++) {
@@ -850,4 +861,5 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
       }
     }
   }
+#endif
 }

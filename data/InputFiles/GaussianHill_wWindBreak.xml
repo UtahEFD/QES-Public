@@ -1,3 +1,4 @@
+<QESWindsParameters>
 <simulationParameters>
     <DEM>../GISFiles/GaussianHill_200x200.tiff</DEM>		<!-- Address to DEM location-->
 
@@ -9,12 +10,7 @@
 	<verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-costum grid)-->
 
 	<totalTimeIncrements> 1 </totalTimeIncrements> 			<!-- Number of time steps-->
-	<rooftopFlag> 0 </rooftopFlag> 					<!-- Rooftop flag (0-none, 1-log profile (default), 2-vortex) -->
-	<upwindCavityFlag> 0 </upwindCavityFlag> 			<!-- Upwind cavity flag (0-none, 1-Rockle, 2-MVP (default), 3-HMVP) -->
-	<streetCanyonFlag> 0 </streetCanyonFlag> 			<!-- Street canyon flag (0-none, 1-Roeckle w/ Fackrel (default)) -->
-	<streetIntersectionFlag> 0 </streetIntersectionFlag> 		<!--Street intersection flag (0-off, 1-on) -->
-	<wakeFlag> 0 </wakeFlag> 					<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle (default), 3-Area Scaled) -->
-	<sidewallFlag> 0 </sidewallFlag> 				<!-- Sidewall flag (0-off, 1-on (default)) -->
+
 	<maxIterations> 500 </maxIterations> 				<!-- Maximum number of iterations (default = 500) -->
 	<tolerance> 1e-9 </tolerance> 					<!-- Convergence criteria, error threshold (default = 1e-9) -->
 	<meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (original QES) (default), 1-Cut-cell method -->
@@ -52,7 +48,7 @@
 	</sensor>                      					<!-- End of sensor section -->
 
 </metParams>								<!-- End of meteorological parameters -->
-<canopies>
+<vegetationParams>
   <num_canopies>1</num_canopies>
   <Windbreak>
     <opticalPorosity>0.01</opticalPorosity>
@@ -64,7 +60,7 @@
     <width>1.0</width>
     <canopyRotation>0.0</canopyRotation>
   </Windbreak>
-</canopies>
+</vegetationParams>
 <turbParams>
   <method>3</method> <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
   <samples>2000</samples> <!-- Samples per air cell for ray-traced mixing length calculations -->
@@ -78,4 +74,6 @@
   <outputFields>w</outputFields>
   <outputFields>icell</outputFields> 
 </fileOptions>
+
+</QESWindsParameters>
 

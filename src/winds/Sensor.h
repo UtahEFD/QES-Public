@@ -70,16 +70,8 @@ public:
 
   Sensor(const std::string fileName)
   {
-    pt::ptree tree;
-
-    try {
-      pt::read_xml(fileName, tree);
-    } catch (boost::property_tree::xml_parser::xml_parser_error &e) {
-      std::cerr << "Error reading tree in" << fileName << "\n";
-      exit(EXIT_FAILURE);
-    }
-
-    parseTree(tree);
+    // read and parse the XML
+    parseXML(fileName, "sensor");
   }
 
 
@@ -119,17 +111,6 @@ public:
     parsePrimitive<float>(false, site_lat, "site_lat");
     parseMultiElements<TimeSeries>(false, TS, "timeSeries");
   }
-
-  /**
-   * :document this:
-   */
-  void parseTree(pt::ptree t)
-  {
-    setTree(t);
-    setParents("root");
-    parseValues();
-  }
-
 
   /**
    * Computes the wind velocity profile using Barnes scheme at the site's sensor.

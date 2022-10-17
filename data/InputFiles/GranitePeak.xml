@@ -1,3 +1,4 @@
+<QESWindsParameters>
 <simulationParameters>
 	<DEM>../../scratch/Granite_east.tif</DEM>				<!-- Address to DEM location-->	
 
@@ -51,4 +52,7 @@
   <outputFlag>1</outputFlag>
   <outputFields>all</outputFields> 
 </fileOptions>
+
+
+</QESWindsParameters>
 

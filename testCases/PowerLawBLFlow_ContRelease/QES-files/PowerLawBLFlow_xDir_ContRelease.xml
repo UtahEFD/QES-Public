@@ -1,3 +1,4 @@
+<QESPlumeParameters>
 <plumeParameters>
   <simDur> 2100.0 </simDur>
   <timeStep> 1.0 </timeStep>
@@ -43,3 +44,5 @@
   <wallReflection>stairstepReflection</wallReflection>
   <!--wallReflection>doNothing</wallReflection-->
 </boundaryConditions>
+</QESPlumeParameters>
+

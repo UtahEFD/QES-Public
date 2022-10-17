@@ -84,7 +84,7 @@ void CPUSolver::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool sol
     int iter = 0;
     float error;
     float max_error = 1.0;
-    int i_max, j_max, k_max;
+    //int i_max, j_max, k_max;
 
     std::cout << "Solving...\n";
     while (iter < itermax && max_error > tol) {

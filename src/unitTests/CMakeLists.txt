@@ -4,7 +4,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 add_library(unitTestLib ${LIB_TYPE} 
   util.h util.cpp)
 
-
 #FILE(GLOB files "*.h")
 #INSTALL(FILES ${files} DESTINATION include/unitTests)
 
@@ -26,7 +25,8 @@ cuda_add_executable(unitTestPlume
   test_PlumeGeneralData.h test_PlumeGeneralData.cpp test_PlumeGeneralData.cu
   mainPlumeTest.cpp)
 
-set(UNITTESTS 
+
+set(UNITTESTS
   unitTestTime
   unitTestWind
   unitTestTurbulence
@@ -40,17 +40,11 @@ foreach (unittest ${UNITTESTS})
     target_link_libraries(${unittest} qesOptix)
   ENDIF()
   target_link_libraries(${unittest} unitTestLib)
-  target_link_libraries(${unittest} ${Boost_PROGRAM_OPTIONS_LIBRARIES})
-  target_link_libraries(${unittest} ${Boost_FILESYSTEM_LIBRARIES})
-  target_link_libraries(${unittest} ${Boost_DATE_TIME_LIBRARIES})
-  target_link_libraries(${unittest} ${GDAL_LIBRARY})
-  target_link_libraries(${unittest} ${NETCDF_LIBRARIES_CXX})
-  target_link_libraries(${unittest} ${NETCDF_LIBRARIES_C})
-  #target_link_libraries(${unittest} cudadevrt)
-  target_link_libraries(${unittest} ${CUDA_LIBRARIES})
+  link_external_libraries(${unittest})
 
-  add_test(${unittest} ${unittest})
-
+  if (ENABLE_UNITTESTS)
+    add_test(${unittest} ${unittest})
+  endif (ENABLE_UNITTESTS)
 endforeach(unittest)
 
 #add_test(unitTest unitTest)

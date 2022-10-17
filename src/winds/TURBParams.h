@@ -43,6 +43,7 @@
 
 #include "util/ParseInterface.h"
 #include "util/Vector3.h"
+#include "util/QESout.h"
 
 /**
  * @class TURBParams
@@ -83,6 +84,7 @@ public:
     varname = "mixlength";// default name
     parsePrimitive<std::string>(false, varname, "varname");
 
+#ifdef HAS_OPTIX
     // defaults for local mixing sample rates -- used with ray
     // tracing methods
     if (methodLocalMixing == 3) {// OptiX
@@ -92,21 +94,27 @@ public:
     }
     parsePrimitive<int>(false, mlSamplesPerAirCell, "samples");
     if (methodLocalMixing == 3) {
-
       std::cout << "Setting samples per air cell for ray-traced mixing length to "
                 << mlSamplesPerAirCell << std::endl;
     }
-
+#else
+    if (methodLocalMixing == 3) {
+      QESout::warning("Optix not supported -> set method to serial (methodLocalMixing = 1)");
+      methodLocalMixing = 1;
+    }
+#endif
 
     if (methodLocalMixing < 0 || methodLocalMixing > 4) {
-      std::cout << "[WARNING] unknown local mixing method -> "
-                << "set method to 0 (height above terrain)" << std::endl;
+      std::string mess = "Unknown local mixing method -> ";
+      mess += "set method to height above terrain (methodLocalMixing = 0)";
+      QESout::warning(mess);
       methodLocalMixing = 0;
     }
 
     if ((methodLocalMixing == 4 || save2file == true) && (filename == "")) {
-      std::cout << "[WARNING] no local mixing file provided -> "
-                << "set method to 0 (height above terrain)" << std::endl;
+      std::string mess = "No local mixing file provided -> ";
+      mess += "set method to height above terrain(methodLocalMixing = 0) ";
+      QESout::warning(mess);
       methodLocalMixing = 0;
     }
     if (methodLocalMixing == 0 || methodLocalMixing == 4) {
