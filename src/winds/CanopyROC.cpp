@@ -12,9 +12,9 @@ void CanopyROC::orthog_vec(float d, float P[2], float Lx[2], float Ly[2], float 
   row_ortho[1] = sqrt(pow(d, 2) / alph);
   row_ortho[0] = sqrt(pow(d, 2) - pow(row_ortho[1], 2));
   float dist = 100000;
-
+  bool orthCase = 0;
   float orth_test[2];
-  float o_signed[2];
+  float o_signed[2] = { 0, 0 };
 
   orth_test[0] = P[0] + row_ortho[0];
   orth_test[1] = P[1] + row_ortho[1];
@@ -22,6 +22,7 @@ void CanopyROC::orthog_vec(float d, float P[2], float Lx[2], float Ly[2], float 
     o_signed[0] = row_ortho[0];
     o_signed[1] = row_ortho[1];
     dist = P2L(orth_test, Lx, Ly);
+    orthCase = 1;
   }
   orth_test[0] = P[0] - row_ortho[0];
   orth_test[1] = P[1] + row_ortho[1];
@@ -29,6 +30,7 @@ void CanopyROC::orthog_vec(float d, float P[2], float Lx[2], float Ly[2], float 
     o_signed[0] = -row_ortho[0];
     o_signed[1] = row_ortho[1];
     dist = P2L(orth_test, Lx, Ly);
+    orthCase = 1;
   }
 
   orth_test[0] = P[0] + row_ortho[0];
@@ -37,6 +39,7 @@ void CanopyROC::orthog_vec(float d, float P[2], float Lx[2], float Ly[2], float 
     o_signed[0] = row_ortho[0];
     o_signed[1] = -row_ortho[1];
     dist = P2L(orth_test, Lx, Ly);
+    orthCase = 1;
   }
 
   orth_test[0] = P[0] - row_ortho[0];
@@ -45,24 +48,17 @@ void CanopyROC::orthog_vec(float d, float P[2], float Lx[2], float Ly[2], float 
     o_signed[0] = -row_ortho[0];
     o_signed[1] = -row_ortho[1];
     dist = P2L(orth_test, Lx, Ly);
+    orthCase = 1;
+  }
+
+  if (orthCase == 0) {
+    std::cerr << "ERROR unable to find valid row-orthogonal vector in ROC model" << std::endl;
+    exit(EXIT_FAILURE);
   }
 
   row_ortho[0] = o_signed[0];
   row_ortho[1] = o_signed[1];
 }
-/*
-float CanopyROC::UV2compass(float u, float v){
-
-  if (u>0 && v>0){
-    
-  }
-
-
-  float unitDir = -(compDir- 90);
-
-  return compDir;
-}
-*/
 
 
 void CanopyROC::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, int building_id)
@@ -191,7 +187,7 @@ void CanopyROC::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, i
   float sensor_distance = 99999;
   float curr_dist;
   int num_sites = WID->metParams->sensors.size();
-  int nearest_sensor_i;// index of the sensor nearest to ROC block centroid
+  int nearest_sensor_i = 0;// index of the sensor nearest to ROC block centroid
   for (auto i = 0; i < num_sites; i++) {
     curr_dist = sqrt(pow((building_cent_x - WID->metParams->sensors[i]->site_xcoord), 2) + pow((building_cent_y - WID->metParams->sensors[i]->site_ycoord), 2));
     if (curr_dist < sensor_distance) {
@@ -244,8 +240,8 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   float curr_V[2];
   float d2V;
   float wwdV_current;// windward distance to current vertex
-  int idS;
-  int idE;
+  int idS = 0;
+  int idE = polygonVertices.size() - 2;
   for (int id = 0; id < polygonVertices.size() - 1; id++) {
     curr_V[0] = polygonVertices[id].x_poly;
     curr_V[1] = polygonVertices[id].y_poly;
@@ -359,14 +355,14 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   float l_ud = 0.5 * H;// horizontal length of UD zone (distance from the vine that it extends to in the windward direction)
   float z_ud;// upper bound of UD zone at current i,j location, if no understory
   float H_ud = 0.6 * H;// max height of UD (occurs where it attaches at the windward side of a vine)
-  float br;// blend rate, used in the blending function that smoothes the UD zone into the wake
+  float br = 0;// blend rate, used in the blending function that smoothes the UD zone into the wake
   float x_ud;// horizontal distance in the UD zone. Measured orthogonally from the "upwindest" side of the vine
   float u_def = 0.0;// velocity deficit at a point in the UD zone
   // UD zone variables (if understory)
   float z_udTOP;// upper bound of UD zone, if there's an understory
   float z_udBOT;// lower bound of UD zone, if there's an understory
-  float brTOP;//blend rate for top half of UD zone, if there's an understory
-  float brBOT;//blend rate for bottom half of UD zone, if there's an understory
+  float brTOP = 0;//blend rate for top half of UD zone, if there's an understory
+  float brBOT = 0;//blend rate for bottom half of UD zone, if there's an understory
   float a_ud;// a constant
 
   // V_c parameterization parameters
@@ -395,7 +391,7 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   vineLm.resize(np_cc_v, 0);
   float a_uw = 1;
 
-  float a_local;// the attenuation due to the closest upwind row only
+  float a_local = 1;// the attenuation due to the closest upwind row only
   float u_c0, v_c0;// u0 and v0 rotated into row-aligned coordinates
   float u_c, v_c;// altered (parameterized) u and v, in row-aligned coordinates
 
@@ -437,6 +433,7 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
       a_exp = exp((log(0.01) / (7.5 * H)) * d_dw_local);
 
       // find k-node of mid-canopy at current i,j location
+      k_mid = 0;
       for (auto k = WGD->canopy->canopy_bot_index[icell_2d]; k < WGD->canopy->canopy_top_index[icell_2d]; k++) {
         if (WGD->z[k] > (z_b + understory_height + (H - understory_height) / 2)) {
           break;
