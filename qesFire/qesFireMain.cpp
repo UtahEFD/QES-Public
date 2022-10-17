@@ -171,34 +171,35 @@ int main(int argc, char *argv[])
     // ///////////////////////////// 
  
     /** 
-     * Create Fire Mapper
+     * Create Fire Map
      **/
 
     Fire* fire = new Fire(WID, WGD);
  
-      // create FIREOutput manager
-    /*
-    FIREOutput* fireOutput = new FIREOutput(WGD,fire,arguments.netCDFFileFire);
-    */
+    /**
+     * Create FIREOutput manager
+     **/
     
     std::vector<QESNetCDFOutput *> outFire;
     std::cout << "test" << std::endl;
     outFire.push_back(new FIREOutput(WGD, fire, arguments.netCDFFileFireOut));
 
 
-    // time variables
+    /**
+     * Time variables to track fire time and sensor timesteps
+     **/ 
     QEStime simTimeStart = WGD->timestamp[0];
     QEStime simTimeCurr = simTimeStart;
 
-    // save any fire data (at time 0)
-  /*
-    outputFire->save(simTimeStart);
-  */    
-    std::vector<float> Fu0;
-        std::vector<float> Fv0;
-        std::vector<float> Fw0;
+  
+    std::vector<float> Fu0; //
+    std::vector<float> Fv0;
+    std::vector<float> Fw0;
 
-	// Loop  for sensor time data
+	/**
+	 * Loop  for sensor time data
+	 **/
+	
     for (int index = 0; index < WGD->totalTimeIncrements; index++) {
       std::cout << "----------------------------------------" << std::endl;
       std::cout << "New Sensor Data" << std::endl;
@@ -227,13 +228,13 @@ int main(int argc, char *argv[])
       }
       
       // save initial fields to reset after each time+fire loop
-      Fu0 = WGD->u0;
-      Fv0 = WGD->v0;
-      Fw0 = WGD->w0;
+      Fu0 = WGD->u0; ///< Initial u-velocity for sensor timestep
+      Fv0 = WGD->v0; ///< Initial v-velocity for sensor timestep
+      Fw0 = WGD->w0; ///< Initial w-velocity for sensor timestep
       
       // Run fire model
       simTimeCurr = WGD->timestamp[index];
-      QEStime endtime;
+      QEStime endtime; ///< End time for fire time loop (
       if (WGD->totalTimeIncrements == 1){
 	endtime = WGD->timestamp[index] + WID->fires->fireDur;
       } else if (index == WGD->totalTimeIncrements - 1) {
@@ -255,14 +256,19 @@ int main(int argc, char *argv[])
 	    
     	std::chrono::duration<float> elapsed = finish - start;
     	std::cout << "Plume solve: elapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time
+
 	/**
-        * Run run wind solver 
-	**/
-	     
+        * Run run wind solver to calculate mass conserved velocity field including fire-indeuced winds
+	**/  
 	solver->solve(WID, WGD, !arguments.solveWind);
 
+	/**
+	* Run ROS model to calculate spread rates with updated winds
+	**/
 	fire->run(solver, WGD);
-        // move the fire
+        /**
+	 * Advance fire front through level set method
+	 **/
         fire->move(solver, WGD);
         
 
