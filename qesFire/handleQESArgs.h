@@ -71,6 +71,6 @@ public:
   // QES-Fire output files
   bool fireOutput;
   std::string netCDFFileFireOut = "";
-  
+
 private:
 };

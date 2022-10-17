@@ -69,23 +69,24 @@ using namespace boost::posix_time;
 
 int main(int argc, char *argv[])
 {
-    // QES-Winds - Version output information
-    std::string Revision = "0";
-    std::cout << "QES-Fire " << "1.0.0" << std::endl;
+  // QES-Winds - Version output information
+  std::string Revision = "0";
+  std::cout << "QES-Fire "
+            << "1.0.0" << std::endl;
 
 #ifdef HAS_OPTIX
-    std::cout << "OptiX is available!" << std::endl;
+  std::cout << "OptiX is available!" << std::endl;
 #endif
 
-    // ///////////////////////////////////
-    // Parse Command Line arguments
-    // ///////////////////////////////////
+  // ///////////////////////////////////
+  // Parse Command Line arguments
+  // ///////////////////////////////////
 
-    // Command line arguments are processed in a uniform manner using
-    // cross-platform code.  Check the WINDSArgs class for details on
-    // how to extend the arguments.
-    QESArgs arguments;
-    arguments.processArguments(argc, argv);
+  // Command line arguments are processed in a uniform manner using
+  // cross-platform code.  Check the WINDSArgs class for details on
+  // how to extend the arguments.
+  QESArgs arguments;
+  arguments.processArguments(argc, argv);
 
   // ///////////////////////////////////
   // Read and Process any Input for the system
@@ -117,7 +118,7 @@ int main(int argc, char *argv[])
   // Generate the general WINDS data from all inputs
   WINDSGeneralData *WGD = new WINDSGeneralData(WID, arguments.solveType);
 
-  
+
   // create WINDS output classes
   std::vector<QESNetCDFOutput *> outputVec;
   if (arguments.visuOutput) {
@@ -126,19 +127,18 @@ int main(int argc, char *argv[])
   if (arguments.wkspOutput) {
     outputVec.push_back(new WINDSOutputWorkspace(WGD, arguments.netCDFFileWksp));
   }
-  
-    
 
-    // Generate the general TURB data from WINDS data
-    // based on if the turbulence output file is defined
-    TURBGeneralData* TGD = nullptr;
-    if (arguments.compTurb) {
-        TGD = new TURBGeneralData(WID,WGD);
-    }
-    if (arguments.compTurb && arguments.turbOutput) {
-        outputVec.push_back(new TURBOutput(TGD,arguments.netCDFFileTurb));
-    }
-  
+
+  // Generate the general TURB data from WINDS data
+  // based on if the turbulence output file is defined
+  TURBGeneralData *TGD = nullptr;
+  if (arguments.compTurb) {
+    TGD = new TURBGeneralData(WID, WGD);
+  }
+  if (arguments.compTurb && arguments.turbOutput) {
+    outputVec.push_back(new TURBOutput(TGD, arguments.netCDFFileTurb));
+  }
+
   // //////////////////////////////////////////
   //
   // Run the QES-Winds Solver
@@ -162,102 +162,100 @@ int main(int argc, char *argv[])
   }
 
 
+  // /////////////////////////////
+  //
+  // Run Fire Code
+  //
+  // /////////////////////////////
 
-
-    // /////////////////////////////
-    //
-    // Run Fire Code
-    //
-    // ///////////////////////////// 
- 
-    /** 
+  /** 
      * Create Fire Map
      **/
 
-    Fire* fire = new Fire(WID, WGD);
- 
-    /**
+  Fire *fire = new Fire(WID, WGD);
+
+  /**
      * Create FIREOutput manager
      **/
-    
-    std::vector<QESNetCDFOutput *> outFire;
-    std::cout << "test" << std::endl;
-    outFire.push_back(new FIREOutput(WGD, fire, arguments.netCDFFileFireOut));
+
+  std::vector<QESNetCDFOutput *> outFire;
+  std::cout << "test" << std::endl;
+  outFire.push_back(new FIREOutput(WGD, fire, arguments.netCDFFileFireOut));
+
+
+  /**
+     * Time variables to track fire time and sensor timesteps
+     **/
+  QEStime simTimeStart = WGD->timestamp[0];
+  QEStime simTimeCurr = simTimeStart;
+
+
+  std::vector<float> Fu0;//
+  std::vector<float> Fv0;
+  std::vector<float> Fw0;
+
+  /**
+	 * Loop  for sensor time data
+	 **/
+
+  for (int index = 0; index < WGD->totalTimeIncrements; index++) {
+    std::cout << "----------------------------------------" << std::endl;
+    std::cout << "New Sensor Data" << std::endl;
+    std::cout << "----------------------------------------" << std::endl;
+
+    /**
+       * Reset icellflag values
+       **/
+    WGD->resetICellFlag();
+
+    /**
+       * Create initial velocity field from the new sensors
+       **/
+    WGD->applyWindProfile(WID, index, arguments.solveType);
+
+    /** 
+       * Apply parametrizations
+       **/
+    WGD->applyParametrizations(WID);
+
+    /**
+       * Run WINDS simulation code
+       **/
+    solver->solve(WID, WGD, !arguments.solveWind);
+
+    std::cout << "Solver done!\n";
 
 
     /**
-     * Time variables to track fire time and sensor timesteps
-     **/ 
-    QEStime simTimeStart = WGD->timestamp[0];
-    QEStime simTimeCurr = simTimeStart;
-
-  
-    std::vector<float> Fu0; //
-    std::vector<float> Fv0;
-    std::vector<float> Fw0;
-
-	/**
-	 * Loop  for sensor time data
-	 **/
-	
-    for (int index = 0; index < WGD->totalTimeIncrements; index++) {
-      std::cout << "----------------------------------------" << std::endl;
-      std::cout << "New Sensor Data" << std::endl;
-      std::cout << "----------------------------------------" << std::endl;
-      
-      /**
-       * Reset icellflag values
-       **/
-      WGD->resetICellFlag();
-
-      /**
-       * Create initial velocity field from the new sensors
-       **/
-      WGD->applyWindProfile(WID, index, arguments.solveType);
-    
-      /** 
-       * Apply parametrizations
-       **/
-      WGD->applyParametrizations(WID);
-
-      /**
-       * Run WINDS simulation code
-       **/
-      solver->solve(WID, WGD, !arguments.solveWind );
-
-      std::cout << "Solver done!\n";
-
-      
-      /**
        * Run turbulence if specified
        **/
- 
-      if(TGD != nullptr) {
-        TGD->run();
-      }
-      
-      /**
+
+    if (TGD != nullptr) {
+      TGD->run();
+    }
+
+    /**
        * Save initial fields from sensor time to reset after each time+fire loop
        **/
-      Fu0 = WGD->u0; ///< Initial u-velocity for sensor timestep
-      Fv0 = WGD->v0; ///< Initial v-velocity for sensor timestep
-      Fw0 = WGD->w0; ///< Initial w-velocity for sensor timestep
-      
+    Fu0 = WGD->u0;///< Initial u-velocity for sensor timestep
+    Fv0 = WGD->v0;///< Initial v-velocity for sensor timestep
+    Fw0 = WGD->w0;///< Initial w-velocity for sensor timestep
 
-      simTimeCurr = WGD->timestamp[index]; ///< Simulation time for current sensor time
-      QEStime endtime; ///< End time for fire time loop 
-      if (WGD->totalTimeIncrements == 1){
-	endtime = WGD->timestamp[index] + WID->fires->fireDur;
-      } else if (index == WGD->totalTimeIncrements - 1) {
-	endtime = WGD->timestamp[index] + (WGD->timestamp[index] - WGD->timestamp[index-1]);
-      } else {
-        endtime = WGD->timestamp[index+1];
-      }
 
-      /**
+    simTimeCurr = WGD->timestamp[index];///< Simulation time for current sensor time
+    QEStime endtime;///< End time for fire time loop
+    if (WGD->totalTimeIncrements == 1) {
+      endtime = WGD->timestamp[index] + WID->fires->fireDur;
+    } else if (index == WGD->totalTimeIncrements - 1) {
+      endtime = WGD->timestamp[index] + (WGD->timestamp[index] - WGD->timestamp[index - 1]);
+    } else {
+      endtime = WGD->timestamp[index + 1];
+    }
+
+    /**
        * Fire time loop for current sensor time
        **/
-      
+
     while (simTimeCurr < endtime) {
       /**
        * Run ROS model to get initial spread rate and fire properties
@@ -267,16 +265,16 @@ int main(int argc, char *argv[])
       /**
        * Calculate fire-induced winds from burning cells
        **/
-      auto start = std::chrono::high_resolution_clock::now(); // Start recording executiontime 
+      auto start = std::chrono::high_resolution_clock::now();// Start recording executiontime
       fire->potential(WGD);
-      auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
-	    
+      auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
+
       std::chrono::duration<float> elapsed = finish - start;
-      std::cout << "Plume solve: elapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time for fire-induced winds
+      std::cout << "Plume solve: elapsed time: " << elapsed.count() << " s\n";// Print out elapsed execution time for fire-induced winds
 
       /**
        * Run run wind solver to calculate mass conserved velocity field including fire-induced winds
-       **/  
+       **/
       solver->solve(WID, WGD, !arguments.solveWind);
 
       /**
@@ -287,37 +285,32 @@ int main(int argc, char *argv[])
       /**
        * Advance fire front through level set method
        **/
-       fire->move(solver, WGD);
-        
+      fire->move(solver, WGD);
 
- 
-       /**
+
+      /**
 	* Advance fire time from variable fire timestep
-	**/ 
-       simTimeCurr += fire->dt;
-       std::cout << "time = " << simTimeCurr <<endl;
+	**/
+      simTimeCurr += fire->dt;
+      std::cout << "time = " << simTimeCurr << endl;
 
 
-       /**
+      /**
 	* Save fire data to netCDF file
 	**/
-	for (auto outItr = outFire.begin(); outItr != outFire.end(); ++outItr){
-	  (*outItr)->save(simTimeCurr);
-	}
+      for (auto outItr = outFire.begin(); outItr != outFire.end(); ++outItr) {
+        (*outItr)->save(simTimeCurr);
+      }
 
-	/**
+      /**
 	 * Reset wind fieldsto initial values for sensor timestep
 	 **/
-	WGD->u0 = Fu0;
-	WGD->v0 = Fv0;
-	WGD->w0 = Fw0;
-    }        
-
+      WGD->u0 = Fu0;
+      WGD->v0 = Fv0;
+      WGD->w0 = Fw0;
     }
+  }
 
-    
-    exit(EXIT_SUCCESS);
+
+  exit(EXIT_SUCCESS);
 }
-
-
-

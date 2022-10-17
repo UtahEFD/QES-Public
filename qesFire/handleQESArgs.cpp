@@ -132,7 +132,7 @@ void QESArgs::processArguments(int argc, char *argv[])
       netCDFFileFireOut.append("_fireOutput.nc");
       std::cout << "Fire NetCDF output file set to " << netCDFFileFireOut << std::endl;
     }
-    
+
   } else {
     std::cout << "No output basename set -> output turned off " << std::endl;
     visuOutput = false;

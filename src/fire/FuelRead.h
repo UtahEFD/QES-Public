@@ -38,7 +38,7 @@
 #include "util/Vector3Int.h"
 
 #include "gdal_priv.h"
-#include "cpl_conv.h" // for CPLMalloc()
+#include "cpl_conv.h"// for CPLMalloc()
 #include "ogrsf_frmts.h"
 
 #include "winds/Cell.h"
@@ -59,7 +59,6 @@ class WINDSInputData;
 class FuelRead
 {
 public:
-
   /**
    * Constructs a GIS Surface Fuel Model for use with QES.
    *
@@ -77,13 +76,11 @@ public:
    */
 
   FuelRead(const std::string &filename,
-                 std::tuple<int, int> dim,
-	   std::tuple<float, float> cellSize);
+           std::tuple<int, int> dim,
+           std::tuple<float, float> cellSize);
 
   std::vector<int> fuelField;
-
 };
 
 
 #endif
-
