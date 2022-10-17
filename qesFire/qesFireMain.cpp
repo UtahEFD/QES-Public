@@ -205,36 +205,47 @@ int main(int argc, char *argv[])
       std::cout << "New Sensor Data" << std::endl;
       std::cout << "----------------------------------------" << std::endl;
       
-          // Reset icellflag values
+      /**
+       * Reset icellflag values
+       **/
       WGD->resetICellFlag();
 
-      // Create initial velocity field from the new sensors
+      /**
+       * Create initial velocity field from the new sensors
+       **/
       WGD->applyWindProfile(WID, index, arguments.solveType);
     
-      // Apply parametrizations
+      /** 
+       * Apply parametrizations
+       **/
       WGD->applyParametrizations(WID);
 
-      // Run WINDS simulation code
+      /**
+       * Run WINDS simulation code
+       **/
       solver->solve(WID, WGD, !arguments.solveWind );
 
       std::cout << "Solver done!\n";
 
       
-      // Run turbulence
-      //
+      /**
+       * Run turbulence if specified
+       **/
  
       if(TGD != nullptr) {
         TGD->run();
       }
       
-      // save initial fields to reset after each time+fire loop
+      /**
+       * Save initial fields from sensor time to reset after each time+fire loop
+       **/
       Fu0 = WGD->u0; ///< Initial u-velocity for sensor timestep
       Fv0 = WGD->v0; ///< Initial v-velocity for sensor timestep
       Fw0 = WGD->w0; ///< Initial w-velocity for sensor timestep
       
-      // Run fire model
-      simTimeCurr = WGD->timestamp[index];
-      QEStime endtime; ///< End time for fire time loop (
+
+      simTimeCurr = WGD->timestamp[index]; ///< Simulation time for current sensor time
+      QEStime endtime; ///< End time for fire time loop 
       if (WGD->totalTimeIncrements == 1){
 	endtime = WGD->timestamp[index] + WID->fires->fireDur;
       } else if (index == WGD->totalTimeIncrements - 1) {
@@ -243,47 +254,60 @@ int main(int argc, char *argv[])
         endtime = WGD->timestamp[index+1];
       }
 
+      /**
+       * Fire time loop for current sensor time
+       **/
+      
     while (simTimeCurr < endtime) {
-        // run ROS model to get new spread rate and fire properties
-        fire->run(solver, WGD);
+      /**
+       * Run ROS model to get initial spread rate and fire properties
+       **/
+      fire->run(solver, WGD);
 
-        // calculate plume potential
-	auto start = std::chrono::high_resolution_clock::now(); // Start recording executiontime
+      /**
+       * Calculate fire-induced winds from burning cells
+       **/
+      auto start = std::chrono::high_resolution_clock::now(); // Start recording executiontime 
+      fire->potential(WGD);
+      auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
 	    
-	fire->potential(WGD);
-	    
-	auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
-	    
-    	std::chrono::duration<float> elapsed = finish - start;
-    	std::cout << "Plume solve: elapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time
+      std::chrono::duration<float> elapsed = finish - start;
+      std::cout << "Plume solve: elapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time for fire-induced winds
 
-	/**
-        * Run run wind solver to calculate mass conserved velocity field including fire-indeuced winds
-	**/  
-	solver->solve(WID, WGD, !arguments.solveWind);
+      /**
+       * Run run wind solver to calculate mass conserved velocity field including fire-induced winds
+       **/  
+      solver->solve(WID, WGD, !arguments.solveWind);
 
-	/**
-	* Run ROS model to calculate spread rates with updated winds
-	**/
-	fire->run(solver, WGD);
-        /**
-	 * Advance fire front through level set method
-	 **/
-        fire->move(solver, WGD);
+      /**
+       * Run ROS model to calculate spread rates with updated winds
+       **/
+      fire->run(solver, WGD);
+
+      /**
+       * Advance fire front through level set method
+       **/
+       fire->move(solver, WGD);
         
 
  
-        // advance time 
-        simTimeCurr += fire->dt;
-	std::cout << "time = " << simTimeCurr <<endl;
+       /**
+	* Advance fire time from variable fire timestep
+	**/ 
+       simTimeCurr += fire->dt;
+       std::cout << "time = " << simTimeCurr <<endl;
 
 
-	// save any fire data
+       /**
+	* Save fire data to netCDF file
+	**/
 	for (auto outItr = outFire.begin(); outItr != outFire.end(); ++outItr){
 	  (*outItr)->save(simTimeCurr);
 	}
 
-	// reset wind fields
+	/**
+	 * Reset wind fieldsto initial values for sensor timestep
+	 **/
 	WGD->u0 = Fu0;
 	WGD->v0 = Fv0;
 	WGD->w0 = Fw0;

@@ -5,7 +5,7 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd,Fire* fire,std::string output_file)
 {
 
   std::cout << "[FireOutput] set up NetCDF file " << output_file <<std::endl;
-    output_fields={"t_f","x_f","y_f","z_f","u_f","v_f","w_f","icell_f","terrain_f",
+    output_fields={"t","x","y","z","u","v","w","icell","terrain",
                    "burn","fuel"};
 
     // copy of wgd pointer
@@ -61,28 +61,28 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd,Fire* fire,std::string output_file)
     // create attributes space dimensions
     std::vector<NcDim> dim_vect_x;
     dim_vect_x.push_back(NcDim_x);
-    createAttVector("x_f","x-distance","m",dim_vect_x,&x_out);
+    createAttVector("x","x-distance","m",dim_vect_x,&x_out);
     std::vector<NcDim> dim_vect_y;
     dim_vect_y.push_back(NcDim_y);
-    createAttVector("y_f","y-distance","m",dim_vect_y,&y_out);
+    createAttVector("y","y-distance","m",dim_vect_y,&y_out);
     std::vector<NcDim> dim_vect_z;
     dim_vect_z.push_back(NcDim_z);
-    createAttVector("z_f","z-distance","m",dim_vect_z,&z_out);
+    createAttVector("z","z-distance","m",dim_vect_z,&z_out);
 
 
-    
+    /*
     // create attributes for time dimension
     std::vector<NcDim> dim_vect_t;
     dim_vect_t.push_back(NcDim_t);
     createAttScalar("t_f","time","s",dim_vect_t,&time);
-
+    */
     
     // create 2D vector (x,y- time independent)
     std::vector<NcDim> dim_vect_2d;
     dim_vect_2d.push_back(NcDim_y);
     dim_vect_2d.push_back(NcDim_x);
     // create attributes
-    createAttVector("terrain_f","terrain height","m",dim_vect_2d,&(wgd_->terrain));
+    createAttVector("terrain","terrain height","m",dim_vect_2d,&(wgd_->terrain));
     createAttVector("fuel","fuel type","--",dim_vect_2d,&(fire_->fuel_map));
 
     // create 3D vector (x,y,t)
@@ -102,10 +102,10 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd,Fire* fire,std::string output_file)
     dim_vect_4d.push_back(NcDim_y);
     dim_vect_4d.push_back(NcDim_x);
     // create attributes for velocity
-    createAttVector("u_f","x-component velocity","m s-1",dim_vect_4d,&u_out);
-    createAttVector("v_f","y-component velocity","m s-1",dim_vect_4d,&v_out);
-    createAttVector("w_f","z-component velocity","m s-1",dim_vect_4d,&w_out);
-    createAttVector("icell_f","icell flag value","--",dim_vect_4d,&icellflag_out);
+    createAttVector("u","x-component velocity","m s-1",dim_vect_4d,&u_out);
+    createAttVector("v","y-component velocity","m s-1",dim_vect_4d,&v_out);
+    createAttVector("w","z-component velocity","m s-1",dim_vect_4d,&w_out);
+    createAttVector("icell","icell flag value","--",dim_vect_4d,&icellflag_out);
 
   
     // create output fields

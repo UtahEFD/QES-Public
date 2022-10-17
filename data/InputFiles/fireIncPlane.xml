@@ -6,7 +6,7 @@
     <domain> 50 50 200 </domain> <!-- nx,ny,nz-->
 	<cellSize> 1 1 1 </cellSize> <!-- dx, dy,dz [Meters]-->	
 	<verticalStretching> 0 </verticalStretching>
-	<totalTimeIncrements> 240 </totalTimeIncrements>
+	<totalTimeIncrements> 2 </totalTimeIncrements>
 	<!--UTCConversion> 0 </UTCConversion-->
 	<!--Epoch> 1510930800 </Epoch-->
 	<rooftopFlag> 1 </rooftopFlag>

@@ -1,5 +1,5 @@
 <simulationParameters>
-	<DEM>../data/GISFiles/L2F_elevation40_UTM.tif</DEM>			<!-- Address to DEM location -->
+	<DEM>../GISFiles/L2F_elevation40_UTM.tif</DEM>			<!-- Address to DEM location -->
 
   	<halo_x> 16.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters) -->
   	<halo_y> 16.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters) -->
@@ -8,7 +8,7 @@
   	<cellSize> 15.5 15.5 0.5 </cellSize> 			<!-- Mesh resolution (meters)-->
 
 	<verticalStretching> 0 </verticalStretching>
-	<totalTimeIncrements> 11160 </totalTimeIncrements>
+	<totalTimeIncrements> 1 </totalTimeIncrements>
 	<rooftopFlag> 1 </rooftopFlag>
 	<upwindCavityFlag> 2 </upwindCavityFlag>
 	<streetCanyonFlag> 1 </streetCanyonFlag>
@@ -86,6 +86,8 @@
 
 <fires>
 	<numFires> 1 </numFires>
+	<!--fireDur> 11600 </fireDur-->
+	<fireDur> 100 </fireDur>
 	<fuelType> 3 </fuelType>
 	<fmc> 0.14 </fmc>			<!-- Fuel moisture -->
 	<fuelMap>../data/FireFiles/L2F_fuel40_UTM.tif</fuelMap>
