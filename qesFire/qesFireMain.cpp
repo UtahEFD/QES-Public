@@ -37,7 +37,7 @@
 
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
-#include "util/QEStool.h"
+#include "util/QESout.h"
 #include "util/QESNetCDFOutput.h"
 
 #include "handleQESArgs.h"
@@ -96,12 +96,12 @@ int main(int argc, char *argv[])
   //WINDSInputData* WID = parseXMLTree(arguments.quicFile);
   WINDSInputData *WID = new WINDSInputData(arguments.qesWindsParamFile);
   if (!WID) {
-    QEStool::error("QES Input file: " + arguments.qesWindsParamFile + " not able to be read successfully.");
+    QESout::error("QES Input file: " + arguments.qesWindsParamFile + " not able to be read successfully.");
   }
 
   // Checking if
   if (arguments.compTurb && !WID->turbParams) {
-    QEStool::error("Turbulence model is turned on without turbParams in QES Intput file "
+    QESout::error("Turbulence model is turned on without turbParams in QES Intput file "
                    + arguments.qesWindsParamFile);
   }
 
@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
       WID->simParams->DTE_heightField->outputOBJ(arguments.filenameTerrain);
       std::cout << "OBJ created....\n";
     } else {
-      QEStool::error("No dem file specified as input");
+      QESout::error("No dem file specified as input");
     }
   }
   // Generate the general WINDS data from all inputs
@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
     std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
     solver = new SharedMemory(WID, WGD);
   } else {
-    QEStool::error("Invalid solve type");
+    QESout::error("Invalid solve type");
   }
 
 

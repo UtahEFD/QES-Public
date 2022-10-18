@@ -1,3 +1,4 @@
+<QESWindsParameters>
 <simulationParameters>
 	<DEM>../GISFiles/L2F_elevation40_UTM.tif</DEM>			<!-- Address to DEM location -->
 
@@ -109,3 +110,5 @@
 	<outputFields>w</outputFields>
 	<outputFields>icell</outputFields>
 </fileOptions>
+</QESWindsParameters>
+
