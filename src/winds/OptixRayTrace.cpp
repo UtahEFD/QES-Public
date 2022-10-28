@@ -467,7 +467,12 @@ void OptixRayTrace::createModule()
   OptixModuleCompileOptions module_compile_options = {};
   module_compile_options.maxRegisterCount = OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT;
   module_compile_options.optLevel = OPTIX_COMPILE_OPTIMIZATION_DEFAULT;
+#if OPTIX_VERSION >= 70400
+  // 7.4 no longer has 'lineinfo'
+  module_compile_options.debugLevel = OPTIX_COMPILE_DEBUG_LEVEL_MINIMAL;
+#else
   module_compile_options.debugLevel = OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO;
+#endif
 
   // pipeline compile options
   //  state.pipeline_compile_options.usesMotionBlur = false;
