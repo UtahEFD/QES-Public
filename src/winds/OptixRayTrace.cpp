@@ -37,7 +37,7 @@
 #include <optix_function_table_definition.h>
 
 #define TEST 0// Set to true for ground-only AS
-#define GEN_FILE 1// Generate mixing length output file for testing
+#define GEN_FILE 0// Generate mixing length output file for testing
 
 OptixRayTrace::OptixRayTrace(std::vector<Triangle *> tris)
 {
@@ -59,8 +59,6 @@ OptixRayTrace::~OptixRayTrace()
 
 static void context_log_cb(unsigned int level, const char *tag, const char *message, void * /*cbdata*/)
 {
-
-
   std::cerr << "[level, tag, message] = ["
             << level << ", " << tag << ", " << message << "]"
             << "\n";
