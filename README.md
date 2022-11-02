@@ -59,16 +59,16 @@ Additionally, the code can use NVIDIA's OptiX to accelerate various computations
 
 ## Building the Code
 
-On the private repository, 
-The most active development occurs in the *workingBranch*. We suggest you use that branch at this time.  You can checkout this branch with the following git command:
+On the public repository, the most recent released version of the code is available in the *main* branch. 
 
+On the private repository, the most recent stable version of code is available in the *main* branch. The most active development occurs in the *workingBranch*. We suggest you use the main branch for production and the workingBranch for the most recent feature. You can checkout this branch with the following git command:
 ```
 git checkout workingBranch
 ```
 If you are unsure about which branch you are on, the ``` git status ``` command can provide you with this information.
 
 
-### Building on general Linux system
+### Building on General Linux System
 
 We separate the build 
 ```
@@ -87,7 +87,7 @@ The code does run on the CHPC cluster. You need to make sure the correct set of 
 - GCC 5.4.0 and CUDA 8.0
 - CCC 8.1.0 and CUDA 10.1 (10.2)
 - GCC 8.5.0 and CUDA 11.4
-If you build with OptiX support, you will need to use CUDA 10.2 or newer configuration. Any builds (with or without OptiX) with CUDA 10.2 are preferred if you don't know which to use. Older configurations are provided in `CHPC/oldBuilds.md`.
+If you build with OptiX support, you will need to use CUDA 10.2 or newer configuration. Any builds (with or without OptiX) with CUDA 11.4 are preferred if you don't know which to use. Older configurations are provided in `CHPC/oldBuilds.md`.
 
 After logging into your CHPC account, you will need to load specific modules. In the following sections, we outline the modules that need to be loaded along with the various cmake command-line calls that specify the exact locations of module installs on the CHPC system.  
 
@@ -125,18 +125,23 @@ cmake -DCUDA_TOOLKIT_DIR=/uufs/chpc.utah.edu/sys/installdir/cuda/11.4.0 -DCUDA_S
 ```
 Upon completion of the above commands, you can go about editing and building mostly as normal, and issue the `make` command in your build folder to compile the source.
 
-#### Compiling the Code and Running on CHPC
-
 After you've created the Makefiles with the cmake commands above, the code can be compiled on CHPC:
-
 ```
 make
 ```
 Note you *may* need to type make a second time due to a build bug, especially on the CUDA 8.0 build.
 
-To run QES-Winds, you can take the following slurm template and run on CHPC.  We'd suggest placing it in a ```run``` folder at the same level as your build folder.  Make sure you change the various sbatch parameters as needed for your access to CHPC.
+### Build Types
+
+The code support several build types: *Debug*, *Release*, *RelWithDebInfo*, *MinSizeRel*. You can select the build type 
+```
+cmake -DCMAKE_BUILD_TYPE=Release ..
+```
+- *Release* is recommanded for production
 
 ## Running QES
+
+To run QES-Winds, you can take the following slurm template and run on CHPC.  We'd suggest placing it in a ```run``` folder at the same level as your build folder.  Make sure you change the various sbatch parameters as needed for your access to CHPC.
 
 ### slurm Template (for CUDA 10.1 build)
 ```
@@ -197,4 +202,12 @@ ctest -N		# get list of tests
 ctest -R $testname	# launch only $testname
 ```
 List of tests and testing option will be added here.
+
+## QES Published Papers
+1. B. Bozorgmehr et al., “Utilizing dynamic parallelism in CUDA to accelerate a 3D red-black successive over relaxation wind-field solver,” *Environ Modell Softw*, vol. 137, p. 104958, 2021, doi: [10.1016/j.envsoft.2021.104958](https://doi.org/10.1016/j.envsoft.2021.104958).
+
+2. F. Margairaz et al., “Development and evaluation of an isolated-tree flow model for neutral-stability conditions,” Urban Clim, vol. 42, p. 101083, 2022, doi: [10.1016/j.uclim.2022.101083](https://doi.org/10.1016/j.uclim.2022.101083).
+
+3. M. J. Moody et al., “QES-Fire: a dynamically coupled fast-response wildfire model,” *Int J Wildland Fire*, vol. 31, no. 3, pp. 306–325, 2022, doi: [10.1071/wf21057](https://doi.org/https://doi.org/10.1071/WF21057).
+
 
