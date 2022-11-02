@@ -81,7 +81,7 @@ You can then build the source:
 make
 ```
 
-### Instructions for CHPC Cluster
+### Building on CHPC Cluster (University of Utah)
 
 The code does run on the CHPC cluster. You need to make sure the correct set of modules are loaded.  Currently, we have tested a few configurations that use
 - GCC 5.4.0 and CUDA 8.0
