@@ -11,20 +11,9 @@
 
 ## QES-Winds
 
-QES-Winds is a fast response 3D diagnostic urban wind model written in
-C++ and uses NVIDIA's CUDA framework to accelerate a mass-conserving
-wind-field solver. QES-Winds uses a variational analysis technique to
-ensure the conservation of mass rather than slower yet more
-physics-based solvers that include conservation of momentum. QES-Winds
-minimizes the difference between an initial wind field that is
-specified using empirical parameterizations and thefinal wind field.
-This method requires the solution of a Poisson equation for Lagrange
-multipliers. The Poisson equation is solved using the Successive
-Over-Relaxation (SOR) method (an iterative solver), which is a variant
-of the Gauss-Seidel method with more rapid convergence. QES-Winds
-utilizes the concept of dynamic parallelism in NVIDIAs parallel
-computing-based Graphics Processing Unit (or GPU) API, CUDA, to
-substantially accelerate wind simulations.
+QES-Winds is a fast response 3D diagnostic urban wind model written in C++ and uses NVIDIA's CUDA framework to accelerate a mass-conserving wind-field solver. QES-Winds uses a variational analysis technique to ensure the conservation of mass rather than slower yet more physics-based solvers that include conservation of momentum. QES-Winds minimizes the difference between an initial wind field that is specified using empirical parameterizations and thefinal wind field. This method requires the solution of a Poisson equation for Lagrange multipliers. The Poisson equation is solved using the Successive Over-Relaxation (SOR) method (an iterative solver), which is a variant of the Gauss-Seidel method with more rapid convergence. QES-Winds utilizes the concept of dynamic parallelism in NVIDIAs parallel computing-based Graphics Processing Unit (or GPU) API, CUDA, to substantially accelerate wind simulations.
+
+> B. Bozorgmehr et al., “Utilizing dynamic parallelism in CUDA to accelerate a 3D red-black successive over relaxation wind-field solver,” Environ Modell Softw, vol. 137, p. 104958, 2021, doi: [10.1016/j.envsoft.2021.104958](https://doi.org/10.1016/j.envsoft.2021.104958).
 
 ## QES-Turb
 
@@ -32,6 +21,8 @@ substantially accelerate wind simulations.
 
 ## QES-Fire
 
+The QES-Fire module is currently not publicly available. 
+> M. J. Moody et al., “QES-Fire: a dynamically coupled fast-response wildfire model,” Int J Wildland Fire, vol. 31, no. 3, pp. 306–325, 2022, doi: [10.1071/wf21057](https://doi.org/https://doi.org/10.1071/WF21057).
 
 ## Package Requirements
 
@@ -48,10 +39,7 @@ On a general Linux system, such as Ubuntu 18.04 or 20.04 which we commonly use, 
 If you have a system that uses apt, here's the command:
 ```apt install libgdal-dev libnetcdf-c++4-dev  libnetcdf-cxx-legacy-dev libnetcdf-dev netcdf-bin libboost-all-dev cmake cmake-curses-gui```
 
-To use the GPU system (and even build the code) you will need a NVIDIA
-GPU with the CUDA library installed.  We have tested with CUDA 8.0, 10.0, 10.1, and 10.2. 
-If your version of CUDA is installed in a non-uniform location, you
-will need to remember the path to the cuda install directory.
+To use the GPU system (and even build the code) you will need a NVIDIA GPU with the CUDA library installed.  We have tested with CUDA 8.0, 10.0, 10.1, and 10.2. If your version of CUDA is installed in a non-uniform location, you will need to remember the path to the cuda install directory.
 
 Additionally, the code can use NVIDIA's OptiX to accelerate various computations. Our OptiX code has been built to use version 7.0 or higher.
 
