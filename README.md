@@ -13,16 +13,20 @@
 
 QES-Winds is a fast response 3D diagnostic urban wind model written in C++ and uses NVIDIA's CUDA framework to accelerate a mass-conserving wind-field solver. QES-Winds uses a variational analysis technique to ensure the conservation of mass rather than slower yet more physics-based solvers that include conservation of momentum. QES-Winds minimizes the difference between an initial wind field that is specified using empirical parameterizations and thefinal wind field. This method requires the solution of a Poisson equation for Lagrange multipliers. The Poisson equation is solved using the Successive Over-Relaxation (SOR) method (an iterative solver), which is a variant of the Gauss-Seidel method with more rapid convergence. QES-Winds utilizes the concept of dynamic parallelism in NVIDIAs parallel computing-based Graphics Processing Unit (or GPU) API, CUDA, to substantially accelerate wind simulations.
 
-> B. Bozorgmehr et al., “Utilizing dynamic parallelism in CUDA to accelerate a 3D red-black successive over relaxation wind-field solver,” Environ Modell Softw, vol. 137, p. 104958, 2021, doi: [10.1016/j.envsoft.2021.104958](https://doi.org/10.1016/j.envsoft.2021.104958).
+> B. Bozorgmehr et al., “Utilizing dynamic parallelism in CUDA to accelerate a 3D red-black successive over relaxation wind-field solver,” *Environ Modell Softw*, vol. 137, p. 104958, 2021, doi: [10.1016/j.envsoft.2021.104958](https://doi.org/10.1016/j.envsoft.2021.104958).
 
 ## QES-Turb
 
+
+
 ## QES-Plume
+
+> F. Margairaz et al, "QES-Plume: QES-Plume v1.0: A Lagrangian dispersion model," *Geosci Model Dev*, SUBMITTED
 
 ## QES-Fire
 
 The QES-Fire module is currently not publicly available. 
-> M. J. Moody et al., “QES-Fire: a dynamically coupled fast-response wildfire model,” Int J Wildland Fire, vol. 31, no. 3, pp. 306–325, 2022, doi: [10.1071/wf21057](https://doi.org/https://doi.org/10.1071/WF21057).
+> M. J. Moody et al., “QES-Fire: a dynamically coupled fast-response wildfire model,” *Int J Wildland Fire*, vol. 31, no. 3, pp. 306–325, 2022, doi: [10.1071/wf21057](https://doi.org/https://doi.org/10.1071/WF21057).
 
 ## Package Requirements
 
