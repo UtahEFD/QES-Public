@@ -56,7 +56,6 @@
 #include <iostream>
 #include <fstream>
 
-
 #include "Triangle.h"
 
 #define RAY_TYPE_COUNT 2

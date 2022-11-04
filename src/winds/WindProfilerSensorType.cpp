@@ -412,9 +412,13 @@ void WindProfilerSensorType::singleSensorInterpolation(WINDSGeneralData *WGD)
           WGD->u0[icell_face] = u_prof[WGD->nz - 2];
           WGD->v0[icell_face] = v_prof[WGD->nz - 2];
         }// If height (above ground) is greater than ASL height and modified index is inside the domain
-        else if (WGD->z[k] > surf_layer_height && k + WGD->terrain_face_id[id] - 1 < WGD->nz) {
-          WGD->u0[icell_face] = u_prof[k_mod];
-          WGD->v0[icell_face] = v_prof[k_mod];
+        //FM temporary fix
+        //else if (WGD->z[k] > surf_layer_height && k + WGD->terrain_face_id[id] - 1 < WGD->nz) {
+        //  WGD->u0[icell_face] = u_prof[k_mod];
+        //  WGD->v0[icell_face] = v_prof[k_mod];
+        else if (WGD->z[k] > surf_layer_height && k + WGD->terrain_face_id[site_id[0]] - 1 < WGD->nz) {
+          WGD->u0[icell_face] = u_prof[k + WGD->terrain_face_id[site_id[0]] - 1];
+          WGD->v0[icell_face] = v_prof[k + WGD->terrain_face_id[site_id[0]] - 1];
         }
 
         WGD->w0[icell_face] = 0.0;// Perpendicular wind direction

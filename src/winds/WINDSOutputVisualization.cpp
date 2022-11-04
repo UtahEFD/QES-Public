@@ -61,28 +61,28 @@ WINDSOutputVisualization::WINDSOutputVisualization(WINDSGeneralData *WGD, WINDSI
   }
 
   // copy of WGD pointer
-  WGD_ = WGD;
+  m_WGD = WGD;
 
 
-  int nx = WGD_->nx;
-  int ny = WGD_->ny;
-  int nz = WGD_->nz;
+  int nx = m_WGD->nx;
+  int ny = m_WGD->ny;
+  int nz = m_WGD->nz;
 
   long numcell_cout = (nx - 1) * (ny - 1) * (nz - 2);
 
   z_out.resize(nz - 2);
   for (auto k = 1; k < nz - 1; k++) {
-    z_out[k - 1] = WGD_->z[k];// Location of face centers in z-dir
+    z_out[k - 1] = m_WGD->z[k];// Location of face centers in z-dir
   }
 
   x_out.resize(nx - 1);
   for (auto i = 0; i < nx - 1; i++) {
-    x_out[i] = (i + 0.5) * WGD_->dx;// Location of face centers in x-dir
+    x_out[i] = (i + 0.5) * m_WGD->dx;// Location of face centers in x-dir
   }
 
   y_out.resize(ny - 1);
   for (auto j = 0; j < ny - 1; j++) {
-    y_out[j] = (j + 0.5) * WGD_->dy;// Location of face centers in y-dir
+    y_out[j] = (j + 0.5) * m_WGD->dy;// Location of face centers in y-dir
   }
 
   // Output related data
@@ -96,9 +96,9 @@ WINDSOutputVisualization::WINDSOutputVisualization(WINDSGeneralData *WGD, WINDSI
 
   // set cell-centered data dimensions
   // space dimensions
-  NcDim NcDim_x = addDimension("x", WGD_->nx - 1);
-  NcDim NcDim_y = addDimension("y", WGD_->ny - 1);
-  NcDim NcDim_z = addDimension("z", WGD_->nz - 2);
+  NcDim NcDim_x = addDimension("x", m_WGD->nx - 1);
+  NcDim NcDim_y = addDimension("y", m_WGD->ny - 1);
+  NcDim NcDim_z = addDimension("z", m_WGD->nz - 2);
 
   // create attributes space dimensions
   std::vector<NcDim> dim_vect_x;
@@ -116,7 +116,7 @@ WINDSOutputVisualization::WINDSOutputVisualization(WINDSGeneralData *WGD, WINDSI
   dim_vect_2d.push_back(NcDim_y);
   dim_vect_2d.push_back(NcDim_x);
   // create attributes
-  createAttVector("terrain", "terrain height", "m", dim_vect_2d, &(WGD_->terrain));
+  createAttVector("terrain", "terrain height", "m", dim_vect_2d, &(m_WGD->terrain));
 
   // create 3D vector (time dep)
   std::vector<NcDim> dim_vect_3d;
@@ -157,9 +157,9 @@ void WINDSOutputVisualization::setAllOutputFields()
 void WINDSOutputVisualization::save(QEStime timeOut)
 {
   // get grid size (not output var size)
-  int nx = WGD_->nx;
-  int ny = WGD_->ny;
-  int nz = WGD_->nz;
+  int nx = m_WGD->nx;
+  int ny = m_WGD->ny;
+  int nz = m_WGD->nz;
 
   // set time
   timeCurrent = timeOut;
@@ -170,15 +170,15 @@ void WINDSOutputVisualization::save(QEStime timeOut)
       for (auto i = 0; i < nx - 1; i++) {
         int icell_face = i + j * nx + k * nx * ny;
         int icell_cent = i + j * (nx - 1) + (k - 1) * (nx - 1) * (ny - 1);
-        u_out[icell_cent] = 0.5 * (WGD_->u[icell_face + 1] + WGD_->u[icell_face]);
-        v_out[icell_cent] = 0.5 * (WGD_->v[icell_face + nx] + WGD_->v[icell_face]);
-        w_out[icell_cent] = 0.5 * (WGD_->w[icell_face + nx * ny] + WGD_->w[icell_face]);
+        u_out[icell_cent] = 0.5 * (m_WGD->u[icell_face + 1] + m_WGD->u[icell_face]);
+        v_out[icell_cent] = 0.5 * (m_WGD->v[icell_face + nx] + m_WGD->v[icell_face]);
+        w_out[icell_cent] = 0.5 * (m_WGD->w[icell_face + nx * ny] + m_WGD->w[icell_face]);
         mag_out[icell_cent] = sqrt(u_out[icell_cent] * u_out[icell_cent]
                                    + v_out[icell_cent] * v_out[icell_cent]
                                    + w_out[icell_cent] * w_out[icell_cent]);
 
-        icellflag_out[icell_cent] = WGD_->icellflag[icell_cent + ((nx - 1) * (ny - 1))];
-        icellflag2_out[icell_cent] = WGD_->icellflag_initial[icell_cent + ((nx - 1) * (ny - 1))];
+        icellflag_out[icell_cent] = m_WGD->icellflag[icell_cent + ((nx - 1) * (ny - 1))];
+        icellflag2_out[icell_cent] = m_WGD->icellflag_initial[icell_cent + ((nx - 1) * (ny - 1))];
       }
     }
   }
