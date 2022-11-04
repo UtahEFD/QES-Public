@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
   // Checking if
   if (arguments.compTurb && !WID->turbParams) {
     QESout::error("Turbulence model is turned on without turbParams in QES Intput file "
-                   + arguments.qesWindsParamFile);
+                  + arguments.qesWindsParamFile);
   }
 
 
@@ -176,7 +176,7 @@ int main(int argc, char *argv[])
       solver->solve(WID, WGD, !arguments.solveWind);
     }
 
-    std::cout << "Solver done!\n";
+    //std::cout << "Solver done!\n";
 
     // Run turbulence
     if (TGD != nullptr)
