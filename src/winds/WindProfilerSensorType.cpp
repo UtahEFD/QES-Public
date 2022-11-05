@@ -383,15 +383,18 @@ void WindProfilerSensorType::singleSensorInterpolation(WINDSGeneralData *WGD)
 {
   float surf_layer_height;// Surface layer height of the atmospheric boundary layer (ABL)
 
-  int k_mod;
   for (auto k = 1; k < WGD->nz - 1; ++k) {
+    //Set the modified k-index (sensor)
+    int k_mod_sens = k + WGD->terrain_face_id[site_id[0]] - 1;
     for (auto j = 0; j < WGD->ny; ++j) {
       for (auto i = 0; i < WGD->nx; ++i) {
 
         int id = i + j * WGD->nx;//Index in horizontal surface
+        int k_mod(0);
         //If height added to top of terrain is still inside QES domain
         if (k + WGD->terrain_face_id[id] - 1 < WGD->nz) {
-          k_mod = k + WGD->terrain_face_id[id] - 1;//Set the modified index
+          //Set the modified k-index (current location)
+          k_mod = k + WGD->terrain_face_id[id] - 1;
         } else {
           continue;
         }
@@ -405,20 +408,16 @@ void WindProfilerSensorType::singleSensorInterpolation(WINDSGeneralData *WGD)
         }
         // If height (above ground) is less than or equal to ASL height
         if (WGD->z[k] <= surf_layer_height) {
-          WGD->u0[icell_face] = u_prof[k + WGD->terrain_face_id[site_id[0]] - 1];
-          WGD->v0[icell_face] = v_prof[k + WGD->terrain_face_id[site_id[0]] - 1];
+          WGD->u0[icell_face] = u_prof[k_mod_sens];
+          WGD->v0[icell_face] = v_prof[k_mod_sens];
         }// If sum of z index and the terrain index at the sensor location is outside the domain
         else if (k + WGD->terrain_face_id[site_id[0]] - 1 > WGD->nz - 2) {
           WGD->u0[icell_face] = u_prof[WGD->nz - 2];
           WGD->v0[icell_face] = v_prof[WGD->nz - 2];
         }// If height (above ground) is greater than ASL height and modified index is inside the domain
-        //FM temporary fix
-        //else if (WGD->z[k] > surf_layer_height && k + WGD->terrain_face_id[id] - 1 < WGD->nz) {
-        //  WGD->u0[icell_face] = u_prof[k_mod];
-        //  WGD->v0[icell_face] = v_prof[k_mod];
-        else if (WGD->z[k] > surf_layer_height && k + WGD->terrain_face_id[site_id[0]] - 1 < WGD->nz) {
-          WGD->u0[icell_face] = u_prof[k + WGD->terrain_face_id[site_id[0]] - 1];
-          WGD->v0[icell_face] = v_prof[k + WGD->terrain_face_id[site_id[0]] - 1];
+        else if (WGD->z[k] > surf_layer_height && k_mod_sens < WGD->nz) {
+          WGD->u0[icell_face] = u_prof[k_mod_sens];
+          WGD->v0[icell_face] = v_prof[k_mod_sens];
         }
 
         WGD->w0[icell_face] = 0.0;// Perpendicular wind direction
