@@ -38,6 +38,8 @@ QES-Fire is a microscale wildfire model coupling the fire front to microscale wi
 
 ***QES requires the CUDA library and a NVIDIA GPU with Compute Capability of 7.0 (or higher).***
 
+**Note:** a compliation option for configuration without GPU will be added in the future.
+
 On a general Linux system, such as Ubuntu 18.04 or 20.04, the following packages need to be installed:
 * libgdal-dev
 * libnetcdf-c++4-dev
