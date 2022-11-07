@@ -225,7 +225,7 @@ Unit tests can be enable by settong the flag `ENABLE_UNITTESTS` to `ON`.
 cmake -DENABLE_UNITTESTS=ON ..
 ```
 
-## Tips and Tricks
+## Tips and Tricks
 
 In case things don't go as planned with these instructions, here are some tips for correcting some build or run issues:
 
@@ -237,7 +237,7 @@ After the build is configured the Doxygen documentation can be built. The output
 make windsdoc
 ```
 
-### Continuous Integration
+## Continuous Integration
 
 We were running continuous integration on Travis-CI but this is no longer functional...
 
