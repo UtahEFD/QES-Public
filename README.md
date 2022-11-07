@@ -210,11 +210,11 @@ The QES-Winds sanity tests are:
 
 ### QES-Turb Tests
 
-There currently are no automated test available for QES-Turb. 
+There currently is no automated test available for QES-Turb. 
 
 ### QES-Plume Tests
 
-There currently are no automated test available for QES-Plume. The following test cases are available
+There currently is no automated test available for QES-Plume. The following test cases are available
 - testing well-mixed condition: Sinusoidal3D Channel3D BaileyLES
 - testing against analitical soluation: UniformFlow_ContRelease PowerLawBLFlow_ContRelease
 - testing against wind-tunnel data: EPA_7x11array  
