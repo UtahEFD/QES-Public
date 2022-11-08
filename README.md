@@ -20,11 +20,11 @@ QES-Winds is a fast-response 3D diagnostic urban wind model using a mass-conserv
 
 ### QES-Turb
 
-QES-Turb is a tubbulence model based on Prandtl’s mixing-length and Boussinesq eddy-viscosity hypotheses. QES-Turb computes the stress tensor using local velocity gradients and some empricial non-local parameterizations.
+QES-Turb is a turbulence model based on Prandtl’s mixing-length and Boussinesq eddy-viscosity hypotheses. QES-Turb computes the stress tensor using local velocity gradients and some emprical non-local parameterizations.
 
 ### QES-Plume
 
-QES-Plume is a Lagrangian dispersion code that uses a time-implicit integration scheme to solve the generalized Langevin equations.
+QES-Plume is a stochastic Lagrangian dispersion model using QES-Winds mean wind field and QES-Turb turbulence fields. QES-Plume solves the generalized Langevin equations to compute the fluctuations of the particle in the turbulent flow fluid. A time-implicit integration scheme is used to solve the Langevin equation, eliminating 'rogue' trajectories. The particles are advanced using a forward Euler scheme. QES-Plume is also a stand-alone dispersion model that can run using fields from diverses sources such as RANS or LES models. 
 
 > F. Margairaz et al, "QES-Plume: QES-Plume v1.0: A Lagrangian dispersion model," *Geosci Model Dev*, SUBMITTED
 
@@ -37,6 +37,8 @@ QES-Fire is a microscale wildfire model coupling the fire front to microscale wi
 ## Package Requirements
 
 ***QES requires the CUDA library and a NVIDIA GPU with Compute Capability of 7.0 (or higher).***
+
+**Note:** a compliation option for configuration without GPU will be added in the future.
 
 On a general Linux system, such as Ubuntu 18.04 or 20.04, the following packages need to be installed:
 * libgdal-dev
@@ -143,24 +145,35 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 
 To run QES-Winds, you can take the following slurm template and run on CHPC.  We'd suggest placing it in a ```run``` folder at the same level as your build folder.  Make sure you change the various sbatch parameters as needed for your access to CHPC.
 
-### slurm Template (for CUDA 10.1 build)
+### Running from the Command Line
+
+QES is run from the terminal using arguments. For exmaple:
+```
+./qesWinds/qesWinds -q ../data/InputFiles/GaussianHill.xml -s 2 -w -o gaussianHill
+```
+More info about the arguments supported by QES can be display using:
+```
+./qesWinds/qesWinds -?
+```
+
+### slurm Template (for CUDA 11.4 build)
 ```
 #!/bin/bash
 #SBATCH --account=efd-np
 #SBATCH --partition=efd-shared-np
-#SBATCH --job-name=moser395
+#SBATCH --job-name=qesGaussian
 #SBATCH --nodes=1
 #SBATCH --mem=15G
 #SBATCH --gres=gpu:titanv:1
 #SBATCH --time=01:00:00
-#SBATCH -e init_error.log
+#SBATCH -e init_error.log
 #SBATCH -o init_out.log
-module load gcc/8.1.0
+module load gcc/8.5.0
 ulimit -c unlimited -s
 ./qesWinds/qesWinds -q ../data/InputFiles/GaussianHill.xml -s 2 -w -o gaussianHill
 ```
 
-Note that if you build with a different GCC (i.e. 5.4.0), you will need to change the module load to use that version of GCC. Once the slurm file has been placed in the run folder, you can then send out the job.  For example, assuming you are in the build folder and just built the code and we saved the slurm template above as a file rGaussianHill_gpu.slurm:
+Note that if you build with a different GCC (e.g. 5.4.0), you will need to change the module load to use that version of GCC. Once the slurm file has been placed in the run folder, you can then send out the job.  For example, assuming you are in the build folder and just built the code and we saved the slurm template above as a file rGaussianHill_gpu.slurm:
 
 ```
 make clean
@@ -171,6 +184,48 @@ sbatch rGaussianHill_gpu.slurm
 
 This will create the various NetCDF output files in the run folder, along with any output in the init_error.log and init_out.log files.
 
+
+## Testing
+
+We are using ctest to conduct unit tests and sanity check on the code. Here are a few commands:
+```
+ctest			# launch all tests
+ctest --verbose		# launch all tests with verbose (see commant output)
+ctest -N		# get list of tests
+ctest -R $testname	# launch only $testname
+```
+Here is a list of tests and testing option. Most test require manuel inspection of the results. Recursive testing will be implemented in the future. 
+
+### QES-Winds Tests
+
+Test for QES-Winds are designed to check that to code is still running under a given set of parameters. These tests do not guarentee the validity of the results. To turn on the basic QES-wind test, use:
+```
+cmake -DENABLE_SANITY_TESTS=ON -DENABLE_GPU_TESTS=ON ..
+```
+The QES-Winds sanity tests are: 
+- GPU_FlatTerrain: basic empty domain test
+- GPU_GaussianHill: basic terrain test
+- GPU_OklahomaCity: coarse resolution shapefile reader (without parameterization)
+- GPU_MultiSensors: test of multiple sensor and multiple timesteps
+- GPU_SaltLakeCity: test of high resolution urban setup with parameterizations
+- GPU_RxCADRE: test of high resolution and complex terrain (DEM)
+
+### QES-Turb Tests
+
+There currently is no automated test available for QES-Turb. 
+
+### QES-Plume Tests
+
+There currently is no automated test available for QES-Plume. The following test cases are available
+- testing well-mixed condition: Sinusoidal3D Channel3D BaileyLES
+- testing against analitical soluation: UniformFlow_ContRelease PowerLawBLFlow_ContRelease
+- testing against wind-tunnel data: EPA_7x11array  
+         
+### Unit Tests
+Unit tests can be enable by settong the flag `ENABLE_UNITTESTS` to `ON`. 
+```
+cmake -DENABLE_UNITTESTS=ON ..
+```
 
 ## Tips and Tricks
 
@@ -184,24 +239,11 @@ After the build is configured the Doxygen documentation can be built. The output
 make windsdoc
 ```
 
-
-### Continuous Integration
+## Continuous Integration
 
 We were running continuous integration on Travis-CI but this is no longer functional...
 
 [Basic Concepts for Travis Continuous Integration](https://docs.travis-ci.com/user/for-beginners/)
-
-
-## Testing
-
-We are using ctest to conduct unit tests and sanity check on the code. Here are a few commands:
-```
-ctest			# launch all tests
-ctest --verbose		# launch all tests with verbose (see commant output)
-ctest -N		# get list of tests
-ctest -R $testname	# launch only $testname
-```
-List of tests and testing option will be added here.
 
 ## Published QES Papers
 
