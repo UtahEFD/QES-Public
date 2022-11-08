@@ -6,21 +6,20 @@
 
 CMAKE_MINIMUM_REQUIRED (VERSION 3.9)
 CMAKE_POLICY(SET CMP0074 NEW)
-
 # cmake_policy(SET CMP0048 NEW)
-LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" "${CMAKE_SOURCE_DIR}/cmake/Modules/")
-MESSAGE(STATUS "CMake Module Path: ${CMAKE_MODULE_PATH}")
-
-PROJECT(qesWinds VERSION 1.5.0)
 
 # This creates a variable we could use for tacking on to various folders
 # or install locations based on the version info.  It pulls the Verson information
 # from CMake based on the Version number provided in the PROJECT command.
-SET(QESWINDS_VERSION_INFO -${qesWinds_VERSION_MAJOR}.${qesWinds_VERSION_MINOR})
-MESSAGE(STATUS "Building qesWinds${QESWINDS_VERSION_INFO}")
+PROJECT(QES VERSION 2.0.0)
+SET(QES_VERSION_INFO ${QES_VERSION_MAJOR}.${QES_VERSION_MINOR}.${QES_VERSION_PATCH})
+MESSAGE(STATUS "Building QES v${QES_VERSION_INFO}")
 
-MESSAGE(STATUS "Building the '" ${CMAKE_BUILD_TYPE} "' version of qesWinds.")
+MESSAGE(STATUS "Building the '" ${CMAKE_BUILD_TYPE} "' version of QES.")
 MESSAGE(STATUS "If you want something different, use -DCMAKE_BUILD_TYPE=Debug, Release, RelWithDebInfo, MinSizeRel.")
+
+LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+MESSAGE(STATUS "CMake Module Path: ${CMAKE_MODULE_PATH}")
 
 option(ENABLE_CPPCHECK "Enable static analysis with cppcheck" OFF)
 option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
