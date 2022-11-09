@@ -35,6 +35,10 @@
 #include <iostream>
 #include <string>
 
+#ifndef QES_VERSION
+#define QES_VERSION "2.0.0"
+#endif
+
 namespace QESout {
 void splashScreen();
 void error(std::string);

@@ -12,9 +12,11 @@ CMAKE_POLICY(SET CMP0074 NEW)
 # or install locations based on the version info.  It pulls the Verson information
 # from CMake based on the Version number provided in the PROJECT command.
 PROJECT(QES VERSION 2.0.0)
-SET(QES_VERSION_INFO ${QES_VERSION_MAJOR}.${QES_VERSION_MINOR}.${QES_VERSION_PATCH})
-MESSAGE(STATUS "Building QES v${QES_VERSION_INFO}")
+SET(QES_VERSION_INFO v${QES_VERSION_MAJOR}.${QES_VERSION_MINOR}.${QES_VERSION_PATCH})
+#ADD_DEFINITIONS(-DQES_VERSION=${QES_VERSION_INFO})
+MESSAGE(STATUS "Building QES ${QES_VERSION_INFO}")
 
+SET(CMAKE_BUILD_TYPE Release)
 MESSAGE(STATUS "Building the '" ${CMAKE_BUILD_TYPE} "' version of QES.")
 MESSAGE(STATUS "If you want something different, use -DCMAKE_BUILD_TYPE=Debug, Release, RelWithDebInfo, MinSizeRel.")
 

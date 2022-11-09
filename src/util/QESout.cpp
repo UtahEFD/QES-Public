@@ -43,7 +43,7 @@ void splashScreen()
   std::cout << "#                      Welcome to QES                        #" << std::endl;
   std::cout << "#                                                            #" << std::endl;
   std::cout << "##############################################################" << std::endl;
-  std::cout << "version X.X.X (2022)" << std::endl;
+  std::cout << "version " << QES_VERSION << std::endl;
 #ifdef HAS_OPTIX
   std::cout << "OptiX is available!" << std::endl;
 #endif
