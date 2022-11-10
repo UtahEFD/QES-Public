@@ -1,0 +1,37 @@
+<sensor>
+  <site_coord_flag> 1 </site_coord_flag> 	
+  <site_xcoord> 100.0  </site_xcoord> 		
+  <site_ycoord> 300.0 </site_ycoord> 		
+  <site_UTM_x> 2.0 </site_UTM_x> 		
+  <site_UTM_y> 2.0 </site_UTM_y> 		
+  <site_UTM_zone> 0 </site_UTM_zone> 		
+
+  <timeSeries>
+    <timeStamp>2020-01-01T01:00:00</timeStamp>	
+    <boundaryLayerFlag> 1 </boundaryLayerFlag> 	
+    <siteZ0> 0.1 </siteZ0> 			
+    <reciprocal> 0.0 </reciprocal> 		
+    <height> 10.0 </height> 			
+    <speed> 6.0 </speed> 			
+    <direction> 220.0 </direction> 		
+  </timeSeries>
+  <timeSeries>
+    <timeStamp>2020-01-01T02:00:00</timeStamp>	
+    <boundaryLayerFlag> 1 </boundaryLayerFlag> 	
+    <siteZ0> 0.1 </siteZ0> 			
+    <reciprocal> 0.0 </reciprocal> 		
+    <height> 10.0 </height> 			
+    <speed> 5.0 </speed> 			
+    <direction> 180.0 </direction> 		
+  </timeSeries>
+  <timeSeries>
+    <timeStamp>2020-01-01T04:00:00</timeStamp>	
+    <boundaryLayerFlag> 1 </boundaryLayerFlag> 	
+    <siteZ0> 0.1 </siteZ0> 			
+    <reciprocal> 0.0 </reciprocal> 		
+    <height> 10.0 </height> 			
+    <speed> 5.0 </speed> 			
+    <direction> 210.0 </direction> 		
+  </timeSeries>
+</sensor>
+

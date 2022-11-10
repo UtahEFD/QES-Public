@@ -1,0 +1,98 @@
+<QESPlumeParameters>
+<simulationParameters>
+  
+  <halo_x> 0.0 </halo_x>
+  <halo_y> 0.0 </halo_y>
+  
+  <domain>200 100 40 </domain>
+  <cellSize> 1.0 1.0 0.5 </cellSize>
+  <verticalStretching> 0 </verticalStretching> 
+  
+  <totalTimeIncrements> 1 </totalTimeIncrements>
+  <rooftopFlag> 0 </rooftopFlag>
+  <upwindCavityFlag> 0 </upwindCavityFlag> 
+  <streetCanyonFlag> 0 </streetCanyonFlag> 
+  <streetIntersectionFlag> 0 </streetIntersectionFlag> 
+  <wakeFlag> 0 </wakeFlag> 
+  <sidewallFlag> 0 </sidewallFlag>
+  <maxIterations> 500 </maxIterations>
+  <tolerance> 1e-9 </tolerance> 	
+  <meshTypeFlag> 0 </meshTypeFlag>
+  <domainRotation> 0 </domainRotation>  	
+  <UTMx> 0 </UTMx> 			
+  <UTMy> 0 </UTMy> 			
+  <UTMZone> 1 </UTMZone> 			
+  <UTMZoneLetter> 17 </UTMZoneLetter>
+  <readCoefficientsFlag> 0 </readCoefficientsFlag> 
+</simulationParameters>                     		
+<metParams>
+  <z0_domain_flag> 0 </z0_domain_flag>           	
+  <sensor>
+    <site_coord_flag> 1 </site_coord_flag> 	
+    <site_xcoord> 1.0  </site_xcoord> 	
+    <site_ycoord> 1.0 </site_ycoord>
+    <timeSeries>					
+      <boundaryLayerFlag> 2 </boundaryLayerFlag> 
+      <siteZ0> 0.1 </siteZ0> 		
+      <siteP> 0.15 </siteP> 		
+      <reciprocal> 0.0 </reciprocal> 			
+      <height> 4.0 </height>
+      <speed> 5.9 </speed> 
+      <direction> 270.0 </direction> 
+    </timeSeries>
+  </sensor>        
+</metParams>		
+<turbParams>
+  <method>0</method>
+  <sigmaConst> 2.50 2.30 1.3 </sigmaConst>
+</turbParams>
+<fileOptions>
+  <outputFlag>1</outputFlag>
+  <outputFields>all</outputFields> 
+</fileOptions>
+
+<plumeParameters>
+  <simDur> 1400.0 </simDur>
+  <timeStep> 0.05 </timeStep>
+  <CourantNumber> 0.0 </CourantNumber>
+  <invarianceTol> 1e-10 </invarianceTol>
+  <C_0> 1.0 </C_0>
+  <updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop>
+  <updateFrequency_timeLoop> 100 </updateFrequency_timeLoop>
+</plumeParameters>
+<particleOutputParameters>
+  <outputFrequency> 100  </outputFrequency>
+  <outputFields>all</outputFields>
+</particleOutputParameters>
+<collectionParameters>
+  <timeAvgStart> 200.0 </timeAvgStart>
+  <timeAvgFreq> 1200.0 </timeAvgFreq>
+  <boxBoundsX1> 0.0 </boxBoundsX1>
+  <boxBoundsX2> 200.0 </boxBoundsX2>
+  <boxBoundsY1> 0.0 </boxBoundsY1>
+  <boxBoundsY2> 100.0 </boxBoundsY2>
+  <boxBoundsZ1> 0.0 </boxBoundsZ1>
+  <boxBoundsZ2> 20.0 </boxBoundsZ2>
+  <nBoxesX> 100 </nBoxesX>
+  <nBoxesY> 51 </nBoxesY>
+  <nBoxesZ> 40 </nBoxesZ>
+</collectionParameters>
+<sources>
+  <numSources> 1 </numSources>
+  <SourcePoint>
+    <ReleaseType_continuous>
+      <parPerTimestep>20</parPerTimestep>
+    </ReleaseType_continuous>
+    <posX> 20.0 </posX>
+    <posY> 50.0 </posY>
+    <posZ> 4.0 </posZ>
+  </SourcePoint>
+</sources>
+<boundaryConditions>
+  <xBCtype>exiting</xBCtype>
+  <yBCtype>exiting</yBCtype>
+  <zBCtype>exiting</zBCtype>
+  <wallReflection>stairstepReflection</wallReflection>
+</boundaryConditions>
+</QESPlumeParameters>
+

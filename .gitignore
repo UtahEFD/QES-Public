@@ -1,7 +1,13 @@
+# emacs backup/tilde files
+*~
+
 build/
 Build/
+build_old/
+buildPIV/
 src/docs/*
 docs/*
+data/InputFiles/vineyard_tower_validation/*
 
 # Prerequisites
 *.d
@@ -35,3 +41,7 @@ docs/*
 *.exe
 *.out
 *.app
+
+# IDE related files
+*.vscode
+

@@ -1,5 +1,5 @@
 #pragma once
-#include "DTEHeightField.h"
+#include "winds/DTEHeightField.h"
 #include "util.h"
 #include <string>
 #include <cstdio>
@@ -10,9 +10,9 @@
 class test_DTEHeightField
 {
 public:
-	std::string mainTest();
-	std::string testCutCells();
+  std::string mainTest();
+  std::string testCutCells();
 
 private:
-	DTEHeightField DTEHF;
+  DTEHeightField DTEHF;
 };

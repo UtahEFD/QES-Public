@@ -1,5 +1,5 @@
 #pragma once
-#include "Cut_cell.h"
+#include "winds/Cut_cell.h"
 #include "util.h"
 #include <string>
 #include <cstdio>
@@ -10,9 +10,9 @@
 class test_CutCell
 {
 public:
-	std::string mainTest();
-	std::string testCalculateAreaTopBot();
+  std::string mainTest();
+  std::string testCalculateAreaTopBot();
 
 private:
-	Cut_cell cutCell;
+  Cut_cell cutCell;
 };

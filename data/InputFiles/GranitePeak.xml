@@ -1,0 +1,58 @@
+<QESWindsParameters>
+<simulationParameters>
+	<DEM>../../scratch/Granite_east.tif</DEM>				<!-- Address to DEM location-->	
+
+  	<halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
+  	<halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
+
+  	<domain> 250 200 750 </domain>					<!-- Number of cells in x,y and z directions-->
+  	<cellSize> 20.0 20.0 1.0 </cellSize> 				<!-- Mesh resolution (meters)-->
+	<verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-costum grid)-->
+
+	<totalTimeIncrements> 67 </totalTimeIncrements> 			<!-- Number of time steps-->
+	<rooftopFlag> 0 </rooftopFlag> 					<!-- Rooftop flag (0-none, 1-log profile (default), 2-vortex) -->
+	<upwindCavityFlag> 0 </upwindCavityFlag> 			<!-- Upwind cavity flag (0-none, 1-Rockle, 2-MVP (default), 3-HMVP) -->
+	<streetCanyonFlag> 0 </streetCanyonFlag> 			<!-- Street canyon flag (0-none, 1-Roeckle w/ Fackrel (default)) -->
+	<streetIntersectionFlag> 0 </streetIntersectionFlag> 		<!--Street intersection flag (0-off, 1-on) -->
+	<wakeFlag> 0 </wakeFlag> 					<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle (default), 3-Area Scaled) -->
+	<sidewallFlag> 0 </sidewallFlag> 				<!-- Sidewall flag (0-off, 1-on (default)) -->
+	<logLawFlag> 0 </logLawFlag> 					<!-- Log Law flag to apply the log law (0-off (default), 1-on) -->
+	<maxIterations> 500 </maxIterations> 				<!-- Maximum number of iterations (default = 500) -->
+	<tolerance> 1e-9 </tolerance> 					<!-- Convergence criteria (default = 1e-9) -->
+	<meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (original QES) (default), 1-Cut-cell method -->
+	<domainRotation> 0 </domainRotation>  				<!-- Rotation angle of domain relative to true north -->
+	<originFlag> 0 </originFlag>					<!-- Origin flag (0- DEM coordinates (default), 1- UTM coordinates) -->
+	<DEMDistancex> 0.0 </DEMDistancex> 				<!-- x component (m) of origin in DEM coordinates (if originFlag = 0) -->
+	<DEMDistancey> 0.0 </DEMDistancey> 				<!-- y component (m) of origin in DEM coordinates (if originFlag = 0) -->
+	<UTMx> 305000.0 </UTMx> 					<!-- x component (m) of origin in UTM DEM coordinates (if originFlag = 1)-->
+	<UTMy> 4438000.0 </UTMy> 					<!-- y component (m) of origin in UTM DEM coordinates (if originFlag = 1)-->
+	<UTMZone> 12 </UTMZone> 					<!-- UTM zone that domain located -->
+	<UTMZoneLetter> 1 </UTMZoneLetter>
+	<readCoefficientsFlag> 0 </readCoefficientsFlag> 		<!-- Reading solver coefficients flag (0-calculate coefficients (default), 1-read coefficients from the file) -->
+	<!--COEFF>Granite_cut_8_3_windsWk.nc</COEFF-->					<!-- Address to coefficients file location --> 
+
+</simulationParameters>                     				<!-- End of simulation parameters -->
+<metParams>
+  <z0_domain_flag> 0 </z0_domain_flag>           			<!-- Distribution of sueface roughness for domain (0-uniform (default), 1-custom -->
+  <sensorName>PWIDS/PWID79.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+  <sensorName>PWIDS/PWID78.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+  <sensorName>PWIDS/PWID96.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+  <sensorName>PWIDS/PWID72.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+  <sensorName>PWIDS/PWID93.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+  <sensorName>PWIDS/PWID75.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+  <sensorName>PWIDS/PWID33.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+  <sensorName>PWIDS/PWID01.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+  <sensorName>PWIDS/PWID92.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+  <sensorName>PWIDS/PWID90.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+</metParams>								<!-- End of meteorological parameters -->
+<localMixingParam>
+  <method>0</method>
+</localMixingParam>
+<fileOptions>
+  <outputFlag>1</outputFlag>
+  <outputFields>all</outputFields> 
+</fileOptions>
+
+
+</QESWindsParameters>
+
