@@ -201,6 +201,7 @@ int main(int argc, char *argv[])
   for (int index = 0; index < WGD->totalTimeIncrements; index++) {
     std::cout << "----------------------------------------" << std::endl;
     std::cout << "New Sensor Data" << std::endl;
+    std::cout << "index = " << index << std::endl;
     std::cout << "----------------------------------------" << std::endl;
 
     /**
@@ -247,9 +248,9 @@ int main(int argc, char *argv[])
     if (WGD->totalTimeIncrements == 1) {
       endtime = WGD->timestamp[index] + WID->fires->fireDur;
     } else if (index == WGD->totalTimeIncrements - 1) {
-      endtime = WGD->timestamp[index] + (WGD->timestamp[index] - WGD->timestamp[index - 1]);
+      endtime = simTimeStart + WID->fires->fireDur;
     } else {
-      endtime = WGD->timestamp[index + 1];
+      endtime = WGD->timestamp[index+1];
     }
 
     /**
@@ -261,16 +262,16 @@ int main(int argc, char *argv[])
        * Run ROS model to get initial spread rate and fire properties
        **/
       fire->run(solver, WGD);
-
+      
       /**
        * Calculate fire-induced winds from burning cells
        **/
-      auto start = std::chrono::high_resolution_clock::now();// Start recording executiontime
+      //auto start = std::chrono::high_resolution_clock::now();// Start recording executiontime
       fire->potential(WGD);
-      auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
+      //auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
 
-      std::chrono::duration<float> elapsed = finish - start;
-      std::cout << "Plume solve: elapsed time: " << elapsed.count() << " s\n";// Print out elapsed execution time for fire-induced winds
+      //std::chrono::duration<float> elapsed = finish - start;
+      //std::cout << "Plume solve: elapsed time: " << elapsed.count() << " s\n";// Print out elapsed execution time for fire-induced winds
 
       /**
        * Run run wind solver to calculate mass conserved velocity field including fire-induced winds

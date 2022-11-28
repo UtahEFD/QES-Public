@@ -478,6 +478,7 @@ float Fire ::computeTimeStep()
     r_max = 0.3;
   }
   float dt = courant * dx / r_max;
+ 
   std::cout << "dt = " << dt << " s" << std::endl;
   return courant * dx / r_max;
 }
@@ -511,7 +512,7 @@ void Fire ::run(Solver *solver, WINDSGeneralData *WGD)
       yNorm[idx] = n_star_y / sqrt(n_star_x * n_star_x + n_star_y * n_star_y);
     }
   }
-  std::cout << "level set calculated" << std::endl;
+  //std::cout << "level set calculated" << std::endl;
   /**
 	* Reset forcing function for level set
 	*/
@@ -548,7 +549,7 @@ void Fire ::run(Solver *solver, WINDSGeneralData *WGD)
       Force[idx] = fp.r;
     }
   }
-  std::cout << "Level set forcing calculated" << std::endl;
+  //std::cout << "Level set forcing calculated" << std::endl;
   // indices for burning cells
   std::vector<int> cells_burning;
   // search predicate for burn state
@@ -1092,7 +1093,6 @@ struct Fire::FireProperties Fire ::balbi(FuelProperties *fuel, float u_mid, floa
   float savr = (savOneHour * oneHour + savTenHour * tenHour + savHundredHour * hundredHour + savHerb * liveHerb + savWoody * liveWoody)
                / (oneHour + tenHour + hundredHour + liveHerb + liveWoody);///< Characteristic fine fuel load surface area to volume ratio
 
-
   if (fgi < 0.00001) {
 
     // set fire properties
@@ -1116,7 +1116,7 @@ struct Fire::FireProperties Fire ::balbi(FuelProperties *fuel, float u_mid, floa
     float C_p = 2e3;///< calorific capacity [J/kg] - Balbi 2009
     float C_pa = 1150;///< specific heat of air [J/Kg/K]
     float tau_0 = 75591;///< residence time coefficient - Anderson 196?
-    float tau = tau_0 / (savr / 0.3048);
+    float tau = tau_0 / (savr / 0.3048)+120;///MM-11-2-22
 
     // fuel constants
     float m = fmc_g;///< fuel particle moisture content [0-1]
