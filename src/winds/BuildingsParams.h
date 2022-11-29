@@ -57,7 +57,8 @@ public:
   int upwindCavityFlag = 2; /**< :Upwind cavity flag (0-none, 1-Rockle, 2-MVP (default), 3-HMVP): */
   int streetCanyonFlag = 1; /**< :Street canyon flag (0-none, 1-Roeckle w/ Fackrel (default)): */
   int streetIntersectionFlag = 0; /**< :Street intersection flag (0-off, 1-on): */
-  int wakeFlag = 2; /**< :Wake flag (0-none, 1-Rockle, 2-Modified Rockle (default), 3-Area Scaled): */
+  int wakeFlag = 2; /**< :Wake flag (0-none, 1-Rockle, 2-Modified Rockle (default)): */
+  int highRiseFlag = 0;  /**< :High-rise flag (0-off (default), 1-on): */
   int sidewallFlag = 1; /**< :Sidewall flag (0-off, 1-on (default)): */
 
   // SHP File parameters
@@ -77,6 +78,7 @@ public:
     parsePrimitive<int>(true, streetCanyonFlag, "streetCanyonFlag");
     parsePrimitive<int>(true, streetIntersectionFlag, "streetIntersectionFlag");
     parsePrimitive<int>(true, wakeFlag, "wakeFlag");
+    parsePrimitive<int>(true, highRiseFlag, "highRiseFlag");
     parsePrimitive<int>(true, sidewallFlag, "sidewallFlag");
 
     parsePrimitive<int>(false, numBuildings, "numBuildings");

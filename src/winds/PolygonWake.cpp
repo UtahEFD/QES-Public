@@ -152,7 +152,7 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
   W_over_H = width_eff / wake_height;// Width over height
   H_over_L = wake_height / length_eff;
 
-  if (H_over_L >= 2.0) {
+  if (H_over_L >= 2.0 && WID->buildingsParams->highRiseFlag == 1) {
     tall_flag = 1;
   }
 
@@ -249,7 +249,7 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
         W_over_H = width_eff / wake_height;// Width over height
         H_over_L = wake_height / length_eff;
 
-        if (H_over_L >= 2.0) {
+        if (H_over_L >= 2.0 && WID->buildingsParams->highRiseFlag == 1) {
           tall_flag = 1;
         }
 
