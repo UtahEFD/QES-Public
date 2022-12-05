@@ -75,6 +75,14 @@ void CanopyElement::setPolyBuilding(WINDSGeneralData *WGD)
   j_start = y_min / WGD->dy;// Index of canopy end location in y-direction
   j_end = y_max / WGD->dy + 1;// Index of canopy start location in y-direction
 
+  if (i_start < 0 || i_end >= WGD->nx - 1 || j_start < 0 || j_end >= WGD->ny - 1) {
+    std::cerr << "==============================================================" << std::endl;
+    std::cerr << "[ERROR] canopy element out of bound" << std::endl;
+    std::cout << "x value (min,man) (indeces) (" << x_min << "," << x_max << ") (" << i_start << "," << i_end << ")" << std::endl;
+    std::cout << "y value (min,man) (indeces) (" << y_min << "," << y_max << ") (" << j_start << "," << j_end << ")" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
   return;
 }
 

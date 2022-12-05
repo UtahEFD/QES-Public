@@ -376,6 +376,21 @@ void Canopy::canopyRegression(WINDSGeneralData *WGD)
 
         //std::cout << xm << " " << ym << " " << sum_y << " " << sum_x_sq << " " << canopy_ustar[id] << " " << canopy_z0[id] << std::endl;
 
+        if (isnan(canopy_z0[id])) {
+          std::cerr << "==============================================================" << std::endl;
+          std::cerr << "[ERROR] canopy regression gives nan" << std::endl;
+          exit(EXIT_FAILURE);
+        }
+
+        /* NEED MODIFICATION!!!
+	  if (canopy_z0[id] < WGD->z0 || isnan(canopy_z0[id])) {
+	  canopy_z0[id] = WGD->z0;
+          int icell_face = i + j * WGD->nx + canopy_top_index[id] * WGD->nx * WGD->ny;
+          local_mag = sqrt(pow(WGD->u0[icell_face], 2.0) + pow(WGD->v0[icell_face], 2.0));
+          canopy_ustar[id] = 0.3 * local_mag;
+	  }
+	*/
+
       }// end of if (canopy_top_index[id] > 0)
     }
   }
