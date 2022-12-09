@@ -194,7 +194,7 @@ void CanopyHomogeneous::canopyVegetation(WINDSGeneralData *WGD, int canopy_id)
                   << "\t WGD->canopy_atten[] = " << WGD->canopy->canopy_atten_coeff[icell_cent_top] << "\n"
                   << "\t WGD->canopy_d[] = " << WGD->canopy->canopy_d[icell_2d] << "\n"
                   << "\t WGD->canopy->canopy_ustar[] = " << WGD->canopy->canopy_ustar[icell_2d] << "\n"
-                  << "\t WGD->canopy->canopy_z0[] = " << WGD->canopy->canopy_z0[icell_2d] << cout::endl;
+                  << "\t WGD->canopy->canopy_z0[] = " << WGD->canopy->canopy_z0[icell_2d] << std::endl;
 
         WGD->canopy->canopy_d[icell_2d] = canopySlopeMatch(WGD->canopy->canopy_z0[icell_2d],
                                                            WGD->canopy->canopy_height[icell_2d],
