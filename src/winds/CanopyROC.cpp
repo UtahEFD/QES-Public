@@ -119,7 +119,7 @@ void CanopyROC::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, i
             if (WGD->terrain[icell_2d] + base_height <= WGD->z[k]) {
               WGD->canopy->canopy_bot_index[icell_2d] = k;
               WGD->canopy->canopy_bot[icell_2d] = WGD->terrain[icell_2d] + base_height;
-              WGD->canopy->canopy_base[icell_2d] = WGD->z_face[k - 1];
+              WGD->canopy->canopy_base[icell_2d] = WGD->z_face[k];
               break;
             }
           }
@@ -279,7 +279,7 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   // Find appropriate reference node for finding U_h (at the centroid of the ROC block)
   // Ref velocity for top shear zone
   int k_top = 0;
-  while (WGD->z_face[k_top] < (H + WGD->terrain[i_building_cent + j_building_cent * (WGD->nx - 1)])) {
+  while (WGD->z_face[k_top + 1] < (H + WGD->terrain[i_building_cent + j_building_cent * (WGD->nx - 1)])) {
     k_top += 1;
   }
   icell_face = i_building_cent + j_building_cent * WGD->nx + k_top * WGD->nx * WGD->ny;
@@ -290,7 +290,7 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
 
   // Ref velocity for bottom shear zone
   int k_bot = 0;
-  while (WGD->z_face[k_bot] < (understory_height + WGD->terrain[i_building_cent + j_building_cent * (WGD->nx - 1)])) {
+  while (WGD->z_face[k_bot + 1] < (understory_height + WGD->terrain[i_building_cent + j_building_cent * (WGD->nx - 1)])) {
     k_bot += 1;
   }
 
@@ -731,4 +731,3 @@ void CanopyROC::canopyWake(WINDSGeneralData *WGD, int building_id)
 
   return;
 }
-

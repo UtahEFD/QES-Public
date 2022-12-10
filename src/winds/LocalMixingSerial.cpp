@@ -84,7 +84,7 @@ void LocalMixingSerial::defineMixingLength(const WINDSInputData *WID, WINDSGener
   z_cc = WGD->z;
   // z face-center (with ghost cell under the ground)
   for (int i = 1; i < nz; i++) {
-    z_fc[i] = WGD->z_face[i - 1];
+    z_fc[i] = WGD->z_face[i];
   }
   z_fc[0] = z_fc[1] - dz;
 

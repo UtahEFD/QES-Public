@@ -167,7 +167,7 @@ void WindProfilerSensorType::sensorsProfiles(const WINDSInputData *WID, WINDSGen
     site_j[idx] = WID->metParams->sensors[i]->site_ycoord / WGD->dy;
     site_id[idx] = site_i[idx] + site_j[idx] * WGD->nx;
 
-    float z_terrain = WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1];
+    float z_terrain = WGD->z_face[WGD->terrain_face_id[site_id[idx]]];
 
     size_t id = 1;
     int counter = 0;

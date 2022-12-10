@@ -652,7 +652,7 @@ void DTEHeightField::setCellPoints(int i, int j, int nx, int ny, int nz, std::ve
 
   // #pragma acc parallel loop
   for (int k = 1; k < nz - 1; k++) {
-    float cellBot = z_face[k - 1];
+    float cellBot = z_face[k];
     float cellTop = cellBot + dz_array[k];
 
     if (cellTop <= coordsMin)

@@ -81,7 +81,7 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
     for (auto i = 0; i < WGD->nx; i++) {
       for (auto j = 0; j < WGD->ny; j++) {
         id = i + j * WGD->nx;
-        sum_z0 += log(((WGD->z0_domain_u[id] + WGD->z0_domain_v[id]) / 2) + WGD->z_face[WGD->terrain_face_id[id]]);
+        sum_z0 += log(((WGD->z0_domain_u[id] + WGD->z0_domain_v[id]) / 2) + WGD->z_face[WGD->terrain_face_id[id] + 1]);
       }
     }
     z0_effective = exp(sum_z0 / (WGD->nx * WGD->ny));
@@ -116,7 +116,7 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
         }
 
         for (auto k = WGD->terrain_face_id[id]; k < height_id; k++) {
-          float z_rel = WGD->z[k] - WGD->z_face[WGD->terrain_face_id[id] - 1];
+          float z_rel = WGD->z[k] - WGD->z_face[WGD->terrain_face_id[id]];
           if (z_rel * average__one_overL >= 0) {
             psi = 4.7 * z_rel * average__one_overL;
           } else {
@@ -131,7 +131,7 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
         }
 
         for (auto k = height_id + 1; k < WGD->nz - 1; k++) {
-          float z_rel = WGD->z[k] - WGD->z_face[WGD->terrain_face_id[id] - 1];
+          float z_rel = WGD->z[k] - WGD->z_face[WGD->terrain_face_id[id]];
           if (z_rel * average__one_overL >= 0) {
             psi = 4.7 * z_rel * average__one_overL;
           } else {
