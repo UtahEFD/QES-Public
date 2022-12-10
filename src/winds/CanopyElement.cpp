@@ -91,6 +91,11 @@ void CanopyElement::setCanopyGrid(WINDSGeneralData *WGD, int building_number)
   float ray_intersect;
   unsigned int num_crossing, vert_id, start_poly;
 
+#if 1
+  std::cerr << "THIS FUNCTION IS OBSOLETE" << std::endl;
+  exit(EXIT_FAILURE);
+#else
+
   // Loop to calculate maximum and minimum of x and y values of the building
   x_min = x_max = polygonVertices[0].x_poly;
   y_min = y_max = polygonVertices[0].y_poly;
@@ -287,6 +292,7 @@ void CanopyElement::setCanopyGrid(WINDSGeneralData *WGD, int building_number)
 
   // number of cell-center elements (3D)
   numcell_cent_3d = nx_canopy * ny_canopy * nz_canopy;
+#endif
 
   return;
 }
@@ -296,6 +302,11 @@ void CanopyElement::setCanopyGrid(WINDSGeneralData *WGD, int building_number)
 // Based on the version contain Lucas Ulmerlmer's modifications
 void CanopyElement::canopyCioncoParam(WINDSGeneralData *WGD)
 {
+
+#if 1
+  std::cerr << "THIS FUNCTION IS OBSOLETE" << std::endl;
+  exit(EXIT_FAILURE);
+#else
 
   float avg_atten; /**< average attenuation of the canopy */
   float veg_vel_frac; /**< vegetation velocity fraction */
@@ -421,6 +432,7 @@ void CanopyElement::canopyCioncoParam(WINDSGeneralData *WGD)
       }
     }
   }
+#endif
 
   return;
 }
