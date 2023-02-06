@@ -34,6 +34,7 @@
 
 #include <type_traits>
 #include <iostream>
+#include <math.h>
 
 #define FLOATS_ARE_EQUAL(x, y) (((x) - (y)) < 0.000001 && ((x) - (y)) > -0.000001)
 
@@ -115,15 +116,122 @@ public:
       return v.values[0] == values[0] && v.values[1] == values[1] && v.values[2] == values[2];*/
   }
 
-  /*Vector3<T>& operator=(const Vector3<T>& v)
+  // assignment operator
+  Vector3 &operator=(const Vector3 &v)
   {
-          for (int i = 0; i < 3; i++)
-                  values[0] = v.values[i];
-          return *this;
-  }*/
+    values[0] = v.values[0];
+    values[1] = v.values[1];
+    values[2] = v.values[2];
+    return *this;
+  }
+
+  // scalar addition (assignment)
+  Vector3 &operator+=(const Vector3 &v)
+  {
+    values[0] += v.values[0];
+    values[1] += v.values[1];
+    values[2] += v.values[2];
+    return *this;
+  }
+
+  // scalor substraction (assignment)
+  Vector3 &operator-=(const Vector3 &v)
+  {
+    values[0] -= v.values[0];
+    values[1] -= v.values[1];
+    values[2] -= v.values[2];
+    return *this;
+  }
+
+  // scalor multiplication (assignment)
+  Vector3 &operator*=(const float &a)
+  {
+    values[0] *= a;
+    values[1] *= a;
+    values[2] *= a;
+    return *this;
+  }
+
+  // scalor division (assignment)
+  Vector3 &operator/=(const float &a)
+  {
+    values[0] /= a;
+    values[1] /= a;
+    values[2] /= a;
+    return *this;
+  }
+
+  // addition operator
+  Vector3 operator-(const Vector3 &v1)
+  {
+    return Vector3(values[0] - v1.values[0], values[1] - v1.values[1], values[2] - v1.values[2]);
+  }
+
+  // substraction operator
+  Vector3 operator+(const Vector3 &v1)
+  {
+    return Vector3(values[0] + v1.values[0], values[1] + v1.values[1], values[2] + v1.values[2]);
+  }
+
+  // scalar product (dot product)
+  float dot(const Vector3 &v1) const
+  {
+    return (values[0] * v1.values[0] + values[1] * v1.values[1] + values[2] * v1.values[2]);
+  }
+
+  // vector product
+  Vector3 cross(const Vector3 &v1) const
+  {
+    return Vector3(values[1] * v1.values[2] - values[2] * v1.values[1],
+                   values[2] * v1.values[0] - values[0] * v1.values[2],
+                   values[0] * v1.values[1] - values[1] * v1.values[0]);
+  }
+
+  // scalar product (dot product)
+  float operator*(const Vector3 &v1) const
+  {
+    return (values[0] * v1.values[0] + values[1] * v1.values[1] + values[2] * v1.values[2]);
+  }
 
 
-  /*friend std::istream &operator>>(std::istream &is, Vector3 &v)
+  // multiplication by scalar
+  Vector3 operator*(const float &a)
+  {
+    return Vector3(a * values[0], a * values[1], a * values[2]);
+  }
+
+  // return the length of the vector
+  float length(void) const
+  {
+    return sqrtf(values[0] * values[0] + values[1] * values[1] + values[2] * values[2]);
+  }
+
+  // multiplication by scaler
+  friend Vector3 operator*(const float &a, const Vector3 &v1)
+  {
+    return Vector3(a * v1.values[0], a * v1.values[1], a * v1.values[2]);
+  }
+
+  // division by scalar
+  Vector3 operator/(const float &a)
+  {
+    return Vector3(values[0] / a, values[1] / a, values[2] / a);
+  }
+
+  // relfection
+  Vector3 reflect(const Vector3 &n)
+  {
+    return *this - 2.0 * (*this * n) * n;
+  }
+
+  // distance with other vector where this is extemity (ie v1.distance(v2) = |v1 - v2|)
+  float distance(Vector3 &v2)
+  {
+    return (sqrtf((values[0] - v2[0]) * (values[0] - v2[0]) + (values[1] - v2[1]) * (values[1] - v2[1]) + (values[2] - v2[2]) * (values[2] - v2[2])));
+  }
+
+
+  friend std::istream &operator>>(std::istream &is, Vector3 &v)
   {
     is >> v.values[0] >> v.values[1] >> v.values[2];
     return is;
@@ -132,5 +240,14 @@ public:
   friend Vector3 operator-(const Vector3 &v1, const Vector3 &v2)
   {
     return Vector3(v1.values[0] - v2.values[0], v1.values[1] - v2.values[1], v1.values[2] - v2.values[2]);
-  }*/
+  }
+
+  friend std::ostream &operator<<(std::ostream &out, const Vector3 &v)
+  {
+    out << "[";
+    for (int i(0); i < 2; i++)
+      out << v.values[i] << ", ";
+    out << v.values[2] << "]";
+    return out;
+  }
 };

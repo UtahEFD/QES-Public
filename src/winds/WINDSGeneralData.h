@@ -56,10 +56,12 @@
 #include "LocalMixingDefault.h"
 #include "LocalMixingNetCDF.h"
 #include "LocalMixingSerial.h"
-#include "Mesh.h"
+
 #include "DTEHeightField.h"
 #include "Cut_cell.h"
 #include "Wall.h"
+
+//#include "util/Mesh.h"
 #include "util/NetCDFInput.h"
 #include "util/QEStime.h"
 
@@ -277,7 +279,7 @@ public:
   std::vector<int> wall_front_indices; /**< Indices of the cells with wall in front boundary condition */
   std::vector<int> wall_indices; /**< Indices of the cells with wall on at least one side */
 
-  Mesh *mesh; /**< In Terrain functions */
+  //Mesh *mesh; /**< In Terrain functions */
 
   Cell *cells; /**< :document this: */
   // bool DTEHFExists = false;

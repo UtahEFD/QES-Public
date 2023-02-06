@@ -36,12 +36,11 @@
 
 #include "Triangle.h"
 #include "HitRecord.h"
+#include "Ray.h"
 
 #define GETMIN(x, y) ((x) < (y) ? (x) : (y))
 #define GETMAX(x, y) ((x) > (y) ? (x) : (y))
 
-
-#include "Ray.h"
 
 using std::vector;
 
