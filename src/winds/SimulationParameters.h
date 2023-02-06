@@ -41,6 +41,8 @@
 #include "DTEHeightField.h"
 #include "WRFInput.h"
 
+#include "util/TimerTool.h"
+
 /**
  * @class SimulationParameters
  * @brief Contains variables that define information
@@ -353,6 +355,8 @@ public:
                                            DEMDistancey);
       assert(DTE_heightField);
 
+      TimerTool timer_mesh("mesh setup");
+
       std::cout << "Forming triangle mesh...\n";
       DTE_heightField->setDomain(domain, grid);
       DTE_mesh = new Mesh(DTE_heightField->getTris());
@@ -362,6 +366,7 @@ public:
       //    std::cerr << "[WARNING] triangle definition " << (*it)->n << std::endl;
       //}
       std::cout << "Mesh complete\n";
+      timer_mesh.stop();
 
     } else {
       // No DEM, so make sure these are null
