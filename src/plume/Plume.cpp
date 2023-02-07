@@ -156,6 +156,7 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
     wallReflect = new WallReflection_SetToInactive();
   } else if (PID->BCs->wallReflection == "stairstepReflection") {
     wallReflect = new WallReflection_StairStep();
+    wallReflect2 = new WallReflection_TriMesh();
   } else {
     // this should not happend
     std::cerr << "[ERROR] unknown wall reflection setting" << std::endl;

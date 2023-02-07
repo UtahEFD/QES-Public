@@ -67,6 +67,7 @@
 
 #include "WallReflection.h"
 #include "WallReflection_StairStep.h"
+#include "WallReflection_TriMesh.h"
 
 #include "Particle.hpp"
 
@@ -155,6 +156,7 @@ protected:
   */
 
   WallReflection *wallReflect;
+  WallReflection *wallReflect2;
 
   DomainBC *domainBC_x;
   DomainBC *domainBC_y;

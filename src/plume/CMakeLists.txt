@@ -49,6 +49,8 @@ CUDA_ADD_LIBRARY( qesplumecore
     
     WallReflection.cpp
     WallReflection_StairStep.cpp
+    WallReflection_TriMesh.cpp
+    
 )
 
 #target_link_libraries (qesplumecore quicloader) 
