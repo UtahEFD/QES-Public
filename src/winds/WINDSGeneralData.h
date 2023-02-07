@@ -279,7 +279,7 @@ public:
   std::vector<int> wall_front_indices; /**< Indices of the cells with wall in front boundary condition */
   std::vector<int> wall_indices; /**< Indices of the cells with wall on at least one side */
 
-  //Mesh *mesh; /**< In Terrain functions */
+  Mesh *mesh; /**< In Terrain functions */
 
   Cell *cells; /**< :document this: */
   // bool DTEHFExists = false;

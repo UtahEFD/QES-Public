@@ -473,6 +473,9 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
 
   if (WID->simParams->DTE_heightField) {
+
+    mesh = WID->simParams->DTE_mesh;
+
     int ii, jj, idx;
     // ////////////////////////////////
     // Retrieve terrain height field //
