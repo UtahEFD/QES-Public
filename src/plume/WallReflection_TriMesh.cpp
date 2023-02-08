@@ -83,7 +83,6 @@ bool WallReflection_TriMesh::reflect(const WINDSGeneralData *WGD,
 
   if ((cellFlag != 0) && (cellFlag != 2)) {
     // particle end trajectory outside solide -> no need for reflection
-    return true;
   } else {
 
     Vector3 X = { static_cast<float>(xPos - disX), static_cast<float>(yPos - disY), static_cast<float>(zPos - disZ) };
@@ -92,6 +91,19 @@ bool WallReflection_TriMesh::reflect(const WINDSGeneralData *WGD,
     // postion of the particle end of trajectory
     Vector3 Xnew = X + U;
 
+    Vector3 vecFluct = { static_cast<float>(uFluct), static_cast<float>(vFluct), static_cast<float>(wFluct) };
+
+    rayTraceReflect(WGD->mesh, X, Xnew, U, vecFluct);
+
+    xPos = Xnew[0];
+    yPos = Xnew[1];
+    zPos = Xnew[2];
+    // update output variable: fluctuations
+    uFluct = vecFluct[0];
+    vFluct = vecFluct[1];
+    wFluct = vecFluct[2];
+
+    /*
     Ray test_ray(X, U);
     HitRecord hit;
     if (WGD->mesh->triangleBVH->rayHit(test_ray, hit)) {
@@ -105,7 +117,7 @@ bool WallReflection_TriMesh::reflect(const WINDSGeneralData *WGD,
         Vector3 P, S, V2;
         Vector3 R, N;
         float r;
-        Vector3 vecFluct = { static_cast<float>(uFluct), static_cast<float>(vFluct), static_cast<float>(wFluct) };
+
 
         N = hit.n;
 
@@ -121,6 +133,10 @@ bool WallReflection_TriMesh::reflect(const WINDSGeneralData *WGD,
         Xnew = P + r * R;
         // reflection of the Fluctuation
         vecFluct = vecFluct.reflect(N);
+
+        X = P;
+        U = Xnew - X;
+
         // update output variable: particle position
         xPos = Xnew[0];
         yPos = Xnew[1];
@@ -130,15 +146,7 @@ bool WallReflection_TriMesh::reflect(const WINDSGeneralData *WGD,
         vFluct = vecFluct[1];
         wFluct = vecFluct[2];
 
-        /*
-        Ray test2_ray(P, R);
-        if (WGD->mesh->triangleBVH->rayHit(test2_ray, hit)) {
-          std::cout << "second hit" << std::endl;
-          std::cout << r << " " << hit.getHitDist() << std::endl;
-        } else {
-          //std::cout << "only one hit" << std::endl;
-        }
-	*/
+
         return true;
       } else {
         //std::cout << "B\thit dist " << hit.getHitDist() << "/" << U.length() << "=" << hit.getHitDist() / U.length() << std::endl;
@@ -147,6 +155,54 @@ bool WallReflection_TriMesh::reflect(const WINDSGeneralData *WGD,
     } else {
       return true;
     }
+    */
+  }
+  return true;
+}
+
+void WallReflection_TriMesh::rayTraceReflect(Mesh *mesh, Vector3 &X, Vector3 &Xnew, Vector3 &U, Vector3 &vecFluct)
+{
+  Ray test_ray(X, U);
+  HitRecord hit;
+  if (mesh->triangleBVH->rayHit(test_ray, hit)) {
+    if (hit.getHitDist() <= U.length()) {
+
+      //std::cout << "----\n";
+      //std::cout << "hit the mesh at " << hit.endpt << " " << X << " " << Xnew << "\n";
+      //std::cout << "A\thit dist " << hit.getHitDist() << "/" << U.length() << "=" << hit.getHitDist() / U.length() << std::endl;
+      //std::cout << "hit normal " << hit.n << std::endl;
+
+      Vector3 P, S, V2;
+      Vector3 R, N;
+      float r;
+
+      N = hit.n;
+
+      // postion of reflection on the wall
+      P = hit.endpt - 0.1 * U / U.length();
+      // distance traveled after the wall
+      V2 = Xnew - P;
+      r = V2.length();
+      // reflection: normalizing V2 -> R is of norm 1
+      V2 = V2 / V2.length();
+      R = V2.reflect(N);
+      // update postion from surface reflection
+      Xnew = P + r * R;
+      // reflection of the Fluctuation
+      vecFluct = vecFluct.reflect(N);
+
+      // prepare variables for next bounce: particle position
+      X = P;
+      // prepare variables for next bounce: distance left to be travelled by particle
+      U = Xnew - X;
+
+      rayTraceReflect(mesh, X, Xnew, U, vecFluct);
+    } else {
+      // hit too far
+      //std::cout << "B\thit dist " << hit.getHitDist() << "/" << U.length() << "=" << hit.getHitDist() / U.length() << std::endl;
+    }
+  } else {
+    //no hit
   }
 }
 /*

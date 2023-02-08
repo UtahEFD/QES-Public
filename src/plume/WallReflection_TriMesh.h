@@ -90,4 +90,5 @@ public:
                        double &wFluct);
 
 private:
+  void rayTraceReflect(Mesh *, Vector3 &, Vector3 &, Vector3 &, Vector3 &);
 };
