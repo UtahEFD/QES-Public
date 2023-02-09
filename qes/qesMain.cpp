@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
   WINDSInputData *WID = new WINDSInputData(arguments.qesWindsParamFile);
   if (!WID) {
     QESout::error("QES Input file: " + arguments.qesWindsParamFile
-                   + " not able to be read successfully.");
+                  + " not able to be read successfully.");
   }
   // parse xml settings
 
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
   // Checking if
   if (arguments.compTurb && !WID->turbParams) {
     QESout::error("Turbulence model is turned on without turbParams in QES Intput file "
-                   + arguments.qesWindsParamFile);
+                  + arguments.qesWindsParamFile);
   }
 
 
@@ -170,8 +170,6 @@ int main(int argc, char *argv[])
 
     // Run WINDS simulation code
     solver->solve(WID, WGD, !arguments.solveWind);
-
-    std::cout << "Solver done!\n";
 
     // Run turbulence
     if (TGD != nullptr) {
