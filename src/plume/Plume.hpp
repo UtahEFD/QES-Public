@@ -156,7 +156,6 @@ protected:
   */
 
   WallReflection *wallReflect;
-  WallReflection *wallReflect2;
 
   DomainBC *domainBC_x;
   DomainBC *domainBC_y;
