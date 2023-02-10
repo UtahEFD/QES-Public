@@ -4,7 +4,7 @@
 # Copyright (c) 2018 University of Utah and the Regents of the University of Minnesota
 # This software is distributed under the MIT License, expressed in: LICENSE.txt.
 
-CMAKE_MINIMUM_REQUIRED (VERSION 3.9)
+CMAKE_MINIMUM_REQUIRED (VERSION 3.18)
 CMAKE_POLICY(SET CMP0074 NEW)
 # cmake_policy(SET CMP0048 NEW)
 
@@ -120,15 +120,21 @@ set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_52;-rdc=true;" )
 #use fast math option is required for OptiX
 # set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-dlink;-rdc=true;--use_fast_math;--keep-device-functions")
 
-FIND_PACKAGE(CUDA REQUIRED)
+FIND_PACKAGE(CUDA)
 
 IF(CUDA_FOUND)
   MESSAGE(STATUS "CUDA Libraries: ${CUDA_LIBRARIES}")
+  SET(HAS_CUDA_SUPPORT ON BOOL "Determines if CUDA/GPU functionality is compiled into the code base")
   INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
   #INCLUDE_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/samples/common/inc)
   LINK_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/lib64)
 ELSE (CUDA_FOUND)
-  MESSAGE(FATAL_ERROR "CUDA is required for compiling this project.  Please install CUDA or re-run cmake with -i to specify the CUDA directories.")
+  #
+  # CUDA was not found, so disable CUDA/GPU support
+  #
+  MESSAGE(WARNING "CUDA is required for compiling this project.  Please install CUDA or re-run cmake with -i to specify the CUDA directories.")
+  MESSAGE(WARNING "GPU and related accelerations will be disable for this build.")
+  SET(HAS_CUDA_SUPPORT OFF BOOL "Determines if CUDA/GPU functionality is compiled into the code base")
 ENDIF(CUDA_FOUND)
 
 #
@@ -139,39 +145,39 @@ OPTION(USE_OPTIX_SUPPORT "Determines if OptiX functionality is compiled into the
 #
 # if CUDA 10.2 or higher is found, then OptiX support can be enabled, so search for it.
 #
-MESSAGE(STATUS "Using CUDA Version: ${CUDA_VERSION}")
-if (${CUDA_VERSION} VERSION_GREATER_EQUAL 10.2)
-  MESSAGE(STATUS "Found CUDA 10.2 or higher! Now searching for OptiX support...")
+if (HAS_CUDA_SUPPORT MATCHES ON)
+
+   MESSAGE(STATUS "Using CUDA Version: ${CUDA_VERSION}")
+   if (${CUDA_VERSION} VERSION_GREATER_EQUAL 10.2)
+     MESSAGE(STATUS "Found CUDA 10.2 or higher! Now searching for OptiX support...")
   
-  #
-  # NVIDIA OptiX
-  #   current version used in project: 7.0
-  #
-  FIND_PACKAGE(OptiX 7.0)
+     #
+     # NVIDIA OptiX
+     #   current version used in project: 7.0
+     #
+     FIND_PACKAGE(OptiX 7.0)
+     if(NOT OptiX_INCLUDE)
 
-  if(NOT OptiX_INCLUDE)
+        MESSAGE(STATUS "  OptiX is used for accelerating some computations with this project. If you wish to run the project with OptiX GPU acceleration, please look into installing NVIDIA CUDA 10.2 or higher and NVIDIA OptiX 7.0 or higher.")    
+        SET(HAS_OPTIX_SUPPORT OFF BOOL "Determines if OptiX functionality is compiled into the code base")
+        REMOVE_DEFINITIONS(-DHAS_OPTIX)
 
-    MESSAGE(STATUS "  OptiX is used for accelerating some computations with this project. If you wish to run the project with OptiX GPU acceleration, please look into installing NVIDIA CUDA 10.2 or higher and NVIDIA OptiX 7.0 or higher.")    
-    SET(HAS_OPTIX_SUPPORT OFF BOOL "Determines if OptiX functionality is compiled into the code base")
-    REMOVE_DEFINITIONS(-DHAS_OPTIX)
+     else()
+        MESSAGE(STATUS "Found NVIDIA OptiX 7.0")
 
-  else()
+        # Set the preprocessor definitions to conditonally compile the optix code
+        SET(HAS_OPTIX_SUPPORT ON BOOL "Determines if OptiX functionality is compiled into the code base")
+        ADD_DEFINITIONS(-DHAS_OPTIX)
 
-    MESSAGE(STATUS "Found NVIDIA OptiX 7.0")
+        MESSAGE(STATUS "Using OptiX Include location: ${OptiX_INCLUDE}")
+        include_directories(${OptiX_INCLUDE})
 
-    # Set the preprocessor definitions to conditonally compile the optix code
-    SET(HAS_OPTIX_SUPPORT ON BOOL "Determines if OptiX functionality is compiled into the code base")
-    ADD_DEFINITIONS(-DHAS_OPTIX)
+        file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/ptx") #ptx files located here
+        add_definitions(-DPTX_DIR="${CMAKE_BINARY_DIR}/ptx") #PTX_DIR
+        set(PTX_DIR "${CMAKE_BINARY_DIR}/ptx")
+        set(CUDA_GENERATED_OUTPUT_DIR ${PTX_DIR})
 
-    MESSAGE(STATUS "Using OptiX Include location: ${OptiX_INCLUDE}")
-    include_directories(${OptiX_INCLUDE})
-
-    file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/ptx") #ptx files located here
-    add_definitions(-DPTX_DIR="${CMAKE_BINARY_DIR}/ptx") #PTX_DIR
-    set(PTX_DIR "${CMAKE_BINARY_DIR}/ptx")
-    set(CUDA_GENERATED_OUTPUT_DIR ${PTX_DIR})
-
-    find_program(BIN2C bin2c DOC "Path to the cuda-sdk bin2c executable.")
+        find_program(BIN2C bin2c DOC "Path to the cuda-sdk bin2c executable.")
 
     # this macro defines cmake rules that execute the following four steps:
     # 1) compile the given cuda file ${cuda_file} to an intermediary PTX file
@@ -208,7 +214,8 @@ else()
   REMOVE_DEFINITIONS(-DHAS_OPTIX)
 endif()
 
-MESSAGE(STATUS "CUDA/OptiX Configuration Complete.")
+   MESSAGE(STATUS "GPU CUDA/OptiX Configuration Complete.")
+endif()
 
 #
 # Find doxygen so we can add a target for building
