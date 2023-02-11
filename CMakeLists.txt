@@ -13,7 +13,8 @@ CMAKE_POLICY(SET CMP0074 NEW)
 # from CMake based on the Version number provided in the PROJECT command.
 PROJECT(QES VERSION 2.0.0)
 SET(QES_VERSION_INFO v${QES_VERSION_MAJOR}.${QES_VERSION_MINOR}.${QES_VERSION_PATCH})
-#ADD_DEFINITIONS(-DQES_VERSION=${QES_VERSION_INFO})
+# The following will pass the version into the code as a preprocessor variable
+ADD_DEFINITIONS(-DQES_VERSION_INFO="${QES_VERSION_INFO}")
 MESSAGE(STATUS "Building QES ${QES_VERSION_INFO}")
 
 if((CMAKE_BUILD_TYPE NOT DEFINED) OR (CMAKE_BUILD_TYPE STREQUAL ""))
@@ -282,7 +283,9 @@ function(link_external_libraries exec)
   target_link_libraries(${exec} ${NETCDF_LIBRARIES_CXX})
   target_link_libraries(${exec} ${NETCDF_LIBRARIES_C})
   # target_link_libraries(${exec} cudadevrt)
-  target_link_libraries(${exec} ${CUDA_LIBRARIES})
+  IF (HAS_CUDA_SUPPORT MATCHES ON)
+    target_link_libraries(${exec} ${CUDA_LIBRARIES})
+  ENDIF()
 endfunction()
 
 add_subdirectory(src/util)
