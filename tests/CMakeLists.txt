@@ -4,8 +4,13 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 
 CUDA_ADD_EXECUTABLE(compareSolvers compareSolvers.cpp)
 
-target_link_libraries(compareSolvers curand)
+IF (HAS_CUDA_SUPPORT MATCHES ON)
+  # target_link_libraries(compareSolvers curand)
+ENDIF()
 target_link_libraries(compareSolvers qeswindscore)
+IF (HAS_CUDA_SUPPORT MATCHES ON)
+  target_link_libraries(qesWinds qeswindsgpu)
+ENDIF()
 target_link_libraries(compareSolvers qesutil)
 
 IF (HAS_OPTIX_SUPPORT MATCHES ON)
@@ -18,8 +23,10 @@ target_link_libraries(compareSolvers ${Boost_FILESYSTEM_LIBRARIES})
 target_link_libraries(compareSolvers ${GDAL_LIBRARY})
 target_link_libraries(compareSolvers ${NETCDF_LIBRARIES_CXX})
 target_link_libraries(compareSolvers ${NETCDF_LIBRARIES_C})
-# target_link_libraries(compareSolvers cudadevrt)
-target_link_libraries(compareSolvers ${CUDA_LIBRARIES})
+IF (HAS_CUDA_SUPPORT MATCHES ON)
+  # target_link_libraries(compareSolvers cudadevrt)
+  target_link_libraries(compareSolvers ${CUDA_LIBRARIES})
+ENDIF()
 
 
 CUDA_ADD_EXECUTABLE( compareWindsResults
@@ -27,8 +34,13 @@ CUDA_ADD_EXECUTABLE( compareWindsResults
                      compareWindsResults.cpp
 		     )
 
-target_link_libraries(compareWindsResults curand)
+IF (HAS_CUDA_SUPPORT MATCHES ON)
+  # target_link_libraries(compareWindsResults curand)
+ENDIF()
 target_link_libraries(compareWindsResults qeswindscore)
+IF (HAS_CUDA_SUPPORT MATCHES ON)
+  target_link_libraries(qesWinds qeswindsgpu)
+ENDIF()
 target_link_libraries(compareWindsResults qesutil)
 
 IF (HAS_OPTIX_SUPPORT MATCHES ON)
@@ -41,8 +53,10 @@ target_link_libraries(compareWindsResults ${Boost_FILESYSTEM_LIBRARIES})
 target_link_libraries(compareWindsResults ${GDAL_LIBRARY})
 target_link_libraries(compareWindsResults ${NETCDF_LIBRARIES_CXX})
 target_link_libraries(compareWindsResults ${NETCDF_LIBRARIES_C})
-# target_link_libraries(compareWindsResults cudadevrt)
-target_link_libraries(compareWindsResults ${CUDA_LIBRARIES})
+IF (HAS_CUDA_SUPPORT MATCHES ON)
+  # target_link_libraries(compareWindsResults cudadevrt)
+  target_link_libraries(compareWindsResults ${CUDA_LIBRARIES})
+ENDIF()
 
 #Comparison tests function
 function(add_comparison_test infile_prefix solver_arg solver_name)

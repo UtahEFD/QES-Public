@@ -9,6 +9,9 @@ CUDA_ADD_EXECUTABLE( qes
 
 target_link_libraries(qes qesplumecore)
 target_link_libraries(qes qeswindscore)
+IF (HAS_CUDA_SUPPORT MATCHES ON)
+  target_link_libraries(qesWinds qeswindsgpu)
+ENDIF()
 target_link_libraries(qes qesutil)
 
 IF (HAS_OPTIX_SUPPORT MATCHES ON)
