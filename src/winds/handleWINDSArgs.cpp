@@ -86,6 +86,14 @@ void WINDSArgs::processArguments(int argc, char *argv[])
   if (solveWind) std::cout << "the wind fields are not being calculated" << std::endl;
 
   isSet("solvetype", solveType);
+
+#ifndef HAS_CUDA
+  // if CUDA is not supported, force the solveType to be CPU no matter
+  // what solveType is specified
+  std::cout << "CUDA Support Not Available - Strictly using CPU computations!" << std::endl;
+  solveType = CPU_Type;
+#endif
+  
   if (solveType == CPU_Type)
     std::cout << "Solving with: Serial solver (CPU)" << std::endl;
   else if (solveType == DYNAMIC_P)
