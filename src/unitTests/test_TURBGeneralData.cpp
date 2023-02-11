@@ -11,9 +11,11 @@ void test_TURBGeneralData::test_compDerivatives_CPU(WINDSGeneralData *WGD)
 
 void test_TURBGeneralData::test_compDerivatives_GPU(WINDSGeneralData *WGD)
 {
+#ifdef HAS_CUDA
   auto gpuStartTime = std::chrono::high_resolution_clock::now();
   getDerivativesGPU();
   auto gpuEndTime = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> gpuElapsed = gpuEndTime - gpuStartTime;
   std::cout << "\t\t GPU Derivatives: elapsed time: " << gpuElapsed.count() << " s\n";
+#endif
 }

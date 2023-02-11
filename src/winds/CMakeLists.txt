@@ -13,7 +13,6 @@ CUDA_ADD_LIBRARY( qeswindscore
   CPUSolver.cpp
   Cut_cell.cpp
   DTEHeightField.cpp
-  DynamicParallelism.cu
   handleWINDSArgs.cpp
   LocalMixing.cpp
   LocalMixingDefault.cpp
@@ -27,7 +26,6 @@ CUDA_ADD_LIBRARY( qeswindscore
   Triangle.cpp
   TURBParams.h
   TURBGeneralData.cpp
-  TURBGeneralData.cu
   TURBGeneralData.h
   TURBOutput.cpp
   TURBWall.cpp
@@ -36,7 +34,6 @@ CUDA_ADD_LIBRARY( qeswindscore
   WindProfilerSensorType.cpp
   WindProfilerBarnCPU.cpp
   WindProfilerBarnGPU.cpp
-  WindProfilerBarnGPU.cu
   WindProfilerWRF.cpp
   WINDSInputData.h
   WINDSGeneralData.cpp WINDSGeneralData.h
@@ -56,14 +53,21 @@ CUDA_ADD_LIBRARY( qeswindscore
   Ray.cpp Ray.h
   SphereDirections.cpp SphereDirections.h
   HitRecord.cpp HitRecord.h
-  GlobalMemory.cu
-  GlobalMemory.h
-  SharedMemory.cu
-  SharedMemory.h
+
   TimeSeries.h
   )
 
  
+IF (HAS_CUDA_SUPPORT MATCHES ON)
+  CUDA_ADD_LIBRARY(qeswindsgpu
+    DynamicParallelism.cu
+    GlobalMemory.cu GlobalMemory.h
+    SharedMemory.cu SharedMemory.h    
+    TURBGeneralData.cu
+    WindProfilerBarnGPU.cu)
+ENDIF (HAS_CUDA_SUPPORT MATCHES ON)
+  
+
 IF (HAS_OPTIX_SUPPORT MATCHES ON)
   cuda_compile_and_embed(embedded_ptx_code OptixRayTrace.cu)
  

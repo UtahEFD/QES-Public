@@ -18,7 +18,7 @@ target_link_libraries(compareSolvers ${Boost_FILESYSTEM_LIBRARIES})
 target_link_libraries(compareSolvers ${GDAL_LIBRARY})
 target_link_libraries(compareSolvers ${NETCDF_LIBRARIES_CXX})
 target_link_libraries(compareSolvers ${NETCDF_LIBRARIES_C})
-target_link_libraries(compareSolvers cudadevrt)
+# target_link_libraries(compareSolvers cudadevrt)
 target_link_libraries(compareSolvers ${CUDA_LIBRARIES})
 
 
@@ -41,7 +41,7 @@ target_link_libraries(compareWindsResults ${Boost_FILESYSTEM_LIBRARIES})
 target_link_libraries(compareWindsResults ${GDAL_LIBRARY})
 target_link_libraries(compareWindsResults ${NETCDF_LIBRARIES_CXX})
 target_link_libraries(compareWindsResults ${NETCDF_LIBRARIES_C})
-target_link_libraries(compareWindsResults cudadevrt)
+# target_link_libraries(compareWindsResults cudadevrt)
 target_link_libraries(compareWindsResults ${CUDA_LIBRARIES})
 
 #Comparison tests function
