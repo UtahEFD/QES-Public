@@ -124,6 +124,9 @@ set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_52;-rdc=true;" )
 #use fast math option is required for OptiX
 # set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-dlink;-rdc=true;--use_fast_math;--keep-device-functions")
 
+# USE_CUDA_SUPPORT can be used to turn on or off CUDA, GPU acceleration in the code.  By default, we try to
+# locate CUDA and thus enable it.
+# If it cannot be found, USE_CUDA_SUPPORT goes to OFF
 OPTION(USE_CUDA_SUPPORT "Determines if CUDA functionality is compiled into the code base" ON)
 
 FIND_PACKAGE(CUDA)
@@ -140,6 +143,7 @@ ELSE (CUDA_FOUND)
   MESSAGE(WARNING "CUDA is required for compiling this project.  Please install CUDA or re-run cmake with -i to specify the CUDA directories.")
   MESSAGE(WARNING "GPU and related accelerations will be disable for this build.")
   SET(HAS_CUDA_SUPPORT OFF BOOL "Determines if CUDA/GPU functionality is compiled into the code base")
+  OPTION(USE_CUDA_SUPPORT "Determines if CUDA functionality is compiled into the code base" OFF)
 ENDIF(CUDA_FOUND)
 
 
