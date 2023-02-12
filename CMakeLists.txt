@@ -30,7 +30,7 @@ option(ENABLE_CPPCHECK "Enable static analysis with cppcheck" OFF)
 option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
 
 if(ENABLE_CLANG_TIDY)
-  find_program(CLANGTIDY clang-tidy-13)
+  find_program(CLANGTIDY clang-tidy)
   if(CLANGTIDY)
     set(CMAKE_C_CLANG_TIDY ${CLANGTIDY})
     set(CMAKE_CXX_CLANG_TIDY ${CLANGTIDY})
@@ -56,12 +56,12 @@ CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
 
 if(COMPILER_SUPPORTS_CXX11)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
   #
   # This code used C++ 11 and 14 features so enable these on CXX Flags
   #
-  set(CMAKE_CXX_STANDARD 14)
+  set(CMAKE_CXX_STANDARD 11)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   set(CMAKE_CXX_EXTENSIONS OFF)
   
@@ -237,6 +237,23 @@ else(HAS_CUDA_SUPPORT)
   REMOVE_DEFINITIONS(-DHAS_OPTIX)
 endif(HAS_CUDA_SUPPORT)
 
+
+
+# Override CUDA and OptiX State With Enable Options
+if (NOT ENABLE_CUDA)
+  MESSAGE(STATUS "CUDA Support Disabled.")
+  SET(HAS_CUDA_SUPPORT OFF CACHE BOOL "Determines if CUDA/GPU functionality is compiled into the code base")
+  REMOVE_DEFINITIONS(-DHAS_CUDA)
+  SET(HAS_OPTIX_SUPPORT OFF CACHE BOOL "Determines if OptiX functionality is compiled into the code base")
+  REMOVE_DEFINITIONS(-DHAS_OPTIX)
+endif (NOT ENABLE_CUDA)
+
+if (NOT ENABLE_OPTIX)
+  MESSAGE(STATUS "OPTIX Support Disabled.")
+  SET(HAS_OPTIX_SUPPORT OFF CACHE BOOL "Determines if OptiX functionality is compiled into the code base")
+  REMOVE_DEFINITIONS(-DHAS_OPTIX)
+endif (NOT ENABLE_OPTIX)
+  
 
 
 
