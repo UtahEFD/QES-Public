@@ -1,7 +1,7 @@
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-CUDA_ADD_LIBRARY( qeswindscore
+SET( qesWindCoreSources 
   BVH.cpp
   Canopy.cpp
   CanopyElement.cpp
@@ -57,18 +57,27 @@ CUDA_ADD_LIBRARY( qeswindscore
   TimeSeries.h
   )
 
+IF (HAS_CUDA_SUPPORT)
+   CUDA_ADD_LIBRARY( qeswindcore
+      ${qesWindCoreSources}
+   )
+ELSE (HAS_CUDA_SUPPORT)
+   ADD_LIBRARY( qeswindcore
+      ${qesWindCoreSources}
+   )
+ENDIF (HAS_CUDA_SUPPORT)
  
-IF (HAS_CUDA_SUPPORT MATCHES ON)
+IF (HAS_CUDA_SUPPORT)
   CUDA_ADD_LIBRARY(qeswindsgpu
     DynamicParallelism.cu
     GlobalMemory.cu GlobalMemory.h
     SharedMemory.cu SharedMemory.h    
     TURBGeneralData.cu
     WindProfilerBarnGPU.cu)
-ENDIF (HAS_CUDA_SUPPORT MATCHES ON)
+ENDIF (HAS_CUDA_SUPPORT)
   
 
-IF (HAS_OPTIX_SUPPORT MATCHES ON)
+IF (HAS_OPTIX_SUPPORT)
   cuda_compile_and_embed(embedded_ptx_code OptixRayTrace.cu)
  
   add_library(qesOptix
@@ -76,7 +85,7 @@ IF (HAS_OPTIX_SUPPORT MATCHES ON)
     OptixRayTrace.h
     OptixRayTrace.cpp
     )  
-ENDIF()
+ENDIF(HAS_OPTIX_SUPPORT)
 
 
 

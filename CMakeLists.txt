@@ -56,12 +56,12 @@ CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
 
 if(COMPILER_SUPPORTS_CXX11)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
   #
   # This code used C++ 11 and 14 features so enable these on CXX Flags
   #
-  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD 14)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   set(CMAKE_CXX_EXTENSIONS OFF)
   
@@ -124,53 +124,43 @@ set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_52;-rdc=true;" )
 #use fast math option is required for OptiX
 # set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-dlink;-rdc=true;--use_fast_math;--keep-device-functions")
 
-# USE_CUDA_SUPPORT can be used to turn on or off CUDA, GPU acceleration in the code.  By default, we try to
+# HAS_CUDA_SUPPORT can be used to turn on or off CUDA, GPU acceleration in the code.  By default, we try to
 # locate CUDA and thus enable it.
-# If it cannot be found, USE_CUDA_SUPPORT goes to OFF
-OPTION(USE_CUDA_SUPPORT "Determines if CUDA functionality is compiled into the code base" ON)
+# If it cannot be found, HAS_CUDA_SUPPORT goes to OFF
+OPTION(ENABLE_CUDA "Enable CUDA/GPU Acceleration" ON)
 
+# Allow the compilation to override including OptiX if desired
+OPTION(ENABLE_OPTIX "Enable NVIDIA OptiX GPU Acceleration" ON)
+
+#
+# Attempt to find CUDA
+#
 FIND_PACKAGE(CUDA)
 IF(CUDA_FOUND)
   MESSAGE(STATUS "CUDA Libraries: ${CUDA_LIBRARIES}")
-  SET(HAS_CUDA_SUPPORT ON BOOL "Determines if CUDA/GPU functionality is compiled into the code base")
+  SET(HAS_CUDA_SUPPORT ON CACHE BOOL "Determines if CUDA/GPU functionality is compiled into the code base")
+  
   INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
   #INCLUDE_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/samples/common/inc)
   LINK_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/lib64)
-ELSE (CUDA_FOUND)
+ELSE(CUDA_FOUND)
   #
   # CUDA was not found, so disable CUDA/GPU support
   #
-  MESSAGE(WARNING "CUDA is required for compiling this project.  Please install CUDA or re-run cmake with -i to specify the CUDA directories.")
+  SET(HAS_CUDA_SUPPORT OFF CACHE BOOL "Determines if CUDA/GPU functionality is compiled into the code base")
+  SET(HAS_OPTIX_SUPPORT OFF CACHE BOOL "Determines if OptiX functionality is compiled into the code base")
+  
+  MESSAGE(WARNING "CUDA is required for compiling GPU accelerated computations into this project.  Please install CUDA or re-run cmake with -i to specify the CUDA directories if you need these features.")
   MESSAGE(WARNING "GPU and related accelerations will be disable for this build.")
-  SET(HAS_CUDA_SUPPORT OFF BOOL "Determines if CUDA/GPU functionality is compiled into the code base")
-  OPTION(USE_CUDA_SUPPORT "Determines if CUDA functionality is compiled into the code base" OFF)
 ENDIF(CUDA_FOUND)
 
-
-
-
-IF(USE_CUDA_SUPPORT)
-  SET(HAS_CUDA_SUPPORT ON BOOL "Determines if CUDA/GPU functionality is compiled into the code base")
-  ADD_DEFINITIONS(-DHAS_CUDA)
-ELSE(USE_CUDA_SUPPORT)
-  MESSAGE(STATUS "Disabling CUDA Support.")
-  SET(HAS_CUDA_SUPPORT OFF BOOL "Determines if CUDA/GPU functionality is compiled into the code base")
-  REMOVE_DEFINITIONS(-DHAS_CUDA)
-ENDIF(USE_CUDA_SUPPORT)
-
-
-
-
-
-#
-# Allow the compilation to override including OptiX if desired
-#
-OPTION(USE_OPTIX_SUPPORT "Determines if OptiX functionality is compiled into the code base" ON)
 
 #
 # if CUDA 10.2 or higher is found, then OptiX support can be enabled, so search for it.
 #
-if (HAS_CUDA_SUPPORT MATCHES ON)
+if(HAS_CUDA_SUPPORT)
+
+  ADD_DEFINITIONS(-DHAS_CUDA)
 
   MESSAGE(STATUS "Using CUDA Version: ${CUDA_VERSION}")
   if (${CUDA_VERSION} VERSION_GREATER_EQUAL 10.2)
@@ -184,14 +174,14 @@ if (HAS_CUDA_SUPPORT MATCHES ON)
     if(NOT OptiX_INCLUDE)
 
       MESSAGE(STATUS "  OptiX is used for accelerating some computations with this project. If you wish to run the project with OptiX GPU acceleration, please look into installing NVIDIA CUDA 10.2 or higher and NVIDIA OptiX 7.0 or higher.")    
-      SET(HAS_OPTIX_SUPPORT OFF BOOL "Determines if OptiX functionality is compiled into the code base")
+      SET(HAS_OPTIX_SUPPORT OFF CACHE BOOL "Determines if OptiX functionality is compiled into the code base")
       REMOVE_DEFINITIONS(-DHAS_OPTIX)
 
-    else()
+    else(NOT OptiX_INCLUDE)
       MESSAGE(STATUS "Found NVIDIA OptiX 7.0")
 
       # Set the preprocessor definitions to conditonally compile the optix code
-      SET(HAS_OPTIX_SUPPORT ON BOOL "Determines if OptiX functionality is compiled into the code base")
+      SET(HAS_OPTIX_SUPPORT ON CACHE BOOL "Determines if OptiX functionality is compiled into the code base")
       ADD_DEFINITIONS(-DHAS_OPTIX)
 
       MESSAGE(STATUS "Using OptiX Include location: ${OptiX_INCLUDE}")
@@ -229,18 +219,23 @@ if (HAS_CUDA_SUPPORT MATCHES ON)
 	set(${output_var} ${embedded_file})
       endmacro()
 
-    endif()  
+    endif(NOT OptiX_INCLUDE)
 
   else()
     MESSAGE(STATUS "Did NOT find CUDA 10.2 or higher!  Disabling NVIDIA OptiX acceleration.")
     MESSAGE(STATUS "  OptiX is used for accelerating some computations with this project. If you wish to run the project with OptiX GPU acceleration, please look into installing NVIDIA CUDA 10.2 or higher and NVIDIA OptiX 7.0 or higher.")    
     # Disable OptiX Support
-    SET(HAS_OPTIX_SUPPORT OFF BOOL "Determines if OptiX functionality is compiled into the code base")
+
+    SET(HAS_OPTIX_SUPPORT OFF CACHE BOOL "Determines if OptiX functionality is compiled into the code base")
     REMOVE_DEFINITIONS(-DHAS_OPTIX)
   endif()
 
   MESSAGE(STATUS "GPU CUDA/OptiX Configuration Complete.")
-endif()
+else(HAS_CUDA_SUPPORT)
+  MESSAGE(STATUS "Disabling CUDA Support.")
+  REMOVE_DEFINITIONS(-DHAS_CUDA)
+  REMOVE_DEFINITIONS(-DHAS_OPTIX)
+endif(HAS_CUDA_SUPPORT)
 
 
 
@@ -287,7 +282,7 @@ function(link_external_libraries exec)
   target_link_libraries(${exec} ${NETCDF_LIBRARIES_CXX})
   target_link_libraries(${exec} ${NETCDF_LIBRARIES_C})
   # target_link_libraries(${exec} cudadevrt)
-  IF (HAS_CUDA_SUPPORT MATCHES ON)
+  IF (HAS_CUDA_SUPPORT)
     target_link_libraries(${exec} ${CUDA_LIBRARIES})
   ENDIF()
 endfunction()

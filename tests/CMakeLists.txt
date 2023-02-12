@@ -2,7 +2,12 @@
 # hierarchically integrate projects together.
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
-CUDA_ADD_EXECUTABLE(compareSolvers compareSolvers.cpp)
+if(HAS_CUDA_SUPPORT)
+	CUDA_ADD_EXECUTABLE(compareSolvers compareSolvers.cpp)
+else(HAS_CUDA_SUPPORT)
+	ADD_EXECUTABLE(compareSolvers compareSolvers.cpp)
+endif(HAS_CUDA_SUPPORT)
+
 
 IF (HAS_CUDA_SUPPORT MATCHES ON)
   # target_link_libraries(compareSolvers curand)
@@ -29,10 +34,18 @@ IF (HAS_CUDA_SUPPORT MATCHES ON)
 ENDIF()
 
 
-CUDA_ADD_EXECUTABLE( compareWindsResults
+if(HAS_CUDA_SUPPORT)
+	CUDA_ADD_EXECUTABLE( compareWindsResults
                      handleCompareArgs.cpp
                      compareWindsResults.cpp
 		     )
+else(HAS_CUDA_SUPPORT)
+	ADD_EXECUTABLE( compareWindsResults
+                     handleCompareArgs.cpp
+                     compareWindsResults.cpp
+		     )
+endif(HAS_CUDA_SUPPORT)
+
 
 IF (HAS_CUDA_SUPPORT MATCHES ON)
   # target_link_libraries(compareWindsResults curand)

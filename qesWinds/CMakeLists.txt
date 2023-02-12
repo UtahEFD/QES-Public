@@ -2,14 +2,19 @@
 # hierarchically integrate projects together.
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
-
-CUDA_ADD_EXECUTABLE( qesWinds
-  qesWindsMain.cpp
-  )
+if(HAS_CUDA_SUPPORT)
+	CUDA_ADD_EXECUTABLE( qesWinds
+	  qesWindsMain.cpp
+	)
+else(HAS_CUDA_SUPPORT)
+	ADD_EXECUTABLE( qesWinds
+	  qesWindsMain.cpp
+	)
+endif(HAS_CUDA_SUPPORT)
 
 # target_link_libraries(qesWinds curand)
 target_link_libraries(qesWinds qeswindscore)
-IF (HAS_CUDA_SUPPORT MATCHES ON)
+IF (HAS_CUDA_SUPPORT)
   target_link_libraries(qesWinds qeswindsgpu)
 ENDIF()
 target_link_libraries(qesWinds qesutil)

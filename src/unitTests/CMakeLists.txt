@@ -7,24 +7,49 @@ add_library(unitTestLib ${LIB_TYPE}
 #FILE(GLOB files "*.h")
 #INSTALL(FILES ${files} DESTINATION include/unitTests)
 
-cuda_add_executable(unitTestTime
-  mainTimeTest.cpp)
+if (HAS_CUDA_SUPPORT)
+   cuda_add_executable(unitTestTime
+     mainTimeTest.cpp)
+else (HAS_CUDA_SUPPORT)
+   add_executable(unitTestTime
+     mainTimeTest.cpp)
+endif (HAS_CUDA_SUPPORT)
 
-cuda_add_executable(unitTestWind
-  test_DTEHeightField.h test_DTEHeightField.cpp
-  mainWindTest.cpp)
+if (HAS_CUDA_SUPPORT)
+   cuda_add_executable(unitTestWind
+     test_DTEHeightField.h test_DTEHeightField.cpp
+       mainWindTest.cpp)
+else (HAS_CUDA_SUPPORT)
+   add_executable(unitTestWind
+     test_DTEHeightField.h test_DTEHeightField.cpp
+       mainWindTest.cpp)
+endif (HAS_CUDA_SUPPORT)
 
-cuda_add_executable(unitTestTurbulence
-  test_WINDSGeneralData.h test_WINDSGeneralData.cpp
-  test_TURBGeneralData.h test_TURBGeneralData.cpp
-  mainTurbulenceTest.cpp)
+if (HAS_CUDA_SUPPORT)
+   cuda_add_executable(unitTestTurbulence
+       test_WINDSGeneralData.h test_WINDSGeneralData.cpp
+       test_TURBGeneralData.h test_TURBGeneralData.cpp
+       mainTurbulenceTest.cpp)
+else (HAS_CUDA_SUPPORT)
+   add_executable(unitTestTurbulence
+       test_WINDSGeneralData.h test_WINDSGeneralData.cpp
+       test_TURBGeneralData.h test_TURBGeneralData.cpp
+       mainTurbulenceTest.cpp)
+endif (HAS_CUDA_SUPPORT)
 
-cuda_add_executable(unitTestPlume
-  test_WINDSGeneralData.h test_WINDSGeneralData.cpp
-  test_TURBGeneralData.h test_TURBGeneralData.cpp
-  test_PlumeGeneralData.h test_PlumeGeneralData.cpp test_PlumeGeneralData.cu
-  mainPlumeTest.cpp)
-
+if (HAS_CUDA_SUPPORT)
+   cuda_add_executable(unitTestPlume
+      test_WINDSGeneralData.h test_WINDSGeneralData.cpp
+      test_TURBGeneralData.h test_TURBGeneralData.cpp
+      test_PlumeGeneralData.h test_PlumeGeneralData.cpp test_PlumeGeneralData.cu
+      mainPlumeTest.cpp)
+else (HAS_CUDA_SUPPORT)
+   add_executable(unitTestPlume
+      test_WINDSGeneralData.h test_WINDSGeneralData.cpp
+      test_TURBGeneralData.h test_TURBGeneralData.cpp
+      test_PlumeGeneralData.h test_PlumeGeneralData.cpp test_PlumeGeneralData.cu
+      mainPlumeTest.cpp)
+endif (HAS_CUDA_SUPPORT)
 
 set(UNITTESTS
   unitTestTime
