@@ -59,12 +59,12 @@ set(UNITTESTS
 
 foreach (unittest ${UNITTESTS})
   target_link_libraries(${unittest} qesplumecore)
-  target_link_libraries(${unittest} qeswindscore)
 
   IF (HAS_CUDA_SUPPORT)
     target_link_libraries(${unittest} qeswindsgpu)
   ENDIF()
 
+  target_link_libraries(${unittest} qeswindscore)
   target_link_libraries(${unittest} qesutil)
 
   IF(HAS_OPTIX_SUPPORT MATCHES ON)

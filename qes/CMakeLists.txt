@@ -17,7 +17,7 @@ endif(HAS_CUDA_SUPPORT)
 target_link_libraries(qes qesplumecore)
 target_link_libraries(qes qeswindscore)
 IF (HAS_CUDA_SUPPORT MATCHES ON)
-  target_link_libraries(qesWinds qeswindsgpu)
+  target_link_libraries(qes qeswindsgpu)
 ENDIF()
 target_link_libraries(qes qesutil)
 

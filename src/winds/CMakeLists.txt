@@ -33,6 +33,7 @@ SET( qesWindCoreSources
   TURBWallTerrain.cpp
   WindProfilerSensorType.cpp
   WindProfilerBarnCPU.cpp
+  WindProfilerBarnGPU.cpp
   WindProfilerWRF.cpp
   WINDSInputData.h
   WINDSGeneralData.cpp WINDSGeneralData.h
@@ -73,7 +74,6 @@ IF (HAS_CUDA_SUPPORT)
     GlobalMemory.cu GlobalMemory.h
     SharedMemory.cu SharedMemory.h    
     TURBGeneralData.cu
-    WindProfilerBarnGPU.cpp
     WindProfilerBarnGPU.cu)
 ENDIF (HAS_CUDA_SUPPORT)
   

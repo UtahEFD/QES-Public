@@ -13,7 +13,13 @@ else(HAS_CUDA_SUPPORT)
 endif(HAS_CUDA_SUPPORT)
 
 target_link_libraries(qesPlume qesplumecore)
+
 target_link_libraries(qesPlume qeswindscore)
+IF (HAS_CUDA_SUPPORT)
+  target_link_libraries(qesPlume qeswindsgpu)
+ENDIF()
+target_link_libraries(qesPlume qeswindscore)
+
 target_link_libraries(qesPlume qesutil)
 
 IF (HAS_OPTIX_SUPPORT)
