@@ -33,7 +33,6 @@ SET( qesWindCoreSources
   TURBWallTerrain.cpp
   WindProfilerSensorType.cpp
   WindProfilerBarnCPU.cpp
-  WindProfilerBarnGPU.cpp
   WindProfilerWRF.cpp
   WINDSInputData.h
   WINDSGeneralData.cpp WINDSGeneralData.h
@@ -58,21 +57,23 @@ SET( qesWindCoreSources
   )
 
 IF (HAS_CUDA_SUPPORT)
-   CUDA_ADD_LIBRARY( qeswindcore
+   CUDA_ADD_LIBRARY( qeswindscore
       ${qesWindCoreSources}
    )
 ELSE (HAS_CUDA_SUPPORT)
-   ADD_LIBRARY( qeswindcore
+   ADD_LIBRARY( qeswindscore
       ${qesWindCoreSources}
    )
 ENDIF (HAS_CUDA_SUPPORT)
  
+
 IF (HAS_CUDA_SUPPORT)
   CUDA_ADD_LIBRARY(qeswindsgpu
     DynamicParallelism.cu
     GlobalMemory.cu GlobalMemory.h
     SharedMemory.cu SharedMemory.h    
     TURBGeneralData.cu
+    WindProfilerBarnGPU.cpp
     WindProfilerBarnGPU.cu)
 ENDIF (HAS_CUDA_SUPPORT)
   
