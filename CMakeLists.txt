@@ -127,10 +127,12 @@ set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_52;-rdc=true;" )
 # HAS_CUDA_SUPPORT can be used to turn on or off CUDA, GPU acceleration in the code.  By default, we try to
 # locate CUDA and thus enable it.
 # If it cannot be found, HAS_CUDA_SUPPORT goes to OFF
-OPTION(ENABLE_CUDA "Enable CUDA/GPU Acceleration" ON)
+#OPTION(ENABLE_CUDA "Enable CUDA/GPU Acceleration" ON)
+#SET(HAS_CUDA_SUPPORT ON CACHE BOOL "Determines if CUDA/GPU functionality is compiled into the code base")  # first entry
 
 # Allow the compilation to override including OptiX if desired
-OPTION(ENABLE_OPTIX "Enable NVIDIA OptiX GPU Acceleration" ON)
+#OPTION(ENABLE_OPTIX "Enable NVIDIA OptiX GPU Acceleration" ON)
+#SET(HAS_OPTIX_SUPPORT ON CACHE BOOL "Determines if OptiX functionality is compiled into the code base")
 
 #
 # Attempt to find CUDA
@@ -138,7 +140,7 @@ OPTION(ENABLE_OPTIX "Enable NVIDIA OptiX GPU Acceleration" ON)
 FIND_PACKAGE(CUDA)
 IF(CUDA_FOUND)
   MESSAGE(STATUS "CUDA Libraries: ${CUDA_LIBRARIES}")
-  SET(HAS_CUDA_SUPPORT ON CACHE BOOL "Determines if CUDA/GPU functionality is compiled into the code base")
+  SET(HAS_CUDA_SUPPORT ON CACHE BOOL "Determines if CUDA/GPU functionality is compiled into the code base" )
   
   INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
   #INCLUDE_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/samples/common/inc)
@@ -147,8 +149,8 @@ ELSE(CUDA_FOUND)
   #
   # CUDA was not found, so disable CUDA/GPU support
   #
-  SET(HAS_CUDA_SUPPORT OFF CACHE BOOL "Determines if CUDA/GPU functionality is compiled into the code base")
-  SET(HAS_OPTIX_SUPPORT OFF CACHE BOOL "Determines if OptiX functionality is compiled into the code base")
+  SET(HAS_CUDA_SUPPORT OFF CACHE BOOL "Determines if CUDA/GPU functionality is compiled into the code base" FORCE)
+  SET(HAS_OPTIX_SUPPORT OFF CACHE BOOL "Determines if OptiX functionality is compiled into the code base" FORCE)
   
   MESSAGE(WARNING "CUDA is required for compiling GPU accelerated computations into this project.  Please install CUDA or re-run cmake with -i to specify the CUDA directories if you need these features.")
   MESSAGE(WARNING "GPU and related accelerations will be disable for this build.")
@@ -174,14 +176,14 @@ if(HAS_CUDA_SUPPORT)
     if(NOT OptiX_INCLUDE)
 
       MESSAGE(STATUS "  OptiX is used for accelerating some computations with this project. If you wish to run the project with OptiX GPU acceleration, please look into installing NVIDIA CUDA 10.2 or higher and NVIDIA OptiX 7.0 or higher.")    
-      SET(HAS_OPTIX_SUPPORT OFF CACHE BOOL "Determines if OptiX functionality is compiled into the code base")
+      SET(HAS_OPTIX_SUPPORT OFF CACHE BOOL "Determines if OptiX functionality is compiled into the code base" FORCE)
       REMOVE_DEFINITIONS(-DHAS_OPTIX)
 
     else(NOT OptiX_INCLUDE)
       MESSAGE(STATUS "Found NVIDIA OptiX 7.0")
 
       # Set the preprocessor definitions to conditonally compile the optix code
-      SET(HAS_OPTIX_SUPPORT ON CACHE BOOL "Determines if OptiX functionality is compiled into the code base")
+      # SET(HAS_OPTIX_SUPPORT ON BOOL "Determines if OptiX functionality is compiled into the code base")
       ADD_DEFINITIONS(-DHAS_OPTIX)
 
       MESSAGE(STATUS "Using OptiX Include location: ${OptiX_INCLUDE}")
@@ -224,35 +226,46 @@ if(HAS_CUDA_SUPPORT)
   else()
     MESSAGE(STATUS "Did NOT find CUDA 10.2 or higher!  Disabling NVIDIA OptiX acceleration.")
     MESSAGE(STATUS "  OptiX is used for accelerating some computations with this project. If you wish to run the project with OptiX GPU acceleration, please look into installing NVIDIA CUDA 10.2 or higher and NVIDIA OptiX 7.0 or higher.")    
-    # Disable OptiX Support
 
-    SET(HAS_OPTIX_SUPPORT OFF CACHE BOOL "Determines if OptiX functionality is compiled into the code base")
+    SET(HAS_CUDA_SUPPORT OFF FORCE BOOL "Determines if CUDA/GPU functionality is compiled into the code base")
+    REMOVE_DEFINITIONS(-DHAS_CUDA)
+
+    SET(HAS_OPTIX_SUPPORT OFF FORCE BOOL "Determines if OptiX functionality is compiled into the code base")
     REMOVE_DEFINITIONS(-DHAS_OPTIX)
   endif()
 
   MESSAGE(STATUS "GPU CUDA/OptiX Configuration Complete.")
+
 else(HAS_CUDA_SUPPORT)
   MESSAGE(STATUS "Disabling CUDA Support.")
+  SET(HAS_CUDA_SUPPORT OFF FORCE BOOL "Determines if CUDA/GPU functionality is compiled into the code base")
   REMOVE_DEFINITIONS(-DHAS_CUDA)
+  SET(HAS_OPTIX_SUPPORT OFF FORCE BOOL "Determines if OptiX functionality is compiled into the code base")
   REMOVE_DEFINITIONS(-DHAS_OPTIX)
 endif(HAS_CUDA_SUPPORT)
 
 
 
 # Override CUDA and OptiX State With Enable Options
-if (NOT ENABLE_CUDA)
-  MESSAGE(STATUS "CUDA Support Disabled.")
-  SET(HAS_CUDA_SUPPORT OFF CACHE BOOL "Determines if CUDA/GPU functionality is compiled into the code base")
-  REMOVE_DEFINITIONS(-DHAS_CUDA)
-  SET(HAS_OPTIX_SUPPORT OFF CACHE BOOL "Determines if OptiX functionality is compiled into the code base")
-  REMOVE_DEFINITIONS(-DHAS_OPTIX)
-endif (NOT ENABLE_CUDA)
+#if (ENABLE_CUDA)
+#  MESSAGE(STATUS "CUDA Support Enabled.")
+#  SET(HAS_CUDA_SUPPORT ON BOOL "Determines if CUDA/GPU functionality is compiled into the code base")
+#  ADD_DEFINITIONS(-DHAS_CUDA)
+#  SET(HAS_OPTIX_SUPPORT ON BOOL "Determines if OptiX functionality is compiled into the code base")
+#  ADD_DEFINITIONS(-DHAS_OPTIX)
+#else (ENABLE_CUDA)
+#  MESSAGE(STATUS "CUDA Support Disabled.")
+#  SET(HAS_CUDA_SUPPORT OFF BOOL "Determines if CUDA/GPU functionality is compiled into the code base")
+#  REMOVE_DEFINITIONS(-DHAS_CUDA)
+#  SET(HAS_OPTIX_SUPPORT OFF BOOL "Determines if OptiX functionality is compiled into the code base")
+#  REMOVE_DEFINITIONS(-DHAS_OPTIX)
+#endif (ENABLE_CUDA)
 
-if (NOT ENABLE_OPTIX)
-  MESSAGE(STATUS "OPTIX Support Disabled.")
-  SET(HAS_OPTIX_SUPPORT OFF CACHE BOOL "Determines if OptiX functionality is compiled into the code base")
-  REMOVE_DEFINITIONS(-DHAS_OPTIX)
-endif (NOT ENABLE_OPTIX)
+#if (NOT ENABLE_OPTIX)
+#  MESSAGE(STATUS "OPTIX Support Disabled.")
+#  SET(HAS_OPTIX_SUPPORT OFF BOOL "Determines if OptiX functionality is compiled into the code base")
+#  REMOVE_DEFINITIONS(-DHAS_OPTIX)
+#endif (NOT ENABLE_OPTIX)
   
 
 
