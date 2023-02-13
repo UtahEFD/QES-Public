@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
   NcDim fmwdim = wrfInputFile.getVar("U0_FMW").getDim( 0 );
   int fmwTimeSize = fmwdim.getSize();
 
-  std::vector<size_t> fmw_StartIdx = {fmwTimeSize-1};
+  std::vector<size_t> fmw_StartIdx = {static_cast<unsigned long>(fmwTimeSize-1)};
   std::vector<size_t> fmw_counts = {1};
   wrfInputFile.getVar("FRAME0_FMW").getVar(fmw_StartIdx, fmw_counts, &wrfFRAME0_FMW);        
 
@@ -66,9 +66,9 @@ int main(int argc, char *argv[])
       NcDim hgtDim = wrfInputFile.getVar("U0_FMW").getDim( 1 );
       int hgtSize = hgtDim.getSize();
 
-      std::vector<size_t> interpWinds_StartIdx = {timeSize-1,0,0,0};
+      std::vector<size_t> interpWinds_StartIdx = {static_cast<unsigned long>(timeSize-1),0,0,0};
       std::vector<size_t> interpWinds_counts = {1,
-						hgtSize,
+        static_cast<unsigned long>(hgtSize),
 						static_cast<unsigned long>(fm_ny),
 						static_cast<unsigned long>(fm_nx)};
   
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
       //
   
       // read the checksum from WRF
-      std::vector<size_t> chksum_StartIdx = {timeSize-1};
+      std::vector<size_t> chksum_StartIdx = {static_cast<unsigned long>(timeSize-1)};
       std::vector<size_t> chksum_counts = {1};
 
       int wrfCHSUM0_FMW = 0;
@@ -101,9 +101,9 @@ int main(int argc, char *argv[])
       assert( wrfCHSUM0_FMW == qesChkSum );
 
       // Read the heights
-      std::vector<size_t> interpWindsHT_StartIdx = {timeSize-1,0,0,0};
+      std::vector<size_t> interpWindsHT_StartIdx = {static_cast<unsigned long>(timeSize-1),0,0,0};
       std::vector<size_t> interpWindsHT_counts = {1,
-						  hgtSize};
+        static_cast<unsigned long>(hgtSize)};
 
       std::vector<float> ht_fmw( 1 * hgtSize );
       wrfInputFile.getVar("HT_FMW").getVar(interpWindsHT_StartIdx, interpWindsHT_counts, ht_fmw.data());

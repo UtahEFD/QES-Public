@@ -127,6 +127,5 @@ std::string testVectorMath()
   //PGD->testGPU(100000);
   PGD->testGPU_struct(1000000);
 #endif
-
   return results;
 }

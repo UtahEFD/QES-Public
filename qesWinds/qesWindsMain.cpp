@@ -48,10 +48,11 @@
 
 #include "winds/Solver.h"
 #include "winds/CPUSolver.h"
+#ifdef HAS_CUDA
 #include "winds/DynamicParallelism.h"
 #include "winds/GlobalMemory.h"
 #include "winds/SharedMemory.h"
-
+#endif
 #include "winds/Sensor.h"
 
 int main(int argc, char *argv[])

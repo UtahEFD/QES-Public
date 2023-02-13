@@ -226,11 +226,11 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   v0n_uw = v0_uw / M0_uw;
 
   // Convert rowAngle (compass rose) to unit circle degrees
-  float rowAngle_u = -(rowAngle - 90);
-  float cosA = cos(rowAngle * M_PI / 180);
-  float sinA = sin(rowAngle * M_PI / 180);
+  float rowAngle_u = -(rowAngle - 90.0);
+  float cosA = cos(rowAngle * M_PI / 180.0);
+  float sinA = sin(rowAngle * M_PI / 180.0);
 
-  float rd[2] = { cos(rowAngle_u * M_PI / 180), sin(rowAngle_u * M_PI / 180) };
+  float rd[2] = {static_cast<float>( cos(rowAngle_u * M_PI / 180.0)), static_cast<float>(sin(rowAngle_u * M_PI / 180.0)) };
 
   float Rx[2] = { building_cent_x, building_cent_x + rd[0] };
   float Ry[2] = { building_cent_y, building_cent_y + rd[1] };
