@@ -78,7 +78,6 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
   
 
-MESSAGE(STATUS "windsCMake: ${HAS_OPTIX_SUPPORT}")
 IF ($CACHE{HAS_OPTIX_SUPPORT})
   cuda_compile_and_embed(embedded_ptx_code OptixRayTrace.cu)
  
