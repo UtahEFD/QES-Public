@@ -39,10 +39,10 @@ ELSE ($CACHE{HAS_CUDA_SUPPORT})
        mainTurbulenceTest.cpp)
 
    add_executable(unitTestPlume
-      test_WINDSGeneralData.h test_WINDSGeneralData.cpp
-      test_TURBGeneralData.h test_TURBGeneralData.cpp
-      test_PlumeGeneralData.h test_PlumeGeneralData.cpp test_PlumeGeneralData.cu
-      mainPlumeTest.cpp)
+       test_WINDSGeneralData.h test_WINDSGeneralData.cpp
+       test_TURBGeneralData.h test_TURBGeneralData.cpp
+       test_PlumeGeneralData.h test_PlumeGeneralData.cpp test_PlumeGeneralData.cu
+       mainPlumeTest.cpp)
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 set(UNITTESTS
