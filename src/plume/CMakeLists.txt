@@ -48,6 +48,8 @@ SET( qesPlumeCoreSources
     
     WallReflection.cpp
     WallReflection_StairStep.cpp
+    WallReflection_TriMesh.cpp
+    
 )
 
 IF ($CACHE{HAS_CUDA_SUPPORT})

@@ -35,7 +35,8 @@
 #include <cmath>
 #include <cfloat>
 #include <random>
-#include "util/Vector3.h"
+
+#include "Vector3.h"
 
 /**
  * @class SphereDirections

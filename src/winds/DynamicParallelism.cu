@@ -230,7 +230,7 @@ __global__ void SOR_iteration(float *d_lambda, float *d_lambda_old, int nx, int 
     finalVelocity<<<numberOfBlocks3, numberOfThreadsPerBlock>>>(d_lambda, d_u, d_v, d_w, d_icellflag, d_f, d_h, d_n, alpha1, alpha2, dx, dy, dz, d_dz_array, nx, ny, nz);
   }
 
-  printf("[Solver] Error after %d itertations: %2.9f\n", iter, error);
+  printf("[Solver] Residual after %d itertations: %2.9f\n", iter, error);
   //printf("Error = %2.9f\n", error);
   //printf("Number of iteration = %d\n", iter);
 }
@@ -350,7 +350,7 @@ void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD,
   int *d_icellflag;
   float *d_dz_array;
 
-  std::cout << "Running Dynamic Parallelim Solver (GPU) ..." << std::endl;
+  std::cout << "[Solver] Running Dynamic Parallelim Solver (GPU) ..." << std::endl;
 
   auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
 

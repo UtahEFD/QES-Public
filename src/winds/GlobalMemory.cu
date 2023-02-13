@@ -207,6 +207,8 @@ void GlobalMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool 
   int numblocks = (WGD->numcell_cent / BLOCKSIZE) + 1;
   R.resize(WGD->numcell_cent, 0.0);
 
+  std::cout << "[Solver] Running Global Memory Solver (GPU) ..." << std::endl;
+
   std::vector<float> value(WGD->numcell_cent, 0.0);
   std::vector<float> bvalue(numblocks, 0.0);
 
@@ -294,8 +296,9 @@ void GlobalMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool 
     iter += 1;
   }
 
-  std::cout << "Error:" << max_error[0] << "\n";
-  std::cout << "Number of iterations:" << iter << "\n";// Print the number of iterations
+  printf("[Solver] Residual after %d itertations: %2.9f\n", iter, max_error[0]);
+  //std::cout << "Error:" << max_error[0] << "\n";
+  //std::cout << "Number of iterations:" << iter << "\n";// Print the number of iterations
 
   dim3 numberOfBlocks3(ceil((WGD->nx * WGD->ny * WGD->nz) / (float)(BLOCKSIZE)), 1, 1);
   // Invoke final velocity (Euler) kernel

@@ -37,9 +37,11 @@
 #include "util/ParseVector.h"
 #include "util/Vector3.h"
 #include "util/Vector3Int.h"
+#include "util/Mesh.h"
 #include "DTEHeightField.h"
 #include "WRFInput.h"
-#include "Mesh.h"
+
+#include "util/TimerTool.h"
 
 /**
  * @class SimulationParameters
@@ -218,7 +220,6 @@ public:
     if (coeffFile != "")
       coeffFile = QESfs::get_absolute_path(coeffFile);
 
-
     //
     // Process the data files based on the state determined above
     //
@@ -354,10 +355,19 @@ public:
                                            DEMDistancey);
       assert(DTE_heightField);
 
+      TimerTool timer_mesh("mesh setup");
+
       std::cout << "Forming triangle mesh...\n";
       DTE_heightField->setDomain(domain, grid);
       DTE_mesh = new Mesh(DTE_heightField->getTris());
+
+      //for (auto it = DTE_mesh->optixTris.begin(); it != DTE_mesh->optixTris.end(); ++it) {
+      //  if ((*it)->n[2] < 0)
+      //    std::cerr << "[WARNING] triangle definition " << (*it)->n << std::endl;
+      //}
       std::cout << "Mesh complete\n";
+      timer_mesh.stop();
+
     } else {
       // No DEM, so make sure these are null
       DTE_heightField = nullptr;

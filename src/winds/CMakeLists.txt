@@ -1,8 +1,7 @@
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-SET( qesWindCoreSources 
-  BVH.cpp
+SET( qesWindCoreSources
   Canopy.cpp
   CanopyElement.cpp
   CanopyHomogeneous.cpp
@@ -19,11 +18,9 @@ SET( qesWindCoreSources
   LocalMixingNetCDF.cpp
   LocalMixingSerial.cpp
   LocalMixingOptix.cpp
-  Mesh.cpp
   PolyBuilding.cpp PolyBuilding.h
   Sensor.cpp
   Solver.cpp
-  Triangle.cpp
   TURBParams.h
   TURBGeneralData.cpp
   TURBGeneralData.h
@@ -49,11 +46,6 @@ SET( qesWindCoreSources
   Sidewall.cpp
   Rooftop.cpp
   StreetIntersection.cpp
-
-  Ray.cpp Ray.h
-  SphereDirections.cpp SphereDirections.h
-  HitRecord.cpp HitRecord.h
-
   TimeSeries.h
   )
 

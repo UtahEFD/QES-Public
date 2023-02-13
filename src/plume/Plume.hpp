@@ -67,6 +67,7 @@
 
 #include "WallReflection.h"
 #include "WallReflection_StairStep.h"
+#include "WallReflection_TriMesh.h"
 
 #include "Particle.hpp"
 

@@ -44,7 +44,7 @@
 #include "LocalMixing.h"
 #include "util/NetCDFInput.h"
 
-#include "Mesh.h"
+#include "util/Mesh.h"
 
 #ifdef HAS_OPTIX
 #include "OptixRayTrace.h"

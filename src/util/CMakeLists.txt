@@ -10,12 +10,20 @@ add_library (qesutil ${LIB_TYPE}
   GIStool.cpp
 
   QESout.cpp
+  TimerTool.h
   
   doesFolderExist.h
   calcTime.cpp calcTime.h
 
+  BVH.cpp
+  HitRecord.cpp HitRecord.h
+  Mesh.cpp
+  Triangle.cpp
+  Ray.cpp Ray.h
+  SphereDirections.cpp SphereDirections.h
   Vector3.h
 
+  
   NetCDFInput.cpp
   NetCDFOutput.cpp
   QESNetCDFOutput.cpp 

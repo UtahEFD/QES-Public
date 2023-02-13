@@ -86,7 +86,8 @@ void CPUSolver::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool sol
     float max_error = 1.0;
     //int i_max, j_max, k_max;
 
-    std::cout << "Solving...\n";
+    std::cout << "[Solver] Running CPU Solver ..." << std::endl;
+
     while (iter < itermax && max_error > tol) {
 
       // Save previous iteration values for error calculation
@@ -140,12 +141,12 @@ void CPUSolver::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool sol
       iter += 1;
     }
 
-    std::cout << "Solved!\n";
+    //std::cout << "Solved!\n";
 
-    std::cout << "Number of iterations:" << iter << "\n";// Print the number of iterations
-    std::cout << "Error:" << max_error << "\n";
-    std::cout << "tol:" << tol << "\n";
-
+    //std::cout << "Number of iterations:" << iter << "\n";// Print the number of iterations
+    //std::cout << "Error:" << max_error << "\n";
+    //std::cout << "tol:" << tol << "\n";
+    printf("[Solver] Residual after %d itertations: %2.9f\n", iter, max_error);
 
     /***************************************************************
      *** Update the velocity field using Euler-Lagrange equations **
@@ -211,7 +212,7 @@ void CPUSolver::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool sol
     auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
     std::chrono::duration<float> elapsedTotal = finish - startOfSolveMethod;
     std::chrono::duration<float> elapsedSolve = finish - startSolveSection;
-    std::cout << "Elapsed total time: " << elapsedTotal.count() << " s\n";// Print out elapsed execution time
-    std::cout << "Elapsed solve time: " << elapsedSolve.count() << " s\n";// Print out elapsed execution time
+    std::cout << "Elapsed time: " << elapsedTotal.count() << " s\n";// Print out elapsed execution time
+    //std::cout << "Elapsed solve time: " << elapsedSolve.count() << " s\n";// Print out elapsed execution time
   }
 }

@@ -56,7 +56,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "Triangle.h"
+#include "util/Triangle.h"
 
 #define RAY_TYPE_COUNT 2
 #define RAY_TYPE_RADIENCE 0

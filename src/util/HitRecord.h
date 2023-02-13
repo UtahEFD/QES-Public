@@ -35,7 +35,7 @@
 #ifndef HR_H
 #define HR_H
 
-#include "util/Vector3.h"
+#include "Vector3.h"
 #include <limits>
 
 /**
@@ -55,6 +55,7 @@ public:
   float hitDist; /**< Distance from ray origin to hit point */
   float t; /**< :document this: */
   Vector3 endpt; /**< The intersection point */
+  Vector3 n; /**< The normal to surface at intersection point */
 
   HitRecord();
   HitRecord(void *hitNode, bool isHit);

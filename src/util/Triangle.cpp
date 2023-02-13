@@ -119,12 +119,15 @@ bool Triangle::rayTriangleIntersect(Ray ray, HitRecord &rec, float t0, float t1)
   if (gamma < 0 || gamma > 1 || beta < 0 || beta > (1 - gamma) || t < 0.0) {
     return false;
   } else {
-    rec.endpt[0] = ray.getOriginX() + (t * ray.getDirection()[0]);
-    rec.endpt[1] = ray.getOriginY() + (t * ray.getDirection()[1]);
-    rec.endpt[2] = ray.getOriginZ() + (t * ray.getDirection()[2]);
+    rec.endpt = ray.getOrigin() + (t * ray.getDirection());
+
+    //rec.endpt[0] = ray.getOriginX() + (t * ray.getDirection()[0]);
+    //rec.endpt[1] = ray.getOriginY() + (t * ray.getDirection()[1]);
+    //rec.endpt[2] = ray.getOriginZ() + (t * ray.getDirection()[2]);
     rec.hitDist = std::sqrt(std::pow(rec.endpt[0] - ray.getOriginX(), 2)
                             + std::pow(rec.endpt[1] - ray.getOriginY(), 2)
                             + std::pow(rec.endpt[2] - ray.getOriginZ(), 2));
+    rec.n = n;
 
     rec.t = t;
     return true;

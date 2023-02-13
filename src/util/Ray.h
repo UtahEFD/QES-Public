@@ -32,7 +32,7 @@
 
 #pragma once
 
-#include "util/Vector3.h"
+#include "Vector3.h"
 
 /**
  * @class Ray
@@ -41,36 +41,42 @@
 class Ray
 {
 private:
-  float origin_x, origin_y, origin_z;
+  Vector3 origVec;
   Vector3 dirVec;
 
 public:
   Ray(float o_x, float o_y, float o_z, Vector3 &dVec)
-    : origin_x(o_x), origin_y(o_y), origin_z(o_z), dirVec(dVec)
+    : origVec(o_x, o_y, o_z), dirVec(dVec)
+  {
+  }
+  Ray(Vector3 &oVec, Vector3 &dVec)
+    : origVec(oVec), dirVec(dVec)
   {
   }
 
   Ray(float o_x, float o_y, float o_z)
-    : origin_x(o_x), origin_y(o_y), origin_z(o_z)
+    : origVec(o_x, o_y, o_z)
   {
     dirVec[0] = 0.0;
-    ;
     dirVec[1] = 0.0;
     dirVec[2] = 1.0;
   }
 
   ~Ray() {}
 
-  float getOriginX() const { return origin_x; }
-  float getOriginY() const { return origin_y; }
-  float getOriginZ() const { return origin_z; };
+  float getOriginX() const { return origVec[0]; }
+  float getOriginY() const { return origVec[1]; }
+  float getOriginZ() const { return origVec[2]; };
 
+  Vector3 getOrigin() const { return origVec; }
   Vector3 getDirection() const { return dirVec; }
 
+  void setOrigin(const Vector3 &orig)
+  {
+    origVec = orig;
+  }
   void setDir(const Vector3 &dir)
   {
-    dirVec[0] = dir[0];
-    dirVec[1] = dir[1];
-    dirVec[2] = dir[2];
+    dirVec = dir;
   }
 };
