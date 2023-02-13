@@ -183,7 +183,7 @@ if(HAS_CUDA_SUPPORT)
       MESSAGE(STATUS "Found NVIDIA OptiX 7.0")
 
       # Set the preprocessor definitions to conditonally compile the optix code
-      # SET(HAS_OPTIX_SUPPORT ON BOOL "Determines if OptiX functionality is compiled into the code base")
+      SET(HAS_OPTIX_SUPPORT ON CACHE BOOL "Determines if OptiX functionality is compiled into the code base" FORCE)
       ADD_DEFINITIONS(-DHAS_OPTIX)
 
       MESSAGE(STATUS "Using OptiX Include location: ${OptiX_INCLUDE}")
