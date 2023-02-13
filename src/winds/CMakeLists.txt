@@ -57,28 +57,29 @@ SET( qesWindCoreSources
   TimeSeries.h
   )
 
-IF (HAS_CUDA_SUPPORT)
+IF ($CACHE{HAS_CUDA_SUPPORT})
    CUDA_ADD_LIBRARY( qeswindscore
       ${qesWindCoreSources}
    )
-ELSE (HAS_CUDA_SUPPORT)
+ELSE ($CACHE{HAS_CUDA_SUPPORT})
    ADD_LIBRARY( qeswindscore
       ${qesWindCoreSources}
    )
-ENDIF (HAS_CUDA_SUPPORT)
+ENDIF ($CACHE{HAS_CUDA_SUPPORT})
  
 
-IF (HAS_CUDA_SUPPORT)
+IF ($CACHE{HAS_CUDA_SUPPORT})
   CUDA_ADD_LIBRARY(qeswindsgpu
     DynamicParallelism.cu
     GlobalMemory.cu GlobalMemory.h
     SharedMemory.cu SharedMemory.h    
     TURBGeneralData.cu
     WindProfilerBarnGPU.cu)
-ENDIF (HAS_CUDA_SUPPORT)
+ENDIF ($CACHE{HAS_CUDA_SUPPORT})
   
 
-IF (HAS_OPTIX_SUPPORT)
+MESSAGE(STATUS "windsCMake: ${HAS_OPTIX_SUPPORT}")
+IF ($CACHE{HAS_OPTIX_SUPPORT})
   cuda_compile_and_embed(embedded_ptx_code OptixRayTrace.cu)
  
   add_library(qesOptix
@@ -86,7 +87,7 @@ IF (HAS_OPTIX_SUPPORT)
     OptixRayTrace.h
     OptixRayTrace.cpp
     )  
-ENDIF(HAS_OPTIX_SUPPORT)
+ENDIF ($CACHE{HAS_OPTIX_SUPPORT})
 
 
 

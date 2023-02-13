@@ -7,49 +7,43 @@ add_library(unitTestLib ${LIB_TYPE}
 #FILE(GLOB files "*.h")
 #INSTALL(FILES ${files} DESTINATION include/unitTests)
 
-if (HAS_CUDA_SUPPORT)
+IF ($CACHE{HAS_CUDA_SUPPORT})
    cuda_add_executable(unitTestTime
      mainTimeTest.cpp)
-else (HAS_CUDA_SUPPORT)
-   add_executable(unitTestTime
-     mainTimeTest.cpp)
-endif (HAS_CUDA_SUPPORT)
 
-if (HAS_CUDA_SUPPORT)
    cuda_add_executable(unitTestWind
      test_DTEHeightField.h test_DTEHeightField.cpp
        mainWindTest.cpp)
-else (HAS_CUDA_SUPPORT)
-   add_executable(unitTestWind
-     test_DTEHeightField.h test_DTEHeightField.cpp
-       mainWindTest.cpp)
-endif (HAS_CUDA_SUPPORT)
 
-if (HAS_CUDA_SUPPORT)
    cuda_add_executable(unitTestTurbulence
        test_WINDSGeneralData.h test_WINDSGeneralData.cpp
        test_TURBGeneralData.h test_TURBGeneralData.cpp
        mainTurbulenceTest.cpp)
-else (HAS_CUDA_SUPPORT)
-   add_executable(unitTestTurbulence
-       test_WINDSGeneralData.h test_WINDSGeneralData.cpp
-       test_TURBGeneralData.h test_TURBGeneralData.cpp
-       mainTurbulenceTest.cpp)
-endif (HAS_CUDA_SUPPORT)
 
-if (HAS_CUDA_SUPPORT)
    cuda_add_executable(unitTestPlume
       test_WINDSGeneralData.h test_WINDSGeneralData.cpp
       test_TURBGeneralData.h test_TURBGeneralData.cpp
       test_PlumeGeneralData.h test_PlumeGeneralData.cpp test_PlumeGeneralData.cu
       mainPlumeTest.cpp)
-else (HAS_CUDA_SUPPORT)
+ELSE ($CACHE{HAS_CUDA_SUPPORT})
+   add_executable(unitTestTime
+     mainTimeTest.cpp)
+
+   add_executable(unitTestWind
+     test_DTEHeightField.h test_DTEHeightField.cpp
+       mainWindTest.cpp)
+
+   add_executable(unitTestTurbulence
+       test_WINDSGeneralData.h test_WINDSGeneralData.cpp
+       test_TURBGeneralData.h test_TURBGeneralData.cpp
+       mainTurbulenceTest.cpp)
+
    add_executable(unitTestPlume
       test_WINDSGeneralData.h test_WINDSGeneralData.cpp
       test_TURBGeneralData.h test_TURBGeneralData.cpp
       test_PlumeGeneralData.h test_PlumeGeneralData.cpp test_PlumeGeneralData.cu
       mainPlumeTest.cpp)
-endif (HAS_CUDA_SUPPORT)
+ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 set(UNITTESTS
   unitTestTime
@@ -60,14 +54,14 @@ set(UNITTESTS
 foreach (unittest ${UNITTESTS})
   target_link_libraries(${unittest} qesplumecore)
 
-  IF (HAS_CUDA_SUPPORT)
+  IF ($CACHE{HAS_CUDA_SUPPORT})
     target_link_libraries(${unittest} qeswindsgpu)
   ENDIF()
 
   target_link_libraries(${unittest} qeswindscore)
   target_link_libraries(${unittest} qesutil)
 
-  IF(HAS_OPTIX_SUPPORT MATCHES ON)
+  IF($CACHE{HAS_OPTIX_SUPPORT})
     target_link_libraries(${unittest} qesOptix)
   ENDIF()
   
