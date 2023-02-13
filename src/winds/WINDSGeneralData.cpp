@@ -251,9 +251,16 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
     if (solverType == 1) {
       windProfiler = new WindProfilerBarnCPU();
+#ifdef HAS_CUDA
     } else {
       windProfiler = new WindProfilerBarnGPU();
     }
+#else
+  } else {
+    std::cout << "No CUDA support - using CPU Barnes" << std::endl;
+    windProfiler = new WindProfilerBarnCPU();
+  }
+#endif
 
     // If the sensor file specified in the xml
     if (WID->metParams->sensorName.size() > 0) {

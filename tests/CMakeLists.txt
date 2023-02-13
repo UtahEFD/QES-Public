@@ -2,13 +2,23 @@
 # hierarchically integrate projects together.
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
-CUDA_ADD_EXECUTABLE(compareSolvers compareSolvers.cpp)
+IF ($CACHE{HAS_CUDA_SUPPORT})
+	CUDA_ADD_EXECUTABLE(compareSolvers compareSolvers.cpp)
+ELSE ($CACHE{HAS_CUDA_SUPPORT})
+	ADD_EXECUTABLE(compareSolvers compareSolvers.cpp)
+ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
-target_link_libraries(compareSolvers curand)
+
+IF ($CACHE{HAS_CUDA_SUPPORT})
+  # target_link_libraries(compareSolvers curand)
+ENDIF()
 target_link_libraries(compareSolvers qeswindscore)
+IF ($CACHE{HAS_CUDA_SUPPORT})
+  target_link_libraries(compareSolvers qeswindsgpu)
+ENDIF()
 target_link_libraries(compareSolvers qesutil)
 
-IF (HAS_OPTIX_SUPPORT MATCHES ON)
+IF ($CACHE{HAS_OPTIX_SUPPORT})
   target_link_libraries(compareSolvers qesOptix)
 ENDIF()
 
@@ -18,20 +28,36 @@ target_link_libraries(compareSolvers ${Boost_FILESYSTEM_LIBRARIES})
 target_link_libraries(compareSolvers ${GDAL_LIBRARY})
 target_link_libraries(compareSolvers ${NETCDF_LIBRARIES_CXX})
 target_link_libraries(compareSolvers ${NETCDF_LIBRARIES_C})
-target_link_libraries(compareSolvers cudadevrt)
-target_link_libraries(compareSolvers ${CUDA_LIBRARIES})
+IF ($CACHE{HAS_CUDA_SUPPORT})
+  # target_link_libraries(compareSolvers cudadevrt)
+  target_link_libraries(compareSolvers ${CUDA_LIBRARIES})
+ENDIF()
 
 
-CUDA_ADD_EXECUTABLE( compareWindsResults
+IF ($CACHE{HAS_CUDA_SUPPORT})
+	CUDA_ADD_EXECUTABLE( compareWindsResults
                      handleCompareArgs.cpp
                      compareWindsResults.cpp
 		     )
+ELSE ($CACHE{HAS_CUDA_SUPPORT})
+	ADD_EXECUTABLE( compareWindsResults
+                     handleCompareArgs.cpp
+                     compareWindsResults.cpp
+		     )
+ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
-target_link_libraries(compareWindsResults curand)
+
+IF ($CACHE{HAS_CUDA_SUPPORT})
+  # target_link_libraries(compareWindsResults curand)
+ENDIF()
+target_link_libraries(compareWindsResults qeswindscore)
+IF ($CACHE{HAS_CUDA_SUPPORT})
+  target_link_libraries(compareWindsResults qeswindsgpu)
+ENDIF()
 target_link_libraries(compareWindsResults qeswindscore)
 target_link_libraries(compareWindsResults qesutil)
 
-IF (HAS_OPTIX_SUPPORT MATCHES ON)
+IF ($CACHE{HAS_OPTIX_SUPPORT})
   target_link_libraries(compareWindsResults qesOptix)
 ENDIF()
 
@@ -41,8 +67,10 @@ target_link_libraries(compareWindsResults ${Boost_FILESYSTEM_LIBRARIES})
 target_link_libraries(compareWindsResults ${GDAL_LIBRARY})
 target_link_libraries(compareWindsResults ${NETCDF_LIBRARIES_CXX})
 target_link_libraries(compareWindsResults ${NETCDF_LIBRARIES_C})
-target_link_libraries(compareWindsResults cudadevrt)
-target_link_libraries(compareWindsResults ${CUDA_LIBRARIES})
+IF ($CACHE{HAS_CUDA_SUPPORT})
+  # target_link_libraries(compareWindsResults cudadevrt)
+  target_link_libraries(compareWindsResults ${CUDA_LIBRARIES})
+ENDIF()
 
 #Comparison tests function
 function(add_comparison_test infile_prefix solver_arg solver_name)

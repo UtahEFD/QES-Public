@@ -13,7 +13,7 @@ set(BASETESTS
 foreach(basetest ${BASETESTS})
     add_executable(${basetest} ${basetest}.cpp)
 
-    IF (HAS_OPTIX_SUPPORT MATCHES ON)
+    IF($CACHE{HAS_OPTIX_SUPPORT})
       target_link_libraries(${basetest} qesOptix)
     ENDIF()
 
@@ -24,8 +24,10 @@ foreach(basetest ${BASETESTS})
     target_link_libraries(${basetest} ${GDAL_LIBRARY})
     target_link_libraries(${basetest} ${NETCDF_LIBRARIES_CXX})
     target_link_libraries(${basetest} ${NETCDF_LIBRARIES_C})
-    #target_link_libraries(${basetest} cudadevrt)
-    target_link_libraries(${basetest} ${CUDA_LIBRARIES})
+    IF ($CACHE{HAS_CUDA_SUPPORT})
+        #target_link_libraries(${basetest} cudadevrt)
+    	target_link_libraries(${basetest} ${CUDA_LIBRARIES})
+    ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 endforeach(basetest)
 

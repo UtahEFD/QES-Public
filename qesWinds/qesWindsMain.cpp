@@ -48,10 +48,11 @@
 
 #include "winds/Solver.h"
 #include "winds/CPUSolver.h"
+#ifdef HAS_CUDA
 #include "winds/DynamicParallelism.h"
 #include "winds/GlobalMemory.h"
 #include "winds/SharedMemory.h"
-
+#endif
 #include "winds/Sensor.h"
 
 int main(int argc, char *argv[])
@@ -127,6 +128,7 @@ int main(int argc, char *argv[])
   if (arguments.solveType == CPU_Type) {
     std::cout << "Run Serial Solver (CPU) ..." << std::endl;
     solver = new CPUSolver(WID, WGD);
+#ifdef HAS_CUDA
   } else if (arguments.solveType == DYNAMIC_P) {
     std::cout << "Run Dynamic Parallel Solver (GPU) ..." << std::endl;
     solver = new DynamicParallelism(WID, WGD);
@@ -136,6 +138,7 @@ int main(int argc, char *argv[])
   } else if (arguments.solveType == Shared_M) {
     std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
     solver = new SharedMemory(WID, WGD);
+#endif
   } else {
     QESout::error("Invalid solve type");
   }

@@ -43,10 +43,17 @@ void splashScreen()
   std::cout << "#                      Welcome to QES                        #" << std::endl;
   std::cout << "#                                                            #" << std::endl;
   std::cout << "##############################################################" << std::endl;
-  std::cout << "version " << QES_VERSION << std::endl;
-#ifdef HAS_OPTIX
-  std::cout << "OptiX is available!" << std::endl;
+  std::cout << "Version: " << QES_VERSION_INFO << std::endl;  // QES_VERSION_INFO comes from CMakeLists.txt
+#ifdef HAS_CUDA
+  std::cout << "\t* CUDA support available!" << std::endl;
+#else
+  std::cout << "\t* No CUDA support - CPU Only Computations!" << std::endl;
 #endif
+
+#ifdef HAS_OPTIX
+  std::cout << "\t*OptiX is available!" << std::endl;
+#endif
+  std::cout << "##############################################################" << std::endl;
 }
 
 

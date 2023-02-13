@@ -45,3 +45,5 @@ data/InputFiles/vineyard_tower_validation/*
 # IDE related files
 *.vscode
 
+# MacOS files
+*.DS_Store

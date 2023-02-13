@@ -40,8 +40,10 @@ public:
   std::string timeInterpCPU(WINDSGeneralData *, TURBGeneralData *);
   //void test_compDerivatives_CPU(WINDSGeneralData *);
   //void test_compDerivatives_GPU(WINDSGeneralData *);
+#ifdef HAS_CUDA
   void testGPU(int);
   void testGPU_struct(int);
+#endif
 
   void testCPU(int);
 

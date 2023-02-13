@@ -2,16 +2,24 @@
 # hierarchically integrate projects together.
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
+IF ($CACHE{HAS_CUDA_SUPPORT})
+	CUDA_ADD_EXECUTABLE( qesWinds
+	  qesWindsMain.cpp
+	)
+ELSE ($CACHE{HAS_CUDA_SUPPORT})
+	ADD_EXECUTABLE( qesWinds
+	  qesWindsMain.cpp
+	)
+ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
-CUDA_ADD_EXECUTABLE( qesWinds
-  qesWindsMain.cpp
-  )
-
-target_link_libraries(qesWinds curand)
+# target_link_libraries(qesWinds curand)
 target_link_libraries(qesWinds qeswindscore)
+IF ($CACHE{HAS_CUDA_SUPPORT})
+  target_link_libraries(qesWinds qeswindsgpu)
+ENDIF()
 target_link_libraries(qesWinds qesutil)
 
-IF (HAS_OPTIX_SUPPORT MATCHES ON)
+IF ($CACHE{HAS_OPTIX_SUPPORT})
   target_link_libraries(qesWinds qesOptix)
 ENDIF()
 
@@ -33,8 +41,8 @@ IF (ENABLE_SANITY_TESTS OR ENABLE_ALL_TESTS)
     add_sanity_test_CPU(FlatTerrain)
     IF (ENABLE_LONG_SANITY_TESTS)
       add_sanity_test_CPU(GaussianHill)
-      add_sanity_test_CPU(GranitePeak)
-      add_sanity_test_CPU(Oklahoma_city)
+      add_sanity_test_CPU(MultiSensors)
+      add_sanity_test_CPU(OklahomaCity)
     ENDIF()
   ENDIF()
 

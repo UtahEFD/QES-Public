@@ -80,20 +80,20 @@ time_t QEStime::getEpochTime()
 
 void QEStime::increment(float dt)
 {
-  btime::time_duration tt = btime::milliseconds((int)round(1000.0d * (double)dt));
+  btime::time_duration tt = btime::milliseconds((int)round(1000.0 * (double)dt));
   m_ptime += tt;
 }
 
 QEStime &QEStime::operator+=(const float &dt)
 {
-  btime::time_duration tt = btime::milliseconds((int)round(1000.0d * (double)dt));
+  btime::time_duration tt = btime::milliseconds((int)round(1000.0 * (double)dt));
   m_ptime += tt;
   return *this;
 }
 
 QEStime QEStime::operator+(const float &dt)
 {
-  btime::time_duration tt = btime::milliseconds((int)round(1000.0d * (double)dt));
+  btime::time_duration tt = btime::milliseconds((int)round(1000.0 * (double)dt));
   QEStime t = this->m_ptime + tt;
   return t;
 }
