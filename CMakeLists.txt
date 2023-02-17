@@ -17,14 +17,10 @@ SET(QES_VERSION_INFO v${QES_VERSION_MAJOR}.${QES_VERSION_MINOR}.${QES_VERSION_PA
 ADD_DEFINITIONS(-DQES_VERSION_INFO="${QES_VERSION_INFO}")
 MESSAGE(STATUS "Building QES ${QES_VERSION_INFO}")
 
-if((CMAKE_BUILD_TYPE NOT DEFINED) OR (CMAKE_BUILD_TYPE STREQUAL ""))
-  SET(CMAKE_BUILD_TYPE Release)
-endif()
-MESSAGE(STATUS "Building the '" ${CMAKE_BUILD_TYPE} "' version of QES.")
-MESSAGE(STATUS "If you want something different, use -DCMAKE_BUILD_TYPE=Debug, Release, RelWithDebInfo, MinSizeRel.")
-
 LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 MESSAGE(STATUS "CMake Module Path: ${CMAKE_MODULE_PATH}")
+
+option(ENABLE_DEV_MODE "Enable developer mode - turns on important flags for developing and debugging." OFF)
 
 option(ENABLE_CPPCHECK "Enable static analysis with cppcheck" OFF)
 option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
@@ -39,9 +35,6 @@ if(ENABLE_CLANG_TIDY)
   endif()
 endif()
 
-# Force VERBOSE Output -- used in all branches except master
-# Can be commented out in master branches.
-SET(CMAKE_VERBOSE_MAKEFILE ON CACHE BOOL "ON" FORCE)
 
 # 
 # Detect COMPILER
@@ -66,10 +59,71 @@ if(COMPILER_SUPPORTS_CXX11)
   set(CMAKE_CXX_EXTENSIONS OFF)
   
 elseif(COMPILER_SUPPORTS_CXX0X)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wall")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 else()
   message(FATAL_ERROR "Compiler ${CMAKE_CXX_COMPILER} has no C++11 support.")
 endif()
+
+
+if (ENABLE_DEV_MODE)
+  MESSAGE(STATUS "Enabling Developer Mode")
+  
+  # Force VERBOSE Output -- used in all branches except master
+  # Can be commented out in master branches.
+  SET(CMAKE_VERBOSE_MAKEFILE ON CACHE BOOL "ON" FORCE)
+
+  SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+  SET(CMAKE_BUILD_TYPE Debug)
+
+  #
+  # Turn on important warnings and the sanitizers
+  #
+  if ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR (CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))
+    # using GCC or CLANG
+
+    # Both, GCC and Clang support the same option set
+    # We first turn on Warnings
+    # --> https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+    #
+    # -Wall stands for All Warnings
+    # -Wextra pushes that a bit further
+    # -pedantic sets the compiler to use strict ISO C++
+    # -Werror treats all warnings as errors so you have to fix them
+    add_compile_options(-Wall -Wextra -pedantic) # -Werror)
+
+    # Sanitizer options
+    # The following will turn on Debugging (-g flag) and the Address Sanitizer
+    # which is turned on with the -fsanitize=address option to the compiler.
+    add_compile_options(-g -fsanitize=address,undefined)
+
+    # When we turn on the sanitizer, you also need to instruct the linker that it
+    # will be used which happens with the following link option command.
+    add_link_options(-g -fsanitize=address,undefined)
+    
+  elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
+    # using Intel C++
+    
+  elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    # using Visual Studio C++
+    # MSVC uses a different warning flags
+    add_compile_options(/W4 /WX)
+    add_compile_options(/fsanitize=address /MTd)
+  endif()
+  
+ELSE (ENABLE_DEV_MODE)
+
+  # Remove verbose output
+  SET(CMAKE_VERBOSE_MAKEFILE OFF CACHE BOOL "OFF" FORCE)
+
+  IF((CMAKE_BUILD_TYPE NOT DEFINED) OR (CMAKE_BUILD_TYPE STREQUAL ""))
+    SET(CMAKE_BUILD_TYPE Release)
+  ENDIF()
+  MESSAGE(STATUS "Building the '" ${CMAKE_BUILD_TYPE} "' version of QES.")
+  MESSAGE(STATUS "If you want something different, use -DCMAKE_BUILD_TYPE=Debug, Release, RelWithDebInfo, MinSizeRel.")
+
+ENDIF (ENABLE_DEV_MODE)  
+
 
 
 # ----------------------------------------------------------
