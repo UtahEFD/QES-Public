@@ -72,9 +72,14 @@ if (ENABLE_DEV_MODE)
   # Can be commented out in master branches.
   SET(CMAKE_VERBOSE_MAKEFILE ON CACHE BOOL "ON" FORCE)
 
+  # Export the commands for the build so they can be inspected
   SET(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+  # Turn on debug
   SET(CMAKE_BUILD_TYPE Debug)
+
+  # Force unit tests and Catch2 to compile
+  SET(ENABLE_UNITTESTS ON CACHE BOOL "Enables unitests" FORCE)
 
   #
   # Turn on important warnings and the sanitizers
@@ -384,6 +389,7 @@ add_subdirectory(qes)
 add_subdirectory(tests)
 
 option(ENABLE_UNITTESTS "Enables unitests" OFF)
+
 option(ENABLE_ALL_TESTS "Enables all tests for an extensive test run" OFF) # will not override CPU/GPU selection
 option(ENABLE_SANITY_TESTS "Enables tests that simply check if qesWinds runs on input w/o runtime errors" ON)
 option(ENABLE_LONG_SANITY_TESTS "Enables the longer sanity tests" OFF)
