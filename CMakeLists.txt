@@ -79,7 +79,7 @@ if (ENABLE_DEV_MODE)
   #
   # Turn on important warnings and the sanitizers
   #
-  if ((CMAKE_CXX_COMPILER_ID STREQUAL "Clang") OR (CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))
+  if ((CMAKE_CXX_COMPILER_ID MATCHES "Clang") OR (CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))
     # using GCC or CLANG
 
     # Both, GCC and Clang support the same option set
