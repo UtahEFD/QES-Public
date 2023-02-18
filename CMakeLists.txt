@@ -13,6 +13,7 @@ CMAKE_POLICY(SET CMP0074 NEW)
 # from CMake based on the Version number provided in the PROJECT command.
 PROJECT(QES VERSION 2.0.0)
 SET(QES_VERSION_INFO v${QES_VERSION_MAJOR}.${QES_VERSION_MINOR}.${QES_VERSION_PATCH})
+
 # The following will pass the version into the code as a preprocessor variable
 ADD_DEFINITIONS(-DQES_VERSION_INFO="${QES_VERSION_INFO}")
 MESSAGE(STATUS "Building QES ${QES_VERSION_INFO}")
@@ -177,21 +178,10 @@ IF (${GDAL_FOUND})
 ENDIF(${GDAL_FOUND})
 
 SET(CUDA_SEPARABLE_COMPILATION ON)
-
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_52;-rdc=true;" )
 
 #use fast math option is required for OptiX
 # set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-dlink;-rdc=true;--use_fast_math;--keep-device-functions")
-
-# HAS_CUDA_SUPPORT can be used to turn on or off CUDA, GPU acceleration in the code.  By default, we try to
-# locate CUDA and thus enable it.
-# If it cannot be found, HAS_CUDA_SUPPORT goes to OFF
-#OPTION(ENABLE_CUDA "Enable CUDA/GPU Acceleration" ON)
-#SET(HAS_CUDA_SUPPORT ON CACHE BOOL "Determines if CUDA/GPU functionality is compiled into the code base")  # first entry
-
-# Allow the compilation to override including OptiX if desired
-#OPTION(ENABLE_OPTIX "Enable NVIDIA OptiX GPU Acceleration" ON)
-#SET(HAS_OPTIX_SUPPORT ON CACHE BOOL "Determines if OptiX functionality is compiled into the code base")
 
 #
 # Attempt to find CUDA
@@ -302,32 +292,6 @@ else(HAS_CUDA_SUPPORT)
   SET(HAS_OPTIX_SUPPORT OFF FORCE BOOL "Determines if OptiX functionality is compiled into the code base")
   REMOVE_DEFINITIONS(-DHAS_OPTIX)
 endif(HAS_CUDA_SUPPORT)
-
-
-
-# Override CUDA and OptiX State With Enable Options
-#if (ENABLE_CUDA)
-#  MESSAGE(STATUS "CUDA Support Enabled.")
-#  SET(HAS_CUDA_SUPPORT ON BOOL "Determines if CUDA/GPU functionality is compiled into the code base")
-#  ADD_DEFINITIONS(-DHAS_CUDA)
-#  SET(HAS_OPTIX_SUPPORT ON BOOL "Determines if OptiX functionality is compiled into the code base")
-#  ADD_DEFINITIONS(-DHAS_OPTIX)
-#else (ENABLE_CUDA)
-#  MESSAGE(STATUS "CUDA Support Disabled.")
-#  SET(HAS_CUDA_SUPPORT OFF BOOL "Determines if CUDA/GPU functionality is compiled into the code base")
-#  REMOVE_DEFINITIONS(-DHAS_CUDA)
-#  SET(HAS_OPTIX_SUPPORT OFF BOOL "Determines if OptiX functionality is compiled into the code base")
-#  REMOVE_DEFINITIONS(-DHAS_OPTIX)
-#endif (ENABLE_CUDA)
-
-#if (NOT ENABLE_OPTIX)
-#  MESSAGE(STATUS "OPTIX Support Disabled.")
-#  SET(HAS_OPTIX_SUPPORT OFF BOOL "Determines if OptiX functionality is compiled into the code base")
-#  REMOVE_DEFINITIONS(-DHAS_OPTIX)
-#endif (NOT ENABLE_OPTIX)
-  
-
-
 
 #
 # Find doxygen so we can add a target for building
