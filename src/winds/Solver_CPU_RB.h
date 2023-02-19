@@ -39,7 +39,10 @@
 #include <math.h>
 #include <vector>
 #include <chrono>
+
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 
 #include "WINDSInputData.h"
 #include "Solver.h"
