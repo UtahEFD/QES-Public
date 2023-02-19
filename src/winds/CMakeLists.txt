@@ -21,6 +21,7 @@ SET( qesWindCoreSources
   PolyBuilding.cpp PolyBuilding.h
   Sensor.cpp
   Solver.cpp
+  Solver_CPU_RB.cpp
   TURBParams.h
   TURBGeneralData.cpp
   TURBGeneralData.h

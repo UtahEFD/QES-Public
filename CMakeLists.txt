@@ -23,6 +23,8 @@ MESSAGE(STATUS "CMake Module Path: ${CMAKE_MODULE_PATH}")
 
 option(ENABLE_DEV_MODE "Enable developer mode - turns on important flags for developing and debugging." OFF)
 
+option(ENABLE_OPENMP "Enable muiltthreads support with openmp." OFF)
+
 option(ENABLE_CPPCHECK "Enable static analysis with cppcheck" OFF)
 option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
 
@@ -65,7 +67,26 @@ else()
   message(FATAL_ERROR "Compiler ${CMAKE_CXX_COMPILER} has no C++11 support.")
 endif()
 
-
+if (ENABLE_OPENMP)
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # using GCC
+    MESSAGE(STATUS "Enabling openmp")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+  elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    # using CLANG (MACOS)
+    MESSAGE(WARNING "CLANG support of openmp limitied or not avaiable on macos")
+    SET(ENABLE_OPENMP OFF CACHE BOOL "Disable openmp support" FORCE)
+  elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
+    # using Intel C++
+    MESSAGE(STATUS "Enabling openmp")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -qopenmp")
+  elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    # using Visual Studio C++
+    MESSAGE(STATUS "Enabling openmp")
+    add_compile_options(/openmp)
+  endif()
+endif()
+  
 if (ENABLE_DEV_MODE)
   MESSAGE(STATUS "Enabling Developer Mode")
   
