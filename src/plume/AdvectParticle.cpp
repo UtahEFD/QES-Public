@@ -41,8 +41,8 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
   // set settling velocity
   (*parItr)->setSettlingVelocity(rhoAir, nuAir);
 
-  //std::cout << "in advpart, par type is: " << typeid(*parItr).name() << " txx=" << (*parItr)->txx_old <<  " tyy=" << (*parItr)->tyy_old << " tzz=" << (*parItr)->tzz_old << " d = " << (*parItr)->d << " m = " << (*parItr)->m << " depFlag = " << (*parItr)->depFlag << " vs = " << (*parItr)->vs << std::endl;
-  // get the current isRogue and isActive information
+  // std::cout << "in advpart, par type is: " << typeid(*parItr).name() << " txx=" << (*parItr)->txx_old <<  " tyy=" << (*parItr)->tyy_old << " tzz=" << (*parItr)->tzz_old << " d = " << (*parItr)->d << " m = " << (*parItr)->m << " depFlag = " << (*parItr)->depFlag << " vs = " << (*parItr)->vs << std::endl;
+  //  get the current isRogue and isActive information
   bool isRogue = (*parItr)->isRogue;
   bool isActive = (*parItr)->isActive;
 
@@ -70,12 +70,12 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
   double flux_div_y = 0.0;
   double flux_div_z = 0.0;
 
-  //size_t cellIdx_old = interp->getCellId(xPos,yPos,zPos);
+  // size_t cellIdx_old = interp->getCellId(xPos,yPos,zPos);
 
   // getting the initial position, for use in setting finished particles
-  //double xPos_init = (*parItr)->xPos_init;
-  //double yPos_init = (*parItr)->yPos_init;
-  //double zPos_init = (*parItr)->zPos_init;
+  // double xPos_init = (*parItr)->xPos_init;
+  // double yPos_init = (*parItr)->yPos_init;
+  // double zPos_init = (*parItr)->zPos_init;
 
   // grab the velFluct values.
   // LA notes: hmm, Bailey's code just starts out setting these values to zero,
@@ -165,9 +165,9 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
                                         std::abs(wMean) + std::abs(wFluct),
                                         timeRemainder);
 
-    //std::cout << "par_dt = " << par_dt << std::endl;
-    // update the par_time, useful for debugging
-    //par_time = par_time + par_dt;
+    // std::cout << "par_dt = " << par_dt << std::endl;
+    //  update the par_time, useful for debugging
+    // par_time = par_time + par_dt;
 
     // now need to calculate the inverse values for tau
     // directly modifies the values of tau
@@ -179,17 +179,17 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     double lxy = txy;
     double lxz = txz;
     double lyx = txy;
-    //double lyx = 0.0;
+    // double lyx = 0.0;
     double lyy = tyy;
     double lyz = tyz;
     double lzx = txz;
     double lzy = tyz;
-    //double lzx = 0.0;
-    //double lzy = 0.0;
+    // double lzx = 0.0;
+    // double lzy = 0.0;
     double lzz = tzz;
     isRogue = !invert3(lxx, lxy, lxz, lyx, lyy, lyz, lzx, lzy, lzz);
     if (isRogue == true) {
-      //int cellIdNew = interp->getCellId(xPos,yPos,zPos);
+      // int cellIdNew = interp->getCellId(xPos,yPos,zPos);
       std::cerr << "ERROR in Matrix inversion of stress tensor" << std::endl;
       isActive = false;
       break;
@@ -326,7 +326,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     tyz_old = tyz;
     tzz_old = tzz;
 
-    //cellIdx_old=cellIdx;
+    // cellIdx_old=cellIdx;
 
     // now set the time remainder for the next loop
     // if the par_dt calculated from the Courant Number is greater than the timeRemainder,
@@ -349,9 +349,9 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
   (*parItr)->disY = disY;
   (*parItr)->disZ = disZ;
 
-  (*parItr)->uTot = uTot;
-  (*parItr)->vTot = vTot;
-  (*parItr)->wTot = wTot;
+  //(*parItr)->uTot = uTot;
+  //(*parItr)->vTot = vTot;
+  //(*parItr)->wTot = wTot;
 
   (*parItr)->CoEps = CoEps;
 

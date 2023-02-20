@@ -28,8 +28,8 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Particle.hpp 
- * @brief This class represents information stored for each particle 
+/** @file Particle.hpp
+ * @brief This class represents information stored for each particle
  */
 
 #pragma once
@@ -143,9 +143,9 @@ public:
   double disZ;
 
   // Total velocities (mean plus fluct) for each time step
-  double uTot;
-  double vTot;
-  double wTot;
+  // double uTot;
+  // double vTot;
+  // double wTot;
 
   double CoEps;
 
@@ -154,7 +154,7 @@ public:
   double vFluct_old;// v component
   double wFluct_old;// w component
 
-  // stress tensor from the last iteration (6 component because stress tensor is symetric)
+  // stress tensor from the last iteration (6 component because stress tensor is symmetric)
   double txx_old;// this is the stress in the x direction on the x face from the last iteration
   double txy_old;// this is the stress in the y direction on the x face from the last iteration
   double txz_old;// this is the stress in the z direction on the x face from the last iteration
@@ -176,16 +176,21 @@ public:
   double m_kg;// particle mass [kg]
   double rho;// density of particle
 
-  // deposition vatiables
+  // deposition variables
   double wdepos;// (1 - fraction) particle deposited [0,1]
   double Sc;// Schmidt number
   double taud;// characteristic relaxation time [s]
   double vd;// deposition velocity [m/s]
   bool depFlag;// whether a particle deposits
 
-  // settling vatiables
+  // deposition container
+  bool dep_buffer_flag;
+  std::vector<int> dep_buffer_cell;
+  std::vector<float> dep_buffer_val;
+
+  // settling variables
   double dstar;// dimensionless grain diameter
-  double Cd;// drag coefficent
+  double Cd;// drag coefficient
   double wstar;// dimensionless settling velocity
   double vs;// settling velocity [m/s]
 

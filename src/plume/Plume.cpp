@@ -36,13 +36,13 @@ Plume::Plume(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   : particleList(0), allSources(0)
 {
   // copy debug information
-  doParticleDataOutput = false;//arguments->doParticleDataOutput;
-  outputSimInfoFile = false;//arguments->doSimInfoFileOutput;
-  outputFolder = "";//arguments->outputFolder;
-  caseBaseName = "";//arguments->caseBaseName;
-  debug = false;//arguments->debug;
+  doParticleDataOutput = false;// arguments->doParticleDataOutput;
+  outputSimInfoFile = false;// arguments->doSimInfoFileOutput;
+  outputFolder = "";// arguments->outputFolder;
+  caseBaseName = "";// arguments->caseBaseName;
+  debug = false;// arguments->debug;
 
-  verbose = false;//arguments->verbose;
+  verbose = false;// arguments->verbose;
 
   // make local copies of the QES-Winds nVals for each dimension
   nx = WGD->nx;
@@ -64,13 +64,13 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   std::cout << "[Plume] \t Setting up simulation details " << std::endl;
 
   // copy debug information
-  doParticleDataOutput = false;//arguments->doParticleDataOutput;
-  outputSimInfoFile = false;//arguments->doSimInfoFileOutput;
-  outputFolder = "";//arguments->outputFolder;
-  caseBaseName = "";//arguments->caseBaseName;
-  debug = false;//arguments->debug;
+  doParticleDataOutput = false;// arguments->doParticleDataOutput;
+  outputSimInfoFile = false;// arguments->doSimInfoFileOutput;
+  outputFolder = "";// arguments->outputFolder;
+  caseBaseName = "";// arguments->caseBaseName;
+  debug = false;// arguments->debug;
 
-  verbose = false;//arguments->verbose;
+  verbose = false;// arguments->verbose;
 
   // make local copies of the QES-Winds nVals for each dimension
   nx = WGD->nx;
@@ -259,22 +259,41 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
 
     // this the the main loop over all active particles
     std::list<Particle *>::iterator parItr;
-    for (parItr = particleList.begin(); parItr != particleList.end();
-         parItr++) {
-      // All the particle here are active => no need to check if
-      // parItr->isActive == true
+#pragma omp parallel private(parItr, timeRemainder) default(none) shared(WGD, TGD)
+    {
+      for (parItr = particleList.begin(); parItr != particleList.end(); parItr++) {
+        // All the particle here are active => no need to check if
+        // parItr->isActive == true
 
-      // call to the main particle adection function (in separate file:
-      // AdvectParticle.cpp)
-      /*
-        this function is advencing the particle -> status is returned in:
-        - parItr->isRogue
-        - parItr->isActive
-        this function does not do any manipulation on particleList
-      */
+        // call to the main particle adection function (in separate file:
+        // AdvectParticle.cpp)
+        /*
+          this function is advencing the particle -> status is returned in:
+          - parItr->isRogue
+          - parItr->isActive
+          this function does not do any manipulation on particleList
+        */
 
-      advectParticle(timeRemainder, parItr, WGD, TGD);
+#pragma omp single nowait
+        {
+          advectParticle(timeRemainder, parItr, WGD, TGD);
+        }
+      }// end of loop for (parItr == particleList.begin(); parItr !=
+    }// END OF OPENMP WORKSHARE
 
+    // flush deposition buffer
+    for (parItr = particleList.begin(); parItr != particleList.end(); parItr++) {
+      if ((*parItr)->dep_buffer_flag) {
+        for (auto n = 0u; n < (*parItr)->dep_buffer_cell.size(); ++n) {
+          deposition->depcvol[(*parItr)->dep_buffer_cell[n]] += (*parItr)->dep_buffer_val[n];
+        }
+        (*parItr)->dep_buffer_flag = false;
+        (*parItr)->dep_buffer_cell.clear();
+        (*parItr)->dep_buffer_val.clear();
+      }
+    }
+
+    for (parItr = particleList.begin(); parItr != particleList.end(); parItr++) {
       // now update the isRogueCount and isNotActiveCount
       if ((*parItr)->isRogue == true) {
         isRogueCount = isRogueCount + 1;
@@ -283,7 +302,6 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
         isNotActiveCount = isNotActiveCount + 1;
         needToScrub = true;
       }
-
     }// end of loop for (parItr == particleList.begin(); parItr !=
     // particleList.end() ; parItr++ )
 
@@ -395,7 +413,7 @@ double Plume::calcCourantTimestep(const double &d,
   }
 
   double min_ds = std::min(dxy, dz);
-  //double max_u = std::max({ u, v, w });
+  // double max_u = std::max({ u, v, w });
   double max_u = sqrt(u * u + v * v + w * w);
   double CN = 0.0;
 
@@ -413,7 +431,7 @@ double Plume::calcCourantTimestep(const double &d,
   */
 
   if (d > 6.0 * max_u * sim_dt) {
-    //CN = 1.0;
+    // CN = 1.0;
     return timeRemainder;
   } else if (d > 3.0 * max_u * sim_dt) {
     CN = std::min(2.0 * CourantNum, 1.0);

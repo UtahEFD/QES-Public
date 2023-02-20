@@ -49,6 +49,7 @@
 
 #include "winds/Solver.h"
 #include "winds/CPUSolver.h"
+#include "winds/Solver_CPU_RB.h"
 #ifdef HAS_CUDA
 #include "winds/DynamicParallelism.h"
 #include "winds/GlobalMemory.h"
@@ -214,7 +215,11 @@ Solver *setSolver(const int solveType, WINDSInputData *WID, WINDSGeneralData *WG
   Solver *solver = nullptr;
   if (solveType == CPU_Type) {
     std::cout << "Run Serial Solver (CPU) ..." << std::endl;
+#ifdef _OPENMP
+    solver = new Solver_CPU_RB(WID, WGD);
+#else
     solver = new CPUSolver(WID, WGD);
+#endif
 #ifdef HAS_CUDA
   } else if (solveType == DYNAMIC_P) {
     std::cout << "Run Dynamic Parallel Solver (GPU) ..." << std::endl;
