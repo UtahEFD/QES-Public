@@ -57,7 +57,7 @@
 
 #include "winds/Sensor.h"
 
-//#include "Args.hpp"
+// #include "Args.hpp"
 #include "plume/PlumeInputData.hpp"
 #include "plume/Plume.hpp"
 #include "plume/PlumeOutput.h"
@@ -225,7 +225,7 @@ Solver *setSolver(const int solveType, WINDSInputData *WID, WINDSGeneralData *WG
   } else if (solveType == Shared_M) {
     std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
     solver = new SharedMemory(WID, WGD);
-#endif    
+#endif
   } else {
     QESout::error("Invalid solve type");
   }
