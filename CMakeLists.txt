@@ -1,8 +1,12 @@
-# This file is part of the EnvSim Open Source Environment Simulation codes, which is developed and 
+# ====================================================================================
+# Quick Environmental Simulation (QES)
+#
+# This file is part of the QES Open Source framework, which is developed and
 # maintained by the University of Utah and the University of Minnesota Duluth.
 #
-# Copyright (c) 2018 University of Utah and the Regents of the University of Minnesota
+# Copyright (c) 2023 University of Utah and the Regents of the University of Minnesota
 # This software is distributed under the MIT License, expressed in: LICENSE.txt.
+# ====================================================================================
 
 CMAKE_MINIMUM_REQUIRED (VERSION 3.18)
 CMAKE_POLICY(SET CMP0074 NEW)
@@ -21,13 +25,17 @@ MESSAGE(STATUS "Building QES ${QES_VERSION_INFO}")
 LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 MESSAGE(STATUS "CMake Module Path: ${CMAKE_MODULE_PATH}")
 
+# ----------------------------------------------------------
+# BUILD OPTIONS
+# ----------------------------------------------------------
 option(ENABLE_DEV_MODE "Enable developer mode - turns on important flags for developing and debugging." OFF)
-
 option(ENABLE_OPENMP "Enable muiltthreads support with openmp." OFF)
-
 option(ENABLE_CPPCHECK "Enable static analysis with cppcheck" OFF)
 option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
 
+# ----------------------------------------------------------
+# CLANG TIDY
+# ----------------------------------------------------------
 if(ENABLE_CLANG_TIDY)
   find_program(CLANGTIDY clang-tidy)
   if(CLANGTIDY)
@@ -39,13 +47,13 @@ if(ENABLE_CLANG_TIDY)
 endif()
 
 
-# 
+# ----------------------------------------------------------
 # Detect COMPILER
 #  This may be useful for helping us determine the level of C++
 #  support available.  For instance on GCC 4.4.7, -std=c++11 is not
 #  available, but -std=c++0x is available.  Newer compilers
 #  can handle the -std=c++11, -std=c++14, etc...
-#
+# ----------------------------------------------------------
 include(CheckCXXCompilerFlag)
 MESSAGE(STATUS "Compiling with ${CMAKE_CXX_COMPILER_ID}, Version: ${CMAKE_CXX_COMPILER_VERSION}")
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
@@ -67,6 +75,9 @@ else()
   message(FATAL_ERROR "Compiler ${CMAKE_CXX_COMPILER} has no C++11 support.")
 endif()
 
+# ----------------------------------------------------------
+# OPENMP
+# ----------------------------------------------------------
 if (ENABLE_OPENMP)
   if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # using GCC
@@ -87,6 +98,13 @@ if (ENABLE_OPENMP)
   endif()
 endif()
   
+# ----------------------------------------------------------
+# DEV MODE:
+# - show warnings
+# - build type set to debug
+#
+# - highly recommanded to turn dev mode off for production
+# ----------------------------------------------------------
 if (ENABLE_DEV_MODE)
   MESSAGE(STATUS "Enabling Developer Mode")
   
@@ -151,8 +169,6 @@ ELSE (ENABLE_DEV_MODE)
 
 ENDIF (ENABLE_DEV_MODE)  
 
-
-
 # ----------------------------------------------------------
 # Boost
 #
@@ -180,9 +196,9 @@ IF(${Boost_FOUND})
   MESSAGE(STATUS "Found Boost Libraries in ${Boost_LIBRARIES}, Version ${Boost_VERSION}")
 ENDIF()
 
-#
+# ----------------------------------------------------------
 # NetCDF
-#
+# ----------------------------------------------------------
 SET(NETCDF_CXX "YES")
 FIND_PACKAGE(NetCDF REQUIRED)
 IF(NetCDF_FOUND)
@@ -191,6 +207,9 @@ IF(NetCDF_FOUND)
   INCLUDE_DIRECTORIES(${NETCDF_INCLUDES_CXX})
 ENDIF(NetCDF_FOUND)
 
+# ----------------------------------------------------------
+# GDAL
+# ----------------------------------------------------------
 # SET(CMAKE_PREFIX_PATH /uufs/chpc.utah.edu/sys/installdir/gdal/2.4.0)
 FIND_PACKAGE(GDAL REQUIRED)
 IF (${GDAL_FOUND})
@@ -198,15 +217,18 @@ IF (${GDAL_FOUND})
   INCLUDE_DIRECTORIES(${GDAL_INCLUDE_DIR})
 ENDIF(${GDAL_FOUND})
 
+
+# ----------------------------------------------------------
+# CUDA
+# - check if CUDA is available
+# ----------------------------------------------------------
 SET(CUDA_SEPARABLE_COMPILATION ON)
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_52;-rdc=true;" )
 
 #use fast math option is required for OptiX
 # set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-dlink;-rdc=true;--use_fast_math;--keep-device-functions")
 
-#
 # Attempt to find CUDA
-#
 FIND_PACKAGE(CUDA)
 IF(CUDA_FOUND)
   MESSAGE(STATUS "CUDA Libraries: ${CUDA_LIBRARIES}")
@@ -226,10 +248,10 @@ ELSE(CUDA_FOUND)
   MESSAGE(WARNING "GPU and related accelerations will be disable for this build.")
 ENDIF(CUDA_FOUND)
 
-
-#
+# ----------------------------------------------------------
+# CUDA and OPTIX
 # if CUDA 10.2 or higher is found, then OptiX support can be enabled, so search for it.
-#
+# ----------------------------------------------------------
 if(HAS_CUDA_SUPPORT)
 
   ADD_DEFINITIONS(-DHAS_CUDA)
@@ -314,9 +336,10 @@ else(HAS_CUDA_SUPPORT)
   REMOVE_DEFINITIONS(-DHAS_OPTIX)
 endif(HAS_CUDA_SUPPORT)
 
-#
+# ----------------------------------------------------------
+# DOXYGEN
+# ----------------------------------------------------------
 # Find doxygen so we can add a target for building
-#
 FIND_PACKAGE(Doxygen)
 if (DOXYGEN_FOUND)
 
@@ -338,16 +361,12 @@ else (DOXYGEN_FOUND)
   MESSAGE(WARNING "Doxygen need to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
 
-#
-#	Unit Testing:
-#
-# This "unit test" is only a simple test to show the system
-# working. It simply returns a true value to indicate that a null
-# program has ended OK. I pass on this test really just means the
-# cmake system constructed the build environment OK.
-enable_testing() # once
-include(CTest)
 
+# ----------------------------------------------------------
+# LIBRARY LINK
+# - define a function to link all external library needed to
+#   build the code
+# ----------------------------------------------------------
 function(link_external_libraries exec)
   target_link_libraries(${exec} ${Boost_PROGRAM_OPTIONS_LIBRARIES})
   target_link_libraries(${exec} ${Boost_DATE_TIME_LIBRARIES})
@@ -355,12 +374,26 @@ function(link_external_libraries exec)
   target_link_libraries(${exec} ${GDAL_LIBRARY})
   target_link_libraries(${exec} ${NETCDF_LIBRARIES_CXX})
   target_link_libraries(${exec} ${NETCDF_LIBRARIES_C})
-  # target_link_libraries(${exec} cudadevrt)
   IF ($CACHE{HAS_CUDA_SUPPORT})
+    # target_link_libraries(${exec} cudadevrt)
     target_link_libraries(${exec} ${CUDA_LIBRARIES})
   ENDIF()
 endfunction()
 
+# ----------------------------------------------------------
+#  Unit Testing:
+#
+# This "unit test" is only a simple test to show the system
+# working. It simply returns a true value to indicate that a null
+# program has ended OK. I pass on this test really just means the
+# cmake system constructed the build environment OK.
+# ----------------------------------------------------------
+enable_testing() # once
+include(CTest)
+
+# ----------------------------------------------------------
+# SOURCE CODES
+# ----------------------------------------------------------
 add_subdirectory(src/util)
 add_subdirectory(src/winds)
 add_subdirectory(src/plume)
@@ -373,6 +406,9 @@ add_subdirectory(qesPlume)
 add_subdirectory(qes)
 add_subdirectory(tests)
 
+# ----------------------------------------------------------
+# TESTING OPTION
+# ----------------------------------------------------------
 option(ENABLE_UNITTESTS "Enables unitests" OFF)
 
 option(ENABLE_ALL_TESTS "Enables all tests for an extensive test run" OFF) # will not override CPU/GPU selection
