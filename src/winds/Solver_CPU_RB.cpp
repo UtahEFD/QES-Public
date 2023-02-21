@@ -55,25 +55,26 @@ void Solver_CPU_RB::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool
   int icell_face;// cell-face index
   int icell_cent;// cell-centered index
 
-  //R.resize(WGD->numcell_cent, 0.0);
-  //lambda.resize(WGD->numcell_cent, 0.0);
-  //lambda_old.resize(WGD->numcell_cent, 0.0);
+  // R.resize(WGD->numcell_cent, 0.0);
+  // lambda.resize(WGD->numcell_cent, 0.0);
+  // lambda_old.resize(WGD->numcell_cent, 0.0);
 
   auto startSolveSection = std::chrono::high_resolution_clock::now();
+#pragma omp parallel private(icell_cent, icell_face) default(none) shared(WGD, R)
+  {
+#pragma omp for
+    for (int k = 1; k < WGD->nz - 2; k++) {
+      for (int j = 0; j < WGD->ny - 1; j++) {
+        for (int i = 0; i < WGD->nx - 1; i++) {
+          icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+          icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
 
-#pragma omp parallel for private(icell_cent, icell_face)
-  for (int k = 1; k < WGD->nz - 2; k++) {
-    for (int j = 0; j < WGD->ny - 1; j++) {
-      for (int i = 0; i < WGD->nx - 1; i++) {
-        icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-        icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-
-        // Calculate divergence of initial velocity field
-        R[icell_cent] = (-2 * pow(alpha1, 2.0)) * (((WGD->e[icell_cent] * WGD->u0[icell_face + 1] - WGD->f[icell_cent] * WGD->u0[icell_face]) * WGD->dx) + ((WGD->g[icell_cent] * WGD->v0[icell_face + WGD->nx] - WGD->h[icell_cent] * WGD->v0[icell_face]) * WGD->dy) + ((WGD->m[icell_cent] * WGD->dz_array[k] * 0.5 * (WGD->dz_array[k] + WGD->dz_array[k + 1]) * WGD->w0[icell_face + WGD->nx * WGD->ny] - WGD->n[icell_cent] * WGD->dz_array[k] * 0.5 * (WGD->dz_array[k] + WGD->dz_array[k - 1]) * WGD->w0[icell_face])));
+          // Calculate divergence of initial velocity field
+          R[icell_cent] = (-2.0f * pow(alpha1, 2.0)) * (((WGD->e[icell_cent] * WGD->u0[icell_face + 1] - WGD->f[icell_cent] * WGD->u0[icell_face]) * WGD->dx) + ((WGD->g[icell_cent] * WGD->v0[icell_face + WGD->nx] - WGD->h[icell_cent] * WGD->v0[icell_face]) * WGD->dy) + ((WGD->m[icell_cent] * WGD->dz_array[k] * 0.5 * (WGD->dz_array[k] + WGD->dz_array[k + 1]) * WGD->w0[icell_face + WGD->nx * WGD->ny] - WGD->n[icell_cent] * WGD->dz_array[k] * 0.5f * (WGD->dz_array[k] + WGD->dz_array[k - 1]) * WGD->w0[icell_face])));
+        }
       }
     }
   }
-
   // INSERT CANOPY CODE
 
   /***************************************************************
@@ -83,14 +84,14 @@ void Solver_CPU_RB::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool
   int iter = 0;
   float error;
   float max_error = 1.0;
-  //int i_max, j_max, k_max;
+  // int i_max, j_max, k_max;
 
   std::cout << "[Solver] Running Red/Black CPU Solver ..." << std::endl;
 
   while (iter < itermax && max_error > tol) {
 
 // Save previous iteration values for error calculation
-#pragma omp parallel private(icell_cent, icell_face, error)
+#pragma omp parallel private(icell_cent, icell_face, error) default(none) shared(WGD, lambda, lambda_old, max_error, R)
     {
 #pragma omp for
       for (auto k = 0u; k < lambda.size(); ++k) {
@@ -116,7 +117,7 @@ void Solver_CPU_RB::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool
                                         + WGD->h[icell_cent] * lambda[icell_cent - (WGD->nx - 1)]
                                         + WGD->m[icell_cent] * lambda[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)]
                                         + WGD->n[icell_cent] * lambda[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] - R[icell_cent])
-                                   + (1.0 - omega) * lambda[icell_cent];// SOR formulation
+                                   + (1.0f - omega) * lambda[icell_cent];// SOR formulation
             }
           }
         }
@@ -137,7 +138,7 @@ void Solver_CPU_RB::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool
                                         + WGD->h[icell_cent] * lambda[icell_cent - (WGD->nx - 1)]
                                         + WGD->m[icell_cent] * lambda[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)]
                                         + WGD->n[icell_cent] * lambda[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] - R[icell_cent])
-                                   + (1.0 - omega) * lambda[icell_cent];// SOR formulation
+                                   + (1.0f - omega) * lambda[icell_cent];// SOR formulation
             }
           }
         }
@@ -148,7 +149,7 @@ void Solver_CPU_RB::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool
 #pragma omp for
       for (int j = 0; j < WGD->ny - 1; j++) {
         for (int i = 0; i < WGD->nx - 1; i++) {
-          int icell_cent = i + j * (WGD->nx - 1);// Lineralized index for cell centered values
+          icell_cent = i + j * (WGD->nx - 1);// Lineralized index for cell centered values
           lambda[icell_cent] = lambda[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)];
         }
       }
@@ -161,7 +162,7 @@ void Solver_CPU_RB::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool
       for (int k = 1; k < WGD->nz - 1; k++) {
         for (int j = 0; j < WGD->ny - 1; j++) {
           for (int i = 0; i < WGD->nx - 1; i++) {
-            int icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);// Lineralized index for cell centered values
+            icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);// Lineralized index for cell centered values
             error = fabs(lambda[icell_cent] - lambda_old[icell_cent]);
             if (error > max_error) {
               max_error = error;
@@ -175,21 +176,21 @@ void Solver_CPU_RB::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool
     iter += 1;
   }
 
-  //std::cout << "Solved!\n";
+  // std::cout << "Solved!\n";
 
-  //std::cout << "Number of iterations:" << iter << "\n";// Print the number of iterations
-  //std::cout << "Error:" << max_error << "\n";
-  //std::cout << "tol:" << tol << "\n";
+  // std::cout << "Number of iterations:" << iter << "\n";// Print the number of iterations
+  // std::cout << "Error:" << max_error << "\n";
+  // std::cout << "tol:" << tol << "\n";
   printf("[Solver] Residual after %d itertations: %2.9f\n", iter, max_error);
 
-#pragma omp parallel private(icell_cent, icell_face)
+#pragma omp parallel private(icell_cent, icell_face) default(none) shared(WGD, lambda, alpha1, alpha2)
   {
     // Update the velocity field using Euler-Lagrange equations
 #pragma omp for
     for (int k = 0; k < WGD->nz; k++) {
       for (int j = 0; j < WGD->ny; j++) {
         for (int i = 0; i < WGD->nx; i++) {
-          int icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+          icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
           WGD->u[icell_face] = WGD->u0[icell_face];
           WGD->v[icell_face] = WGD->v0[icell_face];
           WGD->w[icell_face] = WGD->w0[icell_face];
@@ -208,13 +209,13 @@ void Solver_CPU_RB::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool
           icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
 
           WGD->u[icell_face] = WGD->u0[icell_face]
-                               + (1 / (2 * pow(alpha1, 2.0))) * WGD->f[icell_cent] * WGD->dx
+                               + (1.0f / (2.0f * (float)pow(alpha1, 2.0))) * WGD->f[icell_cent] * WGD->dx
                                    * (lambda[icell_cent] - lambda[icell_cent - 1]);
           WGD->v[icell_face] = WGD->v0[icell_face]
-                               + (1 / (2 * pow(alpha1, 2.0))) * WGD->h[icell_cent] * WGD->dy
+                               + (1.0f / (2.0f * (float)pow(alpha1, 2.0))) * WGD->h[icell_cent] * WGD->dy
                                    * (lambda[icell_cent] - lambda[icell_cent - (WGD->nx - 1)]);
           WGD->w[icell_face] = WGD->w0[icell_face]
-                               + (1 / (2 * pow(alpha2, 2.0))) * WGD->n[icell_cent] * WGD->dz_array[k]
+                               + (1.0f / (2.0f * (float)pow(alpha2, 2.0))) * WGD->n[icell_cent] * WGD->dz_array[k]
                                    * (lambda[icell_cent] - lambda[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)]);
         }
       }
@@ -247,5 +248,5 @@ void Solver_CPU_RB::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool
   std::chrono::duration<float> elapsedTotal = finish - startOfSolveMethod;
   std::chrono::duration<float> elapsedSolve = finish - startSolveSection;
   std::cout << "Elapsed time: " << elapsedTotal.count() << " s\n";// Print out elapsed execution time
-  //std::cout << "Elapsed solve time: " << elapsedSolve.count() << " s\n";// Print out elapsed execution time
+  // std::cout << "Elapsed solve time: " << elapsedSolve.count() << " s\n";// Print out elapsed execution time
 }
