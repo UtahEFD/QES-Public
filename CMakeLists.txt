@@ -15,7 +15,7 @@ CMAKE_POLICY(SET CMP0074 NEW)
 # This creates a variable we could use for tacking on to various folders
 # or install locations based on the version info.  It pulls the Verson information
 # from CMake based on the Version number provided in the PROJECT command.
-PROJECT(QES VERSION 2.0.0)
+PROJECT(QES VERSION 2.0.2)
 SET(QES_VERSION_INFO v${QES_VERSION_MAJOR}.${QES_VERSION_MINOR}.${QES_VERSION_PATCH})
 
 # The following will pass the version into the code as a preprocessor variable
@@ -29,7 +29,7 @@ MESSAGE(STATUS "CMake Module Path: ${CMAKE_MODULE_PATH}")
 # BUILD OPTIONS
 # ----------------------------------------------------------
 option(ENABLE_DEV_MODE "Enable developer mode - turns on important flags for developing and debugging." OFF)
-option(ENABLE_OPENMP "Enable muiltthreads support with openmp." OFF)
+option(ENABLE_OPENMP "Enable multithreaded support with OpenMP." OFF)
 option(ENABLE_CPPCHECK "Enable static analysis with cppcheck" OFF)
 option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
 
@@ -79,28 +79,30 @@ endif()
 # OPENMP
 # ----------------------------------------------------------
 if (ENABLE_OPENMP)
+  FIND_PACKAGE(OpenMP)
+  MESSAGE(STATUS "OpenMP Found: ${OpenMP_FOUND}, ${OpenMP_CXX_FLAGS}, ${OpenMP_CXX_LIBRARIES}")
   if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # using GCC
-    MESSAGE(STATUS "Enabling openmp")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+    MESSAGE(STATUS "Enabling OpenMP")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
   elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     # using CLANG (MACOS)
     if(APPLE)
-      MESSAGE(STATUS "Enabling openmp")
+      MESSAGE(STATUS "Enabling OpenMP")
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xpreprocessor -fopenmp")
     else()
-      MESSAGE(STATUS "Enabling openmp")
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+      MESSAGE(STATUS "Enabling OpenMP")
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS")
     endif()
     #MESSAGE(WARNING "CLANG support of openmp limitied or not avaiable on macos")
     #SET(ENABLE_OPENMP OFF CACHE BOOL "Disable openmp support" FORCE)
   elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
     # using Intel C++
-    MESSAGE(STATUS "Enabling openmp")
+    MESSAGE(STATUS "Enabling OpenMP")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -qopenmp")
   elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # using Visual Studio C++
-    MESSAGE(STATUS "Enabling openmp")
+    MESSAGE(STATUS "Enabling OpenMP")
     add_compile_options(/openmp)
   endif()
 endif()
@@ -384,6 +386,10 @@ function(link_external_libraries exec)
   IF ($CACHE{HAS_CUDA_SUPPORT})
     # target_link_libraries(${exec} cudadevrt)
     target_link_libraries(${exec} ${CUDA_LIBRARIES})
+  ENDIF()
+
+  IF (ENABLE_OPENMP AND ${OpenMP_FOUND})
+    target_link_libraries(${exec} ${OpenMP_CXX_LIBRARIES})    
   ENDIF()
 endfunction()
 

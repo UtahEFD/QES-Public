@@ -51,7 +51,11 @@ void splashScreen()
 #endif
 
 #ifdef HAS_OPTIX
-  std::cout << "\t*OptiX is available!" << std::endl;
+  std::cout << "\t* OptiX is available!" << std::endl;
+#endif
+
+#ifdef _OPENMP
+  std::cout << "\t* OpenMP is available!" << std::endl;
 #endif
   std::cout << "##############################################################" << std::endl;
 }
