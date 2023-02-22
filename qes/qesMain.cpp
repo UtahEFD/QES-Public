@@ -214,12 +214,14 @@ Solver *setSolver(const int solveType, WINDSInputData *WID, WINDSGeneralData *WG
 {
   Solver *solver = nullptr;
   if (solveType == CPU_Type) {
-    std::cout << "Run Serial Solver (CPU) ..." << std::endl;
 #ifdef _OPENMP
+    std::cout << "Run Red/Black Solver (CPU) ..." << std::endl;
     solver = new Solver_CPU_RB(WID, WGD);
 #else
+    std::cout << "Run Serial Solver (CPU) ..." << std::endl;
     solver = new CPUSolver(WID, WGD);
 #endif
+
 #ifdef HAS_CUDA
   } else if (solveType == DYNAMIC_P) {
     std::cout << "Run Dynamic Parallel Solver (GPU) ..." << std::endl;

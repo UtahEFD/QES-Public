@@ -82,9 +82,7 @@ FIND_PACKAGE(OpenMP)
 if (ENABLE_OPENMP)
   MESSAGE(STATUS "OpenMP Found: ${OpenMP_FOUND}, ${OpenMP_CXX_FLAGS}, ${OpenMP_CXX_LIBRARIES}")
 
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${OpenMP_CXX_INCLUDE_DIR}")
-
-  if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  If (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # using GCC
     MESSAGE(STATUS "Enabling OpenMP")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
@@ -92,6 +90,7 @@ if (ENABLE_OPENMP)
     # using CLANG (MACOS)
     if(APPLE)
       MESSAGE(STATUS "Enabling OpenMP")
+      SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${OpenMP_CXX_INCLUDE_DIR}")
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")  # -Xpreprocessor -fopenmp")
     else()
       MESSAGE(STATUS "Enabling OpenMP")

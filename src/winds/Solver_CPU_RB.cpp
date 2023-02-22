@@ -183,7 +183,7 @@ void Solver_CPU_RB::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool
   // std::cout << "tol:" << tol << "\n";
   printf("[Solver] Residual after %d itertations: %2.9f\n", iter, max_error);
 
-#pragma omp parallel private(icell_cent, icell_face) default(none) shared(WGD, lambda, alpha1, alpha2)
+#pragma omp parallel private(icell_cent, icell_face) default(none) shared(WGD, lambda)
   {
     // Update the velocity field using Euler-Lagrange equations
 #pragma omp for

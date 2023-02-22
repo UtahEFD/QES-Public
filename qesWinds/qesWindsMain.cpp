@@ -127,10 +127,11 @@ int main(int argc, char *argv[])
   // //////////////////////////////////////////
   Solver *solver = nullptr;
   if (arguments.solveType == CPU_Type) {
-    std::cout << "Run Serial Solver (CPU) ..." << std::endl;
 #ifdef _OPENMP
+    std::cout << "Run Red/Black Solver (CPU) ..." << std::endl;
     solver = new Solver_CPU_RB(WID, WGD);
 #else
+    std::cout << "Run Serial Solver (CPU) ..." << std::endl;
     solver = new CPUSolver(WID, WGD);
 #endif
 
