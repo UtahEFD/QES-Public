@@ -258,29 +258,24 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
     }
 
     // this the the main loop over all active particles
+    // #pragma omp parallel for private(timeRemainder) default(none) shared(WGD, TGD, particleList)
+    for (auto parItr = particleList.begin(); parItr != particleList.end(); ++parItr) {
+      // All the particle here are active => no need to check if
+      // parItr->isActive == true
+
+      // call to the main particle adection function (in separate file:
+      // AdvectParticle.cpp)
+      /*
+        this function is advencing the particle -> status is returned in:
+        - parItr->isRogue
+        - parItr->isActive
+        this function does not do any manipulation on particleList
+      */
+      advectParticle(timeRemainder, parItr, WGD, TGD);
+    }// end of loop for (parItr == particleList.begin(); parItr !=
+    // }// END OF OPENMP WORKSHARE
+
     std::list<Particle *>::iterator parItr;
-#pragma omp parallel private(parItr, timeRemainder) default(none) shared(WGD, TGD)
-    {
-      for (parItr = particleList.begin(); parItr != particleList.end(); parItr++) {
-        // All the particle here are active => no need to check if
-        // parItr->isActive == true
-
-        // call to the main particle adection function (in separate file:
-        // AdvectParticle.cpp)
-        /*
-          this function is advencing the particle -> status is returned in:
-          - parItr->isRogue
-          - parItr->isActive
-          this function does not do any manipulation on particleList
-        */
-
-#pragma omp single nowait
-        {
-          advectParticle(timeRemainder, parItr, WGD, TGD);
-        }
-      }// end of loop for (parItr == particleList.begin(); parItr !=
-    }// END OF OPENMP WORKSHARE
-
     // flush deposition buffer
     for (parItr = particleList.begin(); parItr != particleList.end(); parItr++) {
       if ((*parItr)->dep_buffer_flag) {
