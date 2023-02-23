@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Plume.hpp 
+/** @file Plume.hpp
  * @brief
  */
 
@@ -44,7 +44,7 @@
 #include "util/QEStime.h"
 #include "util/calcTime.h"
 #include "util/Vector3.h"
-//#include "Matrix3.h"
+// #include "Matrix3.h"
 #include "Random.h"
 
 #include "util/QESNetCDFOutput.h"
@@ -142,7 +142,7 @@ protected:
   double dx;// a copy of the urb grid dx value, eventually could become an array
   double dy;// a copy of the urb grid dy value, eventually could become an array
   double dz;// a copy of the urb grid dz value, eventually could become an array
-  double dxy;//a copy of the urb grid dz value, eventually could become an array
+  double dxy;// a copy of the urb grid dz value, eventually could become an array
 
   /*
   // these values are calculated from the urb and turb grids by dispersion
@@ -217,7 +217,7 @@ protected:
   double getMaxVariance(const TURBGeneralData *);
 
   // this function moves (advects) one particle
-  void advectParticle(double, std::list<Particle *>::iterator, WINDSGeneralData *, TURBGeneralData *);
+  void advectParticle(double, Particle *, WINDSGeneralData *, TURBGeneralData *);
 
 
   void depositParticle(double,
@@ -233,7 +233,7 @@ protected:
                        double,
                        double,
                        double,
-                       std::list<Particle *>::iterator,
+                       Particle *,
                        WINDSGeneralData *,
                        TURBGeneralData *);
 

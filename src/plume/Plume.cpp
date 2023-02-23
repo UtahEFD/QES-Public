@@ -183,7 +183,7 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
   // for every simulation time step
   // //////////////////////////////////////////
 
-  if (debug == true) {
+  if (debug) {
     // start recording the amount of time it takes to perform the simulation
     // time integration loop
     timers.startNewTimer("simulation time integration loop");
@@ -257,9 +257,14 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
       timeRemainder = sim_dt;
     }
 
-    // this the the main loop over all active particles
-    // #pragma omp parallel for private(timeRemainder) default(none) shared(WGD, TGD, particleList)
-    for (auto parItr = particleList.begin(); parItr != particleList.end(); ++parItr) {
+    // FM: openmp parallelization of the advection loop
+    // std::vector<Particle *> tmp(particleList.begin(), particleList.end());
+    // #pragma omp parallel for private(timeRemainder) default(none) shared(WGD, TGD, tmp)
+    // for (auto parItr = tmp.begin(); parItr != tmp.end(); parItr++) {
+
+    // this the main loop over all active particles
+    for (auto parItr = particleList.begin(); parItr != particleList.end(); parItr++) {
+
       // All the particle here are active => no need to check if
       // parItr->isActive == true
 
@@ -271,13 +276,12 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
         - parItr->isActive
         this function does not do any manipulation on particleList
       */
-      advectParticle(timeRemainder, parItr, WGD, TGD);
+      advectParticle(timeRemainder, *parItr, WGD, TGD);
     }// end of loop for (parItr == particleList.begin(); parItr !=
     // }// END OF OPENMP WORKSHARE
 
-    std::list<Particle *>::iterator parItr;
     // flush deposition buffer
-    for (parItr = particleList.begin(); parItr != particleList.end(); parItr++) {
+    for (auto parItr = particleList.begin(); parItr != particleList.end(); parItr++) {
       if ((*parItr)->dep_buffer_flag) {
         for (auto n = 0u; n < (*parItr)->dep_buffer_cell.size(); ++n) {
           deposition->depcvol[(*parItr)->dep_buffer_cell[n]] += (*parItr)->dep_buffer_val[n];
@@ -288,12 +292,12 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
       }
     }
 
-    for (parItr = particleList.begin(); parItr != particleList.end(); parItr++) {
+    for (auto parItr = particleList.begin(); parItr != particleList.end(); parItr++) {
       // now update the isRogueCount and isNotActiveCount
-      if ((*parItr)->isRogue == true) {
+      if ((*parItr)->isRogue) {
         isRogueCount = isRogueCount + 1;
       }
-      if ((*parItr)->isActive == false) {
+      if (!(*parItr)->isActive) {
         isNotActiveCount = isNotActiveCount + 1;
         needToScrub = true;
       }
@@ -309,8 +313,8 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
     // note that the first time is already output, so this is the time the loop
     // iteration
     //  is calculating, not the input time to the loop iteration
-    for (size_t id_out = 0; id_out < outputVec.size(); id_out++) {
-      outputVec.at(id_out)->save(simTimeCurr);
+    for (auto &id_out : outputVec) {
+      id_out->save(simTimeCurr);
     }
 
     // For all particles that need to be removed from the particle
@@ -331,9 +335,9 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
                   << "Particles: Released = " << nParsReleased << " "
                   << "Active = " << particleList.size() << "." << std::endl;
       }
-      nextUpdate += updateFrequency_timeLoop;
+      nextUpdate += (float)updateFrequency_timeLoop;
       // output advection loop runtime if in debug mode
-      if (debug == true) {
+      if (debug) {
         timers.printStoredTime("advection loop");
       }
     }
@@ -347,7 +351,7 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
 
   // DEBUG - get the amount of time it takes to perform the simulation time
   // integration loop
-  if (debug == true) {
+  if (debug) {
     std::cout << "finished time integration loop" << std::endl;
     // Print out elapsed execution time
     timers.printStoredTime("simulation time integration loop");
@@ -499,7 +503,7 @@ int Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBGe
 void Plume::scrubParticleList()
 {
   for (auto parItr = particleList.begin(); parItr != particleList.end();) {
-    if ((*parItr)->isActive == false) {
+    if ((*parItr)->isActive) {
       delete *parItr;
       parItr = particleList.erase(parItr);
     } else {
