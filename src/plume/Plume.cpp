@@ -96,7 +96,8 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
     exit(EXIT_FAILURE);
   }
 
-  std::srand(std::time(0));
+  // std::srand(std::time(0));
+  RNG = RandomSingleton::getInstance();
 
   // get the domain start and end values, needed for wall boundary condition
   // application
@@ -539,13 +540,10 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, std::li
 
     // now set the initial velocity fluctuations for the particle
     // The  sqrt of the variance is to match Bailey's code
-    double rann = random::norRan();// use different random numbers for each direction
-    (*parItr)->uFluct = sig_x * rann;
-    rann = random::norRan();// should be randn() matlab equivalent, which is a
     // normally distributed random number
-    (*parItr)->vFluct = sig_y * rann;
-    rann = random::norRan();
-    (*parItr)->wFluct = sig_z * rann;
+    (*parItr)->uFluct = sig_x * RNG->norRan();
+    (*parItr)->vFluct = sig_y * RNG->norRan();
+    (*parItr)->wFluct = sig_z * RNG->norRan();
 
     // set the initial values for the old velFluct values
     (*parItr)->uFluct_old = (*parItr)->uFluct;

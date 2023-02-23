@@ -45,7 +45,7 @@
 #include "util/calcTime.h"
 #include "util/Vector3.h"
 // #include "Matrix3.h"
-#include "Random.h"
+#include "RandomSingleton.h"
 
 #include "util/QESNetCDFOutput.h"
 #include "PlumeOutput.h"
@@ -120,6 +120,8 @@ public:
   // This the storage for all particles
   // the sources can set these values, then the other values are set using urb and turb info using these values
   std::list<Particle *> particleList;
+
+  RandomSingleton *RNG;
 
   Interp *interp;
 
