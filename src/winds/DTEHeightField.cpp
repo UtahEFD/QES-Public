@@ -88,8 +88,15 @@ DTEHeightField::DTEHeightField(const std::vector<double> &heightField,
   // Vector3 tc0, tc1, tc2;
 
   // local variables to hold common variables
-  auto [nx, ny, nz] = m_dim;
-  auto [dx, dy, dz] = m_cellSize;
+  // decomposition declarations are a C++17 extension
+  // auto [nx, ny, nz] = m_dim;
+  int nx = std::get<0>(m_dim);
+  int ny = std::get<1>(m_dim);
+  int nz = std::get<2>(m_dim);
+  // auto [dx, dy, dz] = m_cellSize;
+  float dx = std::get<0>(m_cellSize);
+  float dy = std::get<1>(m_cellSize);
+  float dz = std::get<2>(m_cellSize);
 
   std::cout << "Loading digital elevation data from height field\n";
 
@@ -236,8 +243,15 @@ void DTEHeightField::load()
   // local variables to hold common variables related to the QES
   // domain
   //
-  auto [nx, ny, nz] = m_dim;
-  auto [dx, dy, dz] = m_cellSize;
+  //decomposition declarations are a C++17 extension
+  // auto [nx, ny, nz] = m_dim;
+  int nx = std::get<0>(m_dim);
+  int ny = std::get<1>(m_dim);
+  int nz = std::get<2>(m_dim);
+  // auto [dx, dy, dz] = m_cellSize;
+  float dx = std::get<0>(m_cellSize);
+  float dy = std::get<1>(m_cellSize);
+  float dz = std::get<2>(m_cellSize);
 
   // From -- http://www.gdal.org/gdal_tutorial.html
   m_poDataset = (GDALDataset *)GDALOpen(m_filename.c_str(), GA_ReadOnly);
