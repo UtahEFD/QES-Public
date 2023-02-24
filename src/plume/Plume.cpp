@@ -97,7 +97,22 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   }
 
   // std::srand(std::time(0));
+  // #ifdef _OPENMP
+  // #pragma omp parallel default(none) shared(threadRNG)
+  //   {
+  // #pragma omp master
+  //     {
+  //       std::cout << "[TEST] NUM THREADS " << omp_get_num_threads() << std::endl;
+  //       threadRNG.resize(omp_get_num_threads(), nullptr);
+  //     }
+  //     int tID = omp_get_thread_num();
+  //     threadRNG[tID] = new Random(long(time(nullptr)) ^ tID);
+  //   }
+  //
+  //   RNG = RandomSingleton::getInstance();
+  // #elif
   RNG = RandomSingleton::getInstance();
+  // #endif
 
   // get the domain start and end values, needed for wall boundary condition
   // application

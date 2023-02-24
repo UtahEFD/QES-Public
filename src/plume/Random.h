@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Random.h 
+/** @file Random.h
  * @brief This class handles the random number generation
  */
 
@@ -39,16 +39,32 @@
 #include <ctime>
 #include <math.h>
 
-class random
+class Random
 {
-public:
-  random();
-  static double uniRan();
-  static double norRan();
-  static double rangen();
-
-
 private:
-  static bool m_normal_value;
-  static double m_remaining_value;
+  bool m_normal_value;
+  double m_remaining_value;
+
+
+public:
+  Random();
+  Random(long);
+
+  double uniRan();
+  double norRan();
 };
+
+
+// class random
+//{
+// public:
+//   random();
+//   static double uniRan();
+//   static double norRan();
+//   static double rangen();
+//
+//
+// private:
+//   static bool m_normal_value;
+//   static double m_remaining_value;
+// };

@@ -198,10 +198,15 @@ void Plume::advectParticle(double timeRemainder, Particle *par_ptr, WINDSGeneral
     // LA note: should be randn() matlab equivalent, which is a normally distributed random number
     // LA future work: it is possible the rogue particles are caused by the random number generator stuff.
     //  Need to look into it at some time.
+    // #ifdef _OPENMP
+    //     double xRandn = threadRNG[omp_get_thread_num()]->norRan();
+    //     double yRandn = threadRNG[omp_get_thread_num()]->norRan();
+    //     double zRandn = threadRNG[omp_get_thread_num()]->norRan();
+    // #elif
     double xRandn = RNG->norRan();
     double yRandn = RNG->norRan();
     double zRandn = RNG->norRan();
-
+    // #endif
     // now calculate a bunch of values for the current particle
     // calculate the time derivative of the stress tensor: (tau_current - tau_old)/dt
     double dtxxdt = (txx - txx_old) / par_dt;

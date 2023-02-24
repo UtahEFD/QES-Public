@@ -5,6 +5,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 #LINK_DIRECTORIES (${CMAKE_BINARY_DIR}/quicutil/)
 
 SET( qesPlumeCoreSources
+    Random.cpp
     RandomSingleton.cpp
 
     handlePlumeArgs.cpp
