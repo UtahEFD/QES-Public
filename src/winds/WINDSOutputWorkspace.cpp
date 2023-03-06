@@ -87,9 +87,8 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, std::string ou
   }
   // Location of cell centers in z-dir
   m_z_face.resize(nz);
-  m_z_face[0] = m_WGD->z_face[0] - m_WGD->dz_array[0];
-  for (auto k = 1; k < nz; k++) {
-    m_z_face[k] = m_WGD->z_face[k - 1];
+  for (auto k = 0; k < nz; ++k) {
+    m_z_face[k] = m_WGD->z_face[k];
   }
 
   // set face-centered data dimensions

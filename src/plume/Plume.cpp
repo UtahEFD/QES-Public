@@ -36,13 +36,13 @@ Plume::Plume(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   : particleList(0), allSources(0)
 {
   // copy debug information
-  doParticleDataOutput = false;//arguments->doParticleDataOutput;
-  outputSimInfoFile = false;//arguments->doSimInfoFileOutput;
-  outputFolder = "";//arguments->outputFolder;
-  caseBaseName = "";//arguments->caseBaseName;
-  debug = false;//arguments->debug;
+  doParticleDataOutput = false;// arguments->doParticleDataOutput;
+  outputSimInfoFile = false;// arguments->doSimInfoFileOutput;
+  outputFolder = "";// arguments->outputFolder;
+  caseBaseName = "";// arguments->caseBaseName;
+  debug = false;// arguments->debug;
 
-  verbose = false;//arguments->verbose;
+  verbose = false;// arguments->verbose;
 
   // make local copies of the QES-Winds nVals for each dimension
   nx = WGD->nx;
@@ -64,13 +64,13 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   std::cout << "[Plume] \t Setting up simulation details " << std::endl;
 
   // copy debug information
-  doParticleDataOutput = false;//arguments->doParticleDataOutput;
-  outputSimInfoFile = false;//arguments->doSimInfoFileOutput;
-  outputFolder = "";//arguments->outputFolder;
-  caseBaseName = "";//arguments->caseBaseName;
-  debug = false;//arguments->debug;
+  doParticleDataOutput = false;// arguments->doParticleDataOutput;
+  outputSimInfoFile = false;// arguments->doSimInfoFileOutput;
+  outputFolder = "";// arguments->outputFolder;
+  caseBaseName = "";// arguments->caseBaseName;
+  debug = false;// arguments->debug;
 
-  verbose = false;//arguments->verbose;
+  verbose = false;// arguments->verbose;
 
   // make local copies of the QES-Winds nVals for each dimension
   nx = WGD->nx;
@@ -96,7 +96,8 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
     exit(EXIT_FAILURE);
   }
 
-  std::srand(std::time(0));
+  // std::srand(std::time(0));
+  RNG = RandomSingleton::getInstance();
 
   // get the domain start and end values, needed for wall boundary condition
   // application
@@ -156,6 +157,12 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
     wallReflect = new WallReflection_SetToInactive();
   } else if (PID->BCs->wallReflection == "stairstepReflection") {
     wallReflect = new WallReflection_StairStep();
+  } else if (PID->BCs->wallReflection == "meshReflection") {
+    if (WGD->mesh) {
+      wallReflect = new WallReflection_TriMesh();
+    } else {
+      wallReflect = new WallReflection_StairStep();
+    }
   } else {
     // this should not happend
     std::cerr << "[ERROR] unknown wall reflection setting" << std::endl;
@@ -177,7 +184,7 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
   // for every simulation time step
   // //////////////////////////////////////////
 
-  if (debug == true) {
+  if (debug) {
     // start recording the amount of time it takes to perform the simulation
     // time integration loop
     timers.startNewTimer("simulation time integration loop");
@@ -251,10 +258,14 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
       timeRemainder = sim_dt;
     }
 
-    // this the the main loop over all active particles
-    std::list<Particle *>::iterator parItr;
-    for (parItr = particleList.begin(); parItr != particleList.end();
-         parItr++) {
+    // FM: openmp parallelization of the advection loop
+    // std::vector<Particle *> tmp(particleList.begin(), particleList.end());
+    // #pragma omp parallel for private(timeRemainder) default(none) shared(WGD, TGD, tmp)
+    // for (auto parItr = tmp.begin(); parItr != tmp.end(); parItr++) {
+
+    // this the main loop over all active particles
+    for (auto parItr = particleList.begin(); parItr != particleList.end(); parItr++) {
+
       // All the particle here are active => no need to check if
       // parItr->isActive == true
 
@@ -266,18 +277,31 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
         - parItr->isActive
         this function does not do any manipulation on particleList
       */
+      advectParticle(timeRemainder, *parItr, WGD, TGD);
+    }// end of loop for (parItr == particleList.begin(); parItr !=
+    // }// END OF OPENMP WORKSHARE
 
-      advectParticle(timeRemainder, parItr, WGD, TGD);
+    // flush deposition buffer
+    for (auto parItr = particleList.begin(); parItr != particleList.end(); parItr++) {
+      if ((*parItr)->dep_buffer_flag) {
+        for (auto n = 0u; n < (*parItr)->dep_buffer_cell.size(); ++n) {
+          deposition->depcvol[(*parItr)->dep_buffer_cell[n]] += (*parItr)->dep_buffer_val[n];
+        }
+        (*parItr)->dep_buffer_flag = false;
+        (*parItr)->dep_buffer_cell.clear();
+        (*parItr)->dep_buffer_val.clear();
+      }
+    }
 
+    for (auto parItr = particleList.begin(); parItr != particleList.end(); parItr++) {
       // now update the isRogueCount and isNotActiveCount
-      if ((*parItr)->isRogue == true) {
+      if ((*parItr)->isRogue) {
         isRogueCount = isRogueCount + 1;
       }
-      if ((*parItr)->isActive == false) {
+      if (!(*parItr)->isActive) {
         isNotActiveCount = isNotActiveCount + 1;
         needToScrub = true;
       }
-
     }// end of loop for (parItr == particleList.begin(); parItr !=
     // particleList.end() ; parItr++ )
 
@@ -290,8 +314,8 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
     // note that the first time is already output, so this is the time the loop
     // iteration
     //  is calculating, not the input time to the loop iteration
-    for (size_t id_out = 0; id_out < outputVec.size(); id_out++) {
-      outputVec.at(id_out)->save(simTimeCurr);
+    for (auto &id_out : outputVec) {
+      id_out->save(simTimeCurr);
     }
 
     // For all particles that need to be removed from the particle
@@ -312,9 +336,9 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
                   << "Particles: Released = " << nParsReleased << " "
                   << "Active = " << particleList.size() << "." << std::endl;
       }
-      nextUpdate += updateFrequency_timeLoop;
+      nextUpdate += (float)updateFrequency_timeLoop;
       // output advection loop runtime if in debug mode
-      if (debug == true) {
+      if (debug) {
         timers.printStoredTime("advection loop");
       }
     }
@@ -328,7 +352,7 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
 
   // DEBUG - get the amount of time it takes to perform the simulation time
   // integration loop
-  if (debug == true) {
+  if (debug) {
     std::cout << "finished time integration loop" << std::endl;
     // Print out elapsed execution time
     timers.printStoredTime("simulation time integration loop");
@@ -389,7 +413,7 @@ double Plume::calcCourantTimestep(const double &d,
   }
 
   double min_ds = std::min(dxy, dz);
-  //double max_u = std::max({ u, v, w });
+  // double max_u = std::max({ u, v, w });
   double max_u = sqrt(u * u + v * v + w * w);
   double CN = 0.0;
 
@@ -407,7 +431,7 @@ double Plume::calcCourantTimestep(const double &d,
   */
 
   if (d > 6.0 * max_u * sim_dt) {
-    //CN = 1.0;
+    // CN = 1.0;
     return timeRemainder;
   } else if (d > 3.0 * max_u * sim_dt) {
     CN = std::min(2.0 * CourantNum, 1.0);
@@ -480,7 +504,7 @@ int Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBGe
 void Plume::scrubParticleList()
 {
   for (auto parItr = particleList.begin(); parItr != particleList.end();) {
-    if ((*parItr)->isActive == false) {
+    if ((*parItr)->isActive) {
       delete *parItr;
       parItr = particleList.erase(parItr);
     } else {
@@ -516,13 +540,10 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, std::li
 
     // now set the initial velocity fluctuations for the particle
     // The  sqrt of the variance is to match Bailey's code
-    double rann = random::norRan();// use different random numbers for each direction
-    (*parItr)->uFluct = sig_x * rann;
-    rann = random::norRan();// should be randn() matlab equivalent, which is a
     // normally distributed random number
-    (*parItr)->vFluct = sig_y * rann;
-    rann = random::norRan();
-    (*parItr)->wFluct = sig_z * rann;
+    (*parItr)->uFluct = sig_x * RNG->norRan();
+    (*parItr)->vFluct = sig_y * RNG->norRan();
+    (*parItr)->wFluct = sig_z * RNG->norRan();
 
     // set the initial values for the old velFluct values
     (*parItr)->uFluct_old = (*parItr)->uFluct;

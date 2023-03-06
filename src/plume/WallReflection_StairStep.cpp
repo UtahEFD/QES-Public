@@ -287,9 +287,9 @@ void WallReflection_StairStep::oneReflection(const WINDSGeneralData *WGD,
     // z-drection (dz can be variable with hieght)
     N = -f3 * e3;
     if (f3 >= 0.0) {
-      S = { double(WGD->x[i]), double(WGD->y[j]), double(WGD->z_face[k]) };
+      S = { double(WGD->x[i]), double(WGD->y[j]), double(WGD->z_face[k + 1]) };
     } else {
-      S = { double(WGD->x[i]), double(WGD->y[j]), double(WGD->z_face[k - 1]) };
+      S = { double(WGD->x[i]), double(WGD->y[j]), double(WGD->z_face[k]) };
     }
     l3 = -(Xold * N - S * N) / (U * N);
 

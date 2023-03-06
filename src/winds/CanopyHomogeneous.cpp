@@ -106,7 +106,7 @@ void CanopyHomogeneous::setCellFlags(const WINDSInputData *WID, WINDSGeneralData
             if (WGD->terrain[icell_2d] + base_height <= WGD->z[k]) {
               WGD->canopy->canopy_bot_index[icell_2d] = k;
               WGD->canopy->canopy_bot[icell_2d] = WGD->terrain[icell_2d] + base_height;
-              WGD->canopy->canopy_base[icell_2d] = WGD->z_face[k - 1];
+              WGD->canopy->canopy_base[icell_2d] = WGD->z_face[k];
               break;
             }
           }
@@ -177,6 +177,8 @@ void CanopyHomogeneous::canopyVegetation(WINDSGeneralData *WGD, int canopy_id)
       int i = icell_2d - j * (WGD->nx - 1);
       int icell_cent_top = icell_2d + (WGD->canopy->canopy_top_index[icell_2d] - 1) * (WGD->nx - 1) * (WGD->ny - 1);
 
+      // NEED REWORK !!!!!
+
       // Call the bisection method to find the root
       WGD->canopy->canopy_d[icell_2d] = canopyBisection(WGD->canopy->canopy_ustar[icell_2d],
                                                         WGD->canopy->canopy_z0[icell_2d],
@@ -185,13 +187,15 @@ void CanopyHomogeneous::canopyVegetation(WINDSGeneralData *WGD, int canopy_id)
                                                         WGD->vk,
                                                         0.0);
       // std::cout << "WGD->vk:" << WGD->vk << "\n";
-      // std::cout << "WGD->canopy_atten[icell_cent]:" << WGD->canopy_atten[icell_cent] << "\n";
-      if (WGD->canopy->canopy_d[icell_2d] == 10000) {
-        std::cout << "bisection failed to converge \n"
-                  << "TREE1 " << canopy_id << " " << H << " "
-                  << WGD->canopy->canopy_ustar[icell_2d] << " "
-                  << WGD->canopy->canopy_z0[icell_2d] << " "
-                  << WGD->canopy->canopy_atten_coeff[icell_cent_top] << std::endl;
+      //if (WGD->canopy->canopy_d[icell_2d] >= 10000 || isnan(WGD->canopy->canopy_d[icell_2d])) {
+      if (WGD->canopy->canopy_d[icell_2d] > WGD->canopy->canopy_height[icell_2d]) {
+        std::cerr << "bisection failed to converge \n"
+                  << "\t canopy ID = " << canopy_id << "; Height = " << H << "\n"
+                  << "\t WGD->canopy_atten[] = " << WGD->canopy->canopy_atten_coeff[icell_cent_top] << "\n"
+                  << "\t WGD->canopy_d[] = " << WGD->canopy->canopy_d[icell_2d] << "\n"
+                  << "\t WGD->canopy->canopy_ustar[] = " << WGD->canopy->canopy_ustar[icell_2d] << "\n"
+                  << "\t WGD->canopy->canopy_z0[] = " << WGD->canopy->canopy_z0[icell_2d] << std::endl;
+
         WGD->canopy->canopy_d[icell_2d] = canopySlopeMatch(WGD->canopy->canopy_z0[icell_2d],
                                                            WGD->canopy->canopy_height[icell_2d],
                                                            WGD->canopy->canopy_atten_coeff[icell_cent_top]);
@@ -238,7 +242,7 @@ void CanopyHomogeneous::canopyVegetation(WINDSGeneralData *WGD, int canopy_id)
           veg_vel_frac = log((WGD->canopy->canopy_height[icell_2d] - WGD->canopy->canopy_d[icell_2d]) / WGD->canopy->canopy_z0[icell_2d])
                          * exp(avg_atten * ((z_rel / WGD->canopy->canopy_height[icell_2d]) - 1)) / log(z_rel / WGD->canopy->canopy_z0[icell_2d]);
           // check if correction is bound and well defined
-          if (veg_vel_frac > 1 || veg_vel_frac < 0) {
+          if (veg_vel_frac > 1 || veg_vel_frac < 0 || isnan(veg_vel_frac)) {
             // check if correction is valide (0,1)
             veg_vel_frac = 1;
           }
@@ -264,8 +268,9 @@ void CanopyHomogeneous::canopyVegetation(WINDSGeneralData *WGD, int canopy_id)
           veg_vel_frac = log((z_rel - WGD->canopy->canopy_d[icell_2d]) / WGD->canopy->canopy_z0[icell_2d])
                          / log(z_rel / WGD->canopy->canopy_z0[icell_2d]);
 
+
           // check if correction is bound and well defined
-          if (veg_vel_frac > 1 || veg_vel_frac < 0) {
+          if (veg_vel_frac > 1 || veg_vel_frac < 0 || isnan(veg_vel_frac)) {
             veg_vel_frac = 1;
           }
 

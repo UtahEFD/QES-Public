@@ -251,9 +251,16 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
     if (solverType == 1) {
       windProfiler = new WindProfilerBarnCPU();
+#ifdef HAS_CUDA
     } else {
       windProfiler = new WindProfilerBarnGPU();
     }
+#else
+  } else {
+    std::cout << "No CUDA support - using CPU Barnes" << std::endl;
+    windProfiler = new WindProfilerBarnCPU();
+  }
+#endif
 
     // If the sensor file specified in the xml
     if (WID->metParams->sensorName.size() > 0) {
@@ -366,7 +373,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   // vertical grid (can be uniform or stretched)
   dz_array.resize(nz - 1, 0.0);
   z.resize(nz - 1);
-  z_face.resize(nz - 1);
+  z_face.resize(nz);
 
   if (WID->simParams->verticalStretching == 0) {// Uniform vertical grid
     for (size_t k = 1; k < z.size(); k++) {
@@ -381,11 +388,17 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   dz_array[0] = dz_array[1];// Value for ghost cell below the surface
   dz = *std::min_element(dz_array.begin(), dz_array.end());// Set dz to minimum value of
 
-  z_face[0] = 0.0;
+  // Location of face in z-dir
+  z_face[0] = -dz_array[0];
+  z_face[1] = -0.0;
+  for (size_t k = 2; k < z_face.size(); ++k) {
+    z_face[k] = z_face[k - 1] + dz_array[k - 1];
+  }
+
+  // Location of cell centers in z-dir
   z[0] = -0.5 * dz_array[0];
-  for (size_t k = 1; k < z.size(); k++) {
-    z_face[k] = z_face[k - 1] + dz_array[k];// Location of face centers in z-dir
-    z[k] = 0.5 * (z_face[k - 1] + z_face[k]);// Location of cell centers in z-dir
+  for (size_t k = 1; k < z.size(); ++k) {
+    z[k] = 0.5 * (z_face[k] + z_face[k + 1]);
   }
 
 
@@ -467,6 +480,9 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
 
   if (WID->simParams->DTE_heightField) {
+
+    mesh = WID->simParams->DTE_mesh;
+
     int ii, jj, idx;
     // ////////////////////////////////
     // Retrieve terrain height field //
@@ -946,7 +962,7 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
   x.resize(nx - 1);
   y.resize(ny - 1);
   z.resize(nz - 1);
-  z_face.resize(nz - 1);
+  z_face.resize(nz);
   dz_array.resize(nz - 1, 0.0);
 
   input->getVariableData("x", x);
@@ -976,9 +992,10 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
   if (!NcVar_zface.isNull()) {
     input->getVariableData("z_face", z_face);
   } else {
-    z_face[0] = 0.0;
-    for (size_t k = 1; k < z.size(); k++) {
-      z_face[k] = z_face[k - 1] + dz_array[k]; /**< Location of face centers in z-dir */
+    z_face[0] = -dz_array[0];
+    z_face[1] = 0.0;
+    for (size_t k = 2; k < z_face.size() - 1; ++k) {
+      z_face[k] = z_face[k - 1] + dz_array[k - 1];
     }
   }
 

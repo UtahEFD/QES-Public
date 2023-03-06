@@ -121,10 +121,11 @@ std::string testVectorMath()
   printf("starting PLUME vector math CPU...\n");
   PGD->testCPU(1000000);
 
+#ifdef HAS_CUDA
   printf("--------------------------------------\n");
   printf("starting PLUME vector math CUDA...\n");
   //PGD->testGPU(100000);
   PGD->testGPU_struct(1000000);
-
+#endif
   return results;
 }

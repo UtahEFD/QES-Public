@@ -24,9 +24,12 @@
 
 #include "winds/Solver.h"
 #include "winds/CPUSolver.h"
+
+#ifdef HAS_CUDA
 #include "winds/DynamicParallelism.h"
 #include "winds/GlobalMemory.h"
 #include "winds/SharedMemory.h"
+#endif
 
 #include "winds/Sensor.h"
 
@@ -488,6 +491,7 @@ WINDSGeneralData *runSerial(WINDSGeneralData *WGD, WINDSInputData *WID, Solver *
 //Dynamic parallel GPU solver
 WINDSGeneralData *runDynamic(WINDSGeneralData *WGD_DYNAMIC, WINDSInputData *WID, Solver *solverDynamic, bool solveWind)
 {
+#ifdef HAS_CUDA
   std::cout << "Run Dynamic Parallel Solver (GPU)..." << std::endl;
   solverDynamic = new DynamicParallelism(WID, WGD_DYNAMIC);
 
@@ -504,11 +508,16 @@ WINDSGeneralData *runDynamic(WINDSGeneralData *WGD_DYNAMIC, WINDSInputData *WID,
   std::cout << "Dynamic solver done!\n";
   std::cout << std::endl;
   return WGD_DYNAMIC;
+#else
+  std::cout << "CUDA Support not compiled into code." << std::endl;
+  return WGD_DYNAMIC;
+#endif
 }
 
 //Global memory GPU solver
 WINDSGeneralData *runGlobal(WINDSGeneralData *WGD_GLOBAL, WINDSInputData *WID, Solver *solverGlobal, bool solveWind)
 {
+#ifdef HAS_CUDA
   std::cout << "Run Global Memory Solver (GPU)..." << std::endl;
   solverGlobal = new GlobalMemory(WID, WGD_GLOBAL);
 
@@ -525,11 +534,16 @@ WINDSGeneralData *runGlobal(WINDSGeneralData *WGD_GLOBAL, WINDSInputData *WID, S
   std::cout << "Global solver done!\n";
   std::cout << std::endl;
   return WGD_GLOBAL;
+#else
+  std::cout << "CUDA Support not compiled into code." << std::endl;
+  return WGD_GLOBAL;
+#endif
 }
 
 //Shared memory GPU solver
 WINDSGeneralData *runShared(WINDSGeneralData *WGD_SHARED, WINDSInputData *WID, Solver *solverShared, bool solveWind)
 {
+#ifdef HAS_CUDA
   std::cout << "Run Shared Memory Solver (GPU)..." << std::endl;
   solverShared = new SharedMemory(WID, WGD_SHARED);
 
@@ -546,4 +560,8 @@ WINDSGeneralData *runShared(WINDSGeneralData *WGD_SHARED, WINDSInputData *WID, S
   std::cout << "Shared solver done!\n";
   std::cout << std::endl;
   return WGD_SHARED;
+#else
+  std::cout << "CUDA Support not compiled into code." << std::endl;
+  return WGD_SHARED;
+#endif
 }

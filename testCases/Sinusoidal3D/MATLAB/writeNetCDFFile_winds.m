@@ -15,7 +15,9 @@ nx_cc = length(x_cc);
 ny_cc = length(y_cc);
 nz_cc = length(z_cc);
 
-z_face = (0:(nz_cc-1))*(z_cc(2)-z_cc(1));
+z_face = zeros(nz,1);
+z_face(2:end) = (0:(nz_cc-1))*(z_cc(2)-z_cc(1));
+z_face(1) = - z_face(3);
 
 % don't worry if the output already exists, just overwrite it
 %%%save(outputFileName,  'xCellGrid_urb','yCellGrid_urb','zCellGrid_urb', 'uMean','vMean','wMean');
@@ -53,7 +55,7 @@ netcdf.putAtt(nc,varid_z_cell,'long_name','z-distance');
 netcdf.putAtt(nc,varid_z_cell,'units','m');
 netcdf.putAtt(nc,varid_z_cell,'cartesian_axis','Z');
 
-varid_z_face = netcdf.defVar(nc, 'z_face', 'float', dim_z_cell);
+varid_z_face = netcdf.defVar(nc, 'z_face', 'float', dim_z_face);
 netcdf.putAtt(nc,varid_z_face,'long_name','z-distance');
 netcdf.putAtt(nc,varid_z_face,'units','m');
 

@@ -57,6 +57,7 @@
     <streetCanyonFlag> 1 </streetCanyonFlag> 			<!-- Street canyon flag (0-none, 1-Roeckle w/ Fackrel (default)) -->
     <streetIntersectionFlag> 0 </streetIntersectionFlag> 		<!--Street intersection flag (0-off, 1-on) -->
     <wakeFlag> 2 </wakeFlag> 					<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle (default), 3-Area Scaled) -->
+    <highRiseFlag> 0 </highRiseFlag>                            <!-- High-rise flag (0-off (default), 1-on) -->
     <sidewallFlag> 0 </sidewallFlag> 				<!-- Sidewall flag (0-off, 1-on (default)) -->
     
     <SHPFile>SaltLakeCity/slc_cut.shp</SHPFile>	                        <!-- Address to shapefile location-->

@@ -1,9 +1,0 @@
-
-## Examples for plume call from build folder (with QES-winds, Seoul_Gangnam_wMixLength.xml and data store in scratch)
-
-./qesPlume/qesPlume -q ../data/InputFiles/Seoul_Gangnam_plume_point_left.xml -u ../scratch/Seoul_Gangnam_windsWk.nc -t ../scratch/Seoul_Gangnam_turbOut.nc -o ../scratch/ -b Seoul_Gangnam_plume_point_left
-
-./qesPlume/qesPlume -q ../data/InputFiles/Seoul_Gangnam_plume_point_right.xml -u ../scratch/Seoul_Gangnam_windsWk.nc -t ../scratch/Seoul_Gangnam_turbOut.nc -o ../scratch/ -b Seoul_Gangnam_plume_point_right
-
-./qesPlume/qesPlume -q ../data/InputFiles/Seoul_Gangnam_plume_line.xml -u ../scratch/Seoul_Gangnam_windsWk.nc -t ../scratch/Seoul_Gangnam_turbOut.nc -o ../scratch/ -b Seoul_Gangnam_plume_line
-

@@ -127,9 +127,6 @@ __global__ void calculateError(float *d_lambda, float *d_lambda_old, int nx, int
 
   __syncthreads();
 
-  //if (threadIdx.x > 0) {
-  //  return;
-  //}
   if (threadIdx.x == 0) {
     d_bvalue[blockIdx.x] = 0.0;
     for (int j = 0; j < BLOCKSIZE; j++) {
@@ -137,36 +134,13 @@ __global__ void calculateError(float *d_lambda, float *d_lambda_old, int nx, int
       if (index < d_size) {
         if (d_value[index] > d_bvalue[blockIdx.x]) {
           d_bvalue[blockIdx.x] = d_value[index];
-          //printf(".");
         }
       }
     }
   }
 
+  //final step of the reduction is made in the mother kernel
   return;
-  // FM temporary fix on the reduction.
-  /*__syncthreads();
-
-  if (ii > 0) {
-    return;
-  }
-
-  error = 0.0;
-
-  if (ii == 0) {
-    printf("\n!! calculation of error on tid 0\n");
-    for (int k = 0; k < numblocks; k++) {
-      if (d_bvalue[k] > 0) {
-        //printf("\r!! k %d val %f", k, d_bvalue[k]);
-      }
-      if (d_bvalue[k] > error) {
-        error = d_bvalue[k];
-      }
-    }
-    printf("\n!! error %f\n", error);
-  }
-  __syncthreads();
-  */
 }
 
 // Euler Final Velocity kernel
@@ -239,7 +213,7 @@ __global__ void SOR_iteration(float *d_lambda, float *d_lambda_old, int nx, int 
     // Error calculation
     calculateError<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, nx, ny, nz, d_value, d_bvalue);
     cudaDeviceSynchronize();
-    // FM temporary fix on the reduction.
+    // Final step of the reduction to calculate error.
     error = 0.0;
     for (int k = 0; k < ((nx - 1) * (ny - 1) * (nz - 1) / BLOCKSIZE) + 1; k++) {
       if (d_bvalue[k] > error) {
@@ -256,7 +230,7 @@ __global__ void SOR_iteration(float *d_lambda, float *d_lambda_old, int nx, int 
     finalVelocity<<<numberOfBlocks3, numberOfThreadsPerBlock>>>(d_lambda, d_u, d_v, d_w, d_icellflag, d_f, d_h, d_n, alpha1, alpha2, dx, dy, dz, d_dz_array, nx, ny, nz);
   }
 
-  printf("\tError after %d itertations: %2.9f\n", iter, error);
+  printf("[Solver] Residual after %d itertations: %2.9f\n", iter, error);
   //printf("Error = %2.9f\n", error);
   //printf("Number of iteration = %d\n", iter);
 }
@@ -346,17 +320,17 @@ DynamicParallelism::DynamicParallelism(const WINDSInputData *WID, WINDSGeneralDa
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
   sprintf_s(msg, sizeof(msg),
             "Total global memory required for running this case: %.0f MBytes "
-            "(%llu bytes)\n",
+            "(%llu bytes)",
             static_cast<float>(memory_req / 1048576.0f),
             (unsigned long long)memory_req);
 #else
   snprintf(msg, sizeof(msg),
            "Total global memory required for running this case: %.0f MBytes "
-           "(%llu bytes)\n",
+           "(%llu bytes)",
            static_cast<float>(memory_req / 1048576.0f),
            (unsigned long long)memory_req);
 #endif
-  std::cout << msg;
+  std::cout << "[Solver] " << msg << std::endl;
 
 
   std::cout << "-------------------------------------------------------------------" << std::endl;
@@ -376,7 +350,7 @@ void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD,
   int *d_icellflag;
   float *d_dz_array;
 
-  std::cout << "Running Dynamic Parallelim Solver (GPU) ..." << std::endl;
+  std::cout << "[Solver] Running Dynamic Parallelim Solver (GPU) ..." << std::endl;
 
   auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
 

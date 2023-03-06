@@ -4,10 +4,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 #INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR}/quicutil)  
 #LINK_DIRECTORIES (${CMAKE_BINARY_DIR}/quicutil/)
 
-CUDA_ADD_LIBRARY( qesplumecore
-    
-    Random.cpp
-        
+SET( qesPlumeCoreSources
+    RandomSingleton.cpp
+
     handlePlumeArgs.cpp
     
     Interp.cpp
@@ -49,7 +48,19 @@ CUDA_ADD_LIBRARY( qesplumecore
     
     WallReflection.cpp
     WallReflection_StairStep.cpp
+    WallReflection_TriMesh.cpp
+    
 )
+
+IF ($CACHE{HAS_CUDA_SUPPORT})
+   CUDA_ADD_LIBRARY( qesplumecore
+      ${qesPlumeCoreSources}
+   )
+ELSE ($CACHE{HAS_CUDA_SUPPORT})
+   ADD_LIBRARY( qesplumecore
+      ${qesPlumeCoreSources}
+   )
+ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 #target_link_libraries (qesplumecore quicloader) 
 #target_link_libraries (qesplumecore util)

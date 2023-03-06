@@ -56,10 +56,12 @@
 #include "LocalMixingDefault.h"
 #include "LocalMixingNetCDF.h"
 #include "LocalMixingSerial.h"
-#include "Mesh.h"
+
 #include "DTEHeightField.h"
 #include "Cut_cell.h"
 #include "Wall.h"
+
+//#include "util/Mesh.h"
 #include "util/NetCDFInput.h"
 #include "util/QEStime.h"
 

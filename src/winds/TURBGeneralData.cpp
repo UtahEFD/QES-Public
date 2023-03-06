@@ -97,7 +97,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
   z.resize(nz - 1, 0);
   z = m_WGD->z;
   // z face-center (no ghost cell under the ground)
-  z_face.resize(nz - 1, 0);
+  z_face.resize(nz, 0);
   z_face = m_WGD->z_face;
   // dz_array
   dz_array.resize(nz - 1, 0);
@@ -321,7 +321,7 @@ TURBGeneralData::TURBGeneralData(const std::string inputFile, WINDSGeneralData *
   z.resize(nz - 1, 0);
   z = m_WGD->z;
   // z face-center (no ghost cell under the ground)
-  z_face.resize(nz - 1, 0);
+  z_face.resize(nz, 0);
   z_face = m_WGD->z_face;
   // dz_array
   dz_array.resize(nz - 1, 0);

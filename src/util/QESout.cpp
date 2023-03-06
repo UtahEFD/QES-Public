@@ -43,10 +43,21 @@ void splashScreen()
   std::cout << "#                      Welcome to QES                        #" << std::endl;
   std::cout << "#                                                            #" << std::endl;
   std::cout << "##############################################################" << std::endl;
-  std::cout << "version X.X.X (2022)" << std::endl;
-#ifdef HAS_OPTIX
-  std::cout << "OptiX is available!" << std::endl;
+  std::cout << "Version: " << QES_VERSION_INFO << std::endl;  // QES_VERSION_INFO comes from CMakeLists.txt
+#ifdef HAS_CUDA
+  std::cout << "\t* CUDA support available!" << std::endl;
+#else
+  std::cout << "\t* No CUDA support - CPU Only Computations!" << std::endl;
 #endif
+
+#ifdef HAS_OPTIX
+  std::cout << "\t* OptiX is available!" << std::endl;
+#endif
+
+#ifdef _OPENMP
+  std::cout << "\t* OpenMP is available!" << std::endl;
+#endif
+  std::cout << "##############################################################" << std::endl;
 }
 
 
@@ -73,3 +84,28 @@ void verbose(std::string out)
     std::cout << out << std::endl;
 }
 }// namespace QESout
+
+
+
+// //////////////////////////////////////////////////
+// 
+// IMPORTANT:  Keep the code below --Pete W
+// The following code is needed to build in flags for the
+// sanitizer that will allow CUDA to be run with the sanitizer
+// checks in place. Without this function callback, these
+// options needs to be set on the command line when the
+// executable is called. For example, 
+// ASAN_OPTIONS=protect_shadow_gap=0:replace_intrin=0:detect_leaks=0 ./myExec
+//
+// Building the options in, as done below allows us to run the executables
+// cleanly without having to type what is above.
+// 
+#if defined( HAS_CUDA ) && defined( __SANITIZE_ADDRESS__ )
+#ifdef __cplusplus
+extern "C"
+#endif
+const char *__asan_default_options() {
+  return "protect_shadow_gap=0:replace_intrin=0:detect_leaks=0";
+}
+#endif
+// //////////////////////////////////////////////////

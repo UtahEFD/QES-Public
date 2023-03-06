@@ -1,8 +1,7 @@
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-CUDA_ADD_LIBRARY( qeswindscore
-  BVH.cpp
+SET( qesWindCoreSources
   Canopy.cpp
   CanopyElement.cpp
   CanopyHomogeneous.cpp
@@ -13,21 +12,18 @@ CUDA_ADD_LIBRARY( qeswindscore
   CPUSolver.cpp
   Cut_cell.cpp
   DTEHeightField.cpp
-  DynamicParallelism.cu
   handleWINDSArgs.cpp
   LocalMixing.cpp
   LocalMixingDefault.cpp
   LocalMixingNetCDF.cpp
   LocalMixingSerial.cpp
   LocalMixingOptix.cpp
-  Mesh.cpp
   PolyBuilding.cpp PolyBuilding.h
   Sensor.cpp
   Solver.cpp
-  Triangle.cpp
+  Solver_CPU_RB.cpp
   TURBParams.h
   TURBGeneralData.cpp
-  TURBGeneralData.cu
   TURBGeneralData.h
   TURBOutput.cpp
   TURBWall.cpp
@@ -36,7 +32,6 @@ CUDA_ADD_LIBRARY( qeswindscore
   WindProfilerSensorType.cpp
   WindProfilerBarnCPU.cpp
   WindProfilerBarnGPU.cpp
-  WindProfilerBarnGPU.cu
   WindProfilerWRF.cpp
   WINDSInputData.h
   WINDSGeneralData.cpp WINDSGeneralData.h
@@ -52,19 +47,31 @@ CUDA_ADD_LIBRARY( qeswindscore
   Sidewall.cpp
   Rooftop.cpp
   StreetIntersection.cpp
-
-  Ray.cpp Ray.h
-  SphereDirections.cpp SphereDirections.h
-  HitRecord.cpp HitRecord.h
-  GlobalMemory.cu
-  GlobalMemory.h
-  SharedMemory.cu
-  SharedMemory.h
   TimeSeries.h
   )
 
+IF ($CACHE{HAS_CUDA_SUPPORT})
+   CUDA_ADD_LIBRARY( qeswindscore
+      ${qesWindCoreSources}
+   )
+ELSE ($CACHE{HAS_CUDA_SUPPORT})
+   ADD_LIBRARY( qeswindscore
+      ${qesWindCoreSources}
+   )
+ENDIF ($CACHE{HAS_CUDA_SUPPORT})
  
-IF (HAS_OPTIX_SUPPORT MATCHES ON)
+
+IF ($CACHE{HAS_CUDA_SUPPORT})
+  CUDA_ADD_LIBRARY(qeswindsgpu
+    DynamicParallelism.cu
+    GlobalMemory.cu GlobalMemory.h
+    SharedMemory.cu SharedMemory.h    
+    TURBGeneralData.cu
+    WindProfilerBarnGPU.cu)
+ENDIF ($CACHE{HAS_CUDA_SUPPORT})
+  
+
+IF ($CACHE{HAS_OPTIX_SUPPORT})
   cuda_compile_and_embed(embedded_ptx_code OptixRayTrace.cu)
  
   add_library(qesOptix
@@ -72,7 +79,7 @@ IF (HAS_OPTIX_SUPPORT MATCHES ON)
     OptixRayTrace.h
     OptixRayTrace.cpp
     )  
-ENDIF()
+ENDIF ($CACHE{HAS_OPTIX_SUPPORT})
 
 
 
