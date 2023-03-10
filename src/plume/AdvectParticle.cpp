@@ -34,6 +34,13 @@
 
 void Plume::advectParticle(double timeRemainder, Particle *par_ptr, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
+  /*
+   * this function is advencing the particle -> status is returned in:
+   * - parItr->isRogue
+   * - parItr->isActive
+   * this function take in a particle pointer
+   * and does not do any manipulation on particleList
+   */
 
   double rhoAir = 1.225;// in kg m^-3
   double nuAir = 1.506E-5;// in m^2 s^-1
@@ -151,12 +158,7 @@ void Plume::advectParticle(double timeRemainder, Particle *par_ptr, WINDSGeneral
     // and the grid sizes. Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
 
     int cellId = interp->getCellId(xPos, yPos, zPos);
-    int cellId2d = interp->getCellId2d(xPos, yPos);
-    // LDU: if particle drops below terrain height, remove it (kludge, fix later) (doesn't include halo)
-    if (zPos <= WGD->terrain[cellId2d]) {
-      isActive = false;
-      break;
-    }
+
     double dWall = WGD->mixingLengths[cellId];
     double par_dt = calcCourantTimestep(dWall,
                                         std::abs(uMean) + std::abs(uFluct),
@@ -194,19 +196,20 @@ void Plume::advectParticle(double timeRemainder, Particle *par_ptr, WINDSGeneral
       break;
     }
 
-    // these are the random numbers for each direction
-    // LA note: should be randn() matlab equivalent, which is a normally distributed random number
-    // LA future work: it is possible the rogue particles are caused by the random number generator stuff.
-    //  Need to look into it at some time.
-    // #ifdef _OPENMP
-    //     double xRandn = threadRNG[omp_get_thread_num()]->norRan();
-    //     double yRandn = threadRNG[omp_get_thread_num()]->norRan();
-    //     double zRandn = threadRNG[omp_get_thread_num()]->norRan();
-    // #elif
+// these are the random numbers for each direction
+// LA note: should be randn() matlab equivalent, which is a normally distributed random number
+// LA future work: it is possible the rogue particles are caused by the random number generator stuff.
+//  Need to look into it at some time.
+#ifdef _OPENMP
+    double xRandn = threadRNG[omp_get_thread_num()]->norRan();
+    double yRandn = threadRNG[omp_get_thread_num()]->norRan();
+    double zRandn = threadRNG[omp_get_thread_num()]->norRan();
+#else
     double xRandn = RNG->norRan();
     double yRandn = RNG->norRan();
     double zRandn = RNG->norRan();
-    // #endif
+#endif
+
     // now calculate a bunch of values for the current particle
     // calculate the time derivative of the stress tensor: (tau_current - tau_old)/dt
     double dtxxdt = (txx - txx_old) / par_dt;
@@ -245,7 +248,6 @@ void Plume::advectParticle(double timeRemainder, Particle *par_ptr, WINDSGeneral
     }
     // now do the Ax=b calculation using the inverted matrix (vecFluct = A*b)
     matmult(A_11, A_12, A_13, A_21, A_22, A_23, A_31, A_32, A_33, b_11, b_21, b_31, uFluct, vFluct, wFluct);
-
 
     // now check to see if the value is rogue or not
     if (std::abs(uFluct) >= vel_threshold || isnan(uFluct)) {

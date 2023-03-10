@@ -35,17 +35,17 @@
 #include "Random.h"
 
 Random::Random()
+  : m_normal_value(false), m_remaining_value(0.0)
 {
-  m_normal_value = false;
   // std::cout << "Set  RANDOM seed " << std::endl;
   // std::srand(1);
   // std::srand(std::time(0));
-  srand48(long(time(nullptr)));
+  srand48(std::time(nullptr));
 }
 
 Random::Random(long seed)
+  : m_normal_value(false), m_remaining_value(0.0)
 {
-  m_normal_value = false;
   // std::cout << "Set  RANDOM seed " << std::endl;
   // std::srand(1);
   // std::srand(std::time(0));
@@ -60,11 +60,11 @@ double Random::uniRan()
 
 double Random::norRan()
 {
-  float rsq, v1, v2;
+  double rsq, v1, v2;
   if (!m_normal_value) {
     do {
-      v1 = 2.0f * uniRan() - 1.0f;
-      v2 = 2.0f * uniRan() - 1.0f;
+      v1 = 2.0 * uniRan() - 1.0;
+      v2 = 2.0 * uniRan() - 1.0;
       rsq = v1 * v1 + v2 * v2;
     } while (rsq >= 1.0);
 

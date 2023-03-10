@@ -28,8 +28,8 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Interp.h 
- * @brief 
+/** @file Interp.h
+ * @brief
  */
 
 #pragma once
@@ -68,7 +68,6 @@ public:
   double yStart, yEnd;
   double zStart, zEnd;
 
-  double vel_threshold;
 
   virtual void interpValues(const double &xPos,
                             const double &yPos,
@@ -126,10 +125,10 @@ protected:
   int kStart, kEnd;
 
   // timer class useful for debugging and timing different operations
-  //calcTime timers;
+  // calcTime timers;
 
   // copies of debug related information from the input arguments
-  //bool debug;
+  // bool debug;
 
   Interp()
   {}
@@ -146,9 +145,9 @@ inline int Interp::getCellId(const double &xPos, const double &yPos, const doubl
 
 inline int Interp::getCellId(Vector3Double &X)
 {
-  //int i = floor((xPos - xStart + 0.5*dx)/(dx+1e-9));
-  //int j = floor((yPos - yStart + 0.5*dy)/(dy+1e-9));
-  //int k = floor((zPos - zStart + dz)/(dz+1e-9));
+  // int i = floor((xPos - xStart + 0.5*dx)/(dx+1e-9));
+  // int j = floor((yPos - yStart + 0.5*dy)/(dy+1e-9));
+  // int k = floor((zPos - zStart + dz)/(dz+1e-9));
 
   int i = floor((X[0] - 0.0 * dx) / (dx + 1e-9));
   int j = floor((X[1] - 0.0 * dy) / (dy + 1e-9));
