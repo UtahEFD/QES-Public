@@ -41,10 +41,15 @@
 #include <cmath>
 #include <cstring>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #include "util/QEStime.h"
 #include "util/calcTime.h"
 #include "util/Vector3.h"
 // #include "Matrix3.h"
+#include "Random.h"
 #include "RandomSingleton.h"
 
 #include "util/QESNetCDFOutput.h"
@@ -121,20 +126,25 @@ public:
   // the sources can set these values, then the other values are set using urb and turb info using these values
   std::list<Particle *> particleList;
 
-  RandomSingleton *RNG;
+#ifdef _OPENMP
+  // if using openmp the RNG is not thread safe, use an array of RNG (one per thread)
+  std::vector<Random *> threadRNG;
+#else
+  RandomSingleton *RNG = nullptr;
+#endif
 
-  Interp *interp;
+  Interp *interp = nullptr;
 
-  Deposition *deposition;
+  Deposition *deposition = nullptr;
 
   // these values are calculated from the urb and turb grids by dispersion
   // they are used for applying boundary conditions at the walls of the domain
-  double domainXstart;// the domain starting x value, a copy of the value found by dispersion
-  double domainXend;// the domain ending x value, a copy of the value found by dispersion
-  double domainYstart;// the domain starting y value, a copy of the value found by dispersion
-  double domainYend;// the domain ending y value, a copy of the value found by dispersion
-  double domainZstart;// the domain starting z value, a copy of the value found by dispersion
-  double domainZend;// the domain ending z value, a copy of the value found by dispersion
+  double domainXstart = 0.0;// the domain starting x value, a copy of the value found by dispersion
+  double domainXend = 0.0;// the domain ending x value, a copy of the value found by dispersion
+  double domainYstart = 0.0;// the domain starting y value, a copy of the value found by dispersion
+  double domainYend = 0.0;// the domain ending y value, a copy of the value found by dispersion
+  double domainZstart = 0.0;// the domain starting z value, a copy of the value found by dispersion
+  double domainZend = 0.0;// the domain ending z value, a copy of the value found by dispersion
 
 protected:
   // QES grid information
@@ -157,38 +167,38 @@ protected:
   double domainZend;// the domain ending z value, a copy of the value found by dispersion
   */
 
-  WallReflection *wallReflect;
+  WallReflection *wallReflect = nullptr;
 
-  DomainBC *domainBC_x;
-  DomainBC *domainBC_y;
-  DomainBC *domainBC_z;
+  DomainBC *domainBC_x = nullptr;
+  DomainBC *domainBC_y = nullptr;
+  DomainBC *domainBC_z = nullptr;
 
   // time variables
-  double sim_dt;// the simulation timestep
+  double sim_dt = 0.0;// the simulation timestep
   QEStime simTimeStart;
   QEStime simTimeCurr;
-  int simTimeIdx;
+  int simTimeIdx = 0;
 
   // some overall metadata for the set of particles
-  int isRogueCount;// just a total number of rogue particles per time iteration
-  int isNotActiveCount;// just a total number of inactive active particles per time iteration
+  int isRogueCount = 0;// just a total number of rogue particles per time iteration
+  int isNotActiveCount = 0;// just a total number of inactive active particles per time iteration
 
   // important time variables not copied from dispersion
-  double CourantNum;// the Courant number, used to know how to divide up the simulation timestep into smaller per particle timesteps. Copied from input
-  double vel_threshold;
+  double CourantNum = 0.0;// the Courant number, used to know how to divide up the simulation timestep into smaller per particle timesteps. Copied from input
+  double vel_threshold = 0.0;
 
   // ALL Sources that will be used
   std::vector<SourceType *> allSources;
   // this is the global counter of particles released (used to set particleID)
-  int nParsReleased;
+  int nParsReleased = 0;
 
   // this is the total number of particles expected to be released during the simulation
   // !!! this has to be calculated carefully inside the getInputSources() function
-  int totalParsToRelease;
+  int totalParsToRelease = 0;
 
-  double invarianceTol;// this is the tolerance used to determine whether makeRealizeable should be run on the stress tensor for a particle
-  int updateFrequency_timeLoop;// used to know how frequently to print out information during the time loop of the solver
-  int updateFrequency_particleLoop;// used to know how frequently to print out information during the particle loop of the solver
+  double invarianceTol = 1.0e-10;// this is the tolerance used to determine whether makeRealizeable should be run on the stress tensor for a particle
+  float updateFrequency_timeLoop = 0.0;// used to know how frequently to print out information during the time loop of the solver
+  int updateFrequency_particleLoop = 0;// used to know how frequently to print out information during the particle loop of the solver
 
   // timer class useful for debugging and timing different operations
   calcTime timers;
@@ -198,9 +208,9 @@ protected:
   bool outputSimInfoFile;
   std::string outputFolder;
   std::string caseBaseName;
-  bool debug;
 
-  bool verbose;
+  bool debug = false;
+  bool verbose = false;
 
   void setParticleVals(WINDSGeneralData *, TURBGeneralData *, std::list<Particle *>);
   // this function gets sources from input data and adds them to the allSources vector
@@ -297,11 +307,14 @@ protected:
                double &x_31);
 
   // a function used at constructor time to set the pointer function to the desired BC type
-  void setBCfunctions(std::string xBCtype, std::string yBCtype, std::string zBCtype);
+  void setBCfunctions(const std::string &,
+                      const std::string &,
+                      const std::string &);
 
 
 private:
-  Plume();
+  Plume()
+  {}
 };
 
 inline void Plume::showCurrentStatus()

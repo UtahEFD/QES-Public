@@ -61,10 +61,10 @@ public:
   // setup and save output for the given time
   // in this case the saved data is output averaged concentration
   // This is the one function that needs called from outside after constructor time
-  void save(QEStime);
+  void save(QEStime) override;
 
 protected:
-  bool validateFileOtions();
+  bool validateFileOptions_local();
 
 private:
   // default constructor

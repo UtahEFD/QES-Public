@@ -36,12 +36,12 @@
 InterpTriLinear::InterpTriLinear(WINDSGeneralData *WGD, TURBGeneralData *TGD, const bool &debug_val)
   : Interp(WGD)
 {
-  //std::cout << "[InterpTriLinear] \t Setting InterpTriLinear fields " << std::endl;
+  // std::cout << "[InterpTriLinear] \t Setting InterpTriLinear fields " << std::endl;
 
   // copy debug information
   debug = debug_val;
 
-  if (debug == true) {
+  if (debug) {
     std::cout << "[InterpTriLinear] \t DEBUG - Domain boundary" << std::endl;
     std::cout << "\t\t xStart=" << xStart << " xEnd=" << xEnd << std::endl;
     std::cout << "\t\t yStart=" << yStart << " yEnd=" << yEnd << std::endl;
@@ -63,18 +63,25 @@ void InterpTriLinear::interpInitialValues(const double &xPos,
                                           double &tyz_out,
                                           double &tzz_out)
 {
+  int ii;// this is the nearest cell index to the left in the x direction
+  int jj;// this is the nearest cell index to the left in the y direction
+  int kk;// this is the nearest cell index to the left in the z direction
+  double iw;// this is the normalized distance to the nearest cell index to the left in the x direction
+  double jw;// this is the normalized distance to the nearest cell index to the left in the y direction
+  double kw;// this is the normalized distance to the nearest cell index to the left in the z direction
+
   // this replaces the old indexing trick, set the indexing variables for the
   // interp3D for each particle, then get interpolated values from the
   // InterpTriLinear grid to the particle values for multiple datatypes
-  setInterp3Dindex_cellVar(xPos, yPos, zPos);
+  setInterp3Dindex_cellVar(xPos, yPos, zPos, ii, jj, kk, iw, jw, kw);
 
   // get the tau values from the InterpTriLinear grid for the particle value
-  txx_out = interp3D_cellVar(TGD->txx);
-  txy_out = interp3D_cellVar(TGD->txy);
-  txz_out = interp3D_cellVar(TGD->txz);
-  tyy_out = interp3D_cellVar(TGD->tyy);
-  tyz_out = interp3D_cellVar(TGD->tyz);
-  tzz_out = interp3D_cellVar(TGD->tzz);
+  txx_out = interp3D_cellVar(TGD->txx, ii, jj, kk, iw, jw, kw);
+  txy_out = interp3D_cellVar(TGD->txy, ii, jj, kk, iw, jw, kw);
+  txz_out = interp3D_cellVar(TGD->txz, ii, jj, kk, iw, jw, kw);
+  tyy_out = interp3D_cellVar(TGD->tyy, ii, jj, kk, iw, jw, kw);
+  tyz_out = interp3D_cellVar(TGD->tyz, ii, jj, kk, iw, jw, kw);
+  tzz_out = interp3D_cellVar(TGD->tzz, ii, jj, kk, iw, jw, kw);
 
   sig_x_out = std::sqrt(std::abs(txx_out));
   if (sig_x_out == 0.0)
@@ -86,7 +93,6 @@ void InterpTriLinear::interpInitialValues(const double &xPos,
   if (sig_z_out == 0.0)
     sig_z_out = 1e-8;
 
-  return;
 }
 
 void InterpTriLinear::interpValues(const double &xPos,
@@ -108,65 +114,80 @@ void InterpTriLinear::interpValues(const double &xPos,
                                    double &flux_div_z_out,
                                    double &CoEps_out)
 {
+  int ii;// this is the nearest cell index to the left in the x direction
+  int jj;// this is the nearest cell index to the left in the y direction
+  int kk;// this is the nearest cell index to the left in the z direction
+  double iw;// this is the normalized distance to the nearest cell index to the left in the x direction
+  double jw;// this is the normalized distance to the nearest cell index to the left in the y direction
+  double kw;// this is the normalized distance to the nearest cell index to the left in the z direction
+
   // set in`teroplation indexing variables for uFace variables
-  setInterp3Dindex_uFace(xPos, yPos, zPos);
+  setInterp3Dindex_uFace(xPos, yPos, zPos, ii, jj, kk, iw, jw, kw);
   // interpolation of variables on uFace
-  uMean_out = interp3D_faceVar(WGD->u);
-  //flux_div_x_out = interp3D_faceVar(dtxxdx);
-  //flux_div_y_out = interp3D_faceVar(dtxydx);
-  //flux_div_z_out = interp3D_faceVar(dtxzdx);
+  uMean_out = interp3D_faceVar(WGD->u, ii, jj, kk, iw, jw, kw);
+  // flux_div_x_out = interp3D_faceVar(dtxxdx);
+  // flux_div_y_out = interp3D_faceVar(dtxydx);
+  // flux_div_z_out = interp3D_faceVar(dtxzdx);
 
   // set interpolation indexing variables for vFace variables
-  setInterp3Dindex_vFace(xPos, yPos, zPos);
+  setInterp3Dindex_vFace(xPos, yPos, zPos, ii, jj, kk, iw, jw, kw);
   // interpolation of variables on vFace
-  vMean_out = interp3D_faceVar(WGD->v);
-  //flux_div_x_out += interp3D_faceVar(dtxydy);
-  //flux_div_y_out += interp3D_faceVar(dtyydy);
-  //flux_div_z_out += interp3D_faceVar(dtyzdy);
+  vMean_out = interp3D_faceVar(WGD->v, ii, jj, kk, iw, jw, kw);
+  // flux_div_x_out += interp3D_faceVar(dtxydy);
+  // flux_div_y_out += interp3D_faceVar(dtyydy);
+  // flux_div_z_out += interp3D_faceVar(dtyzdy);
 
   // set interpolation indexing variables for wFace variables
-  setInterp3Dindex_wFace(xPos, yPos, zPos);
+  setInterp3Dindex_wFace(xPos, yPos, zPos, ii, jj, kk, iw, jw, kw);
   // interpolation of variables on wFace
-  wMean_out = interp3D_faceVar(WGD->w);
-  //flux_div_x_out += interp3D_faceVar(dtxzdz);
-  //flux_div_y_out += interp3D_faceVar(dtyzdz);
-  //flux_div_z_out += interp3D_faceVar(dtzzdz);
+  wMean_out = interp3D_faceVar(WGD->w, ii, jj, kk, iw, jw, kw);
+  // flux_div_x_out += interp3D_faceVar(dtxzdz);
+  // flux_div_y_out += interp3D_faceVar(dtyzdz);
+  // flux_div_z_out += interp3D_faceVar(dtzzdz);
 
   // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
   // then get interpolated values from the InterpTriLinear grid to the particle Lagrangian values for multiple datatypes
-  setInterp3Dindex_cellVar(xPos, yPos, zPos);
+  setInterp3Dindex_cellVar(xPos, yPos, zPos, ii, jj, kk, iw, jw, kw);
 
   // this is the Co times Eps for the particle
   // LA note: because Bailey's code uses Eps by itself and this does not, I wanted an option to switch between the two if necessary
   //  it's looking more and more like we will just use CoEps.
-  CoEps_out = interp3D_cellVar(TGD->CoEps);
+  CoEps_out = interp3D_cellVar(TGD->CoEps, ii, jj, kk, iw, jw, kw);
   // make sure CoEps is always bigger than zero
   if (CoEps_out <= 1e-6) {
     CoEps_out = 1e-6;
   }
 
   // this is the current reynolds stress tensor
-  txx_out = interp3D_cellVar(TGD->txx);
-  txy_out = interp3D_cellVar(TGD->txy);
-  txz_out = interp3D_cellVar(TGD->txz);
-  tyy_out = interp3D_cellVar(TGD->tyy);
-  tyz_out = interp3D_cellVar(TGD->tyz);
-  tzz_out = interp3D_cellVar(TGD->tzz);
+  txx_out = interp3D_cellVar(TGD->txx, ii, jj, kk, iw, jw, kw);
+  txy_out = interp3D_cellVar(TGD->txy, ii, jj, kk, iw, jw, kw);
+  txz_out = interp3D_cellVar(TGD->txz, ii, jj, kk, iw, jw, kw);
+  tyy_out = interp3D_cellVar(TGD->tyy, ii, jj, kk, iw, jw, kw);
+  tyz_out = interp3D_cellVar(TGD->tyz, ii, jj, kk, iw, jw, kw);
+  tzz_out = interp3D_cellVar(TGD->tzz, ii, jj, kk, iw, jw, kw);
 
 
-  flux_div_x_out = interp3D_cellVar(TGD->div_tau_x);
-  flux_div_y_out = interp3D_cellVar(TGD->div_tau_y);
-  flux_div_z_out = interp3D_cellVar(TGD->div_tau_z);
-  return;
+  flux_div_x_out = interp3D_cellVar(TGD->div_tau_x, ii, jj, kk, iw, jw, kw);
+  flux_div_y_out = interp3D_cellVar(TGD->div_tau_y, ii, jj, kk, iw, jw, kw);
+  flux_div_z_out = interp3D_cellVar(TGD->div_tau_z, ii, jj, kk, iw, jw, kw);
+
 }
 
-void InterpTriLinear::setInterp3Dindex_uFace(const double &par_xPos, const double &par_yPos, const double &par_zPos)
+void InterpTriLinear::setInterp3Dindex_uFace(const double &par_xPos,
+                                             const double &par_yPos,
+                                             const double &par_zPos,
+                                             int &ii,
+                                             int &jj,
+                                             int &kk,
+                                             double &iw,
+                                             double &jw,
+                                             double &kw)
 {
 
   // set a particle position corrected by the start of the domain in each direction
-  //double par_x = par_xPos - xStart + 1.0*dx;
-  //double par_y = par_yPos - yStart + 0.5*dy;
-  //double par_z = par_zPos - zStart + 0.5*dz;
+  // double par_x = par_xPos - xStart + 1.0*dx;
+  // double par_y = par_yPos - yStart + 0.5*dy;
+  // double par_z = par_zPos - zStart + 0.5*dz;
   double par_x = par_xPos - 0.0 * dx;
   double par_y = par_yPos - 0.5 * dy;
   double par_z = par_zPos + 0.5 * dz;
@@ -180,17 +201,24 @@ void InterpTriLinear::setInterp3Dindex_uFace(const double &par_xPos, const doubl
   jw = (par_y / dy) - floor(par_y / (dy + 1e-7));
   kw = (par_z / dz) - floor(par_z / (dz + 1e-7));
 
-  return;
 }
 
 
-void InterpTriLinear::setInterp3Dindex_vFace(const double &par_xPos, const double &par_yPos, const double &par_zPos)
+void InterpTriLinear::setInterp3Dindex_vFace(const double &par_xPos,
+                                             const double &par_yPos,
+                                             const double &par_zPos,
+                                             int &ii,
+                                             int &jj,
+                                             int &kk,
+                                             double &iw,
+                                             double &jw,
+                                             double &kw)
 {
 
   // set a particle position corrected by the start of the domain in each direction
-  //double par_x = par_xPos - xStart + 0.5*dx;
-  //double par_y = par_yPos - yStart + 1.0*dy;
-  //double par_z = par_zPos - zStart + 0.5*dz;
+  // double par_x = par_xPos - xStart + 0.5*dx;
+  // double par_y = par_yPos - yStart + 1.0*dy;
+  // double par_z = par_zPos - zStart + 0.5*dz;
   double par_x = par_xPos - 0.5 * dx;
   double par_y = par_yPos - 0.0 * dy;
   double par_z = par_zPos + 0.5 * dz;
@@ -204,16 +232,23 @@ void InterpTriLinear::setInterp3Dindex_vFace(const double &par_xPos, const doubl
   jw = (par_y / dy) - floor(par_y / (dy + 1e-4));
   kw = (par_z / dz) - floor(par_z / (dz + 1e-4));
 
-  return;
 }
 
-void InterpTriLinear::setInterp3Dindex_wFace(const double &par_xPos, const double &par_yPos, const double &par_zPos)
+void InterpTriLinear::setInterp3Dindex_wFace(const double &par_xPos,
+                                             const double &par_yPos,
+                                             const double &par_zPos,
+                                             int &ii,
+                                             int &jj,
+                                             int &kk,
+                                             double &iw,
+                                             double &jw,
+                                             double &kw)
 {
 
   // set a particle position corrected by the start of the domain in each direction
-  //double par_x = par_xPos - xStart + 0.5*dx;
-  //double par_y = par_yPos - yStart + 0.5*dy;
-  //double par_z = par_zPos - zStart + 1.0*dz;
+  // double par_x = par_xPos - xStart + 0.5*dx;
+  // double par_y = par_yPos - yStart + 0.5*dy;
+  // double par_z = par_zPos - zStart + 1.0*dz;
   double par_x = par_xPos - 0.5 * dx;
   double par_y = par_yPos - 0.5 * dy;
   double par_z = par_zPos + 1.0 * dz;
@@ -227,11 +262,16 @@ void InterpTriLinear::setInterp3Dindex_wFace(const double &par_xPos, const doubl
   jw = (par_y / dy) - floor(par_y / (dy + 1e-7));
   kw = (par_z / dz) - floor(par_z / (dz + 1e-7));
 
-  return;
 }
 
 // always call this after setting the interpolation indices with the setInterp3Dindex_u/v/wFace() function!
-double InterpTriLinear::interp3D_faceVar(const std::vector<float> &EulerData)
+double InterpTriLinear::interp3D_faceVar(const std::vector<float> &EulerData,
+                                         const int &ii,
+                                         const int &jj,
+                                         const int &kk,
+                                         const double &iw,
+                                         const double &jw,
+                                         const double &kw)
 {
 
   double cube[2][2][2] = { 0.0 };
@@ -256,7 +296,13 @@ double InterpTriLinear::interp3D_faceVar(const std::vector<float> &EulerData)
 }
 
 // always call this after setting the interpolation indices with the setInterp3Dindex_u/v/wFace() function!
-double InterpTriLinear::interp3D_faceVar(const std::vector<double> &EulerData)
+double InterpTriLinear::interp3D_faceVar(const std::vector<double> &EulerData,
+                                         const int &ii,
+                                         const int &jj,
+                                         const int &kk,
+                                         const double &iw,
+                                         const double &jw,
+                                         const double &kw)
 {
 
   double cube[2][2][2] = { 0.0 };
@@ -282,7 +328,15 @@ double InterpTriLinear::interp3D_faceVar(const std::vector<double> &EulerData)
 
 // this gets around the problem of repeated or not repeated information, just needs called once before each interpolation,
 // then intepolation on all kinds of datatypes can be done
-void InterpTriLinear::setInterp3Dindex_cellVar(const double &par_xPos, const double &par_yPos, const double &par_zPos)
+void InterpTriLinear::setInterp3Dindex_cellVar(const double &par_xPos,
+                                               const double &par_yPos,
+                                               const double &par_zPos,
+                                               int &ii,
+                                               int &jj,
+                                               int &kk,
+                                               double &iw,
+                                               double &jw,
+                                               double &kw)
 {
 
   // the next steps are to figure out the right indices to grab the values for cube from the data,
@@ -303,9 +357,9 @@ void InterpTriLinear::setInterp3Dindex_cellVar(const double &par_xPos, const dou
   double par_y = par_yPos - 0.5 * dy;
   double par_z = par_zPos + 0.5 * dz;
 
-  //double par_x = par_xPos - xStart + 0.5*dx;
-  //double par_y = par_yPos - yStart + 0.5*dy;
-  //double par_z = par_zPos - zStart + 0.5*dz;
+  // double par_x = par_xPos - xStart + 0.5*dx;
+  // double par_y = par_yPos - yStart + 0.5*dy;
+  // double par_z = par_zPos - zStart + 0.5*dz;
 
   // index of nearest node in negative direction
   // by adding a really small number to dx, it stops it from putting
@@ -330,19 +384,19 @@ void InterpTriLinear::setInterp3Dindex_cellVar(const double &par_xPos, const dou
     // now check to make sure that the indices are within the InterpTriLinear grid domain
     // Notice that this no longer includes throwing an error if particles touch the far walls
     // because adding a small number to dx in the index calculation forces the index to be completely left side biased
-    
+
     if( ii < 0 || ii+ip > nx-1 ) {
-    std::cerr << "ERROR (InterpTriLinear::setInterp3Dindexing): particle x position is out of range! x = \"" << par_xPos 
+    std::cerr << "ERROR (InterpTriLinear::setInterp3Dindexing): particle x position is out of range! x = \"" << par_xPos
          << "\" ii+ip = \"" << ii << "\"+\"" << ip << "\",   nx-1 = \"" << nx-1 << "\"" << std::endl;
         exit(1);
     }
     if( jj < 0 || jj+jp > ny-1 ) {
-        std::cerr << "ERROR (InterpTriLinear::setInterp3Dindexing): particle y position is out of range! y = \"" << par_yPos 
+        std::cerr << "ERROR (InterpTriLinear::setInterp3Dindexing): particle y position is out of range! y = \"" << par_yPos
             << "\" jj+jp = \"" << jj << "\"+\"" << jp << "\",   ny-1 = \"" << ny-1 << "\"" << std::endl;
         exit(1);
     }
     if( kk < 0 || kk+kp > nz-1 ) {
-        std::cerr << "ERROR (InterpTriLinear::setInterp3Dindexing): particle z position is out of range! z = \"" << par_zPos 
+        std::cerr << "ERROR (InterpTriLinear::setInterp3Dindexing): particle z position is out of range! z = \"" << par_zPos
             << "\" kk+kp = \"" << kk << "\"+\"" << kp << "\",   nz-1 = \"" << nz-1 << "\"" << std::endl;
         exit(1);
     }
@@ -351,7 +405,13 @@ void InterpTriLinear::setInterp3Dindex_cellVar(const double &par_xPos, const dou
 
 
 // always call this after setting the interpolation indices with the setInterp3Dindexing() function!
-double InterpTriLinear::interp3D_cellVar(const std::vector<float> &EulerData)
+double InterpTriLinear::interp3D_cellVar(const std::vector<float> &EulerData,
+                                         const int &ii,
+                                         const int &jj,
+                                         const int &kk,
+                                         const double &iw,
+                                         const double &jw,
+                                         const double &kw)
 {
 
   // first set a cube of size two to zero.
@@ -383,7 +443,13 @@ double InterpTriLinear::interp3D_cellVar(const std::vector<float> &EulerData)
 }
 
 // always call this after setting the interpolation indices with the setInterp3Dindexing() function!
-double InterpTriLinear::interp3D_cellVar(const std::vector<double> &EulerData)
+double InterpTriLinear::interp3D_cellVar(const std::vector<double> &EulerData,
+                                         const int &ii,
+                                         const int &jj,
+                                         const int &kk,
+                                         const double &iw,
+                                         const double &jw,
+                                         const double &kw)
 {
 
   // first set a cube of size two to zero.
