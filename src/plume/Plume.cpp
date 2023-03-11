@@ -274,10 +274,14 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
     // FM: openmp parallelization of the advection loop
     std::vector<Particle *> tmp(particleList.begin(), particleList.end());
 #pragma omp parallel for default(none) shared(WGD, TGD, tmp, timeRemainder)
-    for (auto parItr = tmp.begin(); parItr != tmp.end(); parItr++) {
+    for (auto k = 0u; k < tmp.size(); ++k) {
       // call to the main particle adection function (in separate file: AdvectParticle.cpp)
-      advectParticle(timeRemainder, *parItr, WGD, TGD);
-    }// end of loop
+      advectParticle(timeRemainder, tmp[k], WGD, TGD);
+    }
+    //for (auto parItr = tmp.begin(); parItr != tmp.end(); parItr++) {
+    // call to the main particle adection function (in separate file: AdvectParticle.cpp)
+    //  advectParticle(timeRemainder, *parItr, WGD, TGD);
+    //}// end of loop
     // END OF OPENMP WORK SHARE
 
     //  flush deposition buffer
@@ -523,25 +527,30 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, std::li
     nParsReleased++;
   }
 
+  //#pragma omp parallel for default(none) shared(WGD, TGD, tmp)
+  //for (auto parItr = tmp.begin(); parItr != tmp.end(); parItr++) {
+  // set particle ID (use global particle counter)
+  //(*parItr)->particleID = nParsReleased;
+  //
 #pragma omp parallel for default(none) shared(WGD, TGD, tmp)
-  for (auto parItr = tmp.begin(); parItr != tmp.end(); parItr++) {
+  for (auto k = 0u; k < tmp.size(); ++k) {
     // set particle ID (use global particle counter)
-    //(*parItr)->particleID = nParsReleased;
+    Particle *par_ptr = tmp[k];
     // nParsReleased++;
 
     // set the positions to be used by the simulation to the initial positions
-    (*parItr)->xPos = (*parItr)->xPos_init;
-    (*parItr)->yPos = (*parItr)->yPos_init;
-    (*parItr)->zPos = (*parItr)->zPos_init;
+    par_ptr->xPos = par_ptr->xPos_init;
+    par_ptr->yPos = par_ptr->yPos_init;
+    par_ptr->zPos = par_ptr->zPos_init;
 
     // get the sigma values from the QES grid for the particle value
     double sig_x, sig_y, sig_z;
     // get the tau values from the QES grid for the particle value
     double txx, txy, txz, tyy, tyz, tzz;
 
-    interp->interpInitialValues((*parItr)->xPos,
-                                (*parItr)->yPos,
-                                (*parItr)->zPos,
+    interp->interpInitialValues(par_ptr->xPos,
+                                par_ptr->yPos,
+                                par_ptr->zPos,
                                 TGD,
                                 sig_x,
                                 sig_y,
@@ -557,52 +566,52 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, std::li
     // The  sqrt of the variance is to match Bailey's code
     // normally distributed random number
 #ifdef _OPENMP
-    (*parItr)->uFluct = sig_x * threadRNG[omp_get_thread_num()]->norRan();
-    (*parItr)->vFluct = sig_y * threadRNG[omp_get_thread_num()]->norRan();
-    (*parItr)->wFluct = sig_z * threadRNG[omp_get_thread_num()]->norRan();
+    par_ptr->uFluct = sig_x * threadRNG[omp_get_thread_num()]->norRan();
+    par_ptr->vFluct = sig_y * threadRNG[omp_get_thread_num()]->norRan();
+    par_ptr->wFluct = sig_z * threadRNG[omp_get_thread_num()]->norRan();
 #else
-    (*parItr)->uFluct = sig_x * RNG->norRan();
-    (*parItr)->vFluct = sig_y * RNG->norRan();
-    (*parItr)->wFluct = sig_z * RNG->norRan();
+    par_ptr->uFluct = sig_x * RNG->norRan();
+    par_ptr->vFluct = sig_y * RNG->norRan();
+    par_ptr->wFluct = sig_z * RNG->norRan();
 #endif
 
 
     // set the initial values for the old velFluct values
-    (*parItr)->uFluct_old = (*parItr)->uFluct;
-    (*parItr)->vFluct_old = (*parItr)->vFluct;
-    (*parItr)->wFluct_old = (*parItr)->wFluct;
+    par_ptr->uFluct_old = par_ptr->uFluct;
+    par_ptr->vFluct_old = par_ptr->vFluct;
+    par_ptr->wFluct_old = par_ptr->wFluct;
 
     // now need to call makeRealizable on tau
     makeRealizable(txx, txy, txz, tyy, tyz, tzz);
 
     // set tau_old to the interpolated values for each position
-    (*parItr)->txx_old = txx;
-    (*parItr)->txy_old = txy;
-    (*parItr)->txz_old = txz;
-    (*parItr)->tyy_old = tyy;
-    (*parItr)->tyz_old = tyz;
-    (*parItr)->tzz_old = tzz;
+    par_ptr->txx_old = txx;
+    par_ptr->txy_old = txy;
+    par_ptr->txz_old = txz;
+    par_ptr->tyy_old = tyy;
+    par_ptr->tyz_old = tyz;
+    par_ptr->tzz_old = tzz;
 
     // set delta_velFluct values to zero for now
-    (*parItr)->delta_uFluct = 0.0;
-    (*parItr)->delta_vFluct = 0.0;
-    (*parItr)->delta_wFluct = 0.0;
+    par_ptr->delta_uFluct = 0.0;
+    par_ptr->delta_vFluct = 0.0;
+    par_ptr->delta_wFluct = 0.0;
 
     // set isRogue to false and isActive to true for each particle
     // isActive = true as particle relased is active immediately
-    (*parItr)->isRogue = false;
-    (*parItr)->isActive = true;
+    par_ptr->isRogue = false;
+    par_ptr->isActive = true;
 
-    int cellIdNew = interp->getCellId((*parItr)->xPos, (*parItr)->yPos, (*parItr)->zPos);
+    int cellIdNew = interp->getCellId(par_ptr->xPos, par_ptr->yPos, par_ptr->zPos);
     if ((WGD->icellflag[cellIdNew] == 0) && (WGD->icellflag[cellIdNew] == 2)) {
       // std::cerr << "WARNING invalid initial position" << std::endl;
-      (*parItr)->isActive = false;
+      par_ptr->isActive = false;
     }
 
     double det = txx * (tyy * tzz - tyz * tyz) - txy * (txy * tzz - tyz * txz) + txz * (txy * tyz - tyy * txz);
     if (std::abs(det) < 1e-10) {
       // std::cerr << "WARNING invalid position stress" << std::endl;
-      (*parItr)->isActive = false;
+      par_ptr->isActive = false;
     }
   }
 }
