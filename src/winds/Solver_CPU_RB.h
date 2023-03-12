@@ -36,7 +36,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
-#include <math.h>
+#include <cmath>
 #include <vector>
 #include <chrono>
 
@@ -71,5 +71,5 @@ protected:
    * @param WGD :document this:
    * @param solveWind :document this:
    */
-  virtual void solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind);
+  void solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind) override;
 };
