@@ -103,12 +103,12 @@ private:
   void setInterp3Dindex_uFace(const double &, const double &, const double &, int &, int &, int &, double &, double &, double &);
   void setInterp3Dindex_vFace(const double &, const double &, const double &, int &, int &, int &, double &, double &, double &);
   void setInterp3Dindex_wFace(const double &, const double &, const double &, int &, int &, int &, double &, double &, double &);
-  double interp3D_faceVar(const std::vector<float> &, const int &, const int &, const int &, const double &, const double &, const double &);
-  double interp3D_faceVar(const std::vector<double> &, const int &, const int &, const int &, const double &, const double &, const double &);
+  void interp3D_faceVar(const std::vector<float> &, const int &, const int &, const int &, const double &, const double &, const double &, double &);
+  void interp3D_faceVar(const std::vector<double> &, const int &, const int &, const int &, const double &, const double &, const double &, double &);
 
   void setInterp3Dindex_cellVar(const double &, const double &, const double &, int &, int &, int &, double &, double &, double &);
-  double interp3D_cellVar(const std::vector<float> &, const int &, const int &, const int &, const double &, const double &, const double &);
-  double interp3D_cellVar(const std::vector<double> &, const int &, const int &, const int &, const double &, const double &, const double &);
+  void interp3D_cellVar(const std::vector<float> &, const int &, const int &, const int &, const double &, const double &, const double &, double &);
+  void interp3D_cellVar(const std::vector<double> &, const int &, const int &, const int &, const double &, const double &, const double &, double &);
 
   // timer class useful for debugging and timing different operations
   calcTime timers;
