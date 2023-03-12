@@ -37,7 +37,7 @@
 #include "SphereDirections.h"
 #include "Ray.h"
 #include "HitRecord.h"
-//#include "OptixRayTrace.h"
+// #include "OptixRayTrace.h"
 
 #include <limits>
 #define _USE_MATH_DEFINES
@@ -74,7 +74,7 @@ public:
    *
    * @param tris List of triangles.
    */
-  Mesh(vector<Triangle *> tris)
+  Mesh(const vector<Triangle *> &tris)
     : mlSampleRate(100)
   {
     this->triangleBVH = BVH::createBVH(tris);

@@ -58,14 +58,32 @@ private:
 
   // std::vector< Vector3 > nextList; // [6];  //holds vectors of the 6
 
-  Vector3 *nextList; /**< :document this: */
+  /**
+   * Constructor for the Mitchell's Best Candidate Algorithm test.
+   */
+  SphereDirections(int numDirVec)
+    : vecCount(0), numDirs(numDirVec),
+      lowerThetaBound(0.0), upperThetaBound(0.0),
+      lowerPhiBound(0.0), upperPhiBound(0.0)
+  {
+    nextList = new Vector3[6];
 
-public:
+    // default cardinal directions for now
+    nextList[0] = Vector3(1, 0, 0);// front
+    nextList[1] = Vector3(-1, 0, 0);// back
+    nextList[2] = Vector3(0, 1, 0);// left
+    nextList[3] = Vector3(0, -1, 0);// right
+    nextList[4] = Vector3(0, 0, 1);// top
+    nextList[5] = Vector3(0, 0, -1);// bottom
+  }
+
   /**
    * Default constuctor for the 6 cardinal directions.
    */
   SphereDirections()
-    : vecCount(0)
+    : vecCount(0),
+      lowerThetaBound(0.0), upperThetaBound(0.0),
+      lowerPhiBound(0.0), upperPhiBound(0.0)
   {
     nextList = new Vector3[6];
 
@@ -79,6 +97,10 @@ public:
 
     numDirs = 6;
   }
+
+  Vector3 *nextList; /**< :document this: */
+
+public:
 
   /**
    * Constuctor for the random version.
@@ -153,12 +175,6 @@ public:
   {
     delete[] nextList;
   }
-
-
-  /**
-   * Constructor for the Mitchell's Best Candidate Algorithm test.
-   */
-  SphereDirections(int numDirVec);
 
 
   /**

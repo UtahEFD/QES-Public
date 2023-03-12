@@ -52,8 +52,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   // main input structure.
   //
   // This is done to make reference to nx, ny and nz easier in this function
-  //Vector3Int domainInfo;
-  //domainInfo = *(WID->simParams->domain);
+  // Vector3Int domainInfo;
+  // domainInfo = *(WID->simParams->domain);
   nx = WID->simParams->domain[0];
   ny = WID->simParams->domain[1];
   nz = WID->simParams->domain[2];
@@ -62,8 +62,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   ny += 1;// +1 for Staggered grid
   nz += 2;// +2 for staggered grid and ghost cell
 
-  //Vector3 gridInfo;
-  //gridInfo = *(WID->simParams->grid);
+  // Vector3 gridInfo;
+  // gridInfo = *(WID->simParams->grid);
   dx = WID->simParams->grid[0];// Grid resolution in x-direction
   dy = WID->simParams->grid[1];// Grid resolution in y-direction
   dz = WID->simParams->grid[2];// Grid resolution in z-direction
@@ -219,7 +219,9 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         for (int t = 0; t < 1; t++) {
           std::cout << "\tTime Series: " << t << std::endl;
 
-          sensortime.push_back(t);
+          time_t tmp = t;
+          QEStime tmp2(tmp);
+          sensortime.push_back(tmp2);
           sensortime_id.push_back(t);
           timestamp.push_back(sensortime[t]);
 
@@ -256,10 +258,10 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       windProfiler = new WindProfilerBarnGPU();
     }
 #else
-  } else {
-    std::cout << "No CUDA support - using CPU Barnes" << std::endl;
-    windProfiler = new WindProfilerBarnCPU();
-  }
+    } else {
+      std::cout << "No CUDA support - using CPU Barnes" << std::endl;
+      windProfiler = new WindProfilerBarnCPU();
+    }
 #endif
 
     // If the sensor file specified in the xml
@@ -271,7 +273,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     }
 
     // If there are more than one timestep
-    //if (WID->simParams->totalTimeIncrements > 0) {
+    // if (WID->simParams->totalTimeIncrements > 0) {
     // Loop to include all the timestep for the first sensor
     for (size_t i = 0; i < WID->metParams->sensors[0]->TS.size(); i++) {
       sensortime.push_back(WID->metParams->sensors[0]->TS[i]->time);
@@ -690,7 +692,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       auto start_cut = std::chrono::high_resolution_clock::now();
 
       // Calling calculateCoefficient function to calculate area fraction coefficients for cut-cells
-      //WID->simParams->DTE_heightField->setCells(cells, this, WID);
+      // WID->simParams->DTE_heightField->setCells(cells, this, WID);
       WID->simParams->DTE_heightField->setCells(this, WID);
 
       auto finish_cut = std::chrono::high_resolution_clock::now();// Finish recording execution time

@@ -45,32 +45,34 @@ public:
   {
     btime::ptime UTCtime = btime::second_clock::universal_time();
     m_ptime = UTCtime;
-    //btime::ptime epoch(bgreg::date(1970, 1, 1));
-    //m_ptime = epoch;
+    // btime::ptime epoch(bgreg::date(1970, 1, 1));
+    // m_ptime = epoch;
   }
 
-  QEStime(time_t t)
+  explicit QEStime(time_t t)
   {
     m_ptime = btime::from_time_t(t);
   }
-  QEStime(std::string t)
+  explicit QEStime(const std::string &t)
   {
     m_ptime = btime::from_iso_extended_string(t);
   }
-  QEStime(btime::ptime t)
+  explicit QEStime(btime::ptime t)
   {
     m_ptime = t;
   }
 
-  ~QEStime() {}
+  ~QEStime() = default;
 
   void setTimeToNow();
-  //QEStime &operator=(const double &);
-  QEStime &operator=(const btime::ptime &);
+  void setTimestamp(const btime::ptime &);
+  void setTimestamp(const time_t &);
+  void setTimestamp(const std::string &);
 
-  void setTimestamp(time_t);
-  void setTimestamp(std::string);
+  QEStime &operator=(const btime::ptime &);
+  QEStime &operator=(const time_t &);
   QEStime &operator=(const std::string &);
+
 
   std::string getTimestamp();
   void getTimestamp(std::string &);

@@ -89,11 +89,11 @@ public:
 
 
   /*
-	 * returns if two Vector3 values of the same type are equal
-	 *
-	 * @param v -the vector3 to compare with this
-	 * @return if values at index 0,1,2 are all equal with their counterparts
-	 */
+   * returns if two Vector3 values of the same type are equal
+   *
+   * @param v -the vector3 to compare with this
+   * @return if values at index 0,1,2 are all equal with their counterparts
+   */
   bool operator==(const Vector3Double &v)
   {
     return v.values[0] == values[0] && v.values[1] == values[1] && v.values[2] == values[2];
@@ -117,7 +117,7 @@ public:
     return *this;
   }
 
-  // scalor substraction (assignment)
+  // scalar subtraction (assignment)
   Vector3Double &operator-=(const Vector3Double &v)
   {
     values[0] -= v.values[0];
@@ -126,7 +126,7 @@ public:
     return *this;
   }
 
-  // scalor multiplication (assignment)
+  // scalar multiplication (assignment)
   Vector3Double &operator*=(const double &a)
   {
     values[0] *= a;
@@ -135,7 +135,7 @@ public:
     return *this;
   }
 
-  // scalor division (assignment)
+  // scalar division (assignment)
   Vector3Double &operator/=(const double &a)
   {
     values[0] /= a;
@@ -147,13 +147,13 @@ public:
   // addition operator
   Vector3Double operator-(const Vector3Double &v1)
   {
-    return Vector3Double(values[0] - v1.values[0], values[1] - v1.values[1], values[2] - v1.values[2]);
+    return { values[0] - v1.values[0], values[1] - v1.values[1], values[2] - v1.values[2] };
   }
 
-  // substraction operator
+  // subtraction operator
   Vector3Double operator+(const Vector3Double &v1)
   {
-    return Vector3Double(values[0] + v1.values[0], values[1] + v1.values[1], values[2] + v1.values[2]);
+    return { values[0] + v1.values[0], values[1] + v1.values[1], values[2] + v1.values[2] };
   }
 
   // scalar product (dot product)
@@ -172,34 +172,34 @@ public:
   // multiplication by scalar
   Vector3Double operator*(const double &a)
   {
-    return Vector3Double(a * values[0], a * values[1], a * values[2]);
+    return { a * values[0], a * values[1], a * values[2] };
   }
 
   // return the length of the vector
-  double length(void) const
+  double length() const
   {
     return sqrt(values[0] * values[0] + values[1] * values[1] + values[2] * values[2]);
   }
 
-  // multiplication by scaler
+  // multiplication by scalar
   friend Vector3Double operator*(const double &a, const Vector3Double &v1)
   {
-    return Vector3Double(a * v1.values[0], a * v1.values[1], a * v1.values[2]);
+    return { a * v1.values[0], a * v1.values[1], a * v1.values[2] };
   }
 
   // division by scalar
   Vector3Double operator/(const double &a)
   {
-    return Vector3Double(values[0] / a, values[1] / a, values[2] / a);
+    return { values[0] / a, values[1] / a, values[2] / a };
   }
 
-  // relfection
+  // reflection v.reflect(n) = v - 2*(v*n)*n
   Vector3Double reflect(const Vector3Double &n)
   {
     return *this - 2.0 * (*this * n) * n;
   }
 
-  // distance with other vector where this is extemity (ie v1.distance(v2) = |v1 - v2|)
+  // distance with other vector where this is extremity (ie v1.distance(v2) = |v1 - v2|)
   double distance(Vector3Double &v2)
   {
     return (sqrt((values[0] - v2[0]) * (values[0] - v2[0]) + (values[1] - v2[1]) * (values[1] - v2[1]) + (values[2] - v2[2]) * (values[2] - v2[2])));
@@ -214,7 +214,7 @@ public:
 
   friend Vector3Double operator-(const Vector3Double &v1, const Vector3Double &v2)
   {
-    return Vector3Double(v1.values[0] - v2.values[0], v1.values[1] - v2.values[1], v1.values[2] - v2.values[2]);
+    return { v1.values[0] - v2.values[0], v1.values[1] - v2.values[1], v1.values[2] - v2.values[2] };
   }
 
   friend std::ostream &operator<<(std::ostream &out, const Vector3Double &v)
