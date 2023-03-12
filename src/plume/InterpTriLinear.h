@@ -47,6 +47,16 @@
 
 #include "Interp.h"
 
+struct interpWeight
+{
+  int ii;// nearest cell index to the left in the x direction
+  int jj;// nearest cell index to the left in the y direction
+  int kk;// nearest cell index to the left in the z direction
+  double iw;// normalized distance to the nearest cell index to the left in the x direction
+  double jw;// normalized distance to the nearest cell index to the left in the y direction
+  double kw;// normalized distance to the nearest cell index to the left in the z direction
+};
+
 class InterpTriLinear : public Interp
 {
 
@@ -100,15 +110,15 @@ private:
   // double jw;// this is the normalized distance to the nearest cell index to the left in the y direction
   // double kw;// this is the normalized distance to the nearest cell index to the left in the z direction
 
-  void setInterp3Dindex_uFace(const double &, const double &, const double &, int &, int &, int &, double &, double &, double &);
-  void setInterp3Dindex_vFace(const double &, const double &, const double &, int &, int &, int &, double &, double &, double &);
-  void setInterp3Dindex_wFace(const double &, const double &, const double &, int &, int &, int &, double &, double &, double &);
-  void interp3D_faceVar(const std::vector<float> &, const int &, const int &, const int &, const double &, const double &, const double &, double &);
-  void interp3D_faceVar(const std::vector<double> &, const int &, const int &, const int &, const double &, const double &, const double &, double &);
+  void setInterp3Dindex_uFace(const double &, const double &, const double &, interpWeight &);
+  void setInterp3Dindex_vFace(const double &, const double &, const double &, interpWeight &);
+  void setInterp3Dindex_wFace(const double &, const double &, const double &, interpWeight &);
+  void interp3D_faceVar(const std::vector<float> &, const interpWeight &, double &);
+  void interp3D_faceVar(const std::vector<double> &, const interpWeight &, double &);
 
-  void setInterp3Dindex_cellVar(const double &, const double &, const double &, int &, int &, int &, double &, double &, double &);
-  void interp3D_cellVar(const std::vector<float> &, const int &, const int &, const int &, const double &, const double &, const double &, double &);
-  void interp3D_cellVar(const std::vector<double> &, const int &, const int &, const int &, const double &, const double &, const double &, double &);
+  void setInterp3Dindex_cellVar(const double &, const double &, const double &, interpWeight &);
+  void interp3D_cellVar(const std::vector<float> &, const interpWeight &, double &);
+  void interp3D_cellVar(const std::vector<double> &, const interpWeight &, double &);
 
   // timer class useful for debugging and timing different operations
   calcTime timers;
