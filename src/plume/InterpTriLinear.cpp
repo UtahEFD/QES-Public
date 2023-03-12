@@ -62,18 +62,12 @@ void InterpTriLinear::interpInitialValues(const double &xPos,
                                           double &tyz_out,
                                           double &tzz_out)
 {
+  // these are the current interp3D variables, as they are used for multiple interpolations for each particle
   interpWeight wgt{ 0, 0, 0, 0.0, 0.0, 0.0 };
-  /*int ii;// this is the nearest cell index to the left in the x direction
-  int jj;// this is the nearest cell index to the left in the y direction
-  int kk;// this is the nearest cell index to the left in the z direction
-  double iw;// this is the normalized distance to the nearest cell index to the left in the x direction
-  double jw;// this is the normalized distance to the nearest cell index to the left in the y direction
-  double kw;// this is the normalized distance to the nearest cell index to the left in the z direction
-*/
 
   // this replaces the old indexing trick, set the indexing variables for the
   // interp3D for each particle, then get interpolated values from the
-  // InterpTriLinear grid to the particle values for multiple datatypes
+  // InterpTriLinear grid to the particle values for multiple datatype
   setInterp3Dindex_cellVar(xPos, yPos, zPos, wgt);
 
   // get the tau values from the InterpTriLinear grid for the particle value
@@ -114,46 +108,29 @@ void InterpTriLinear::interpValues(const double &xPos,
                                    double &flux_div_z_out,
                                    double &CoEps_out)
 {
+  // these are the current interp3D variables, as they are used for multiple interpolations for each particle
   interpWeight wgt{ 0, 0, 0, 0.0, 0.0, 0.0 };
-  /*int ii;// this is the nearest cell index to the left in the x direction
-  int jj;// this is the nearest cell index to the left in the y direction
-  int kk;// this is the nearest cell index to the left in the z direction
-  double iw;// this is the normalized distance to the nearest cell index to the left in the x direction
-  double jw;// this is the normalized distance to the nearest cell index to the left in the y direction
-  double kw;// this is the normalized distance to the nearest cell index to the left in the z direction
-   */
 
   // set interpolation indexing variables for uFace variables
   setInterp3Dindex_uFace(xPos, yPos, zPos, wgt);
   // interpolation of variables on uFace
   interp3D_faceVar(WGD->u, wgt, uMean_out);
-  // flux_div_x_out = interp3D_faceVar(dtxxdx);
-  // flux_div_y_out = interp3D_faceVar(dtxydx);
-  // flux_div_z_out = interp3D_faceVar(dtxzdx);
 
   // set interpolation indexing variables for vFace variables
   setInterp3Dindex_vFace(xPos, yPos, zPos, wgt);
   // interpolation of variables on vFace
   interp3D_faceVar(WGD->v, wgt, vMean_out);
-  // flux_div_x_out += interp3D_faceVar(dtxydy);
-  // flux_div_y_out += interp3D_faceVar(dtyydy);
-  // flux_div_z_out += interp3D_faceVar(dtyzdy);
 
   // set interpolation indexing variables for wFace variables
   setInterp3Dindex_wFace(xPos, yPos, zPos, wgt);
   // interpolation of variables on wFace
   interp3D_faceVar(WGD->w, wgt, wMean_out);
-  // flux_div_x_out += interp3D_faceVar(dtxzdz);
-  // flux_div_y_out += interp3D_faceVar(dtyzdz);
-  // flux_div_z_out += interp3D_faceVar(dtzzdz);
 
   // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
-  // then get interpolated values from the InterpTriLinear grid to the particle Lagrangian values for multiple datatypes
+  // then get interpolated values from the InterpTriLinear grid to the particle Lagrangian values for multiple datatype
   setInterp3Dindex_cellVar(xPos, yPos, zPos, wgt);
 
-  // this is the Co times Eps for the particle
-  // LA note: because Bailey's code uses Eps by itself and this does not, I wanted an option to switch between the two if necessary
-  //  it's looking more and more like we will just use CoEps.
+  // this is the CoEps for the particle
   interp3D_cellVar(TGD->CoEps, wgt, CoEps_out);
   // make sure CoEps is always bigger than zero
   if (CoEps_out <= 1e-6) {
@@ -192,7 +169,7 @@ void InterpTriLinear::setInterp3Dindex_uFace(const double &par_xPos,
   wgt.jj = floor(par_y / (dy + 1e-7));
   wgt.kk = floor(par_z / (dz + 1e-7));
 
-  // fractional distance between nearest nodes
+  // fractional distance between the nearest nodes
   wgt.iw = (par_x / dx) - floor(par_x / (dx + 1e-7));
   wgt.jw = (par_y / dy) - floor(par_y / (dy + 1e-7));
   wgt.kw = (par_z / dz) - floor(par_z / (dz + 1e-7));
@@ -217,7 +194,7 @@ void InterpTriLinear::setInterp3Dindex_vFace(const double &par_xPos,
   wgt.jj = floor(par_y / (dy + 1e-7));
   wgt.kk = floor(par_z / (dz + 1e-7));
 
-  // fractional distance between nearest nodes
+  // fractional distance between the nearest nodes
   wgt.iw = (par_x / dx) - floor(par_x / (dx + 1e-4));
   wgt.jw = (par_y / dy) - floor(par_y / (dy + 1e-4));
   wgt.kw = (par_z / dz) - floor(par_z / (dz + 1e-4));
@@ -241,7 +218,7 @@ void InterpTriLinear::setInterp3Dindex_wFace(const double &par_xPos,
   wgt.jj = floor(par_y / (dy + 1e-7));
   wgt.kk = floor(par_z / (dz + 1e-7));
 
-  // fractional distance between nearest nodes
+  // fractional distance between the nearest nodes
   wgt.iw = (par_x / dx) - floor(par_x / (dx + 1e-7));
   wgt.jw = (par_y / dy) - floor(par_y / (dy + 1e-7));
   wgt.kw = (par_z / dz) - floor(par_z / (dz + 1e-7));
@@ -314,7 +291,7 @@ void InterpTriLinear::interp3D_faceVar(const std::vector<double> &EulerData,
 }
 
 // this gets around the problem of repeated or not repeated information, just needs called once before each interpolation,
-// then intepolation on all kinds of datatypes can be done
+// then interpolation on all kinds of datatype can be done
 void InterpTriLinear::setInterp3Dindex_cellVar(const double &par_xPos,
                                                const double &par_yPos,
                                                const double &par_zPos,
@@ -325,12 +302,11 @@ void InterpTriLinear::setInterp3Dindex_cellVar(const double &par_xPos,
   // where indices are forced to be special if nx, ny, or nz are zero.
   // This allows the interpolation to multiply by zero any 2nd values that are set to zero in cube.
 
-  // so this is called once before calling the interp3D function on many datatypes
+  // so this is called once before calling the interp3D function on many datatype
   // sets the current indices for grabbing the cube values and for interpolating with the cube,
   // but importantly sets ip,jp, and kp to zero if the number of cells in a dimension is 1
   // as this avoids referencing outside of array problems in an efficient manner
   // it also causes some stuff to be multiplied by zero so that interpolation works on any size of data without lots of if statements
-
 
   // set a particle position corrected by the start of the domain in each direction
   // the algorithm assumes the list starts at x = 0.
@@ -357,32 +333,10 @@ void InterpTriLinear::setInterp3Dindex_cellVar(const double &par_xPos,
   wgt.jj = floor(par_y / (dy + 1e-7));
   wgt.kk = floor(par_z / (dz + 1e-7));
 
-  // fractional distance between nearest nodes
+  // fractional distance between the nearest nodes
   wgt.iw = (par_x / dx) - floor(par_x / (dx + 1e-7));
   wgt.jw = (par_y / dy) - floor(par_y / (dy + 1e-7));
   wgt.kw = (par_z / dz) - floor(par_z / (dz + 1e-7));
-
-  /* FM -> OBSOLETE (this is insured at the boundary condition level)
-    // now check to make sure that the indices are within the InterpTriLinear grid domain
-    // Notice that this no longer includes throwing an error if particles touch the far walls
-    // because adding a small number to dx in the index calculation forces the index to be completely left side biased
-
-    if( ii < 0 || ii+ip > nx-1 ) {
-    std::cerr << "ERROR (InterpTriLinear::setInterp3Dindexing): particle x position is out of range! x = \"" << par_xPos
-         << "\" ii+ip = \"" << ii << "\"+\"" << ip << "\",   nx-1 = \"" << nx-1 << "\"" << std::endl;
-        exit(1);
-    }
-    if( jj < 0 || jj+jp > ny-1 ) {
-        std::cerr << "ERROR (InterpTriLinear::setInterp3Dindexing): particle y position is out of range! y = \"" << par_yPos
-            << "\" jj+jp = \"" << jj << "\"+\"" << jp << "\",   ny-1 = \"" << ny-1 << "\"" << std::endl;
-        exit(1);
-    }
-    if( kk < 0 || kk+kp > nz-1 ) {
-        std::cerr << "ERROR (InterpTriLinear::setInterp3Dindexing): particle z position is out of range! z = \"" << par_zPos
-            << "\" kk+kp = \"" << kk << "\"+\"" << kp << "\",   nz-1 = \"" << nz-1 << "\"" << std::endl;
-        exit(1);
-    }
-    */
 }
 
 

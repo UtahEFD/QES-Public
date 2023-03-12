@@ -102,13 +102,7 @@ public:
                            double &tzz_out) override;
 
 private:
-  // these are the current interp3D variables, as they are used for multiple interpolations for each particle
-  // int ii;// this is the nearest cell index to the left in the x direction
-  // int jj;// this is the nearest cell index to the left in the y direction
-  // int kk;// this is the nearest cell index to the left in the z direction
-  // double iw;// this is the normalized distance to the nearest cell index to the left in the x direction
-  // double jw;// this is the normalized distance to the nearest cell index to the left in the y direction
-  // double kw;// this is the normalized distance to the nearest cell index to the left in the z direction
+  InterpTriLinear() = default;
 
   void setInterp3Dindex_uFace(const double &, const double &, const double &, interpWeight &);
   void setInterp3Dindex_vFace(const double &, const double &, const double &, interpWeight &);
@@ -120,9 +114,6 @@ private:
   void interp3D_cellVar(const std::vector<float> &, const interpWeight &, double &);
   void interp3D_cellVar(const std::vector<double> &, const interpWeight &, double &);
 
-  // timer class useful for debugging and timing different operations
-  calcTime timers;
-
   // copies of debug related information from the input arguments
-  bool debug;
+  bool debug{};
 };
