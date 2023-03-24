@@ -209,7 +209,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         //
         // 1 time series for now - how do we deal with this for
         // new time steps???  Need to figure out ASAP.
-        //
+            //
         // Also need to correctly add time stamps
         // example from below:
         //   for (size_t t = 0; t < sensortime_id.size(); t++) {
@@ -219,9 +219,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         for (int t = 0; t < 1; t++) {
           std::cout << "\tTime Series: " << t << std::endl;
 
-          time_t tmp = t;
-          QEStime tmp2(tmp);
-          sensortime.push_back(tmp2);
+          sensortime.emplace_back(time_t(t));
           sensortime_id.push_back(t);
           timestamp.push_back(sensortime[t]);
 
