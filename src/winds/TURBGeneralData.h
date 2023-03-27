@@ -65,7 +65,8 @@ public:
   virtual void run();
 
   void loadNetCDFData(int);
-
+  void divergenceStress();
+  
   // General QUIC Domain Data
   ///@{
   /** number of cells */
@@ -75,7 +76,7 @@ public:
   long numcell_cent; /**< Total number of cell-centered values in domain */
   long numcell_face; /**< Total number of face-centered values in domain */
 
-  //nt - number of time instance in data
+  // nt - number of time instance in data
   int nt;
   // time vector
   std::vector<float> t;
@@ -152,7 +153,7 @@ protected:
 
   void stressTensor();
 
-  void divergenceStress();
+  // void divergenceStress();
   void derivativeStress(const std::vector<float> &,
                         const std::vector<float> &,
                         const std::vector<float> &,

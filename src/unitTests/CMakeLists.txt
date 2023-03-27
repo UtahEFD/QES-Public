@@ -43,13 +43,20 @@ ELSE ($CACHE{HAS_CUDA_SUPPORT})
        test_TURBGeneralData.h test_TURBGeneralData.cpp
        test_PlumeGeneralData.h test_PlumeGeneralData.cpp test_PlumeGeneralData.cu
        mainPlumeTest.cpp)
+
+   add_executable(test_plume_gauss
+           test_WINDSGeneralData.h test_WINDSGeneralData.cpp
+           test_TURBGeneralData.h test_TURBGeneralData.cpp
+           mainPlumeTest_Gauss.cpp)
+
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 set(UNITTESTS
   unitTestTime
   unitTestWind
   unitTestTurbulence
-  unitTestPlume)
+  unitTestPlume
+        test_plume_gauss)
 
 foreach (unittest ${UNITTESTS})
   target_link_libraries(${unittest} qesplumecore)

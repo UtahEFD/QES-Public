@@ -21,17 +21,23 @@ test_WINDSGeneralData::test_WINDSGeneralData(const int gridSize[3], const float 
   // vertical grid
   dz_array.resize(nz - 1, 0.0);
   z.resize(nz - 1);
-  z_face.resize(nz - 1);
+  z_face.resize(nz);
 
   for (size_t k = 0; k < z.size(); k++) {
     dz_array[k] = dz;
   }
 
-  z_face[0] = 0.0;
+  // Location of face in z-dir
+  z_face[0] = -dz_array[0];
+  z_face[1] = -0.0;
+  for (size_t k = 2; k < z_face.size(); ++k) {
+    z_face[k] = z_face[k - 1] + dz_array[k - 1];
+  }
+
+  // Location of cell centers in z-dir
   z[0] = -0.5 * dz_array[0];
-  for (size_t k = 1; k < z.size(); k++) {
-    z_face[k] = z_face[k - 1] + dz_array[k];// Location of face centers in z-dir
-    z[k] = 0.5 * (z_face[k - 1] + z_face[k]);// Location of cell centers in z-dir
+  for (size_t k = 1; k < z.size(); ++k) {
+    z[k] = 0.5 * (z_face[k] + z_face[k + 1]);
   }
 
   // horizontal grid (x-direction)
@@ -45,6 +51,8 @@ test_WINDSGeneralData::test_WINDSGeneralData(const int gridSize[3], const float 
   for (auto j = 0; j < ny - 1; j++) {
     y[j] = (j + 0.5) * dy;// Location of face centers in y-dir
   }
+
+  timestamp.emplace_back("2020-01-01T00:00:00");
 
   numcell_cout = (nx - 1) * (ny - 1) * (nz - 2);// Total number of cell-centered values in domain
   numcell_cout_2d = (nx - 1) * (ny - 1);// Total number of horizontal cell-centered values in domain
