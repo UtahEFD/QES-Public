@@ -2,20 +2,19 @@
 # hierarchically integrate projects together.
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
-IF (ENABLE_UNITTESTS) 
+IF (ENABLE_UNITTESTS)
   Include(FetchContent)
 
   FetchContent_Declare(
-    Catch2
-    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG        v3.0.1 # or a later release
-    )
+          Catch2
+          GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+          GIT_TAG        v3.0.1 # or a later release
+  )
 
   FetchContent_MakeAvailable(Catch2)
 
-  add_executable(unitTest_t00 t00.cpp)
-  target_link_libraries(unitTest_t00 PRIVATE Catch2::Catch2WithMain)
-ENDIF ()
+  add_subdirectory(unitTests)
+ENDIF()
 
 
 

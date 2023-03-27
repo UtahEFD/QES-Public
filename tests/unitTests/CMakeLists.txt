@@ -1,11 +1,27 @@
 include_directories(${CMAKE_SOURCE_DIR}/src)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(.)
 
 add_library(unitTestLib ${LIB_TYPE} 
   util.h util.cpp)
 
 #FILE(GLOB files "*.h")
 #INSTALL(FILES ${files} DESTINATION include/unitTests)
+
+add_executable(unitTest_t00 t00.cpp)
+
+target_link_libraries(unitTest_t00 PRIVATE ${Boost_PROGRAM_OPTIONS_LIBRARIES})
+target_link_libraries(unitTest_t00 PRIVATE ${Boost_DATE_TIME_LIBRARIES})
+target_link_libraries(unitTest_t00 PRIVATE ${Boost_FILESYSTEM_LIBRARIES})
+target_link_libraries(unitTest_t00 PRIVATE ${GDAL_LIBRARY})
+target_link_libraries(unitTest_t00 PRIVATE ${NETCDF_LIBRARIES_CXX})
+target_link_libraries(unitTest_t00 PRIVATE ${NETCDF_LIBRARIES_C})
+IF ($CACHE{HAS_CUDA_SUPPORT})
+    # target_link_libraries(compareSolvers cudadevrt)
+    target_link_libraries(unitTest_t00 PRIVATE ${CUDA_LIBRARIES})
+ENDIF()
+
+target_link_libraries(unitTest_t00 PRIVATE qesutil)
+target_link_libraries(unitTest_t00 PRIVATE Catch2::Catch2WithMain)
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
    cuda_add_executable(unitTestTime
@@ -74,6 +90,7 @@ foreach (unittest ${UNITTESTS})
   
   target_link_libraries(${unittest} unitTestLib)
   link_external_libraries(${unittest})
+  target_link_libraries(${unittest} Catch2::Catch2WithMain)
 
   if (ENABLE_UNITTESTS)
     add_test(${unittest} ${unittest})

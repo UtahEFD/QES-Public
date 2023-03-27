@@ -11,7 +11,7 @@ int main()
   bool testsPassed = true;
 
   /******************
-   * DTEHeightField * 
+   * DTEHeightField *
    ******************/
   printf("======================================\n");
   printf("starting DTEHeightField tests...\n");

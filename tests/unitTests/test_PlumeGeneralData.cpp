@@ -32,19 +32,19 @@ void test_PlumeGeneralData::setTestFunctions(WINDSGeneralData *WGD, TURBGeneralD
     for (int j = 0; j < WGD->ny - 1; j++) {
       for (int i = 0; i < WGD->nx - 1; i++) {
         int faceID = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-        //WGD->v[faceID] = cos(a * WGD->x[i]) + cos(b * j * WGD->dy) + sin(c * WGD->z[k]);
-        //WGD->v[faceID] = a * WGD->x[i] + b * j * WGD->dy + c * WGD->z[k];
+        // WGD->v[faceID] = cos(a * WGD->x[i]) + cos(b * j * WGD->dy) + sin(c * WGD->z[k]);
+        // WGD->v[faceID] = a * WGD->x[i] + b * j * WGD->dy + c * WGD->z[k];
         WGD->v[faceID] = (this->*v_testFunction)(WGD, WGD->x[i], j * WGD->dy, WGD->z[k]);
       }
     }
   }
 
   // w on horizontal face -> k=0...nz-1
-  for (int k = 1; k < WGD->nz - 1; k++) {
+  for (int k = 0; k < WGD->nz - 1; k++) {
     for (int j = 0; j < WGD->ny - 1; j++) {
       for (int i = 0; i < WGD->nx - 1; i++) {
         int faceID = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-        WGD->w[faceID] = (this->*w_testFunction)(WGD, WGD->x[i], WGD->y[j], WGD->z_face[k - 1]);
+        WGD->w[faceID] = (this->*w_testFunction)(WGD, WGD->x[i], WGD->y[j], WGD->z_face[k]);
       }
     }
   }
@@ -77,9 +77,9 @@ float test_PlumeGeneralData::testFunction_linearX(WINDSGeneralData *WGD, float x
   // a = 2 * 2pi/Lx
   float a = 2.0 * 2.0 * M_PI / (WGD->nx * WGD->dx);
   // b = 6 * 2pi/Ly
-  //float b = 6.0 * 2.0 * M_PI / (WGD->ny * WGD->dy);
+  // float b = 6.0 * 2.0 * M_PI / (WGD->ny * WGD->dy);
   // c = 4 * 2pi/Lz
-  //float c = 4.0 * 2.0 * M_PI / ((WGD->nz - 1) * WGD->dz);
+  // float c = 4.0 * 2.0 * M_PI / ((WGD->nz - 1) * WGD->dz);
 
   return a * x;
 }
@@ -87,11 +87,11 @@ float test_PlumeGeneralData::testFunction_linearX(WINDSGeneralData *WGD, float x
 float test_PlumeGeneralData::testFunction_linearY(WINDSGeneralData *WGD, float x, float y, float z)
 {
   // a = 2 * 2pi/Lx
-  //float a = 2.0 * 2.0 * M_PI / (WGD->nx * WGD->dx);
+  // float a = 2.0 * 2.0 * M_PI / (WGD->nx * WGD->dx);
   // b = 6 * 2pi/Ly
   float b = 6.0 * 2.0 * M_PI / (WGD->ny * WGD->dy);
   // c = 4 * 2pi/Lz
-  //float c = 4.0 * 2.0 * M_PI / ((WGD->nz - 1) * WGD->dz);
+  // float c = 4.0 * 2.0 * M_PI / ((WGD->nz - 1) * WGD->dz);
 
   return b * y;
 }
@@ -99,9 +99,9 @@ float test_PlumeGeneralData::testFunction_linearY(WINDSGeneralData *WGD, float x
 float test_PlumeGeneralData::testFunction_linearZ(WINDSGeneralData *WGD, float x, float y, float z)
 {
   // a = 2 * 2pi/Lx
-  //float a = 2.0 * 2.0 * M_PI / (WGD->nx * WGD->dx);
+  // float a = 2.0 * 2.0 * M_PI / (WGD->nx * WGD->dx);
   // b = 6 * 2pi/Ly
-  //float b = 6.0 * 2.0 * M_PI / (WGD->ny * WGD->dy);
+  // float b = 6.0 * 2.0 * M_PI / (WGD->ny * WGD->dy);
   // c = 4 * 2pi/Lz
   float c = 4.0 * 2.0 * M_PI / ((WGD->nz - 1) * WGD->dz);
 
@@ -143,10 +143,10 @@ std::string test_PlumeGeneralData::testInterp(WINDSGeneralData *WGD, TURBGeneral
 
   double CoEps = 1e-6;
 
-  //u_testFunction = &test_PlumeGeneralData::testFunction_linearY;
-  //v_testFunction = &test_PlumeGeneralData::testFunction_linearZ;
-  //w_testFunction = &test_PlumeGeneralData::testFunction_linearX;
-  //c_testFunction = &test_PlumeGeneralData::testFunction_linearZ;
+  // u_testFunction = &test_PlumeGeneralData::testFunction_linearY;
+  // v_testFunction = &test_PlumeGeneralData::testFunction_linearZ;
+  // w_testFunction = &test_PlumeGeneralData::testFunction_linearX;
+  // c_testFunction = &test_PlumeGeneralData::testFunction_linearZ;
 
   u_testFunction = &test_PlumeGeneralData::testFunction_trig;
   v_testFunction = &test_PlumeGeneralData::testFunction_trig;
@@ -221,10 +221,10 @@ std::string test_PlumeGeneralData::timeInterpCPU(WINDSGeneralData *WGD, TURBGene
 
   double CoEps = 1e-6;
 
-  //u_testFunction = &test_PlumeGeneralData::testFunction_linearY;
-  //v_testFunction = &test_PlumeGeneralData::testFunction_linearZ;
-  //w_testFunction = &test_PlumeGeneralData::testFunction_linearX;
-  //c_testFunction = &test_PlumeGeneralData::testFunction_linearZ;
+  // u_testFunction = &test_PlumeGeneralData::testFunction_linearY;
+  // v_testFunction = &test_PlumeGeneralData::testFunction_linearZ;
+  // w_testFunction = &test_PlumeGeneralData::testFunction_linearX;
+  // c_testFunction = &test_PlumeGeneralData::testFunction_linearZ;
 
   u_testFunction = &test_PlumeGeneralData::testFunction_trig;
   v_testFunction = &test_PlumeGeneralData::testFunction_trig;
@@ -249,8 +249,8 @@ std::string test_PlumeGeneralData::timeInterpCPU(WINDSGeneralData *WGD, TURBGene
     zArray.push_back(disZ(mersenne_engine));
   }
 
-  //bool verbose = false;
-  //float tol(1.0e-2);
+  // bool verbose = false;
+  // float tol(1.0e-2);
 
   auto interpStartTime = std::chrono::high_resolution_clock::now();
   for (size_t it = 0; it < xArray.size(); ++it) {
@@ -281,7 +281,7 @@ void test_PlumeGeneralData::testCPU(int length)
   x.resize(length, { 0.0, 0.0, 0.0 });
 
   std::vector<mat3sym> tau;
-  //tau.resize(length, { 1, 2, 3, 1, 2, 1 });
+  // tau.resize(length, { 1, 2, 3, 1, 2, 1 });
   tau.resize(length, { 1, 0, 3, 0, 0, 1 });
   std::vector<vec3> invar;
   invar.resize(length, { 0.0, 0.0, 0.0 });
