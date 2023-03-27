@@ -23,9 +23,10 @@ ENDIF()
 target_link_libraries(unitTest_t00 PRIVATE qesutil)
 target_link_libraries(unitTest_t00 PRIVATE Catch2::Catch2WithMain)
 
+add_executable(util_time
+        util_time.cpp)
+
 IF ($CACHE{HAS_CUDA_SUPPORT})
-   cuda_add_executable(unitTestTime
-     mainTimeTest.cpp)
 
    cuda_add_executable(unitTestWind
      test_DTEHeightField.h test_DTEHeightField.cpp
@@ -42,8 +43,6 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
       test_PlumeGeneralData.h test_PlumeGeneralData.cpp test_PlumeGeneralData.cu
       mainPlumeTest.cpp)
 ELSE ($CACHE{HAS_CUDA_SUPPORT})
-   add_executable(unitTestTime
-     mainTimeTest.cpp)
 
    add_executable(unitTestWind
      test_DTEHeightField.h test_DTEHeightField.cpp
@@ -68,7 +67,7 @@ ELSE ($CACHE{HAS_CUDA_SUPPORT})
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 set(UNITTESTS
-  unitTestTime
+  util_time
   unitTestWind
   unitTestTurbulence
   unitTestPlume
