@@ -423,7 +423,8 @@ add_subdirectory(tests)
 # ----------------------------------------------------------
 # TESTING OPTION
 # ----------------------------------------------------------
-option(ENABLE_UNITTESTS "Enables unitests" OFF)
+option(ENABLE_UNITTESTS "Enables unit tests" OFF)
+option(ENABLE_REGRESSTESTS "Enables regression tests" OFF)
 
 option(ENABLE_ALL_TESTS "Enables all tests for an extensive test run" OFF) # will not override CPU/GPU selection
 option(ENABLE_SANITY_TESTS "Enables tests that simply check if qesWinds runs on input w/o runtime errors" ON)

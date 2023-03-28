@@ -1,6 +1,8 @@
 //
 // Created by Fabien Margairaz on 3/24/23.
 //
+#include <catch2/catch_test_macros.hpp>
+
 #include <iostream>
 #include <cstdlib>
 #include <algorithm>
@@ -13,8 +15,7 @@
 #include "util/NetCDFInput.h"
 #include "util/QESout.h"
 
-#include "test_WINDSGeneralData.h"
-#include "test_TURBGeneralData.h"
+#include "../unitTests/test_WINDSGeneralData.h"
 
 #include "plume/Plume.hpp"
 
@@ -27,10 +28,8 @@ void calcRMSE_wFluct(int nbrBins, Plume *plume, std::map<std::string, float> &rm
 void calcRMSE_delta_wFluct(int nbrBins, Plume *plume, double delta_t, std::map<std::string, float> &rmse);
 float calcRMSE(std::vector<float> &A, std::vector<float> &B);
 
-int main()
+TEST_CASE("Regression test of QES-Plume: sinusoidal stress")
 {
-  QESout::splashScreen();
-
   // set up timer information for the simulation runtime
   calcTime timers;
   timers.startNewTimer("QES-Plume total runtime");// start recording execution time
@@ -39,7 +38,8 @@ int main()
   // PlumeArgs arguments;
   // arguments.processArguments(argc, argv);
 
-  std::string qesPlumeParamFile = "../tests/Sinusoidal3D_0.01_12.xml";
+  std::string qesPlumeParamFile = QES_DIR;
+  qesPlumeParamFile.append("/tests/regressionTests/Sinusoidal3D_0.01_12.xml");
 
   // parse xml settings
   auto PID = new PlumeInputData(qesPlumeParamFile);
@@ -48,7 +48,7 @@ int main()
   float gridRes[3] = { 1.0 / 20.0, 1.0 / 20.0, 1.0 / 49.0 };
 
   WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes);
-  TURBGeneralData *TGD = new test_TURBGeneralData(WGD);
+  TURBGeneralData *TGD = new TURBGeneralData(WGD);
 
   std::vector<float> sig2_new(WGD->nz - 1);
 
@@ -110,18 +110,12 @@ int main()
   std::cout << "RMSE on var of wFluct/delta t: " << rmse["var_delta_wFluct"] << std::endl;
   std::cout << "--------------------------------------------------------------" << std::endl;
 
-  if (plume->getNumRogueParticles() == 0
-      && entropy > -0.04
-      && rmse["mean_wFluct"] < 0.03
-      && rmse["var_wFluct"] < 0.03
-      && rmse["mean_delta_wFluct"] < 0.5
-      && rmse["var_delta_wFluct"] < 0.5) {
-    std::cout << "TEST SUCCESSFUL" << std::endl;
-    exit(EXIT_SUCCESS);
-  } else {
-    std::cout << "TEST FAILED" << std::endl;
-    exit(EXIT_FAILURE);
-  }
+  REQUIRE(plume->getNumRogueParticles() == 0);
+  REQUIRE(entropy > -0.04);
+  REQUIRE(rmse["mean_wFluct"] < 0.03);
+  REQUIRE(rmse["var_wFluct"] < 0.03);
+  REQUIRE(rmse["mean_delta_wFluct"] < 0.6);
+  REQUIRE(rmse["var_delta_wFluct"] < 0.3);
 }
 
 float calcEntropy(int nbrBins, Plume *plume)

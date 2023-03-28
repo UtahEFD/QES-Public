@@ -2,7 +2,9 @@
 # hierarchically integrate projects together.
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
-IF (ENABLE_UNITTESTS)
+ADD_DEFINITIONS(-DQES_DIR="${PROJECT_SOURCE_DIR}")
+
+IF (ENABLE_REGRESSTESTS OR ENABLE_UNITTESTS)
   Include(FetchContent)
 
   FetchContent_Declare(
@@ -12,10 +14,15 @@ IF (ENABLE_UNITTESTS)
   )
 
   FetchContent_MakeAvailable(Catch2)
-
-  add_subdirectory(unitTests)
 ENDIF()
 
+IF (ENABLE_REGRESSTESTS)
+  add_subdirectory(regressionTests)
+ENDIF()
+
+IF (ENABLE_UNITTESTS)
+  add_subdirectory(unitTests)
+ENDIF()
 
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
