@@ -52,7 +52,6 @@ TEST_CASE("Testing QES-Turb derivatives CPU")
 
   WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes);
   auto TGD = new test_TURBGeneralData(WGD);
-  // test_TURBGeneralData *TGD2 = new test_TURBGeneralData(WGD);
 
 
   std::cout << "Checking derivatives" << std::endl;
@@ -76,61 +75,23 @@ TEST_CASE("Testing QES-Turb derivatives CPU")
 
   std::cout << "Calculation derivatives CPU" << std::endl;
   TGD->test_compDerivatives_CPU(WGD);
+
   std::cout << "Checking derivatives CPU" << std::endl;
 
-  float RMSE(0.0);
   float tol(1.0e-3);
 
   REQUIRE(compError1Dx(&dudx, &(TGD->Gxx), WGD, TGD) < tol);
-  //  return util_errorReport("compDerivatives",
-  //                          "error in x-derivative of u-velocity (dudx;Gxx)\n RMSE = "
-  //                            + std::to_string(RMSE));
-
   REQUIRE(compError1Dx(&dvdx, &(TGD->Gyx), WGD, TGD) < tol);
-  //  return util_errorReport("compDerivatives",
-  //                          "error in x-derivative of v-velocity (dvdx;Gyx) \n RMSE = "
-  //                            + std::to_string(RMSE));
-
   REQUIRE(compError1Dx(&dwdx, &(TGD->Gzx), WGD, TGD) < tol);
-  //  return util_errorReport("compDerivatives",
-  //                          "error in x-derivative of w-velocity (dwdx;Gzx)\n RMSE = "
-  //                            + std::to_string(RMSE));
 
   REQUIRE(compError1Dy(&dudy, &(TGD->Gxy), WGD, TGD) < tol);
-  //  return util_errorReport("compDerivatives",
-  //                          "error in y-derivative of u-velocity (dudy;Gxy)\n RMSE = "
-  //                            + std::to_string(RMSE));
-
   REQUIRE(compError1Dy(&dvdy, &(TGD->Gyy), WGD, TGD) < tol);
-  // return util_errorReport("compDerivatives",
-  //                          "error in y-derivative of v-velocity (dvdy;Gyy)\n RMSE = "
-  //                            + std::to_string(RMSE));
-
   REQUIRE(compError1Dy(&dwdy, &(TGD->Gzy), WGD, TGD) < tol);
-  //  return util_errorReport("compDerivatives",
-  //                          "error in y-derivative of w-velocity (dwdy;Gzy)\n RMSE = "
-  //                            + std::to_string(RMSE));
 
   REQUIRE(compError1Dz(&dudz, &(TGD->Gxz), WGD, TGD) < tol);
-  //  return util_errorReport("compDerivatives",
-  //                          "error in z-derivative of u-velocity (dudz;Gxz)\n RMSE = "
-  //                            + std::to_string(RMSE));
-
   REQUIRE(compError1Dz(&dvdz, &(TGD->Gyz), WGD, TGD) < tol);
-  //  return util_errorReport("compDerivatives",
-  //                          "error in z-derivative of v-velocity (dvdz;Gyz)\n RMSE = "
-  //                            + std::to_string(RMSE));
-
   REQUIRE(compError1Dz(&dwdz, &(TGD->Gzz), WGD, TGD) < tol);
-  //  return util_errorReport("compDerivatives",
-  //                          "error in z-derivative of w-velocity (dwdz;Gzz)\n RMSE = "
-  //                            + std::to_string(RMSE));
 
-  // std::cout << "Calculating derivatives GPU" << std::endl;
-  // TGD2->test_compDerivatives_GPU(WGD);
-  // std::cout << "Checking derivatives GPU" << std::endl;
-  // results = check1DDerivative(&dudx, &dudy, &dudz, &dvdx, &dvdy, &dvdz, &dwdx, &dwdy, &dwdz, WGD, TGD2);
-  // std::cout << results << std::endl;
 }
 
 void set1DDerivative(std::vector<float> *dudx,
