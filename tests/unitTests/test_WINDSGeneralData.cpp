@@ -26,7 +26,7 @@ test_WINDSGeneralData::test_WINDSGeneralData(const int gridSize[3], const float 
   for (size_t k = 0; k < z.size(); k++) {
     dz_array[k] = dz;
   }
-
+  
   // Location of face in z-dir
   z_face[0] = -dz_array[0];
   z_face[1] = -0.0;

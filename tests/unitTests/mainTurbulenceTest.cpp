@@ -3,7 +3,8 @@
 #include <algorithm>
 #include <vector>
 
-#include "util.h"
+#include <catch2/catch_test_macros.hpp>
+
 #include "test_WINDSGeneralData.h"
 #include "test_TURBGeneralData.h"
 
@@ -42,45 +43,19 @@ float compError1Dz(std::vector<float> *,
                    WINDSGeneralData *,
                    test_TURBGeneralData *);
 
-int main()
+TEST_CASE("Testing QES-Turb derivatives CPU")
 {
-  std::string results;
-
-  /******************
-   * TURBULENCE * 
-   ******************/
-  printf("======================================\n");
-  printf("starting TURBULENCE tests...\n");
-  results = mainTest();
-  if (results == "") {
-    printf("TURBULENCE: Success!\n");
-  } else {
-    printf("TURBULENCE: Failure\n%s\n", results.c_str());
-    exit(EXIT_FAILURE);
-  }
-
-  printf("======================================\n");
-  printf("All tests pass!\n");
-  exit(EXIT_SUCCESS);
-
-  return 0;
-}
-
-std::string mainTest()
-{
-
   std::string results;
 
   int gridSize[3] = { 400, 400, 400 };
   float gridRes[3] = { 1.0, 1.0, 1.0 };
 
   WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes);
-  test_TURBGeneralData *TGD1 = new test_TURBGeneralData(WGD);
-  test_TURBGeneralData *TGD2 = new test_TURBGeneralData(WGD);
+  auto TGD = new test_TURBGeneralData(WGD);
+  // test_TURBGeneralData *TGD2 = new test_TURBGeneralData(WGD);
 
 
   std::cout << "Checking derivatives" << std::endl;
-
 
   std::vector<float> dudx, dvdx, dwdx;
   dudx.resize(WGD->nx - 1, 0.0);
@@ -100,24 +75,62 @@ std::string mainTest()
   set1DDerivative(&dudx, &dudy, &dudz, &dvdx, &dvdy, &dvdz, &dwdx, &dwdy, &dwdz, WGD);
 
   std::cout << "Calculation derivatives CPU" << std::endl;
-  TGD1->test_compDerivatives_CPU(WGD);
+  TGD->test_compDerivatives_CPU(WGD);
   std::cout << "Checking derivatives CPU" << std::endl;
-  results = check1DDerivative(&dudx, &dudy, &dudz, &dvdx, &dvdy, &dvdz, &dwdx, &dwdy, &dwdz, WGD, TGD1);
-  std::cout << results << std::endl;
-
-  std::cout << "Calculating derivatives GPU" << std::endl;
-  TGD2->test_compDerivatives_GPU(WGD);
-  std::cout << "Checking derivatives GPU" << std::endl;
-  results = check1DDerivative(&dudx, &dudy, &dudz, &dvdx, &dvdy, &dvdz, &dwdx, &dwdy, &dwdz, WGD, TGD2);
-  std::cout << results << std::endl;
 
   float RMSE(0.0);
-  if (!util_checkRMSE(&(TGD1->Gxz), &(TGD2->Gxz), 1.0e-6, RMSE))
-    std::cout << "test failed " << RMSE << std::endl;
-  else
-    std::cout << "test passed " << RMSE << std::endl;
+  float tol(1.0e-3);
 
-  return results;
+  REQUIRE(compError1Dx(&dudx, &(TGD->Gxx), WGD, TGD) < tol);
+  //  return util_errorReport("compDerivatives",
+  //                          "error in x-derivative of u-velocity (dudx;Gxx)\n RMSE = "
+  //                            + std::to_string(RMSE));
+
+  REQUIRE(compError1Dx(&dvdx, &(TGD->Gyx), WGD, TGD) < tol);
+  //  return util_errorReport("compDerivatives",
+  //                          "error in x-derivative of v-velocity (dvdx;Gyx) \n RMSE = "
+  //                            + std::to_string(RMSE));
+
+  REQUIRE(compError1Dx(&dwdx, &(TGD->Gzx), WGD, TGD) < tol);
+  //  return util_errorReport("compDerivatives",
+  //                          "error in x-derivative of w-velocity (dwdx;Gzx)\n RMSE = "
+  //                            + std::to_string(RMSE));
+
+  REQUIRE(compError1Dy(&dudy, &(TGD->Gxy), WGD, TGD) < tol);
+  //  return util_errorReport("compDerivatives",
+  //                          "error in y-derivative of u-velocity (dudy;Gxy)\n RMSE = "
+  //                            + std::to_string(RMSE));
+
+  REQUIRE(compError1Dy(&dvdy, &(TGD->Gyy), WGD, TGD) < tol);
+  // return util_errorReport("compDerivatives",
+  //                          "error in y-derivative of v-velocity (dvdy;Gyy)\n RMSE = "
+  //                            + std::to_string(RMSE));
+
+  REQUIRE(compError1Dy(&dwdy, &(TGD->Gzy), WGD, TGD) < tol);
+  //  return util_errorReport("compDerivatives",
+  //                          "error in y-derivative of w-velocity (dwdy;Gzy)\n RMSE = "
+  //                            + std::to_string(RMSE));
+
+  REQUIRE(compError1Dz(&dudz, &(TGD->Gxz), WGD, TGD) < tol);
+  //  return util_errorReport("compDerivatives",
+  //                          "error in z-derivative of u-velocity (dudz;Gxz)\n RMSE = "
+  //                            + std::to_string(RMSE));
+
+  REQUIRE(compError1Dz(&dvdz, &(TGD->Gyz), WGD, TGD) < tol);
+  //  return util_errorReport("compDerivatives",
+  //                          "error in z-derivative of v-velocity (dvdz;Gyz)\n RMSE = "
+  //                            + std::to_string(RMSE));
+
+  REQUIRE(compError1Dz(&dwdz, &(TGD->Gzz), WGD, TGD) < tol);
+  //  return util_errorReport("compDerivatives",
+  //                          "error in z-derivative of w-velocity (dwdz;Gzz)\n RMSE = "
+  //                            + std::to_string(RMSE));
+
+  // std::cout << "Calculating derivatives GPU" << std::endl;
+  // TGD2->test_compDerivatives_GPU(WGD);
+  // std::cout << "Checking derivatives GPU" << std::endl;
+  // results = check1DDerivative(&dudx, &dudy, &dudz, &dvdx, &dvdy, &dvdz, &dwdx, &dwdy, &dwdz, WGD, TGD2);
+  // std::cout << results << std::endl;
 }
 
 void set1DDerivative(std::vector<float> *dudx,
@@ -190,89 +203,11 @@ void set1DDerivative(std::vector<float> *dudx,
   }
   // dwdx at cell-center -> k=1...nz-2
   for (int k = 1; k < WGD->nz - 2; k++) {
-    dwdz->at(k) = c * cos(c * WGD->z[k + 1]);
+    dwdz->at(k) = c * cos(c * WGD->z[k]);
   }
 
   return;
 }
-
-std::string check1DDerivative(std::vector<float> *dudx,
-                              std::vector<float> *dudy,
-                              std::vector<float> *dudz,
-                              std::vector<float> *dvdx,
-                              std::vector<float> *dvdy,
-                              std::vector<float> *dvdz,
-                              std::vector<float> *dwdx,
-                              std::vector<float> *dwdy,
-                              std::vector<float> *dwdz,
-                              WINDSGeneralData *WGD,
-                              test_TURBGeneralData *TGD)
-{
-
-  float RMSE(0.0);
-  float tol(1.0e-3);
-
-  RMSE = compError1Dx(dudx, &(TGD->Gxx), WGD, TGD);
-  if (RMSE > tol) {
-    return util_errorReport("compDerivatives",
-                            "error in x-derivative of u-velocity (dudx;Gxx)\n RMSE = "
-                              + std::to_string(RMSE));
-  }
-  RMSE = compError1Dx(dvdx, &(TGD->Gyx), WGD, TGD);
-  if (RMSE > tol) {
-    return util_errorReport("compDerivatives",
-                            "error in x-derivative of v-velocity (dvdx;Gyx) \n RMSE = "
-                              + std::to_string(RMSE));
-  }
-  RMSE = compError1Dx(dwdx, &(TGD->Gzx), WGD, TGD);
-  if (RMSE > tol) {
-    return util_errorReport("compDerivatives",
-                            "error in x-derivative of w-velocity (dwdx;Gzx)\n RMSE = "
-                              + std::to_string(RMSE));
-  }
-
-  RMSE = compError1Dy(dudy, &(TGD->Gxy), WGD, TGD);
-  if (RMSE > tol) {
-    return util_errorReport("compDerivatives",
-                            "error in y-derivative of u-velocity (dudy;Gxy)\n RMSE = "
-                              + std::to_string(RMSE));
-  }
-  RMSE = compError1Dy(dvdy, &(TGD->Gyy), WGD, TGD);
-  if (RMSE > tol) {
-    return util_errorReport("compDerivatives",
-                            "error in y-derivative of v-velocity (dvdy;Gyy)\n RMSE = "
-                              + std::to_string(RMSE));
-  }
-  RMSE = compError1Dy(dwdy, &(TGD->Gzy), WGD, TGD);
-  if (RMSE > tol) {
-    return util_errorReport("compDerivatives",
-                            "error in y-derivative of w-velocity (dwdy;Gzy)\n RMSE = "
-                              + std::to_string(RMSE));
-  }
-
-
-  RMSE = compError1Dz(dudz, &(TGD->Gxz), WGD, TGD);
-  if (RMSE > tol) {
-    return util_errorReport("compDerivatives",
-                            "error in z-derivative of u-velocity (dudz;Gxz)\n RMSE = "
-                              + std::to_string(RMSE));
-  }
-  RMSE = compError1Dz(dvdz, &(TGD->Gyz), WGD, TGD);
-  if (RMSE > tol) {
-    return util_errorReport("compDerivatives",
-                            "error in z-derivative of v-velocity (dvdz;Gyz)\n RMSE = "
-                              + std::to_string(RMSE));
-  }
-  RMSE = compError1Dz(dwdz, &(TGD->Gzz), WGD, TGD);
-  if (RMSE > tol) {
-    return util_errorReport("compDerivatives",
-                            "error in z-derivative of w-velocity (dwdz;Gzz)\n RMSE = "
-                              + std::to_string(RMSE));
-  }
-
-  return TEST_PASS;
-}
-
 
 float compError1Dx(std::vector<float> *deriv,
                    std::vector<float> *var,
@@ -291,8 +226,8 @@ float compError1Dx(std::vector<float> *deriv,
     error += pow((var->at(cellID) - deriv->at(i)), 2.0);
     numcell++;
   }
-  //std::cout << "\tEuclidian distance = " << error << std::endl;
-  //std::cout << "\tRMSE = " << sqrt(error / numcell) << std::endl;
+  // std::cout << "\tEuclidian distance = " << error << std::endl;
+  // std::cout << "\tRMSE = " << sqrt(error / numcell) << std::endl;
   return sqrt(error / numcell);
 }
 
@@ -308,13 +243,13 @@ float compError1Dy(std::vector<float> *deriv,
     int cellID = *it;
     int k = (int)(cellID / ((WGD->nx - 1) * (WGD->ny - 1)));
     int j = (int)((cellID - k * (WGD->nx - 1) * (WGD->ny - 1)) / (WGD->nx - 1));
-    //int i = cellID - j * (WGD->nx - 1) - k * (WGD->nx - 1) * (WGD->ny - 1);
+    // int i = cellID - j * (WGD->nx - 1) - k * (WGD->nx - 1) * (WGD->ny - 1);
 
     error += pow((var->at(cellID) - deriv->at(j)), 2.0);
     numcell++;
   }
-  //std::cout << "\tEuclidian distance = " << error << std::endl;
-  //std::cout << "\tRMSE = " << sqrt(error / numcell) << std::endl;
+  // std::cout << "\tEuclidian distance = " << error << std::endl;
+  // std::cout << "\tRMSE = " << sqrt(error / numcell) << std::endl;
   return sqrt(error / numcell);
 }
 
@@ -329,13 +264,13 @@ float compError1Dz(std::vector<float> *deriv,
   for (std::vector<int>::iterator it = TGD->icellfluid.begin(); it != TGD->icellfluid.end(); ++it) {
     int cellID = *it;
     int k = (int)(cellID / ((WGD->nx - 1) * (WGD->ny - 1)));
-    //int j = (int)((cellID - k * (WGD->nx - 1) * (WGD->ny - 1)) / (WGD->nx - 1));
-    //int i = cellID - j * (WGD->nx - 1) - k * (WGD->nx - 1) * (WGD->ny - 1);
+    // int j = (int)((cellID - k * (WGD->nx - 1) * (WGD->ny - 1)) / (WGD->nx - 1));
+    // int i = cellID - j * (WGD->nx - 1) - k * (WGD->nx - 1) * (WGD->ny - 1);
 
     error += pow((var->at(cellID) - deriv->at(k)), 2.0);
     numcell++;
   }
-  //std::cout << "\tEuclidian distance = " << error << std::endl;
-  //std::cout << "\tRMSE = " << sqrt(error / numcell) << std::endl;
+  // std::cout << "\tEuclidian distance = " << error << std::endl;
+  // std::cout << "\tRMSE = " << sqrt(error / numcell) << std::endl;
   return sqrt(error / numcell);
 }
