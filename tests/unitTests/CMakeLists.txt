@@ -1,7 +1,7 @@
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(.)
 
-add_library(unitTestLib ${LIB_TYPE} 
+add_library(unitTestLib ${LIB_TYPE}
   util.h util.cpp)
 
 #FILE(GLOB files "*.h")
@@ -32,10 +32,10 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
      test_DTEHeightField.h test_DTEHeightField.cpp
        mainWindTest.cpp)
 
-   cuda_add_executable(unitTestTurbulence
+   cuda_add_executable(turbulence_derivative_CPU
        test_WINDSGeneralData.h test_WINDSGeneralData.cpp
        test_TURBGeneralData.h test_TURBGeneralData.cpp
-       mainTurbulenceTest.cpp)
+       turbulence_derivative_CPU.cpp)
 
    cuda_add_executable(unitTestPlume
       test_WINDSGeneralData.h test_WINDSGeneralData.cpp
@@ -48,10 +48,10 @@ ELSE ($CACHE{HAS_CUDA_SUPPORT})
      test_DTEHeightField.h test_DTEHeightField.cpp
        mainWindTest.cpp)
 
-   add_executable(unitTestTurbulence
+   add_executable(turbulence_derivative_CPU
        test_WINDSGeneralData.h test_WINDSGeneralData.cpp
        test_TURBGeneralData.h test_TURBGeneralData.cpp
-       mainTurbulenceTest.cpp)
+       turbulence_derivative_CPU.cpp)
 
    add_executable(unitTestPlume
        test_WINDSGeneralData.h test_WINDSGeneralData.cpp
@@ -64,7 +64,7 @@ ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 set(UNITTESTS
   util_time
   unitTestWind
-  unitTestTurbulence
+  turbulence_derivative_CPU
   unitTestPlume)
 
 foreach (unittest ${UNITTESTS})
@@ -86,7 +86,7 @@ foreach (unittest ${UNITTESTS})
   target_link_libraries(${unittest} Catch2::Catch2WithMain)
 
   if (ENABLE_UNITTESTS)
-    add_test(${unittest} ${unittest})
+    add_test(unit_test-${unittest} ${unittest})
   endif (ENABLE_UNITTESTS)
 endforeach(unittest)
 
