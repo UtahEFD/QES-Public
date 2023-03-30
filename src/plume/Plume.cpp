@@ -278,11 +278,11 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
       // call to the main particle adection function (in separate file: AdvectParticle.cpp)
       advectParticle(timeRemainder, tmp[k], WGD, TGD);
     }
-    //for (auto parItr = tmp.begin(); parItr != tmp.end(); parItr++) {
-    // call to the main particle adection function (in separate file: AdvectParticle.cpp)
-    //  advectParticle(timeRemainder, *parItr, WGD, TGD);
-    //}// end of loop
-    // END OF OPENMP WORK SHARE
+    // for (auto parItr = tmp.begin(); parItr != tmp.end(); parItr++) {
+    //  call to the main particle adection function (in separate file: AdvectParticle.cpp)
+    //   advectParticle(timeRemainder, *parItr, WGD, TGD);
+    // }// end of loop
+    //  END OF OPENMP WORK SHARE
 
     //  flush deposition buffer
     for (auto &parItr : particleList) {
@@ -325,6 +325,7 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
     // advection, remove them now
     if (needToScrub) {
       scrubParticleList();
+      needToScrub = false;
     }
     // output the time, isRogueCount, and isNotActiveCount information for all
     // simulations, but only when the updateFrequency allows
@@ -505,7 +506,7 @@ int Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBGe
 void Plume::scrubParticleList()
 {
   for (auto parItr = particleList.begin(); parItr != particleList.end();) {
-    if ((*parItr)->isActive) {
+    if (!(*parItr)->isActive) {
       delete *parItr;
       parItr = particleList.erase(parItr);
     } else {
@@ -527,9 +528,9 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, std::li
     nParsReleased++;
   }
 
-  //#pragma omp parallel for default(none) shared(WGD, TGD, tmp)
-  //for (auto parItr = tmp.begin(); parItr != tmp.end(); parItr++) {
-  // set particle ID (use global particle counter)
+  // #pragma omp parallel for default(none) shared(WGD, TGD, tmp)
+  // for (auto parItr = tmp.begin(); parItr != tmp.end(); parItr++) {
+  //  set particle ID (use global particle counter)
   //(*parItr)->particleID = nParsReleased;
   //
 #pragma omp parallel for default(none) shared(WGD, TGD, tmp)
