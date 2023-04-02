@@ -1,5 +1,5 @@
 function writeNetCDFFile_winds(outputBaseName,nx,ny,nz,x_cc,y_cc,z_cc,u,v,w,icellflag)
-    
+
 % set the output filename
 outputFileName = sprintf('%s_windsWk.nc',outputBaseName);
 %%%% if the file already exists, delete it
@@ -15,7 +15,9 @@ nx_cc = length(x_cc);
 ny_cc = length(y_cc);
 nz_cc = length(z_cc);
 
-z_face = (0:(nz_cc-1))*(z_cc(2)-z_cc(1));
+z_face = zeros(nz,1);
+z_face(2:end) = (0:(nz_cc-1))*(z_cc(2)-z_cc(1));
+z_face(1) = - z_face(3);
 
 % don't worry if the output already exists, just overwrite it
 %%%save(outputFileName,  'xCellGrid_urb','yCellGrid_urb','zCellGrid_urb', 'uMean','vMean','wMean');
@@ -53,7 +55,7 @@ netcdf.putAtt(nc,varid_z_cell,'long_name','z-distance');
 netcdf.putAtt(nc,varid_z_cell,'units','m');
 netcdf.putAtt(nc,varid_z_cell,'cartesian_axis','Z');
 
-varid_z_face = netcdf.defVar(nc, 'z_face', 'float', dim_z_cell);
+varid_z_face = netcdf.defVar(nc, 'z_face', 'float', dim_z_face);
 netcdf.putAtt(nc,varid_z_face,'long_name','z-distance');
 netcdf.putAtt(nc,varid_z_face,'units','m');
 
@@ -93,12 +95,12 @@ netcdf.close(nc)
 % ncwrite(outputFileName,'t',times);
 % ncwriteatt(outputFileName,'t','units','s');
 % ncwriteatt(outputFileName,'t','long_name','time');
-% 
+%
 % nccreate(outputFileName,'x_face','Dimensions',{'x_face',nx});
 % nccreate(outputFileName,'y_face','Dimensions',{'y_face',ny});
 % nccreate(outputFileName,'z_face','Dimensions',{'z_face',nz});
-% 
-% 
+%
+%
 % nccreate(outputFileName,'x','Dimensions',{'x',nx_cc});
 % ncwrite(outputFileName,'x',x_cc);
 % ncwriteatt(outputFileName,'x','units','m');
@@ -111,7 +113,7 @@ netcdf.close(nc)
 % ncwrite(outputFileName,'z',z_cc);
 % ncwriteatt(outputFileName,'z','units','m');
 % ncwriteatt(outputFileName,'z','long_name','z-distance');
-% 
+%
 % nccreate(outputFileName,'u','Dimensions',{'x_face',nx,'y_face',ny,'z_face',nz,'t',1});
 % ncwrite(outputFileName,'u',u);
 % ncwriteatt(outputFileName,'u','units','m s-1');
@@ -124,7 +126,7 @@ netcdf.close(nc)
 % ncwrite(outputFileName,'w',w);
 % ncwriteatt(outputFileName,'w','units','m s-1');
 % ncwriteatt(outputFileName,'w','long_name','z-component velocity');
-% 
+%
 % nccreate(outputFileName,'icellflag','Dimensions',{'x',nx_cc,'y',ny_cc,'z',nz_cc,'t',1},'Datatype','int32');
 % ncwrite(outputFileName,'icellflag',icellflag);
 % ncwriteatt(outputFileName,'icellflag','units','--');
