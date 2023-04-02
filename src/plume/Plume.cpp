@@ -272,17 +272,19 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
 
     auto startTime = std::chrono::high_resolution_clock::now();
     // FM: openmp parallelization of the advection loop
+#ifdef _OPENMP
     std::vector<Particle *> tmp(particleList.begin(), particleList.end());
 #pragma omp parallel for default(none) shared(WGD, TGD, tmp, timeRemainder)
     for (auto k = 0u; k < tmp.size(); ++k) {
       // call to the main particle adection function (in separate file: AdvectParticle.cpp)
       advectParticle(timeRemainder, tmp[k], WGD, TGD);
-    }
-    // for (auto parItr = tmp.begin(); parItr != tmp.end(); parItr++) {
-    //  call to the main particle adection function (in separate file: AdvectParticle.cpp)
-    //   advectParticle(timeRemainder, *parItr, WGD, TGD);
-    // }// end of loop
-    //  END OF OPENMP WORK SHARE
+    }//  END OF OPENMP WORK SHARE
+#else
+    for (auto &parItr : particleList) {
+      //  call to the main particle adection function (in separate file: AdvectParticle.cpp)
+      advectParticle(timeRemainder, parItr, WGD, TGD);
+    }// end of loop
+#endif
 
     //  flush deposition buffer
     for (auto &parItr : particleList) {
@@ -325,7 +327,6 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
     // advection, remove them now
     if (needToScrub) {
       scrubParticleList();
-      needToScrub = false;
     }
     // output the time, isRogueCount, and isNotActiveCount information for all
     // simulations, but only when the updateFrequency allows
