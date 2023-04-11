@@ -27,38 +27,40 @@
  * You should have received a copy of the GNU General Public License
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
-
-/** @file WINDSGeneralData.h */
+/** @file HRRRInput.h */
 
 #pragma once
 
-#include <vector>
+#include "util/ParseInterface.h"
+#include <string>
 #include <netcdf>
-#include <cmath>
+using namespace std;
+using namespace netCDF;
+using namespace netCDF::exceptions;
 
-#include "WindProfilerType.h"
+/**
+ * @class HRRRInput
+ * @brief Read in HRRR wind data into QES-Winds
+ * it can be used in QES-Plume later to read in 
+ * HRRR smoke data
+ */
 
-class WindProfilerSensorType : public WindProfilerType
+class HRRRInput : public ParseInterface
 {
-protected:
-  std::vector<float> u_prof;
-  std::vector<float> v_prof;
-  std::vector<int> available_sensor_id;
-  std::vector<int> site_id;
+ private:
+ public:
 
-  float asl_percent = 0.05;
-  std::vector<float> abl_height;
-  float surf_layer_height;// Surface layer height of the atmospheric boundary layer (ABL)
+  std::string HRRRFile; /**< HRRR file name */
+  std::vector<std::string> inputFields; /**< HRRR input fields */
 
-  void sensorsProfiles(const WINDSInputData *WID, WINDSGeneralData *WGD);
-
-  void singleSensorInterpolation(WINDSGeneralData *WGD);
-
-public:
-  WindProfilerSensorType()
-  {}
-  virtual ~WindProfilerSensorType()
-  {}
-
-  virtual void interpolateWindProfile(const WINDSInputData *, WINDSGeneralData *) = 0;
+  virtual void parseValues()
+  {
+    parseMultiPrimitives<std::string>(false, inputFields, "inputFields");
+    HRRRFile = "";
+    parsePrimitive<std::string>(false, HRRRFile, "HRRRFile");
+    if (HRRRFile != ""){
+      HRRRFile = QESfs::get_absolute_path(HRRRFile);
+    }
+    
+  }
 };

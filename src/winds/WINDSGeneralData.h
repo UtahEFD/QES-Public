@@ -64,6 +64,7 @@
 //#include "util/Mesh.h"
 #include "util/NetCDFInput.h"
 #include "util/QEStime.h"
+#include "HRRRData.h"
 
 #ifdef HAS_OPTIX
 #include "OptixRayTrace.h"
@@ -244,6 +245,8 @@ public:
   LocalMixing *localMixing; /**< :document this: */
   std::vector<double> mixingLengths; /**< :document this: */
 
+  // HRRR Input class
+  HRRRData *hrrrInputData;
   // Sensor* sensor;      may not need this now
 
   // wind profiler class

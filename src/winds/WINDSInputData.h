@@ -46,6 +46,7 @@
 #include "BuildingsParams.h"
 #include "VegetationParams.h"
 #include "TURBParams.h"
+#include "HRRRInput.h"
 
 /**
  * @class WINDSInputData
@@ -64,6 +65,7 @@ public:
   TURBParams *turbParams = nullptr; /**< :document this: */
   BuildingsParams *buildingsParams = nullptr; /**< :document this: */
   VegetationParams *vegetationParams = nullptr; /**< :document this: */
+  HRRRInput *hrrrInput = nullptr; /**< :HRRR input class instance: */
 
   WINDSInputData()
   {
@@ -72,6 +74,7 @@ public:
     turbParams = 0;
     buildingsParams = 0;
     vegetationParams = 0;
+    hrrrInput = 0;
   }
 
   WINDSInputData(const std::string fileName)
@@ -82,6 +85,7 @@ public:
     turbParams = 0;
     buildingsParams = 0;
     vegetationParams = 0;
+    hrrrInput = 0;
 
     QESfs::set_file_path(fileName);
     // read and parse the XML
@@ -99,5 +103,6 @@ public:
     parseElement<TURBParams>(false, turbParams, "turbParams");
     parseElement<BuildingsParams>(false, buildingsParams, "buildingsParams");
     parseElement<VegetationParams>(false, vegetationParams, "vegetationParams");
+    parseElement<HRRRInput>(false, hrrrInput, "hrrrInput");
   }
 };
