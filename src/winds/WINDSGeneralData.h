@@ -61,7 +61,7 @@
 #include "Cut_cell.h"
 #include "Wall.h"
 
-//#include "util/Mesh.h"
+// #include "util/Mesh.h"
 #include "util/NetCDFInput.h"
 #include "util/QEStime.h"
 
@@ -304,4 +304,12 @@ public:
 private:
   // input: store here for multiple time instance.
   NetCDFInput *input; /**< :document this: */
+
+protected:
+  void defineHorizontalGrid();
+  void defineVerticalGrid();
+  void defineVerticalStretching(const float &);
+  void defineVerticalStretching(const std::vector<float> &);
+
+  void allocateMemory();
 };

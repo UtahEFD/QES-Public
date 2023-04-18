@@ -209,7 +209,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         //
         // 1 time series for now - how do we deal with this for
         // new time steps???  Need to figure out ASAP.
-            //
+        //
         // Also need to correctly add time stamps
         // example from below:
         //   for (size_t t = 0; t < sensortime_id.size(); t++) {
@@ -369,95 +369,19 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   // /////////////////////////
   // Definition of the grid
   // /////////////////////////
-
-  // vertical grid (can be uniform or stretched)
-  dz_array.resize(nz - 1, 0.0);
-  z.resize(nz - 1);
-  z_face.resize(nz);
-
   if (WID->simParams->verticalStretching == 0) {// Uniform vertical grid
-    for (size_t k = 1; k < z.size(); k++) {
-      dz_array[k] = dz;
-    }
+    defineVerticalStretching(dz);
   } else if (WID->simParams->verticalStretching == 1) {// Stretched vertical grid
-    for (size_t k = 1; k < z.size(); k++) {
-      dz_array[k] = WID->simParams->dz_value[k - 1];// Read in custom dz values and set them to dz_array
-    }
+    defineVerticalStretching(WID->simParams->dz_value);// Read in custom dz values and set them to dz_array
   }
-
-  dz_array[0] = dz_array[1];// Value for ghost cell below the surface
-  dz = *std::min_element(dz_array.begin(), dz_array.end());// Set dz to minimum value of
-
-  // Location of face in z-dir
-  z_face[0] = -dz_array[0];
-  z_face[1] = -0.0;
-  for (size_t k = 2; k < z_face.size(); ++k) {
-    z_face[k] = z_face[k - 1] + dz_array[k - 1];
-  }
-
-  // Location of cell centers in z-dir
-  z[0] = -0.5 * dz_array[0];
-  for (size_t k = 1; k < z.size(); ++k) {
-    z[k] = 0.5 * (z_face[k] + z_face[k + 1]);
-  }
+  defineVerticalGrid();
+  defineHorizontalGrid();
 
 
-  // horizontal grid (x-direction)
-  x.resize(nx - 1);
-  for (auto i = 0; i < nx - 1; i++) {
-    x[i] = (i + 0.5) * dx;// Location of face centers in x-dir
-  }
-
-  // horizontal grid (y-direction)
-  y.resize(ny - 1);
-  for (auto j = 0; j < ny - 1; j++) {
-    y[j] = (j + 0.5) * dy;// Location of face centers in y-dir
-  }
-
-  // Resize the coefficients for use with the solver
-  e.resize(numcell_cent, 1.0);
-  f.resize(numcell_cent, 1.0);
-  g.resize(numcell_cent, 1.0);
-  h.resize(numcell_cent, 1.0);
-  m.resize(numcell_cent, 1.0);
-  n.resize(numcell_cent, 1.0);
-
-  building_volume_frac.resize(numcell_cent, 1.0);
-  terrain_volume_frac.resize(numcell_cent, 1.0);
-  ni.resize(numcell_cent, 0.0);
-  nj.resize(numcell_cent, 0.0);
-  nk.resize(numcell_cent, 0.0);
-  ti.resize(numcell_cent, 0.0);
-  tj.resize(numcell_cent, 0.0);
-  tk.resize(numcell_cent, 0.0);
-  center_id.resize(numcell_cent, 1);
-  wall_distance.resize(numcell_cent, 0.0);
-
-  icellflag.resize(numcell_cent, 1);
-  icellflag_initial.resize(numcell_cent, 1);
-  icellflag_footprint.resize(numcell_cout_2d, 1);
-
-  ibuilding_flag.resize(numcell_cent, -1);
-
-  mixingLengths.resize(numcell_cent, 0.0);
-
-  terrain.resize(numcell_cout_2d, 0.0);
-  terrain_face_id.resize(nx * ny, 1);
-  terrain_id.resize((nx - 1) * (ny - 1), 1);
-
-  /////////////////////////////////////////
-
-  // Set the Wind Velocity data elements to be of the correct size
-  // Initialize u0,v0,w0,u,v and w to 0.0
-  u0.resize(numcell_face, 0.0);
-  v0.resize(numcell_face, 0.0);
-  w0.resize(numcell_face, 0.0);
-
-  u.resize(numcell_face, 0.0);
-  v.resize(numcell_face, 0.0);
-  w.resize(numcell_face, 0.0);
-
-  std::cout << "Memory allocation complete." << std::endl;
+  // /////////////////////////
+  // Allocate memory
+  // /////////////////////////
+  allocateMemory();
 
   // defining ground solid cells (ghost cells below the surface)
   for (int j = 0; j < ny - 1; j++) {
@@ -929,8 +853,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     NCDFInput->getVariableData("m", start, count, m);
     NCDFInput->getVariableData("n", start, count, n);
   }
-
-  return;
 }
 
 
@@ -999,6 +921,9 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
     }
   }
 
+  // Allocate memory
+  allocateMemory();
+
   // get time variables
   std::vector<float> t;
   t.resize(nt);
@@ -1058,10 +983,71 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
   } else {// => no external terrain data provided
     std::cout << "[WINDS Data] \t no terrain data found -> assumed flat" << std::endl;
   }
+}
 
-  // icellflag (see .h for velues)
-  icellflag.resize(numcell_cent, -1);
-  /// coefficients for SOR solver
+void WINDSGeneralData::defineVerticalStretching(const float &dz_value)
+{
+  // vertical grid (can be uniform or stretched)
+  dz_array.resize(nz - 1, 0.0);
+  // Uniform vertical grid
+  for (float &k : dz_array) {
+    k = dz_value;
+  }
+}
+
+void WINDSGeneralData::defineVerticalStretching(const std::vector<float> &dz_value)
+{
+  // vertical grid (can be uniform or stretched)
+  dz_array.resize(nz - 1, 0.0);
+  // Stretched vertical grid
+  for (size_t k = 1; k < z.size(); ++k) {
+    dz_array[k] = dz_value[k - 1];// Read in custom dz values and set them to dz_array
+  }
+  dz_array[0] = dz_array[1];// Value for ghost cell below the surface
+  dz = *std::min_element(dz_array.begin(), dz_array.end());// Set dz to minimum value of
+}
+
+void WINDSGeneralData::defineVerticalGrid()
+{
+  // Location of face in z-dir
+  z_face.resize(nz, 0.0);
+  z_face[0] = -dz_array[0];
+  z_face[1] = -0.0;
+  for (size_t k = 2; k < z_face.size(); ++k) {
+    z_face[k] = z_face[k - 1] + dz_array[k - 1];
+  }
+
+  // Location of cell centers in z-dir
+  z.resize(nz - 1, 0.0);
+  z[0] = -0.5f * dz_array[0];
+  for (size_t k = 1; k < z.size(); ++k) {
+    z[k] = 0.5f * (z_face[k] + z_face[k + 1]);
+  }
+}
+
+void WINDSGeneralData::defineHorizontalGrid()
+{
+  // horizontal grid (x-direction)
+  x.resize(nx - 1);
+  for (auto i = 0; i < nx - 1; ++i) {
+    x[i] = ((float)i + 0.5f) * dx;// Location of face centers in x-dir
+  }
+
+  // horizontal grid (y-direction)
+  y.resize(ny - 1);
+  for (auto j = 0; j < ny - 1; ++j) {
+    y[j] = ((float)j + 0.5f) * dy;// Location of face centers in y-dir
+  }
+}
+
+void WINDSGeneralData::allocateMemory()
+{
+  numcell_cout = (nx - 1) * (ny - 1) * (nz - 2);// Total number of cell-centered values in domain
+  numcell_cout_2d = (nx - 1) * (ny - 1);// Total number of horizontal cell-centered values in domain
+  numcell_cent = (nx - 1) * (ny - 1) * (nz - 1);// Total number of cell-centered values in domain
+  numcell_face = nx * ny * nz;// Total number of face-centered values in domain
+
+  // Resize the coefficients for use with the solver
   e.resize(numcell_cent, 1.0);
   f.resize(numcell_cent, 1.0);
   g.resize(numcell_cent, 1.0);
@@ -1077,30 +1063,34 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
   ti.resize(numcell_cent, 0.0);
   tj.resize(numcell_cent, 0.0);
   tk.resize(numcell_cent, 0.0);
+  center_id.resize(numcell_cent, 1);
+  wall_distance.resize(numcell_cent, 0.0);
 
   icellflag.resize(numcell_cent, 1);
+  icellflag_initial.resize(numcell_cent, 1);
+  icellflag_footprint.resize(numcell_cout_2d, 1);
+
   ibuilding_flag.resize(numcell_cent, -1);
 
   mixingLengths.resize(numcell_cent, 0.0);
 
   terrain.resize(numcell_cout_2d, 0.0);
-  terrain_id.resize(nx * ny, 1);
-  z0_domain_u.resize(nx * ny, 0.1);
-  z0_domain_v.resize(nx * ny, 0.1);
-
+  terrain_face_id.resize(nx * ny, 1);
+  terrain_id.resize((nx - 1) * (ny - 1), 1);
 
   // Set the Wind Velocity data elements to be of the correct size
-  // Initialize u0,v0,w0,u,v and w to 0.0
+  // Initialize u0,v0, and w0 to 0.0
   u0.resize(numcell_face, 0.0);
   v0.resize(numcell_face, 0.0);
   w0.resize(numcell_face, 0.0);
-
+  // Initialize u,v and w to 0.0
   u.resize(numcell_face, 0.0);
   v.resize(numcell_face, 0.0);
   w.resize(numcell_face, 0.0);
 
-  return;
+  std::cout << "[WINDS Data] \t Memory allocation complete." << std::endl;
 }
+
 
 void WINDSGeneralData::loadNetCDFData(int stepin)
 {
