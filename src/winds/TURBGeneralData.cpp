@@ -281,7 +281,7 @@ TURBGeneralData::TURBGeneralData(const std::string inputFile, WINDSGeneralData *
   // nt - number of time instance in data
   input->getDimensionSize("t", nt);
 
-  //get time variables
+  // get time variables
   t.resize(nt);
   input->getVariableData("t", t);
 

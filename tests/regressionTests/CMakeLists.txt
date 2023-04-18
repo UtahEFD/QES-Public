@@ -13,12 +13,16 @@ ELSE ($CACHE{HAS_CUDA_SUPPORT})
             ../unitTests/test_WINDSGeneralData.h ../unitTests/test_WINDSGeneralData.cpp
             plume_sinusoidal.cpp)
 
+    add_executable(plume_uniform
+            ../unitTests/test_WINDSGeneralData.h ../unitTests/test_WINDSGeneralData.cpp
+            plume_uniform.cpp)
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 
 
 set(REGRESSTESTS
-        plume_sinusoidal)
+        plume_sinusoidal
+        plume_uniform)
 
 foreach (regresstest ${REGRESSTESTS})
     target_link_libraries(${regresstest} qesplumecore)
