@@ -39,7 +39,7 @@ TEST_CASE("Regression test of QES-Plume: sinusoidal stress")
   // arguments.processArguments(argc, argv);
 
   std::string qesPlumeParamFile = QES_DIR;
-  qesPlumeParamFile.append("/tests/regressionTests/Sinusoidal3D_0.01_12.xml");
+  qesPlumeParamFile.append("/tests/regressionTests/plume_sinusoidal_parameters.xml");
 
   // parse xml settings
   auto PID = new PlumeInputData(qesPlumeParamFile);
