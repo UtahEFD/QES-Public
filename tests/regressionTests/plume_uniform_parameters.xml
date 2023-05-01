@@ -14,7 +14,7 @@
   </particleOutputParameters>
   <collectionParameters>
     <timeAvgStart> 300.0 </timeAvgStart>
-    <timeAvgFreq> 1800.0 </timeAvgFreq>
+    <timeAvgFreq> 1800.1 </timeAvgFreq>
     <boxBoundsX1> 0.0 </boxBoundsX1>
     <boxBoundsX2> 100.0 </boxBoundsX2>
     <boxBoundsY1> 1.0 </boxBoundsY1>

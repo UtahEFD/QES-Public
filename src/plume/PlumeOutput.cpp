@@ -239,9 +239,9 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, Plume *plume_ptr, std::strin
 
   // face dimensions
   NcDim NcDim_nFace = addDimension("nFace", m_plume->deposition->nbrFace);
-  //NcDim NcDim_x = addDimension("x",nBoxesX);
-  //NcDim NcDim_y = addDimension("y",nBoxesY);
-  //NcDim NcDim_z = addDimension("z",nBoxesZ);
+  // NcDim NcDim_x = addDimension("x",nBoxesX);
+  // NcDim NcDim_y = addDimension("y",nBoxesY);
+  // NcDim NcDim_z = addDimension("z",nBoxesZ);
 
   NcDim NcDim_xDep = addDimension("xDep", m_plume->deposition->x.size());
   NcDim NcDim_yDep = addDimension("yDep", m_plume->deposition->y.size());
@@ -269,9 +269,9 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, Plume *plume_ptr, std::strin
   // create attributes space dimensions
   std::vector<NcDim> dim_vect_face;
   dim_vect_face.push_back(NcDim_nFace);
-  //createAttVector("xface","x-face","m",dim_vect_face,&xBoxCen);
-  //createAttVector("yface","y-face","m",dim_vect_face,&xBoxCen);
-  //createAttVector("zface","z-face","m",dim_vect_face,&xBoxCen);
+  // createAttVector("xface","x-face","m",dim_vect_face,&xBoxCen);
+  // createAttVector("yface","y-face","m",dim_vect_face,&xBoxCen);
+  // createAttVector("zface","z-face","m",dim_vect_face,&xBoxCen);
 
   // !!! make sure the order is specificall nt,nz,ny,nx in this spot,
   //  the order doesn't seem to matter for other spots

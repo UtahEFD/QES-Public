@@ -28,8 +28,9 @@
 // void calcRMSE_wFluct(int nbrBins, Plume *plume, std::map<std::string, float> &rmse);
 // void calcRMSE_delta_wFluct(int nbrBins, Plume *plume, double delta_t, std::map<std::string, float> &rmse);
 float calcRMSE(std::vector<float> &A, std::vector<float> &B);
+float calcMaxAbsErr(std::vector<float> &A, std::vector<float> &B);
 
-TEST_CASE("Regression test of QES-Plume: sinusoidal stress")
+TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
 {
   // set up timer information for the simulation runtime
   calcTime timers;
@@ -87,11 +88,12 @@ TEST_CASE("Regression test of QES-Plume: sinusoidal stress")
 
   // create output instance
   std::vector<QESNetCDFOutput *> outputVec;
-  // always supposed to output lagrToEulOutput data
   std::string outFile = QES_DIR;
-  outFile.append("/testCases/UniformFlow_ContRelease/QES-data/UniformFlow_xDir_ContRelease_plumeOut.nc");
+  outFile.append("/scratch/UniformFlow_xDir_ContRelease_plumeOut.nc");
 
-  outputVec.push_back(new PlumeOutput(PID, plume, outFile));
+  auto *plumeOutput = new PlumeOutput(PID, plume, outFile);
+
+  outputVec.push_back(plumeOutput);
   // outputVec.push_back(new PlumeOutputParticleData(PID, plume, "../testCases/Sinusoidal3D/QES-data/Sinusoidal3D_0.01_12_particleInfo.nc"));
 
   // Run plume advection model
@@ -107,34 +109,118 @@ TEST_CASE("Regression test of QES-Plume: sinusoidal stress")
   std::cout << "##############################################################" << std::endl
             << std::endl;
 
+  // source info (hard coded because no way to access the source info here)
+  float xS = 20;
+  float yS = 50;
+  float zS = 70;
+  float Q = 400;// #par/s (source strength)
+  float tRelease = 2100;// total time of release
+  float Ntot = Q * tRelease;// total number of particles
 
-  REQUIRE(plume->getNumRogueParticles() == 0);
-  /*
+  float CNorm = (uMean * H * H / Q);
+
+  // concentration info
+  float dt = plumeOutput->timeStep;
+  float tAvg = plumeOutput->averagingPeriod;
+
+  // normalization of particle count #particle -> time-averaged # particle/m3
+  float CC = dt / tAvg / plumeOutput->volume;
+
+  // model variances
+  float sigV = 1.78f * uStar;
+  float sigW = powf(1.0f / (3.0f * 0.4f * 0.4f), 1.0f / 3.0f) * uStar;
+
+  // working variables to calculate statistics
+  float SSres = 0.0, SStot = 0.0;
+  std::vector<float> xoH, maxRelErr, relRMSE;
+
+  for (int i = 7; i < plumeOutput->nBoxesX; ++i) {
+    // x-location of the profile
+    float x = plumeOutput->xBoxCen[i] - xS;
+
+    // time of flight of the particle
+    float t = x / uMean;
+
+    // horizontal and vertical spread rate
+    float Ti = powf(2.5f * uStar / zi, -1);
+    float To = 1.001;
+    float Fy = powf(1.0f + powf(t / Ti, 0.5), -1);
+    // float Fz=(1+0.945*(t/To)^0.8)^(-1);
+    float Fz = Fy;
+    float sigY = sigV * t * Fy;
+    float sigZ = sigW * t * Fz;
+
+    // calculate the normalize concentration from Gaussian plume model
+    std::vector<float> CStarModel;
+    CStarModel.resize(plumeOutput->nBoxesY * plumeOutput->nBoxesZ, 0.0);
+    for (int k = 0; k < plumeOutput->nBoxesZ; ++k) {
+      for (int j = 0; j < plumeOutput->nBoxesY; ++j) {
+        float y = plumeOutput->yBoxCen[j] - yS;
+        float z = plumeOutput->zBoxCen[k] - zS;
+        CStarModel[j + k * plumeOutput->nBoxesY] = Q / (2 * M_PI * uMean * sigY * sigZ)
+                                                   * expf(-0.5f * powf(y, 2) / powf(sigY, 2))
+                                                   * expf(-0.5f * powf(z, 2) / powf(sigZ, 2))
+                                                   * CNorm;
+      }
+    }
+
+    // calculate the normalize concentration from QES-plume
+    std::vector<float> CStarQES;
+    CStarQES.resize(plumeOutput->nBoxesY * plumeOutput->nBoxesZ, 0.0);
+    for (int k = 0; k < plumeOutput->nBoxesZ; ++k) {
+      for (int j = 0; j < plumeOutput->nBoxesY; ++j) {
+        int id = i + j * plumeOutput->nBoxesX + k * plumeOutput->nBoxesX * plumeOutput->nBoxesY;
+        CStarQES[j + k * plumeOutput->nBoxesY] = (float)plumeOutput->pBox[id] * CC * CNorm;
+      }
+    }
+
+    auto maxModel = *max_element(std::begin(CStarModel), std::end(CStarModel));
+    // auto maxQES = *max_element(std::begin(CStarQES), std::end(CStarQES));
+
+    // root mean square error
+    float RMSE = calcRMSE(CStarQES, CStarModel);
+
+    // maximum relative error
+    float maxAbsErr = calcMaxAbsErr(CStarQES, CStarModel);
+
+    xoH.push_back(x / H);
+    maxRelErr.push_back(maxAbsErr / maxModel);
+    relRMSE.push_back(RMSE / maxModel);
+
+    // calculate r2
+    float CStarQESMean = 0.0;
+    for (auto k = 0u; k < CStarQES.size(); ++k) {
+      CStarQESMean += CStarQES[k];
+    }
+    CStarQESMean /= (float)CStarQES.size();
+
+    for (auto k = 0u; k < CStarQES.size(); ++k) {
+      SSres += powf(CStarModel[k] - CStarQES[k], 2);
+      SStot += powf(CStarQES[k] - CStarQESMean, 2);
+    }
+  }
+  float R2 = 1.0f - SSres / SStot;
+
   // check the results
-  // float entropy = calcEntropy(25, plume);
-
-  // std::map<std::string, float> rmse;
-  // calcRMSE_wFluct(20, plume, rmse);
-  // calcRMSE_delta_wFluct(20, plume, PID->plumeParams->timeStep, rmse);
-
   std::cout << "--------------------------------------------------------------" << std::endl;
   std::cout << "TEST RESULTS" << std::endl;
   std::cout << "--------------------------------------------------------------" << std::endl;
-  std::cout << "Entropy: S = " << entropy << std::endl;
-  std::cout << "Nbr Rogue Particle: " << plume->getNumRogueParticles() << std::endl;
-  std::cout << "RMSE on mean of wFluct: " << rmse["mean_wFluct"] << std::endl;
-  std::cout << "RMSE on variance of wFluct: " << rmse["mean_wFluct"] << std::endl;
-  std::cout << "RMSE on mean of wFluct/delta t: " << rmse["mean_delta_wFluct"] << std::endl;
-  std::cout << "RMSE on var of wFluct/delta t: " << rmse["var_delta_wFluct"] << std::endl;
+  std::cout << "x / H \t maxRelErr \t relRMSE" << std::endl;
+  for (auto k = 0u; k < xoH.size(); ++k) {
+    printf("%.3f \t %.6f \t %.6f\n", xoH[k], maxRelErr[k], relRMSE[k]);
+    // std::cout << xoH[k] << " " << maxRelErr[k] << "\t " << relRMSE[k] << std::endl;
+  }
+  std::cout << std::endl;
+  std::cout << "QES-Plume r2 coeff: r2 = " << R2 << std::endl;
   std::cout << "--------------------------------------------------------------" << std::endl;
 
+  // Catch2 requirements
   REQUIRE(plume->getNumRogueParticles() == 0);
-  REQUIRE(entropy > -0.04);
-  REQUIRE(rmse["mean_wFluct"] < 0.03);
-  REQUIRE(rmse["var_wFluct"] < 0.03);
-  REQUIRE(rmse["mean_delta_wFluct"] < 0.6);
-  REQUIRE(rmse["var_delta_wFluct"] < 0.3);
-   */
+  for (auto k = 0u; k < xoH.size(); ++k) {
+    REQUIRE(maxRelErr[k] < 0.1);
+    REQUIRE(relRMSE[k] < 0.02);
+  }
+  REQUIRE(R2 > 0.99);
 }
 
 float calcRMSE(std::vector<float> &A, std::vector<float> &B)
@@ -145,4 +231,14 @@ float calcRMSE(std::vector<float> &A, std::vector<float> &B)
     rmse_var += pow(A[k] - B[k], 2);
   }
   return sqrt(rmse_var / (float)nbrBins);
+}
+
+float calcMaxAbsErr(std::vector<float> &A, std::vector<float> &B)
+{
+  int nbrBins = (int)A.size();
+  vector<float> tmp(nbrBins);
+  for (int k = 0; k < nbrBins; ++k) {
+    tmp[k] = std::abs(A[k] - B[k]);
+  }
+  return *max_element(std::begin(tmp), std::end(tmp));
 }
