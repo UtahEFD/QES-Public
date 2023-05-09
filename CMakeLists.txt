@@ -423,14 +423,12 @@ add_subdirectory(tests)
 # ----------------------------------------------------------
 # TESTING OPTION
 # ----------------------------------------------------------
-option(ENABLE_UNITTESTS "Enables unit tests" OFF)
-option(ENABLE_REGRESSTESTS "Enables regression tests" OFF)
+option(ENABLE_UNIT_TESTS "Enables unit tests" OFF)
+option(ENABLE_REGRESSION_TESTS "Enables regression tests" OFF)
 
-option(ENABLE_ALL_TESTS "Enables all tests for an extensive test run" OFF) # will not override CPU/GPU selection
-option(ENABLE_SANITY_TESTS "Enables tests that simply check if qesWinds runs on input w/o runtime errors" ON)
-option(ENABLE_LONG_SANITY_TESTS "Enables the longer sanity tests" OFF)
-option(ENABLE_CPU_TESTS "Enable CPU tests" OFF)
-option(ENABLE_GPU_TESTS "Enable GPU tests" OFF)
+option(ENABLE_SANITY_TESTS_CPU "Enables tests that simply check if qesWinds runs on input w/o runtime errors" OFF)
+option(ENABLE_SANITY_TESTS_GPU "Enables tests that simply check if qesWinds runs on input w/o runtime errors" OFF)
+
 option(ENABLE_ALL_COMPARISON_TESTS "Enables test of comparison between serial and GPU solvers" OFF) # overrides individual comparison selections
 option(ENABLE_DYNAMIC_PARALLELISM_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Dynamic Parallel solvers" OFF)
 option(ENABLE_GLOBAL_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Global Memory solvers" OFF)

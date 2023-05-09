@@ -42,8 +42,8 @@ foreach (regresstest ${REGRESSTESTS})
     
     target_link_libraries(${regresstest} Catch2::Catch2WithMain)
 
-    if (ENABLE_REGRESSTESTS)
-        add_test(regression_test-${regresstest} ${regresstest})
-    endif (ENABLE_REGRESSTESTS)
+    if (ENABLE_REGRESSION_TESTS)
+        add_test(regression_test::${regresstest} ${regresstest})
+    endif (ENABLE_REGRESSION_TESTS)
 endforeach(regresstest)
 

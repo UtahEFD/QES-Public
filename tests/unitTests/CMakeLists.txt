@@ -85,9 +85,9 @@ foreach (unittest ${UNITTESTS})
   link_external_libraries(${unittest})
   target_link_libraries(${unittest} Catch2::Catch2WithMain)
 
-  if (ENABLE_UNITTESTS)
-    add_test(unit_test-${unittest} ${unittest})
-  endif (ENABLE_UNITTESTS)
+  if (ENABLE_UNIT_TESTS)
+    add_test(unit_test::${unittest} ${unittest})
+  endif (ENABLE_UNIT_TESTS)
 endforeach(unittest)
 
 #add_test(unitTest unitTest)
