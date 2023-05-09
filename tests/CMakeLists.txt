@@ -97,7 +97,10 @@ ENDIF()
 
 #Comparison tests function
 function(add_comparison_test infile_prefix solver_arg solver_name)
-  add_test(NAME ${solver_name}_COMPARISON_${infile_prefix} COMMAND ${CMAKE_BINARY_DIR}/tests/compareSolvers -q ${CMAKE_SOURCE_DIR}/data/InputFiles/${infile_prefix}.xml -s ${solver_arg} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+  add_test(NAME ${solver_name}_COMPARISON_${infile_prefix}
+          COMMAND ${CMAKE_BINARY_DIR}/tests/compareSolvers
+          -q ${CMAKE_SOURCE_DIR}/data/InputFiles/${infile_prefix}.xml
+          -s ${solver_arg} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 endfunction()
     
 IF(ENABLE_ALL_TESTS OR ENABLE_ALL_COMPARISON_TESTS)
@@ -146,11 +149,17 @@ ENDIF()
 # easy to use functions to add sanity tests
 ## just specify the infile's name (w/o extension) as below
 #function(add_sanity_test_CPU infile_prefix)
-#  add_test(NAME CPU_${#infile_prefix} COMMAND ${#CMAKE_BINARY_DIR}/qesWinds/qesWinds -q ${#CMAKE_SOURCE_DIR}/data/InputFiles/${#infile_prefix}#.xml -z -o test_${#infile_prefix}_CPU WORKING_DIRECTORY ${#CMAKE_BINARY_DIR})
+#  add_test(NAME CPU_${infile_prefix}
+#          COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds
+#          -q ${CMAKE_SOURCE_DIR}/data/InputFiles/${infile_prefix}.xml -z
+#          -o test_${infile_prefix}_CPU WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 #endfunction()
 
 #function(add_sanity_test_GPU infile_prefix)
-#  add_test(NAME GPU_${#infile_prefix} COMMAND ${#CMAKE_BINARY_DIR}/qesWinds/qesWinds -q ${#CMAKE_SOURCE_DIR}/data/InputFiles/${#infile_prefix}#.xml -s 2 -z -o test_${#infile_prefix}_GPU WORKING_DIRECTORY ${#CMAKE_BINARY_DIR})
+#  add_test(NAME GPU_${infile_prefix}
+#          COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds
+#          -q ${CMAKE_SOURCE_DIR}/data/InputFiles/${infile_prefix}.xml -s 2 -z
+#          -o test_${infile_prefix}_GPU WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 #endfunction()
 
 # sanity tests

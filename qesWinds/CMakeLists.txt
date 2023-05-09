@@ -28,11 +28,17 @@ link_external_libraries(qesWinds)
 # easy to use functions to add sanity tests
 ## just specify the infile's name (w/o extension) as below
 function(add_sanity_test_CPU infile_prefix)
-  add_test(NAME CPU_${infile_prefix} COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds -q ${CMAKE_SOURCE_DIR}/tests/runTestsFiles/${infile_prefix}.xml -s 1 -o test_${infile_prefix}_CPU WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+  add_test(NAME CPU_${infile_prefix}
+          COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds
+          -q ${CMAKE_SOURCE_DIR}/tests/runTestsFiles/${infile_prefix}.xml -s 1
+          -o test_${infile_prefix}_CPU WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 endfunction()
 
 function(add_sanity_test_GPU infile_prefix)
-  add_test(NAME GPU_${infile_prefix} COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds -q ${CMAKE_SOURCE_DIR}/tests/runTestsFiles/${infile_prefix}.xml -s 2 -o test_${infile_prefix}_GPU WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+  add_test(NAME GPU_${infile_prefix}
+          COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds
+          -q ${CMAKE_SOURCE_DIR}/tests/runTestsFiles/${infile_prefix}.xml -s 2
+          -o test_${infile_prefix}_GPU WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 endfunction()
 
 # sanity tests
