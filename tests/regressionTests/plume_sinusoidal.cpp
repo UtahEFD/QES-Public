@@ -15,7 +15,7 @@
 #include "util/NetCDFInput.h"
 #include "util/QESout.h"
 
-#include "../unitTests/test_WINDSGeneralData.h"
+#include "test_WINDSGeneralData.h"
 
 #include "plume/Plume.hpp"
 
