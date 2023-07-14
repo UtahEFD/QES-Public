@@ -1,13 +1,12 @@
 #pragma once
 
-#include "winds/WINDSGeneralData.h"
-#include "winds/TURBGeneralData.h"
-#include "util.h"
 #include <string>
 #include <cstdio>
 #include <algorithm>
 #include <vector>
 
+#include "winds/WINDSGeneralData.h"
+#include "winds/TURBGeneralData.h"
 
 class test_TURBGeneralData : public TURBGeneralData
 {

@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "util.h"
 #include "testFunctions.h"
 #include "test_WINDSGeneralData.h"
 #include "test_TURBGeneralData.h"
@@ -17,7 +16,7 @@ TEST_CASE("vector math")
   printf("======================================\n");
   printf("testing vector math\n");
   printf("--------------------------------------\n");
-  std::string results = TEST_PASS;
+  std::string results = "";
 
   int gridSize[3] = { 10, 10, 10 };
   float gridRes[3] = { 0.1, 0.1, 0.1 };
@@ -32,7 +31,7 @@ TEST_CASE("vector math")
 
   printf("--------------------------------------\n");
 
-  REQUIRE(results == TEST_PASS);
+  REQUIRE(results == "");
 #ifdef HAS_CUDA
   printf("--------------------------------------\n");
   printf("starting PLUME vector math CUDA...\n");

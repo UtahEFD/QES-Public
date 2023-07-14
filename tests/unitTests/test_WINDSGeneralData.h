@@ -1,12 +1,11 @@
 #pragma once
 
-#include "winds/WINDSGeneralData.h"
-#include "util.h"
 #include <string>
 #include <cstdio>
 #include <algorithm>
 #include <vector>
 
+#include "winds/WINDSGeneralData.h"
 
 class test_WINDSGeneralData : public WINDSGeneralData
 {

@@ -2,7 +2,6 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include "util.h"
 #include "test_DTEHeightField.h"
 
 int main()

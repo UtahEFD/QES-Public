@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "util.h"
 #include "testFunctions.h"
 #include "test_WINDSGeneralData.h"
 #include "test_TURBGeneralData.h"

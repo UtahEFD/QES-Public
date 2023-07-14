@@ -1,6 +1,5 @@
 #pragma once
 
-#include "util.h"
 #include <string>
 #include <cstdio>
 #include <algorithm>
@@ -10,7 +9,6 @@
 #include "winds/TURBGeneralData.h"
 #include "plume/Plume.hpp"
 
-#include "util.h"
 #include "vectorMath.h"
 
 class test_PlumeGeneralData : public Plume
@@ -36,5 +34,4 @@ public:
 
 private:
   test_PlumeGeneralData();
-
 };

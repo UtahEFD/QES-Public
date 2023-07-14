@@ -2,7 +2,10 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(.)
 
 add_library(unitTestLib ${LIB_TYPE}
-  util.h util.cpp)
+        testFunctions.h testFunctions.cpp
+        test_WINDSGeneralData.h test_WINDSGeneralData.cpp
+        test_TURBGeneralData.h test_TURBGeneralData.cpp
+        test_PlumeGeneralData.h test_PlumeGeneralData.cpp)
 
 #FILE(GLOB files "*.h")
 #INSTALL(FILES ${files} DESTINATION include/unitTests)
@@ -33,51 +36,43 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
        mainWindTest.cpp)
 
    cuda_add_executable(turbulence_derivative_CPU
-       test_WINDSGeneralData.h test_WINDSGeneralData.cpp
-       test_TURBGeneralData.h test_TURBGeneralData.cpp
        turbulence_derivative_CPU.cpp)
 
    cuda_add_executable(unitTestPlume
-      test_WINDSGeneralData.h test_WINDSGeneralData.cpp
-      test_TURBGeneralData.h test_TURBGeneralData.cpp
-      test_PlumeGeneralData.h test_PlumeGeneralData.cpp test_PlumeGeneralData.cu
       mainPlumeTest.cpp)
+
+   cuda_add_executable(turbulence_derivative_CPU
+           turbulence_derivative_CPU.cpp)
+
+   cuda_add_executable(plume_interpolation_CPU
+           plume_interpolation_CPU.cpp)
+
+   cuda_add_executable(plume_vector_classes_CPU
+           plume_vector_classes_CPU.cpp)
 
 ELSE ($CACHE{HAS_CUDA_SUPPORT})
 
-   add_executable(unitTestWind
+   add_executable(winds_terrain
      test_DTEHeightField.h test_DTEHeightField.cpp
-       mainWindTest.cpp)
+       winds_terrain.cpp)
 
+   add_executable(turbulence_derivative_CPU
+           turbulence_derivative_CPU.cpp)
+
+   add_executable(plume_interpolation_CPU
+           plume_interpolation_CPU.cpp)
+
+   add_executable(plume_vector_classes_CPU
+           plume_vector_classes_CPU.cpp)
 
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
-add_executable(turbulence_derivative_CPU
-        test_WINDSGeneralData.h test_WINDSGeneralData.cpp
-        test_TURBGeneralData.h test_TURBGeneralData.cpp
-        turbulence_derivative_CPU.cpp)
-
-add_executable(plume_interpolation_CPU
-        testFunctions.h testFunctions.cpp
-        test_WINDSGeneralData.h test_WINDSGeneralData.cpp
-        test_TURBGeneralData.h test_TURBGeneralData.cpp
-        test_PlumeGeneralData.h test_PlumeGeneralData.cpp
-        plume_interpolation_CPU.cpp)
-
-add_executable(plume_vector_classes_CPU
-        testFunctions.h testFunctions.cpp
-        test_WINDSGeneralData.h test_WINDSGeneralData.cpp
-        test_TURBGeneralData.h test_TURBGeneralData.cpp
-        test_PlumeGeneralData.h test_PlumeGeneralData.cpp
-        plume_vector_classes_CPU.cpp)
-
 set(UNITTESTS
   util_time
-  unitTestWind
+  winds_terrain
   turbulence_derivative_CPU
   plume_interpolation_CPU
   plume_vector_classes_CPU)
-
 
 foreach (unittest ${UNITTESTS})
   target_link_libraries(${unittest} qesplumecore)
