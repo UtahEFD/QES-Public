@@ -10,24 +10,13 @@ add_library(unittestcore ${LIB_TYPE}
 #FILE(GLOB files "*.h")
 #INSTALL(FILES ${files} DESTINATION include/unitTests)
 
-add_executable(unitTest_t00 t00.cpp)
+add_executable(unit_test_example_t00 t00.cpp)
 
-target_link_libraries(unitTest_t00 PRIVATE ${Boost_PROGRAM_OPTIONS_LIBRARIES})
-target_link_libraries(unitTest_t00 PRIVATE ${Boost_DATE_TIME_LIBRARIES})
-target_link_libraries(unitTest_t00 PRIVATE ${Boost_FILESYSTEM_LIBRARIES})
-target_link_libraries(unitTest_t00 PRIVATE ${GDAL_LIBRARY})
-target_link_libraries(unitTest_t00 PRIVATE ${NETCDF_LIBRARIES_CXX})
-target_link_libraries(unitTest_t00 PRIVATE ${NETCDF_LIBRARIES_C})
-IF ($CACHE{HAS_CUDA_SUPPORT})
-    # target_link_libraries(compareSolvers cudadevrt)
-    target_link_libraries(unitTest_t00 PRIVATE ${CUDA_LIBRARIES})
-ENDIF()
+target_link_libraries(unit_test_example_t00 qesutil)
+link_external_libraries(unit_test_example_t00)
+target_link_libraries(unit_test_example_t00 Catch2::Catch2WithMain)
 
-target_link_libraries(unitTest_t00 PRIVATE qesutil)
-target_link_libraries(unitTest_t00 PRIVATE Catch2::Catch2WithMain)
-
-add_executable(util_time
-        util_time.cpp)
+add_executable(util_time util_time.cpp)
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
 
