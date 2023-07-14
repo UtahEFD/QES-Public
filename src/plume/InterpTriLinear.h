@@ -116,4 +116,6 @@ private:
 
   // copies of debug related information from the input arguments
   bool debug{};
+
+  WINDSGeneralData *m_WGD;
 };

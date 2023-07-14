@@ -1000,7 +1000,7 @@ void WINDSGeneralData::defineVerticalStretching(const std::vector<float> &dz_val
   // vertical grid (can be uniform or stretched)
   dz_array.resize(nz - 1, 0.0);
   // Stretched vertical grid
-  for (size_t k = 1; k < z.size(); ++k) {
+  for (size_t k = 1; k < dz_array.size(); ++k) {
     dz_array[k] = dz_value[k - 1];// Read in custom dz values and set them to dz_array
   }
   dz_array[0] = dz_array[1];// Value for ghost cell below the surface
@@ -1012,7 +1012,7 @@ void WINDSGeneralData::defineVerticalGrid()
   // Location of face in z-dir
   z_face.resize(nz, 0.0);
   z_face[0] = -dz_array[0];
-  z_face[1] = -0.0;
+  z_face[1] = 0.0;
   for (size_t k = 2; k < z_face.size(); ++k) {
     z_face[k] = z_face[k - 1] + dz_array[k - 1];
   }
