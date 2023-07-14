@@ -24,31 +24,17 @@ public:
 
   void setInterpMethod(std::string, WINDSGeneralData *, TURBGeneralData *);
 
-  void setTestFunctions(const std::string &);
-  void setTestValues(WINDSGeneralData *, TURBGeneralData *);
-
-  float (test_PlumeGeneralData::*u_testFunction)(WINDSGeneralData *, float, float, float);
-  float (test_PlumeGeneralData::*v_testFunction)(WINDSGeneralData *, float, float, float);
-  float (test_PlumeGeneralData::*w_testFunction)(WINDSGeneralData *, float, float, float);
-  float (test_PlumeGeneralData::*c_testFunction)(WINDSGeneralData *, float, float, float);
-
   std::string testInterp(WINDSGeneralData *, TURBGeneralData *);
   std::string timeInterpCPU(WINDSGeneralData *, TURBGeneralData *);
-  // void test_compDerivatives_CPU(WINDSGeneralData *);
-  // void test_compDerivatives_GPU(WINDSGeneralData *);
+
 #ifdef HAS_CUDA
   // void testGPU(int);
   // void testGPU_struct(int);
 #endif
 
-  void testCPU(int);
   using Plume::interp;
 
 private:
   test_PlumeGeneralData();
 
-  float testFunction_linearX(WINDSGeneralData *, float, float, float);
-  float testFunction_linearY(WINDSGeneralData *, float, float, float);
-  float testFunction_linearZ(WINDSGeneralData *, float, float, float);
-  float testFunction_trig(WINDSGeneralData *, float, float, float);
 };

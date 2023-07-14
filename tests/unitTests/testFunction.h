@@ -14,13 +14,17 @@ class testFunction
 public:
   testFunction(WINDSGeneralData *WGD)
   {
-  nx = WGD->nx;
-  ny = WGD->ny;
-  nz = WGD->nz;
+    nx = WGD->nx;
+    ny = WGD->ny;
+    nz = WGD->nz;
 
-  dx = WGD->dx;
-  dy = WGD->dy;
-  dz = WGD->dz;
+    dx = WGD->dx;
+    dy = WGD->dy;
+    dz = WGD->dz;
+
+    lx = nx * dx;
+    ly = ny * dy;
+    lz = WGD->z_face.back();
   }
   ~testFunction() {}
 
@@ -29,6 +33,7 @@ public:
 protected:
   int nx{}, ny{}, nz{};
   float dx{}, dy{}, dz{};
+  float lx{}, ly{}, lz{};
 
 private:
   testFunction() = default;
@@ -42,7 +47,7 @@ public:
   float val(float x, float y, float z) override
   {
     // a = 2 * 2pi/Lx
-    float a = 2.0 * 2.0 * M_PI / (nx * dx);
+    float a = 2.0 * 2.0 * M_PI / (lx);
     // b = 6 * 2pi/Ly
     // float b = 6.0 * 2.0 * M_PI / (ny * dy);
     // c = 4 * 2pi/Lz
@@ -62,7 +67,7 @@ public:
     // float a = 2 * 2pi/Lx
     // float a = 2.0 * 2.0 * M_PI / (nx * dx);
     // float b = 6 * 2pi/Ly
-    float b = 6.0 * 2.0 * M_PI / (ny * dy);
+    float b = 6.0 * 2.0 * M_PI / (ly);
     // float c = 4 * 2pi/Lz
     // float c = 4.0 * 2.0 * M_PI / ((nz - 1) * dz);
 
@@ -82,7 +87,7 @@ public:
     // float b = 6 * 2pi/Ly
     // float b = 6.0 * 2.0 * M_PI / (ny * dy);
     // float c = 4 * 2pi/Lz
-    float c = 4.0 * 2.0 * M_PI / ((nz - 1) * dz);
+    float c = 4.0 * 2.0 * M_PI / (lz);
 
     return c * z;
   }
@@ -96,11 +101,11 @@ public:
   float val(float x, float y, float z) override
   {
     // a = 2 * 2pi/Lx
-    float a = 2.0 * 2.0 * M_PI / (nx * dx);
+    float a = 2.0 * 2.0 * M_PI / (lx);
     // b = 6 * 2pi/Ly
-    float b = 6.0 * 2.0 * M_PI / (ny * dy);
+    float b = 6.0 * 2.0 * M_PI / (ly);
     // c = 4 * 2pi/Lz
-    float c = 4.0 * 2.0 * M_PI / ((nz - 1) * dz);
+    float c = 4.0 * 2.0 * M_PI / (lz);
 
     return cos(a * x) + cos(b * y) + sin(c * z);
   }

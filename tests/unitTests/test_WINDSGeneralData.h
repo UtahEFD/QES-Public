@@ -14,6 +14,7 @@ public:
   test_WINDSGeneralData()
   {}
   test_WINDSGeneralData(const int[3], const float[3]);
+  test_WINDSGeneralData(const int[3], const float[3], const float *);
   virtual ~test_WINDSGeneralData()
   {}
 
