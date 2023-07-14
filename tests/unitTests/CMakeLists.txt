@@ -53,7 +53,8 @@ ELSE ($CACHE{HAS_CUDA_SUPPORT})
        test_TURBGeneralData.h test_TURBGeneralData.cpp
        turbulence_derivative_CPU.cpp)
 
-   add_executable(unitTestPlume
+   add_executable(plume
+       testFunctions.h testFunctions.cpp
        test_WINDSGeneralData.h test_WINDSGeneralData.cpp
        test_TURBGeneralData.h test_TURBGeneralData.cpp
        test_PlumeGeneralData.h test_PlumeGeneralData.cpp test_PlumeGeneralData.cu
@@ -65,28 +66,25 @@ set(UNITTESTS
   util_time
   unitTestWind
   turbulence_derivative_CPU
-  unitTestPlume)
+  plume)
 
 foreach (unittest ${UNITTESTS})
   target_link_libraries(${unittest} qesplumecore)
-
+  target_link_libraries(${unittest} qeswindscore)
   IF ($CACHE{HAS_CUDA_SUPPORT})
     target_link_libraries(${unittest} qeswindsgpu)
   ENDIF()
-
   target_link_libraries(${unittest} qeswindscore)
   target_link_libraries(${unittest} qesutil)
-
   IF($CACHE{HAS_OPTIX_SUPPORT})
     target_link_libraries(${unittest} qesOptix)
   ENDIF()
-  
   target_link_libraries(${unittest} unitTestLib)
   link_external_libraries(${unittest})
   target_link_libraries(${unittest} Catch2::Catch2WithMain)
 
   if (ENABLE_UNIT_TESTS)
-    add_test(unit_test::${unittest} ${unittest})
+    add_test(NAME unit_test::${unittest} COMMAND ${unittest})
   endif (ENABLE_UNIT_TESTS)
 endforeach(unittest)
 

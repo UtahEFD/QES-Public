@@ -15,12 +15,25 @@ void test_PlumeGeneralData::setInterpMethod(std::string interpMethod,
     std::cerr << "[ERROR] unknown interpolation method" << std::endl;
     exit(EXIT_FAILURE);
   }
-  return;
+}
+void test_PlumeGeneralData::setTestFunctions(const std::string &function_type)
+{
+  if (function_type == "linear") {
+    u_testFunction = &test_PlumeGeneralData::testFunction_linearY;
+    v_testFunction = &test_PlumeGeneralData::testFunction_linearZ;
+    w_testFunction = &test_PlumeGeneralData::testFunction_linearX;
+    c_testFunction = &test_PlumeGeneralData::testFunction_linearZ;
+  } else if (function_type == "trig") {
+    u_testFunction = &test_PlumeGeneralData::testFunction_trig;
+    v_testFunction = &test_PlumeGeneralData::testFunction_trig;
+    w_testFunction = &test_PlumeGeneralData::testFunction_trig;
+    c_testFunction = &test_PlumeGeneralData::testFunction_trig;
+  } else {
+  }
 }
 
-void test_PlumeGeneralData::setTestFunctions(WINDSGeneralData *WGD, TURBGeneralData *TGD)
+void test_PlumeGeneralData::setTestValues(WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
-
   // uv on vertical face -> k=0...nz-2
   for (int k = 0; k < WGD->nz - 1; k++) {
     for (int j = 0; j < WGD->ny - 1; j++) {
@@ -49,8 +62,8 @@ void test_PlumeGeneralData::setTestFunctions(WINDSGeneralData *WGD, TURBGeneralD
     }
   }
 
-  // w on horizontal face -> k=0...nz-1
-  for (int k = 0; k < WGD->nz - 1; k++) {
+  // cell center-> k=0...nz-2
+  for (int k = 0; k < WGD->nz - 2; k++) {
     for (int j = 0; j < WGD->ny - 1; j++) {
       for (int i = 0; i < WGD->nx - 1; i++) {
         int cellID = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
@@ -69,9 +82,8 @@ void test_PlumeGeneralData::setTestFunctions(WINDSGeneralData *WGD, TURBGeneralD
       }
     }
   }
-
-  return;
 }
+
 float test_PlumeGeneralData::testFunction_linearX(WINDSGeneralData *WGD, float x, float y, float z)
 {
   // a = 2 * 2pi/Lx
@@ -122,38 +134,6 @@ float test_PlumeGeneralData::testFunction_trig(WINDSGeneralData *WGD, float x, f
 
 std::string test_PlumeGeneralData::testInterp(WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
-  double xPos = 10;
-  double yPos = 10;
-  double zPos = 1;
-
-  double uMean = 0.0;
-  double vMean = 0.0;
-  double wMean = 0.0;
-
-  double txx = 0.0;
-  double txy = 0.0;
-  double txz = 0.0;
-  double tyy = 0.0;
-  double tyz = 0.0;
-  double tzz = 0.0;
-
-  double flux_div_x = 0.0;
-  double flux_div_y = 0.0;
-  double flux_div_z = 0.0;
-
-  double CoEps = 1e-6;
-
-  // u_testFunction = &test_PlumeGeneralData::testFunction_linearY;
-  // v_testFunction = &test_PlumeGeneralData::testFunction_linearZ;
-  // w_testFunction = &test_PlumeGeneralData::testFunction_linearX;
-  // c_testFunction = &test_PlumeGeneralData::testFunction_linearZ;
-
-  u_testFunction = &test_PlumeGeneralData::testFunction_trig;
-  v_testFunction = &test_PlumeGeneralData::testFunction_trig;
-  w_testFunction = &test_PlumeGeneralData::testFunction_trig;
-  c_testFunction = &test_PlumeGeneralData::testFunction_trig;
-
-  setTestFunctions(WGD, TGD);
 
   std::vector<float> xArray = { 10 + .01, 10 + .01, 10 + .51, 10 + .00, 325 };
   std::vector<float> yArray = { 10 + .51, 10 + .51, 10 + .51, 10 + .00, 136 };
@@ -163,9 +143,15 @@ std::string test_PlumeGeneralData::testInterp(WINDSGeneralData *WGD, TURBGeneral
   float tol(1.0e-2);
 
   for (size_t it = 0; it < xArray.size(); ++it) {
-    xPos = xArray[it];
-    yPos = yArray[it];
-    zPos = zArray[it];
+    double xPos = xArray[it];
+    double yPos = yArray[it];
+    double zPos = zArray[it];
+
+    double uMean = 0.0, vMean = 0.0, wMean = 0.0;
+    double txx = 0.0, txy = 0.0, txz = 0.0, tyy = 0.0, tyz = 0.0, tzz = 0.0;
+    double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
+    double CoEps = 1e-6;
+
     interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, CoEps);
     if (verbose) {
       std::cout << (this->*u_testFunction)(WGD, xPos, yPos, zPos) << "->" << uMean << std::endl;
@@ -198,40 +184,10 @@ std::string test_PlumeGeneralData::testInterp(WINDSGeneralData *WGD, TURBGeneral
 std::string test_PlumeGeneralData::timeInterpCPU(WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
 
-  int N = 100000;
+  int N = 1000000;
 
-  double xPos = 10;
-  double yPos = 10;
-  double zPos = 1;
-
-  double uMean = 0.0;
-  double vMean = 0.0;
-  double wMean = 0.0;
-
-  double txx = 0.0;
-  double txy = 0.0;
-  double txz = 0.0;
-  double tyy = 0.0;
-  double tyz = 0.0;
-  double tzz = 0.0;
-
-  double flux_div_x = 0.0;
-  double flux_div_y = 0.0;
-  double flux_div_z = 0.0;
-
-  double CoEps = 1e-6;
-
-  // u_testFunction = &test_PlumeGeneralData::testFunction_linearY;
-  // v_testFunction = &test_PlumeGeneralData::testFunction_linearZ;
-  // w_testFunction = &test_PlumeGeneralData::testFunction_linearX;
-  // c_testFunction = &test_PlumeGeneralData::testFunction_linearZ;
-
-  u_testFunction = &test_PlumeGeneralData::testFunction_trig;
-  v_testFunction = &test_PlumeGeneralData::testFunction_trig;
-  w_testFunction = &test_PlumeGeneralData::testFunction_trig;
-  c_testFunction = &test_PlumeGeneralData::testFunction_trig;
-
-  setTestFunctions(WGD, TGD);
+  setTestFunctions("trig");
+  setTestValues(WGD, TGD);
 
   // First create an instance of an engine.
   std::random_device rnd_device;
@@ -239,7 +195,7 @@ std::string test_PlumeGeneralData::timeInterpCPU(WINDSGeneralData *WGD, TURBGene
   std::mt19937 mersenne_engine{ rnd_device() };// Generates random integers
   std::uniform_real_distribution<float> disX{ WGD->x[0], WGD->x.back() };
   std::uniform_real_distribution<float> disY{ WGD->y[0], WGD->y.back() };
-  std::uniform_real_distribution<float> disZ{ 0, WGD->z_face[WGD->nz - 3] };
+  std::uniform_real_distribution<float> disZ{ 0, WGD->z_face[WGD->nz - 2] };
 
   std::vector<float> xArray, yArray, zArray;
 
@@ -252,13 +208,40 @@ std::string test_PlumeGeneralData::timeInterpCPU(WINDSGeneralData *WGD, TURBGene
   // bool verbose = false;
   // float tol(1.0e-2);
 
+  float err = 0.0;
+  for (size_t it = 0; it < xArray.size(); ++it) {
+    double xPos = xArray[it];
+    double yPos = yArray[it];
+    double zPos = zArray[it];
+
+    double uMean = 0.0, vMean = 0.0, wMean = 0.0;
+    double txx = 0.0, txy = 0.0, txz = 0.0, tyy = 0.0, tyz = 0.0, tzz = 0.0;
+    double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
+    double CoEps = 1e-6;
+
+    interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, CoEps);
+
+    err += std::abs((this->*u_testFunction)(WGD, xPos, yPos, zPos) - uMean);
+    err += std::abs((this->*v_testFunction)(WGD, xPos, yPos, zPos) - vMean);
+    err += std::abs((this->*w_testFunction)(WGD, xPos, yPos, zPos) - wMean);
+    err += std::abs((this->*c_testFunction)(WGD, xPos, yPos, zPos) - txx);
+  }
+  std::cout << err / float(4 * N) << std::endl;
+
   auto interpStartTime = std::chrono::high_resolution_clock::now();
   for (size_t it = 0; it < xArray.size(); ++it) {
-    xPos = xArray[it];
-    yPos = yArray[it];
-    zPos = zArray[it];
+    double xPos = xArray[it];
+    double yPos = yArray[it];
+    double zPos = zArray[it];
+
+    double uMean = 0.0, vMean = 0.0, wMean = 0.0;
+    double txx = 0.0, txy = 0.0, txz = 0.0, tyy = 0.0, tyz = 0.0, tzz = 0.0;
+    double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
+    double CoEps = 1e-6;
+
     interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, CoEps);
   }
+
   auto interpEndTime = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> interpElapsed = interpEndTime - interpStartTime;
   std::cout << "interpolation elapsed time: " << interpElapsed.count() << " s\n";

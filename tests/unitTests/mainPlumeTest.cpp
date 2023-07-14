@@ -1,131 +1,163 @@
+#include <catch2/catch_test_macros.hpp>
+
 #include <string>
 #include <cstdio>
 #include <algorithm>
 #include <vector>
 
 #include "util.h"
+#include "testFunctions.h"
 #include "test_WINDSGeneralData.h"
 #include "test_TURBGeneralData.h"
 #include "test_PlumeGeneralData.h"
 
-std::string testInterpolation();
-std::string testVectorMath();
-
-void setTestVelocity(WINDSGeneralData *);
-std::string check1DDerivative(std::vector<float> *,
-                              std::vector<float> *,
-                              std::vector<float> *,
-                              std::vector<float> *,
-                              std::vector<float> *,
-                              std::vector<float> *,
-                              std::vector<float> *,
-                              std::vector<float> *,
-                              std::vector<float> *,
-                              WINDSGeneralData *,
-                              test_TURBGeneralData *);
-float compError1Dx(std::vector<float> *,
-                   std::vector<float> *,
-                   WINDSGeneralData *,
-                   test_TURBGeneralData *);
-float compError1Dy(std::vector<float> *,
-                   std::vector<float> *,
-                   WINDSGeneralData *,
-                   test_TURBGeneralData *);
-float compError1Dz(std::vector<float> *,
-                   std::vector<float> *,
-                   WINDSGeneralData *,
-                   test_TURBGeneralData *);
-
-int main()
-{
-  std::string results;
-
-  /******************
-   * TURBULENCE * 
-   ******************/
-  printf("======================================\n");
-  printf("starting PLUME tests...\n");
-  printf("======================================\n");
-  printf("testing interpolation\n");
-  printf("--------------------------------------\n");
-  results = testInterpolation();
-  printf("--------------------------------------\n");
-  if (results == TEST_PASS) {
-    printf("PLUME: Success!\n");
-  } else {
-    printf("PLUME: Failure\n%s\n", results.c_str());
-    exit(EXIT_FAILURE);
-  }
-  printf("======================================\n");
-  printf("testing vector math\n");
-  printf("--------------------------------------\n");
-  results = testVectorMath();
-  printf("--------------------------------------\n");
-  if (results == TEST_PASS) {
-    printf("PLUME: Success!\n");
-  } else {
-    printf("PLUME: Failure\n%s\n", results.c_str());
-    exit(EXIT_FAILURE);
-  }
-
-
-  printf("======================================\n");
-  printf("All tests pass!\n");
-  exit(EXIT_SUCCESS);
-
-  return 0;
-}
-
-std::string testInterpolation()
+TEST_CASE("interpolation fine grid")
 {
 
-  std::string results = TEST_PASS;
-
-  int gridSize[3] = { 400, 400, 400 };
+  int gridSize[3] = { 200, 200, 200 };
   float gridRes[3] = { 1.0, 1.0, 1.0 };
 
-  WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes);
-  TURBGeneralData *TGD = new test_TURBGeneralData(WGD);
+  test_WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes);
+  test_TURBGeneralData *TGD = new test_TURBGeneralData(WGD);
   test_PlumeGeneralData *PGD = new test_PlumeGeneralData(WGD, TGD);
-
   PGD->setInterpMethod("triLinear", WGD, TGD);
 
-  printf("--------------------------------------\n");
-  printf("testing for accuracy\n");
-  results = PGD->testInterp(WGD, TGD);
-  if (results != TEST_PASS)
-    return results;
+  testFunctions *tf = new testFunctions(WGD, TGD, "trig");
 
-  printf("--------------------------------------\n");
-  printf("testing for time on CPU\n");
-  results = PGD->timeInterpCPU(WGD, TGD);
-  if (results != TEST_PASS)
-    return results;
+  SECTION("testing for accuracy")
+  {
+    // results = PGD->testInterp(WGD, TGD);
+    std::vector<float> xArray = { 10 + .01, 10 + .01, 10 + .51, 10 + .00, 125 };
+    std::vector<float> yArray = { 10 + .51, 10 + .51, 10 + .51, 10 + .00, 136 };
+    std::vector<float> zArray = { 10 + .51, 10 + .50, 10 + .01, 10 + .01, 190 };
 
-  return TEST_PASS;
+    float tol(1.0e-2);
+
+    for (size_t it = 0; it < xArray.size(); ++it) {
+      double xPos = xArray[it];
+      double yPos = yArray[it];
+      double zPos = zArray[it];
+
+      double uMean = 0.0, vMean = 0.0, wMean = 0.0;
+      double txx = 0.0, txy = 0.0, txz = 0.0, tyy = 0.0, tyz = 0.0, tzz = 0.0;
+      double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
+      double CoEps = 1e-6;
+
+      PGD->interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, CoEps);
+      float err = 0.0;
+
+      err = std::abs(tf->u_testFunction->val(xPos, yPos, zPos) - uMean);
+      REQUIRE(err < tol);
+
+      err = std::abs(tf->v_testFunction->val(xPos, yPos, zPos) - vMean);
+      REQUIRE(err < tol);
+
+      err = std::abs(tf->w_testFunction->val(xPos, yPos, zPos) - wMean);
+      REQUIRE(err < tol);
+
+      err = std::abs(tf->c_testFunction->val(xPos, yPos, zPos) - txx);
+      REQUIRE(err < tol);
+    }
+  }
+
+  SECTION("testing random points")
+  {
+    int N = 1000000;
+
+    // First create an instance of an engine.
+    std::random_device rnd_device;
+    // Specify the engine and distribution.
+    std::mt19937 mersenne_engine{ rnd_device() };// Generates random integers
+    std::uniform_real_distribution<float> disX{ WGD->x[0], WGD->x.back() };
+    std::uniform_real_distribution<float> disY{ WGD->y[0], WGD->y.back() };
+    std::uniform_real_distribution<float> disZ{ 0, WGD->z_face[WGD->nz - 3] };
+
+    std::vector<float> xArray, yArray, zArray;
+
+    for (int it = 0; it < N; ++it) {
+      xArray.push_back(disX(mersenne_engine));
+      yArray.push_back(disY(mersenne_engine));
+      zArray.push_back(disZ(mersenne_engine));
+    }
+
+    float tol(1.0e-2);
+    float errU = 0.0, errV = 0.0, errW = 0.0, errT = 0.0;
+
+    for (size_t it = 0; it < xArray.size(); ++it) {
+      double xPos = xArray[it];
+      double yPos = yArray[it];
+      double zPos = zArray[it];
+
+      double uMean = 0.0, vMean = 0.0, wMean = 0.0;
+      double txx = 0.0, txy = 0.0, txz = 0.0, tyy = 0.0, tyz = 0.0, tzz = 0.0;
+      double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
+      double CoEps = 1e-6;
+
+      PGD->interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, CoEps);
+
+      errU += std::abs(tf->u_testFunction->val(xPos, yPos, zPos) - uMean);
+      errV += std::abs(tf->v_testFunction->val(xPos, yPos, zPos) - vMean);
+      errW += std::abs(tf->w_testFunction->val(xPos, yPos, zPos) - wMean);
+      errT += std::abs(tf->c_testFunction->val(xPos, yPos, zPos) - txx);
+    }
+
+    errU = errU / float(N);
+    REQUIRE(errU < tol);
+    errV = errV / float(N);
+    REQUIRE(errV < tol);
+    errW = errW / float(N);
+    REQUIRE(errW < tol);
+    errT = errT / float(N);
+    REQUIRE(errT < tol);
+  }
 }
 
-std::string testVectorMath()
+TEST_CASE("interpolation coarse grid")
 {
 
-  std::string results = TEST_PASS;
+  int gridSize[3] = { 200, 200, 200 };
+  float gridRes[3] = { 2.0, 2.0, 2.0 };
 
-  int gridSize[3] = { 10, 10, 10 };
-  float gridRes[3] = { 0.1, 0.1, 0.1 };
-
-  WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes);
-  TURBGeneralData *TGD = new test_TURBGeneralData(WGD);
+  test_WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes);
+  test_TURBGeneralData *TGD = new test_TURBGeneralData(WGD);
   test_PlumeGeneralData *PGD = new test_PlumeGeneralData(WGD, TGD);
+  PGD->setInterpMethod("triLinear", WGD, TGD);
 
-  printf("--------------------------------------\n");
-  printf("starting PLUME vector math CPU...\n");
-  PGD->testCPU(1000000);
+  testFunctions *tf = new testFunctions(WGD, TGD, "trig");
 
-#ifdef HAS_CUDA
-  printf("--------------------------------------\n");
-  printf("starting PLUME vector math CUDA...\n");
-  //PGD->testGPU(100000);
-  PGD->testGPU_struct(1000000);
-#endif
-  return results;
+  SECTION("testing for accuracy")
+  {
+    // results = PGD->testInterp(WGD, TGD);
+    std::vector<float> xArray = { 10 + .01, 10 + .01, 10 + .51, 10 + .00, 125 };
+    std::vector<float> yArray = { 10 + .51, 10 + .51, 10 + .51, 10 + .00, 136 };
+    std::vector<float> zArray = { 10 + .51, 10 + .50, 10 + .01, 10 + .01, 190 };
+
+    float tol(1.0e-2);
+
+    for (size_t it = 0; it < xArray.size(); ++it) {
+      double xPos = xArray[it];
+      double yPos = yArray[it];
+      double zPos = zArray[it];
+
+      double uMean = 0.0, vMean = 0.0, wMean = 0.0;
+      double txx = 0.0, txy = 0.0, txz = 0.0, tyy = 0.0, tyz = 0.0, tzz = 0.0;
+      double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
+      double CoEps = 1e-6;
+
+      PGD->interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, CoEps);
+      float err = 0.0;
+
+      err = std::abs(tf->u_testFunction->val(xPos, yPos, zPos) - uMean);
+      REQUIRE(err < tol);
+
+      err = std::abs(tf->v_testFunction->val(xPos, yPos, zPos) - vMean);
+      REQUIRE(err < tol);
+
+      err = std::abs(tf->w_testFunction->val(xPos, yPos, zPos) - wMean);
+      REQUIRE(err < tol);
+
+      err = std::abs(tf->c_testFunction->val(xPos, yPos, zPos) - txx);
+      REQUIRE(err < tol);
+    }
+  }
 }
