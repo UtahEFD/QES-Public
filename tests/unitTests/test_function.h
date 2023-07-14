@@ -9,10 +9,10 @@
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
 
-class testFunction
+class test_function
 {
 public:
-  testFunction(WINDSGeneralData *WGD)
+  test_function(WINDSGeneralData *WGD)
   {
     nx = WGD->nx;
     ny = WGD->ny;
@@ -26,7 +26,7 @@ public:
     ly = ny * dy;
     lz = WGD->z_face.back();
   }
-  ~testFunction() {}
+  ~test_function() {}
 
   virtual float val(float x, float y, float z) = 0;
 
@@ -36,13 +36,13 @@ protected:
   float lx{}, ly{}, lz{};
 
 private:
-  testFunction() = default;
+  test_function() = default;
 };
 
-class testFunction_linearX : public testFunction
+class test_function_linearX : public test_function
 {
 public:
-  testFunction_linearX(WINDSGeneralData *WGD) : testFunction(WGD)
+  test_function_linearX(WINDSGeneralData *WGD) : test_function(WGD)
   {}
   float val(float x, float y, float z) override
   {
@@ -57,10 +57,10 @@ public:
   }
 };
 
-class testFunction_linearY : public testFunction
+class test_function_linearY : public test_function
 {
 public:
-  testFunction_linearY(WINDSGeneralData *WGD) : testFunction(WGD)
+  test_function_linearY(WINDSGeneralData *WGD) : test_function(WGD)
   {}
   float val(float x, float y, float z) override
   {
@@ -75,10 +75,10 @@ public:
   }
 };
 
-class testFunction_linearZ : public testFunction
+class test_function_linearZ : public test_function
 {
 public:
-  testFunction_linearZ(WINDSGeneralData *WGD) : testFunction(WGD)
+  test_function_linearZ(WINDSGeneralData *WGD) : test_function(WGD)
   {}
   float val(float x, float y, float z) override
   {
@@ -93,10 +93,10 @@ public:
   }
 };
 
-class testFunction_trig : public testFunction
+class test_function_trig : public test_function
 {
 public:
-  testFunction_trig(WINDSGeneralData *WGD) : testFunction(WGD)
+  test_function_trig(WINDSGeneralData *WGD) : test_function(WGD)
   {}
   float val(float x, float y, float z) override
   {

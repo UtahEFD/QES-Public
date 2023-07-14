@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "testFunctions.h"
+#include "test_functions.h"
 #include "test_WINDSGeneralData.h"
 #include "test_TURBGeneralData.h"
 #include "test_PlumeGeneralData.h"
@@ -21,7 +21,7 @@ TEST_CASE("interpolation fine grid", "[Working]")
   test_PlumeGeneralData *PGD = new test_PlumeGeneralData(WGD, TGD);
   PGD->setInterpMethod("triLinear", WGD, TGD);
 
-  testFunctions *tf = new testFunctions(WGD, TGD, "trig");
+  test_functions *tf = new test_functions(WGD, TGD, "trig");
 
   SECTION("testing for accuracy")
   {
@@ -45,16 +45,16 @@ TEST_CASE("interpolation fine grid", "[Working]")
       PGD->interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, CoEps);
       float err = 0.0;
 
-      err = std::abs(tf->u_testFunction->val(xPos, yPos, zPos) - uMean);
+      err = std::abs(tf->u_test_function->val(xPos, yPos, zPos) - uMean);
       REQUIRE(err < tol);
 
-      err = std::abs(tf->v_testFunction->val(xPos, yPos, zPos) - vMean);
+      err = std::abs(tf->v_test_function->val(xPos, yPos, zPos) - vMean);
       REQUIRE(err < tol);
 
-      err = std::abs(tf->w_testFunction->val(xPos, yPos, zPos) - wMean);
+      err = std::abs(tf->w_test_function->val(xPos, yPos, zPos) - wMean);
       REQUIRE(err < tol);
 
-      err = std::abs(tf->c_testFunction->val(xPos, yPos, zPos) - txx);
+      err = std::abs(tf->c_test_function->val(xPos, yPos, zPos) - txx);
       REQUIRE(err < tol);
     }
   }
@@ -94,10 +94,10 @@ TEST_CASE("interpolation fine grid", "[Working]")
 
       PGD->interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, CoEps);
 
-      errU += std::abs(tf->u_testFunction->val(xPos, yPos, zPos) - uMean);
-      errV += std::abs(tf->v_testFunction->val(xPos, yPos, zPos) - vMean);
-      errW += std::abs(tf->w_testFunction->val(xPos, yPos, zPos) - wMean);
-      errT += std::abs(tf->c_testFunction->val(xPos, yPos, zPos) - txx);
+      errU += std::abs(tf->u_test_function->val(xPos, yPos, zPos) - uMean);
+      errV += std::abs(tf->v_test_function->val(xPos, yPos, zPos) - vMean);
+      errW += std::abs(tf->w_test_function->val(xPos, yPos, zPos) - wMean);
+      errT += std::abs(tf->c_test_function->val(xPos, yPos, zPos) - txx);
     }
 
     errU = errU / float(N);
@@ -122,7 +122,7 @@ TEST_CASE("interpolation coarse grid", "[Working]")
   test_PlumeGeneralData *PGD = new test_PlumeGeneralData(WGD, TGD);
   PGD->setInterpMethod("triLinear", WGD, TGD);
 
-  testFunctions *tf = new testFunctions(WGD, TGD, "trig");
+  test_functions *tf = new test_functions(WGD, TGD, "trig");
 
   SECTION("testing for accuracy")
   {
@@ -146,16 +146,16 @@ TEST_CASE("interpolation coarse grid", "[Working]")
       PGD->interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, CoEps);
       float err = 0.0;
 
-      err = std::abs(tf->u_testFunction->val(xPos, yPos, zPos) - uMean);
+      err = std::abs(tf->u_test_function->val(xPos, yPos, zPos) - uMean);
       REQUIRE(err < tol);
 
-      err = std::abs(tf->v_testFunction->val(xPos, yPos, zPos) - vMean);
+      err = std::abs(tf->v_test_function->val(xPos, yPos, zPos) - vMean);
       REQUIRE(err < tol);
 
-      err = std::abs(tf->w_testFunction->val(xPos, yPos, zPos) - wMean);
+      err = std::abs(tf->w_test_function->val(xPos, yPos, zPos) - wMean);
       REQUIRE(err < tol);
 
-      err = std::abs(tf->c_testFunction->val(xPos, yPos, zPos) - txx);
+      err = std::abs(tf->c_test_function->val(xPos, yPos, zPos) - txx);
       REQUIRE(err < tol);
     }
   }
@@ -177,7 +177,7 @@ TEST_CASE("interpolation stretched grid", "[Working]")
   test_PlumeGeneralData *PGD = new test_PlumeGeneralData(WGD, TGD);
   PGD->setInterpMethod("triLinear", WGD, TGD);
 
-  testFunctions *tf = new testFunctions(WGD, TGD, "trig");
+  test_functions *tf = new test_functions(WGD, TGD, "trig");
 
   SECTION("testing for accuracy")
   {
@@ -201,16 +201,16 @@ TEST_CASE("interpolation stretched grid", "[Working]")
       PGD->interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, CoEps);
       float err = 0.0;
 
-      err = std::abs(tf->u_testFunction->val(xPos, yPos, zPos) - uMean);
+      err = std::abs(tf->u_test_function->val(xPos, yPos, zPos) - uMean);
       REQUIRE(err < tol);
 
-      err = std::abs(tf->v_testFunction->val(xPos, yPos, zPos) - vMean);
+      err = std::abs(tf->v_test_function->val(xPos, yPos, zPos) - vMean);
       REQUIRE(err < tol);
 
-      err = std::abs(tf->w_testFunction->val(xPos, yPos, zPos) - wMean);
+      err = std::abs(tf->w_test_function->val(xPos, yPos, zPos) - wMean);
       REQUIRE(err < tol);
 
-      err = std::abs(tf->c_testFunction->val(xPos, yPos, zPos) - txx);
+      err = std::abs(tf->c_test_function->val(xPos, yPos, zPos) - txx);
       REQUIRE(err < tol);
     }
   }
@@ -250,10 +250,10 @@ TEST_CASE("interpolation stretched grid", "[Working]")
 
       PGD->interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, CoEps);
 
-      errU += std::abs(tf->u_testFunction->val(xPos, yPos, zPos) - uMean);
-      errV += std::abs(tf->v_testFunction->val(xPos, yPos, zPos) - vMean);
-      errW += std::abs(tf->w_testFunction->val(xPos, yPos, zPos) - wMean);
-      errT += std::abs(tf->c_testFunction->val(xPos, yPos, zPos) - txx);
+      errU += std::abs(tf->u_test_function->val(xPos, yPos, zPos) - uMean);
+      errV += std::abs(tf->v_test_function->val(xPos, yPos, zPos) - vMean);
+      errW += std::abs(tf->w_test_function->val(xPos, yPos, zPos) - wMean);
+      errT += std::abs(tf->c_test_function->val(xPos, yPos, zPos) - txx);
     }
 
     errU = errU / float(N);

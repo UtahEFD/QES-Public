@@ -1,8 +1,8 @@
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(.)
 
-add_library(unitTestLib ${LIB_TYPE}
-        testFunctions.h testFunctions.cpp
+add_library(unittestcore ${LIB_TYPE}
+        test_functions.h test_functions.cpp
         test_WINDSGeneralData.h test_WINDSGeneralData.cpp
         test_TURBGeneralData.h test_TURBGeneralData.cpp
         test_PlumeGeneralData.h test_PlumeGeneralData.cpp)
@@ -85,7 +85,7 @@ foreach (unittest ${UNITTESTS})
   IF($CACHE{HAS_OPTIX_SUPPORT})
     target_link_libraries(${unittest} qesOptix)
   ENDIF()
-  target_link_libraries(${unittest} unitTestLib)
+  target_link_libraries(${unittest} unittestcore)
   link_external_libraries(${unittest})
   target_link_libraries(${unittest} Catch2::Catch2WithMain)
 
