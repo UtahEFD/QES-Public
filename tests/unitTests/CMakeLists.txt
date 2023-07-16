@@ -20,18 +20,12 @@ add_executable(util_time util_time.cpp)
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
 
-   cuda_add_executable(unitTestWind
+   add_executable(winds_terrain
      test_DTEHeightField.h test_DTEHeightField.cpp
-       mainWindTest.cpp)
-
+     winds_terrain.cpp)
+   
    cuda_add_executable(turbulence_derivative_CPU
        turbulence_derivative_CPU.cpp)
-
-   cuda_add_executable(unitTestPlume
-      mainPlumeTest.cpp)
-
-   cuda_add_executable(turbulence_derivative_CPU
-           turbulence_derivative_CPU.cpp)
 
    cuda_add_executable(plume_interpolation_CPU
            plume_interpolation_CPU.cpp)
