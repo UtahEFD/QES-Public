@@ -1,12 +1,19 @@
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(.)
 
-add_library(unittestcore ${LIB_TYPE}
+IF ($CACHE{HAS_CUDA_SUPPORT})
+  cuda_add_library(unittestcore
         test_functions.h test_functions.cpp
         test_WINDSGeneralData.h test_WINDSGeneralData.cpp
         test_TURBGeneralData.h test_TURBGeneralData.cpp
         test_PlumeGeneralData.h test_PlumeGeneralData.cpp)
-
+ELSE ($CACHE{HAS_CUDA_SUPPORT})
+  add_library(unittestcore
+        test_functions.h test_functions.cpp
+        test_WINDSGeneralData.h test_WINDSGeneralData.cpp
+        test_TURBGeneralData.h test_TURBGeneralData.cpp
+        test_PlumeGeneralData.h test_PlumeGeneralData.cpp)
+ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 #FILE(GLOB files "*.h")
 #INSTALL(FILES ${files} DESTINATION include/unitTests)
 
@@ -20,7 +27,7 @@ add_executable(util_time util_time.cpp)
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
 
-   add_executable(winds_terrain
+   cuda_add_executable(winds_terrain
      test_DTEHeightField.h test_DTEHeightField.cpp
      winds_terrain.cpp)
    
@@ -58,17 +65,19 @@ set(UNITTESTS
   plume_vector_classes_CPU)
 
 foreach (unittest ${UNITTESTS})
+  
+  target_link_libraries(${unittest} unittestcore)
   target_link_libraries(${unittest} qesplumecore)
   target_link_libraries(${unittest} qeswindscore)
   IF ($CACHE{HAS_CUDA_SUPPORT})
     target_link_libraries(${unittest} qeswindsgpu)
   ENDIF()
   target_link_libraries(${unittest} qeswindscore)
-  target_link_libraries(${unittest} qesutil)
+  target_link_libraries(${unittest} qesutil)  
   IF($CACHE{HAS_OPTIX_SUPPORT})
     target_link_libraries(${unittest} qesOptix)
   ENDIF()
-  target_link_libraries(${unittest} unittestcore)
+
   link_external_libraries(${unittest})
   target_link_libraries(${unittest} Catch2::Catch2WithMain)
 
