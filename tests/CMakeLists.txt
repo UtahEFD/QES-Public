@@ -4,7 +4,7 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 
 ADD_DEFINITIONS(-DQES_DIR="${PROJECT_SOURCE_DIR}")
 
-IF (ENABLE_REGRESSION_TESTS OR ENABLE_UNIT_TESTS)
+IF (TESTS_ENABLE_REGRESSION_TESTS OR TESTS_ENABLE_UNIT_TESTS)
   Include(FetchContent)
 
   FetchContent_Declare(
@@ -16,63 +16,50 @@ IF (ENABLE_REGRESSION_TESTS OR ENABLE_UNIT_TESTS)
   FetchContent_MakeAvailable(Catch2)
 ENDIF()
 
-IF (ENABLE_REGRESSION_TESTS)
+IF (TESTS_ENABLE_REGRESSION_TESTS)
   add_subdirectory(regressionTests)
 ENDIF()
 
-IF (ENABLE_UNIT_TESTS)
+IF (TESTS_ENABLE_UNIT_TESTS)
   add_subdirectory(unitTests)
 ENDIF()
 
 
-IF ($CACHE{HAS_CUDA_SUPPORT})
-	CUDA_ADD_EXECUTABLE(compareSolvers compareSolvers.cpp)
-ELSE ($CACHE{HAS_CUDA_SUPPORT})
-	ADD_EXECUTABLE(compareSolvers compareSolvers.cpp)
-ENDIF ($CACHE{HAS_CUDA_SUPPORT})
-
+# ----------------------------------------------------------
+# SOLVER COMPARISON TESTS
+# - comparison between serial and GPU solvers
+# ----------------------------------------------------------
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
-  # target_link_libraries(compareSolvers curand)
-ENDIF()
-target_link_libraries(compareSolvers qeswindscore)
-IF ($CACHE{HAS_CUDA_SUPPORT})
+  CUDA_ADD_EXECUTABLE(compareSolvers compareSolvers.cpp)
+
+  target_link_libraries(compareSolvers qeswindscore)
   target_link_libraries(compareSolvers qeswindsgpu)
-ENDIF()
-target_link_libraries(compareSolvers qesutil)
+  target_link_libraries(compareSolvers qesutil)
+  IF ($CACHE{HAS_OPTIX_SUPPORT})
+    target_link_libraries(compareSolvers qesOptix)
+  ENDIF()
+  
+  link_external_libraries(compareSolvers)
 
-IF ($CACHE{HAS_OPTIX_SUPPORT})
-  target_link_libraries(compareSolvers qesOptix)
-ENDIF()
-
-target_link_libraries(compareSolvers ${Boost_PROGRAM_OPTIONS_LIBRARIES})
-target_link_libraries(compareSolvers ${Boost_DATE_TIME_LIBRARIES})
-target_link_libraries(compareSolvers ${Boost_FILESYSTEM_LIBRARIES})
-target_link_libraries(compareSolvers ${GDAL_LIBRARY})
-target_link_libraries(compareSolvers ${NETCDF_LIBRARIES_CXX})
-target_link_libraries(compareSolvers ${NETCDF_LIBRARIES_C})
-IF ($CACHE{HAS_CUDA_SUPPORT})
-  # target_link_libraries(compareSolvers cudadevrt)
-  target_link_libraries(compareSolvers ${CUDA_LIBRARIES})
-ENDIF()
-
-
-IF ($CACHE{HAS_CUDA_SUPPORT})
-	CUDA_ADD_EXECUTABLE( compareWindsResults
-                     handleCompareArgs.cpp
-                     compareWindsResults.cpp
-		     )
 ELSE ($CACHE{HAS_CUDA_SUPPORT})
-	ADD_EXECUTABLE( compareWindsResults
-                     handleCompareArgs.cpp
-                     compareWindsResults.cpp
-		     )
+  # no executable if CUDA is not supported
+  #	ADD_EXECUTABLE(compareSolvers compareSolvers.cpp)
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
-  # target_link_libraries(compareWindsResults curand)
-ENDIF()
+  CUDA_ADD_EXECUTABLE( compareWindsResults
+    handleCompareArgs.cpp
+    compareWindsResults.cpp
+    )
+ELSE ($CACHE{HAS_CUDA_SUPPORT})
+  ADD_EXECUTABLE( compareWindsResults
+    handleCompareArgs.cpp
+    compareWindsResults.cpp
+    )
+ENDIF ($CACHE{HAS_CUDA_SUPPORT})
+
 target_link_libraries(compareWindsResults qeswindscore)
 IF ($CACHE{HAS_CUDA_SUPPORT})
   target_link_libraries(compareWindsResults qeswindsgpu)
@@ -84,16 +71,7 @@ IF ($CACHE{HAS_OPTIX_SUPPORT})
   target_link_libraries(compareWindsResults qesOptix)
 ENDIF()
 
-target_link_libraries(compareWindsResults ${Boost_PROGRAM_OPTIONS_LIBRARIES})
-target_link_libraries(compareWindsResults ${Boost_DATE_TIME_LIBRARIES})
-target_link_libraries(compareWindsResults ${Boost_FILESYSTEM_LIBRARIES})
-target_link_libraries(compareWindsResults ${GDAL_LIBRARY})
-target_link_libraries(compareWindsResults ${NETCDF_LIBRARIES_CXX})
-target_link_libraries(compareWindsResults ${NETCDF_LIBRARIES_C})
-IF ($CACHE{HAS_CUDA_SUPPORT})
-  # target_link_libraries(compareWindsResults cudadevrt)
-  target_link_libraries(compareWindsResults ${CUDA_LIBRARIES})
-ENDIF()
+link_external_libraries(compareWindsResults)
 
 #Comparison tests function
 function(add_comparison_test infile_prefix solver_arg solver_name)

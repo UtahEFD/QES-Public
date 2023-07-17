@@ -43,9 +43,7 @@ foreach (regresstest ${REGRESSTESTS})
   link_external_libraries(${regresstest})
   target_link_libraries(${regresstest} Catch2::Catch2WithMain)
   
-  if (ENABLE_REGRESSION_TESTS)
-    add_test(regression_test::${regresstest} ${regresstest})
-  endif (ENABLE_REGRESSION_TESTS)
+  add_test(regression_test::${regresstest} ${regresstest})
   
 endforeach(regresstest)
 

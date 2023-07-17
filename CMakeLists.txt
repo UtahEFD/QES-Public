@@ -423,15 +423,15 @@ add_subdirectory(tests)
 # ----------------------------------------------------------
 # TESTING OPTION
 # ----------------------------------------------------------
-option(ENABLE_UNIT_TESTS "Enables unit tests" OFF)
-option(ENABLE_REGRESSION_TESTS "Enables regression tests" OFF)
+option(TESTS_ENABLE_UNIT_TESTS "Enables unit tests" OFF)
+option(TESTS_ENABLE_REGRESSION_TESTS "Enables regression tests" OFF)
 
-option(ENABLE_SANITY_TESTS_CPU "Enables tests that simply check if qesWinds runs on input w/o runtime errors" OFF)
-option(ENABLE_SANITY_TESTS_GPU "Enables tests that simply check if qesWinds runs on input w/o runtime errors" OFF)
+option(TESTS_ENABLE_SANITY_TESTS_CPU "Enables tests that simply check if qesWinds runs on input w/o runtime errors" OFF)
+option(TESTS_ENABLE_SANITY_TESTS_GPU "Enables tests that simply check if qesWinds runs on input w/o runtime errors" OFF)
 
-option(ENABLE_ALL_COMPARISON_TESTS "Enables test of comparison between serial and GPU solvers" OFF) # overrides individual comparison selections
-option(ENABLE_DYNAMIC_PARALLELISM_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Dynamic Parallel solvers" OFF)
-option(ENABLE_GLOBAL_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Global Memory solvers" OFF)
-option(ENABLE_SHARED_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Shared Memory solvers" OFF)
-option(ENABLE_LONG_COMPARISON_TESTS "Enables longer comparison tests on all other comparison test options (adds around 5 minutes)" OFF)
-option(ENABLE_RIDICULOUSLY_LONG_COMPARISON_TESTS "Enables the longest comparison tests (adds around 15 minutes)." OFF)
+option(TESTS_ENABLE_ALL_COMPARISON_TESTS "Enables test of comparison between serial and GPU solvers" OFF) # overrides individual comparison selections
+option(TESTS_ENABLE_DYNAMIC_PARALLELISM_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Dynamic Parallel solvers" OFF)
+option(TESTS_ENABLE_GLOBAL_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Global Memory solvers" OFF)
+option(TESTS_ENABLE_SHARED_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Shared Memory solvers" OFF)
+option(TESTS_ENABLE_LONG_COMPARISON_TESTS "Enables longer comparison tests on all other comparison test options (adds around 5 minutes)" OFF)
+option(TESTS_ENABLE_RIDICULOUSLY_LONG_COMPARISON_TESTS "Enables the longest comparison tests (adds around 15 minutes)." OFF)
