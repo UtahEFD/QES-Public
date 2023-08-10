@@ -20,6 +20,62 @@ IF (TESTS_ENABLE_UNIT_TESTS)
   add_subdirectory(unitTests)
 ENDIF()
 
+# easy to use functions to add sanity tests
+## just specify the infile's name (w/o extension) as below
+function(add_sanity_check_winds_CPU infile_prefix)
+  add_test(NAME sanity_check::winds_CPU_${infile_prefix}
+          COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds
+          -q ${CMAKE_SOURCE_DIR}/tests/runTestsFiles/winds_${infile_prefix}.xml -s 1
+          -o test_CPU_${infile_prefix} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+endfunction()
+
+function(add_sanity_check_winds_GPU infile_prefix)
+  add_test(NAME sanity_check::winds_GPU_${infile_prefix}
+          COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds
+          -q ${CMAKE_SOURCE_DIR}/tests/runTestsFiles/winds_${infile_prefix}.xml -s 2
+          -o test_GPU_${infile_prefix} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+endfunction()
+
+function(add_sanity_check_qes_CPU infile_prefix)
+  add_test(NAME sanity_check::qes_CPU_${infile_prefix}
+          COMMAND ${CMAKE_BINARY_DIR}/qes/qes
+          -q ${CMAKE_SOURCE_DIR}/tests/runTestsFiles/winds_${infile_prefix}.xml -s 1
+          -p ${CMAKE_SOURCE_DIR}/tests/runTestsFiles/plume_${infile_prefix}.xml
+          -o test_CPU_${infile_prefix} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+endfunction()
+
+function(add_sanity_check_qes_GPU infile_prefix)
+  add_test(NAME sanity_check::qes_GPU_${infile_prefix}
+          COMMAND ${CMAKE_BINARY_DIR}/qes/qes
+          -q ${CMAKE_SOURCE_DIR}/tests/runTestsFiles/winds_${infile_prefix}.xml -s 2
+          -p ${CMAKE_SOURCE_DIR}/tests/runTestsFiles/plume_${infile_prefix}.xml
+          -o test_GPU_${infile_prefix} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+endfunction()
+
+# sanity tests
+IF (TESTS_ENABLE_SANITY_CHECKS_CPU)
+  # WINDS TESTS
+  add_sanity_check_winds_CPU(FlatTerrain)
+  add_sanity_check_winds_CPU(GaussianHill)
+  add_sanity_check_winds_CPU(MultiSensors)
+  add_sanity_check_winds_CPU(OklahomaCity)
+  # QES TESTS
+  add_sanity_check_qes_CPU(FlatTerrain)
+  add_sanity_check_qes_CPU(GaussianHill)
+ENDIF()
+
+IF (TESTS_ENABLE_SANITY_CHECKS_GPU AND $CACHE{HAS_OPTIX_SUPPORT})
+  # WINDS TESTS
+  add_sanity_check_winds_GPU(FlatTerrain)
+  add_sanity_check_winds_GPU(GaussianHill)
+  add_sanity_check_winds_GPU(OklahomaCity)
+  add_sanity_check_winds_GPU(MultiSensors)
+  add_sanity_check_winds_GPU(SaltLakeCity)
+  add_sanity_check_winds_GPU(RxCADRE)
+  # QES TESTS
+  add_sanity_check_qes_GPU(FlatTerrain)
+  add_sanity_check_qes_GPU(GaussianHill)
+ENDIF()
 
 # ----------------------------------------------------------
 # SOLVER COMPARISON TESTS
@@ -35,7 +91,7 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
   IF ($CACHE{HAS_OPTIX_SUPPORT})
     target_link_libraries(compareSolvers qesOptix)
   ENDIF()
-  
+
   link_external_libraries(compareSolvers)
 
 ELSE ($CACHE{HAS_CUDA_SUPPORT})
@@ -46,14 +102,14 @@ ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
   CUDA_ADD_EXECUTABLE( compareWindsResults
-    handleCompareArgs.cpp
-    compareWindsResults.cpp
-    )
+          handleCompareArgs.cpp
+          compareWindsResults.cpp
+          )
 ELSE ($CACHE{HAS_CUDA_SUPPORT})
   ADD_EXECUTABLE( compareWindsResults
-    handleCompareArgs.cpp
-    compareWindsResults.cpp
-    )
+          handleCompareArgs.cpp
+          compareWindsResults.cpp
+          )
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 target_link_libraries(compareWindsResults qeswindscore)
@@ -116,41 +172,4 @@ ELSE(ENABLE_ALL_COMPARISON_TESTS)
       add_comparison_test(AskerveinHill 4 SHARED)
     ENDIF()
   ENDIF()
-ENDIF()
-
-
-
-
-
-# easy to use functions to add sanity tests
-## just specify the infile's name (w/o extension) as below
-function(add_sanity_test_CPU infile_prefix)
-  add_test(NAME sanity_test::winds_CPU_${infile_prefix}
-          COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds
-          -q ${CMAKE_SOURCE_DIR}/tests/runTestsFiles/${infile_prefix}.xml -s 1
-          -o test_CPU_${infile_prefix} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
-endfunction()
-
-function(add_sanity_test_GPU infile_prefix)
-  add_test(NAME sanity_test::winds_GPU_${infile_prefix}
-          COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds
-          -q ${CMAKE_SOURCE_DIR}/tests/runTestsFiles/${infile_prefix}.xml -s 2
-          -o test_GPU_${infile_prefix} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
-endfunction()
-
-# sanity tests
-IF (TESTS_ENABLE_SANITY_CHECKS_CPU)
-  add_sanity_test_CPU(FlatTerrain)
-  add_sanity_test_CPU(GaussianHill)
-  add_sanity_test_CPU(MultiSensors)
-  add_sanity_test_CPU(OklahomaCity)
-ENDIF()
-
-IF (TESTS_ENABLE_SANITY_CHECKS_GPU AND $CACHE{HAS_OPTIX_SUPPORT})
-  add_sanity_test_GPU(FlatTerrain)
-  add_sanity_test_GPU(GaussianHill)
-  add_sanity_test_GPU(OklahomaCity)
-  add_sanity_test_GPU(MultiSensors)
-  add_sanity_test_GPU(SaltLakeCity)
-  add_sanity_test_GPU(RxCADRE)
 ENDIF()
