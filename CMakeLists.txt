@@ -32,6 +32,7 @@ option(ENABLE_DEV_MODE "Enable developer mode - turns on important flags for dev
 option(ENABLE_OPENMP "Enable multithreaded support with OpenMP." OFF)
 option(ENABLE_CPPCHECK "Enable static analysis with cppcheck" OFF)
 option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
+option(ENABLE_TESTS "Enable Testing suite" OFF)
 
 # ----------------------------------------------------------
 # CLANG TIDY
@@ -396,17 +397,6 @@ function(link_external_libraries exec)
 endfunction()
 
 # ----------------------------------------------------------
-#  Unit Testing:
-#
-# This "unit test" is only a simple test to show the system
-# working. It simply returns a true value to indicate that a null
-# program has ended OK. I pass on this test really just means the
-# cmake system constructed the build environment OK.
-# ----------------------------------------------------------
-enable_testing() # once
-include(CTest)
-
-# ----------------------------------------------------------
 # SOURCE CODES
 # ----------------------------------------------------------
 add_subdirectory(src/util)
@@ -418,20 +408,30 @@ add_subdirectory(scratch)
 add_subdirectory(qesWinds)
 add_subdirectory(qesPlume)
 add_subdirectory(qes)
-add_subdirectory(tests)
 
 # ----------------------------------------------------------
-# TESTING OPTION
+#  Testing Suite
 # ----------------------------------------------------------
-option(TESTS_ENABLE_UNIT_TESTS "Enables unit tests" OFF)
-option(TESTS_ENABLE_REGRESSION_TESTS "Enables regression tests" OFF)
+IF (ENABLE_TESTS)
+  enable_testing() # once
+  include(CTest)
 
-option(TESTS_ENABLE_SANITY_TESTS_CPU "Enables tests that simply check if qesWinds runs on input w/o runtime errors" OFF)
-option(TESTS_ENABLE_SANITY_TESTS_GPU "Enables tests that simply check if qesWinds runs on input w/o runtime errors" OFF)
+  add_subdirectory(tests)
 
-option(TESTS_ENABLE_ALL_COMPARISON_TESTS "Enables test of comparison between serial and GPU solvers" OFF) # overrides individual comparison selections
-option(TESTS_ENABLE_DYNAMIC_PARALLELISM_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Dynamic Parallel solvers" OFF)
-option(TESTS_ENABLE_GLOBAL_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Global Memory solvers" OFF)
-option(TESTS_ENABLE_SHARED_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Shared Memory solvers" OFF)
-option(TESTS_ENABLE_LONG_COMPARISON_TESTS "Enables longer comparison tests on all other comparison test options (adds around 5 minutes)" OFF)
-option(TESTS_ENABLE_RIDICULOUSLY_LONG_COMPARISON_TESTS "Enables the longest comparison tests (adds around 15 minutes)." OFF)
+  # ----------------------------------------------------------
+  # TESTING OPTION
+  # ----------------------------------------------------------
+  option(TESTS_ENABLE_UNIT_TESTS "Enables unit tests" OFF)
+  option(TESTS_ENABLE_REGRESSION_TESTS "Enables regression tests" OFF)
+
+  option(TESTS_ENABLE_SANITY_CHECKS_CPU "Enables tests that simply check if qesWinds runs on input w/o runtime errors" OFF)
+  option(TESTS_ENABLE_SANITY_CHECKS_GPU "Enables tests that simply check if qesWinds runs on input w/o runtime errors" OFF)
+
+  # obsolete tests.... need updated
+  #option(TESTS_ENABLE_ALL_COMPARISON_TESTS "Enables test of comparison between serial and GPU solvers" OFF) # overrides individual comparison selections
+  #option(TESTS_ENABLE_DYNAMIC_PARALLELISM_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Dynamic Parallel solvers" OFF)
+  #option(TESTS_ENABLE_GLOBAL_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Global Memory solvers" OFF)
+  #option(TESTS_ENABLE_SHARED_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Shared Memory solvers" OFF)
+  #option(TESTS_ENABLE_LONG_COMPARISON_TESTS "Enables longer comparison tests on all other comparison test options (adds around 5 minutes)" OFF)
+  #option(TESTS_ENABLE_RIDICULOUSLY_LONG_COMPARISON_TESTS "Enables the longest comparison tests (adds around 15 minutes)." OFF)
+ENDIF()
