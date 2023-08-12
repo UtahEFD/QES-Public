@@ -65,8 +65,7 @@ public:
   virtual void run();
 
   void loadNetCDFData(int);
-  void divergenceStress();
-  
+
   // General QUIC Domain Data
   ///@{
   /** number of cells */
@@ -138,11 +137,59 @@ public:
   std::vector<float> div_tau_z;
   ///@}
 
+  std::vector<float> nuT; /**< turbulent viscosity */
   std::vector<float> tke; /**< turbulence kinetic energy */
   std::vector<float> CoEps; /**< dissipation rate */
 
   LocalMixing *localMixing; /**< mixing length class */
   std::vector<double> mixingLengths; /**< distance to the wall */
+
+
+  void invert3(double &A_11,
+               double &A_12,
+               double &A_13,
+               double &A_21,
+               double &A_22,
+               double &A_23,
+               double &A_31,
+               double &A_32,
+               double &A_33);
+
+  void matMult(const double &A_11,
+               const double &A_12,
+               const double &A_13,
+               const double &A_21,
+               const double &A_22,
+               const double &A_23,
+               const double &A_31,
+               const double &A_32,
+               const double &A_33,
+               const double &B_11,
+               const double &B_12,
+               const double &B_13,
+               const double &B_21,
+               const double &B_22,
+               const double &B_23,
+               const double &B_31,
+               const double &B_32,
+               const double &B_33,
+               double &C_11,
+               double &C_12,
+               double &C_13,
+               double &C_21,
+               double &C_22,
+               double &C_23,
+               double &C_31,
+               double &C_32,
+               double &C_33);
+
+  const float cPope = 0.55;
+  float sigUOrg = 2.5;
+  float sigVOrg = 2.0;
+  float sigWOrg = 1.3;
+  float sigUConst = 1.5 * sigUOrg * sigUOrg * cPope * cPope;
+  float sigVConst = 1.5 * sigVOrg * sigVOrg * cPope * cPope;
+  float sigWConst = 1.5 * sigWOrg * sigWOrg * cPope * cPope;
 
 protected:
   WINDSGeneralData *m_WGD;
@@ -151,9 +198,10 @@ protected:
 
   void derivativeVelocity();
 
+  void getTurbulentViscosity();
   void stressTensor();
 
-  // void divergenceStress();
+  void divergenceStress();
   void derivativeStress(const std::vector<float> &,
                         const std::vector<float> &,
                         const std::vector<float> &,
@@ -172,13 +220,6 @@ private:
 
   // some constants for turbulent model
   const float vonKar = 0.4;
-  const float cPope = 0.55;
-  float sigUOrg = 2.5;
-  float sigVOrg = 2.0;
-  float sigWOrg = 1.3;
-  float sigUConst = 1.5 * sigUOrg * sigUOrg * cPope * cPope;
-  float sigVConst = 1.5 * sigVOrg * sigVOrg * cPope * cPope;
-  float sigWConst = 1.5 * sigWOrg * sigWOrg * cPope * cPope;
   float backgroundMixing = 0.0;
 
   float dx, dy, dz;

@@ -111,6 +111,7 @@ void InterpNearestCell::interpValues(const double &xPos,
                                      double &flux_div_x_out,
                                      double &flux_div_y_out,
                                      double &flux_div_z_out,
+                                     double &nuT_out,
                                      double &CoEps_out)
 {
 

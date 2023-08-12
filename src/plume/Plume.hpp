@@ -175,6 +175,7 @@ protected:
 
   // time variables
   double sim_dt = 0.0;// the simulation timestep
+  double boxSizeZ;
   QEStime simTimeStart;
   QEStime simTimeCurr;
   int simTimeIdx = 0;
@@ -229,10 +230,16 @@ protected:
   double getMaxVariance(const TURBGeneralData *);
 
   // this function moves (advects) one particle
-  void advectParticle(double, Particle *, WINDSGeneralData *, TURBGeneralData *);
+  void advectParticle(double, Particle *, double, WINDSGeneralData *, TURBGeneralData *);
 
 
   void depositParticle(double,
+                       double,
+                       double,
+                       double,
+                       double,
+                       double,
+                       double,
                        double,
                        double,
                        double,

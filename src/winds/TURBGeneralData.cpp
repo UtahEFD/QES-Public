@@ -242,6 +242,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
   // derived turbulence quantities
   tke.resize(numcell_cent, 0);
   CoEps.resize(numcell_cent, 0);
+  nuT.resize(numcell_cent, 0);
   // std::cout << "\t\t Memory allocation completed.\n";
 
   if (flagCompDivStress) {
@@ -281,7 +282,7 @@ TURBGeneralData::TURBGeneralData(const std::string inputFile, WINDSGeneralData *
   // nt - number of time instance in data
   input->getDimensionSize("t", nt);
 
-  // get time variables
+  //get time variables
   t.resize(nt);
   input->getVariableData("t", t);
 
@@ -366,6 +367,7 @@ TURBGeneralData::TURBGeneralData(const std::string inputFile, WINDSGeneralData *
   // derived turbulence quantities
   tke.resize(numcell_cent, 0);
   CoEps.resize(numcell_cent, 0);
+  nuT.resize(numcell_cent, 0);
 
   // comp of the divergence of the stress tensor
   tmp_dtoxdx.resize(numcell_cent, 0);
@@ -418,6 +420,19 @@ TURBGeneralData::TURBGeneralData(WINDSGeneralData *WGDin)
      => i=1...nx-2 j=1...ny-2
      do not include 1 cell layer at the top of the domain
      => k=1...nz-2
+
+  */
+  /*
+  for (int k = 1; k < nz - 2; k++) {
+    for (int j = 1; j < ny - 2; j++) {
+      for (int i = 1; i < nx - 2; i++) {
+        int id = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
+        if (m_WGD->icellflag[id] != 0 && m_WGD->icellflag[id] != 2) {
+          icellfluid.push_back(id);
+        }
+      }
+    }
+  }
   */
   for (int k = 1; k < nz - 2; k++) {
     for (int j = 1; j < ny - 2; j++) {
@@ -451,6 +466,7 @@ TURBGeneralData::TURBGeneralData(WINDSGeneralData *WGDin)
   // derived turbulence quantities
   tke.resize(numcell_cent, 0);
   CoEps.resize(numcell_cent, 0);
+  nuT.resize(numcell_cent, 0);
 
   // comp of the divergence of the stress tensor
   tmp_dtoxdx.resize(numcell_cent, 0);
@@ -513,9 +529,26 @@ void TURBGeneralData::run()
   derivativeVelocity();
   // std::cout<<"\t\t Derivatives computed."<<std::endl;
 
+  std::cout << "\t\t Computing local mixing length model..." << std::endl;
+  getTurbulentViscosity();
+
+  //  if (m_WGD->canopy) {
+  //    std::cout << "Applying canopy wake turbulence parameterization...\n";
+  //    m_WGD->canopy->applyCanopyTurbulenceWake(m_WGD, this);
+  //  }
+  if (m_WGD->canopy) {
+    std::cout << "Applying canopy wake turbulence parameterization...\n";
+    m_WGD->canopy->applyCanopyTurbulenceWake(m_WGD, this);
+  }
+
   std::cout << "\t\t Computing Stess Tensor..." << std::endl;
   stressTensor();
   // std::cout<<"\t\t Stress Tensor computed."<<std::endl;
+
+  if (m_WGD->canopy) {
+    std::cout << "Applying canopy stresses...\n";
+    m_WGD->canopy->applyCanopyStress(m_WGD, this);
+  }
 
   if (flagNonLocalMixing) {
     std::cout << "\t\t Applying non-local mixing..." << std::endl;
@@ -662,11 +695,12 @@ void TURBGeneralData::derivativeVelocity()
   return;
 }
 
-void TURBGeneralData::stressTensor()
+void TURBGeneralData::getTurbulentViscosity()
 {
   float tkeBound = turbUpperBound * uStar * uStar;
 
   for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
+
     int cellID = *it;
 
     float Sxx = Gxx[cellID];
@@ -686,13 +720,55 @@ void TURBGeneralData::stressTensor()
     NU_T = LM * LM * sqrt(2.0 * SijSij);
     TKE = pow((NU_T / (cPope * LM)), 2.0);
 
-    if (TKE > tkeBound) {
+    if (TKE > tkeBound)
       TKE = tkeBound;
-      NU_T = cPope * sqrt(TKE) * LM;
-    }
 
+    nuT[cellID] = NU_T;
     CoEps[cellID] = 5.7 * pow(sqrt(TKE) * cPope, 3.0) / (LM);
     tke[cellID] = TKE;
+  }
+  return;
+}
+
+void TURBGeneralData::stressTensor()
+{
+  float tkeBound = turbUpperBound * uStar * uStar;
+
+  double R11, R12, R13, R21, R22, R23, R31, R32, R33;// rotation matrix
+  double I11, I12, I13, I21, I22, I23, I31, I32, I33;// inverse of rotation matrix
+  double P11, P12, P13, P21, P22, P23, P31, P32, P33;// P = tau*inv(R)
+
+  for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
+    int cellID = *it;
+    int k = (int)(cellID / ((nx - 1) * (ny - 1)));
+    int j = (int)((cellID - k * (nx - 1) * (ny - 1)) / (nx - 1));
+    int i = cellID - j * (nx - 1) - k * (nx - 1) * (ny - 1);
+    int faceID = i + j * nx + k * nx * ny;
+
+    float Sxx = Gxx[cellID];
+    float Syy = Gyy[cellID];
+    float Szz = Gzz[cellID];
+    float Sxy = 0.5 * (Gxy[cellID] + Gyx[cellID]);
+    float Sxz = 0.5 * (Gxz[cellID] + Gzx[cellID]);
+    float Syz = 0.5 * (Gyz[cellID] + Gzy[cellID]);
+
+    //float NU_T = 0.0;
+    //float TKE = 0.0;
+    float NU_T = nuT[cellID];
+    float TKE = tke[cellID];
+    float LM = Lm[cellID];
+
+    //
+    float SijSij = Sxx * Sxx + Syy * Syy + Szz * Szz + 2.0 * (Sxy * Sxy + Sxz * Sxz + Syz * Syz);
+
+    //NU_T = LM * LM * sqrt(2.0 * SijSij);
+    //TKE = pow((NU_T / (cPope * LM)), 2.0);
+
+    if (TKE > tkeBound)
+      TKE = tkeBound;
+
+    CoEps[cellID] = 5.7 * pow(sqrt(TKE) * cPope, 3.0) / (LM);
+    //tke[cellID] = TKE;
 
     txx[cellID] = (2.0 / 3.0) * TKE - 2.0 * (NU_T * Sxx);
     tyy[cellID] = (2.0 / 3.0) * TKE - 2.0 * (NU_T * Syy);
@@ -701,11 +777,175 @@ void TURBGeneralData::stressTensor()
     txz[cellID] = -2.0 * (NU_T * Sxz);
     tyz[cellID] = -2.0 * (NU_T * Syz);
 
-    txx[cellID] = fabs(sigUConst * txx[cellID]);
-    tyy[cellID] = fabs(sigVConst * tyy[cellID]);
-    tzz[cellID] = fabs(sigWConst * tzz[cellID]);
+    // ROTATE INTO SENSOR-ALIGNED
+
+    //float sensorDir = WID->metParams->sensors[i]->TS[0]->site_wind_dir[0];
+
+    int k_ref = 0;
+    float refHeight = 15.0;// reference height for rotation wind direction is arbitrarily set to 15m above terrain
+    while (m_WGD->z_face[k_ref] < (refHeight + m_WGD->terrain[i + j * (m_WGD->nx - 1)])) {
+      k_ref += 1;
+    }
+
+    int localRef = i + j * nx + k_ref * nx * ny;
+    float dirRot = atan2(m_WGD->v[localRef], m_WGD->u[localRef]);// radians on the unit circle
+
+    //Rotation matrix
+    R11 = cos(dirRot);
+    R12 = -sin(dirRot);
+    R13 = 0.0;
+    R21 = sin(dirRot);
+    R22 = cos(dirRot);
+    R23 = 0.0;
+    R31 = 0.0;
+    R32 = 0.0;
+    R33 = 1.0;
+
+    I11 = R11;
+    I12 = R12;
+    I13 = R13;
+    I21 = R21;
+    I22 = R22;
+    I23 = R23;
+    I31 = R31;
+    I32 = R32;
+    I33 = R33;
+
+    double txx_temp = txx[cellID];
+    double txy_temp = txy[cellID];
+    double txz_temp = txz[cellID];
+    double tyy_temp = tyy[cellID];
+    double tyz_temp = tyz[cellID];
+    double tzz_temp = tzz[cellID];
+
+    //Invert rotation matrix
+    invert3(I11, I12, I13, I21, I22, I23, I31, I32, I33);
+
+
+    matMult(txx_temp, txy_temp, txz_temp, txy_temp, tyy_temp, tyz_temp, txz_temp, tyz_temp, tzz_temp, I11, I12, I13, I21, I22, I23, I31, I32, I33, P11, P12, P13, P21, P22, P23, P31, P32, P33);
+
+    matMult(R11, R12, R13, R21, R22, R23, R31, R32, R33, P11, P12, P13, P21, P22, P23, P31, P32, P33, txx_temp, txy_temp, txz_temp, txy_temp, tyy_temp, tyz_temp, txz_temp, tyz_temp, tzz_temp);
+
+    txx_temp = fabs(sigUConst * txx_temp);
+    tyy_temp = fabs(sigVConst * tyy_temp);
+    tzz_temp = fabs(sigWConst * tzz_temp);
+
+
+    // DEROTATE
+    //Rotation matrix
+    dirRot = -dirRot;
+    R11 = cos(dirRot);
+    R12 = -sin(dirRot);
+    R13 = 0.0;
+    R21 = sin(dirRot);
+    R22 = cos(dirRot);
+    R23 = 0;
+    R31 = 0;
+    R32 = 0;
+    R33 = 1;
+
+    I11 = R11;
+    I12 = R12;
+    I13 = R13;
+    I21 = R21;
+    I22 = R22;
+    I23 = R23;
+    I31 = R31;
+    I32 = R32;
+    I33 = R33;
+
+    //Invert rotation matrix
+    invert3(I11, I12, I13, I21, I22, I23, I31, I32, I33);
+
+    matMult(txx_temp, txy_temp, txz_temp, txy_temp, tyy_temp, tyz_temp, txz_temp, tyz_temp, tzz_temp, I11, I12, I13, I21, I22, I23, I31, I32, I33, P11, P12, P13, P21, P22, P23, P31, P32, P33);
+
+    matMult(R11, R12, R13, R21, R22, R23, R31, R32, R33, P11, P12, P13, P21, P22, P23, P31, P32, P33, txx_temp, txy_temp, txz_temp, txy_temp, tyy_temp, tyz_temp, txz_temp, tyz_temp, tzz_temp);
+
+    txx[cellID] = txx_temp;
+    txy[cellID] = txy_temp;
+    txz[cellID] = txz_temp;
+    tyy[cellID] = tyy_temp;
+    tyz[cellID] = tyz_temp;
+    tzz[cellID] = tzz_temp;
   }
 }
+
+void TURBGeneralData::invert3(double &A_11,
+                              double &A_12,
+                              double &A_13,
+                              double &A_21,
+                              double &A_22,
+                              double &A_23,
+                              double &A_31,
+                              double &A_32,
+                              double &A_33)
+{
+
+  // calculate the determinant
+  double det = A_11 * (A_22 * A_33 - A_23 * A_32) - A_12 * (A_21 * A_33 - A_23 * A_31) + A_13 * (A_21 * A_32 - A_22 * A_31);
+
+  // calculate the inverse
+  double Ainv_11 = (A_22 * A_33 - A_23 * A_32) / det;
+  double Ainv_12 = -(A_12 * A_33 - A_13 * A_32) / det;
+  double Ainv_13 = (A_12 * A_23 - A_22 * A_13) / det;
+  double Ainv_21 = -(A_21 * A_33 - A_23 * A_31) / det;
+  double Ainv_22 = (A_11 * A_33 - A_13 * A_31) / det;
+  double Ainv_23 = -(A_11 * A_23 - A_13 * A_21) / det;
+  double Ainv_31 = (A_21 * A_32 - A_31 * A_22) / det;
+  double Ainv_32 = -(A_11 * A_32 - A_12 * A_31) / det;
+  double Ainv_33 = (A_11 * A_22 - A_12 * A_21) / det;
+
+  A_11 = Ainv_11;
+  A_12 = Ainv_12;
+  A_13 = Ainv_13;
+  A_21 = Ainv_21;
+  A_22 = Ainv_22;
+  A_23 = Ainv_23;
+  A_31 = Ainv_31;
+  A_32 = Ainv_32;
+  A_33 = Ainv_33;
+}
+
+void TURBGeneralData::matMult(const double &A11,
+                              const double &A12,
+                              const double &A13,
+                              const double &A21,
+                              const double &A22,
+                              const double &A23,
+                              const double &A31,
+                              const double &A32,
+                              const double &A33,
+                              const double &B11,
+                              const double &B12,
+                              const double &B13,
+                              const double &B21,
+                              const double &B22,
+                              const double &B23,
+                              const double &B31,
+                              const double &B32,
+                              const double &B33,
+                              double &C11,
+                              double &C12,
+                              double &C13,
+                              double &C21,
+                              double &C22,
+                              double &C23,
+                              double &C31,
+                              double &C32,
+                              double &C33)
+
+{
+  C11 = A11 * B11 + A12 * B21 + A13 * B31;
+  C12 = A11 * B12 + A12 * B22 + A13 * B32;
+  C13 = A11 * B13 + A12 * B23 + A13 * B33;
+  C21 = A21 * B11 + A22 * B21 + A23 * B31;
+  C22 = A21 * B12 + A22 * B22 + A23 * B32;
+  C23 = A21 * B13 + A22 * B23 + A23 * B33;
+  C31 = A31 * B11 + A32 * B21 + A33 * B31;
+  C32 = A31 * B12 + A32 * B22 + A33 * B32;
+  C33 = A31 * B13 + A32 * B23 + A33 * B33;
+}
+
 
 void TURBGeneralData::addBackgroundMixing()
 {

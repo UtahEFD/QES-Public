@@ -28,8 +28,8 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Particle.hpp
- * @brief This class represents information stored for each particle
+/** @file Particle.hpp 
+ * @brief This class represents information stored for each particle 
  */
 
 #pragma once
@@ -60,6 +60,9 @@ public:
     m = 0.0;
     m_kg = (1.0E-3) * m;
 
+    m_o = 0.0;//initial particle mass (g)
+    m_kg_o = 0.0;//initial particle mass (kg)
+
     // density of particle
     rho = 0.0;
 
@@ -68,9 +71,10 @@ public:
 
 
     // (1 - fraction) particle deposited
-    wdepos = 1.0;
     depFlag = false;
-
+    decayConst = 0;
+    c1 = 2.049;
+    c2 = 1.19;
     // (1 - fraction) particle decay
     wdecay = 1.0;
   }
@@ -93,9 +97,10 @@ public:
     tag = "ParticleTracer";// tagged as "tracer" so when particle type is unspecified in XML, it defaults to tracer
 
     // (1 - fraction) particle deposited
-    wdepos = 1.0;
     depFlag = false;
-
+    decayConst = 0;
+    c1 = 2.049;
+    c2 = 1.19;
     // (1 - fraction) particle deposited
     wdecay = 1.0;
   }
@@ -143,9 +148,9 @@ public:
   double disZ;
 
   // Total velocities (mean plus fluct) for each time step
-  // double uTot;
-  // double vTot;
-  // double wTot;
+  double uTot;
+  double vTot;
+  double wTot;
 
   double CoEps;
 
@@ -154,7 +159,7 @@ public:
   double vFluct_old;// v component
   double wFluct_old;// w component
 
-  // stress tensor from the last iteration (6 component because stress tensor is symmetric)
+  // stress tensor from the last iteration (6 component because stress tensor is symetric)
   double txx_old;// this is the stress in the x direction on the x face from the last iteration
   double txy_old;// this is the stress in the y direction on the x face from the last iteration
   double txz_old;// this is the stress in the z direction on the x face from the last iteration
@@ -174,10 +179,11 @@ public:
   double d_m;// particle diameter diameter [m]
   double m;// particle mass [g]
   double m_kg;// particle mass [kg]
+  double m_o;// initial particle mass [g]
+  double m_kg_o;// initial particle mass [kg]
   double rho;// density of particle
 
-  // deposition variables
-  double wdepos;// (1 - fraction) particle deposited [0,1]
+  // deposition vatiables
   double Sc;// Schmidt number
   double taud;// characteristic relaxation time [s]
   double vd;// deposition velocity [m/s]
@@ -188,9 +194,12 @@ public:
   std::vector<int> dep_buffer_cell;
   std::vector<float> dep_buffer_val;
 
-  // settling variables
+  double decayConst;// mass decay constant
+  double c1;// Stk* fit param (exponent)
+  double c2;// Stk* fit param (exponent)
+  // settling vatiables
   double dstar;// dimensionless grain diameter
-  double Cd;// drag coefficient
+  double Cd;// drag coefficent
   double wstar;// dimensionless settling velocity
   double vs;// settling velocity [m/s]
 

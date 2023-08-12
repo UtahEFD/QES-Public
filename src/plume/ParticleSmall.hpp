@@ -59,7 +59,6 @@ public:
     tag = "ParticleSmall";
 
     // (1 - fraction) particle deposited
-    wdepos = 1.0;
     depFlag = true;
 
     // (1 - fraction) particle decay
@@ -84,7 +83,6 @@ public:
     tag = "ParticleSmall";
 
     // (1 - fraction) particle deposited
-    wdepos = 1.0;
     depFlag = true;
 
     // (1 - fraction) particle deposited

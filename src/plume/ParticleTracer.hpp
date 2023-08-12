@@ -59,7 +59,6 @@ public:
     tag = "ParticleTracer";
 
     // (1 - fraction) particle deposited
-    wdepos = 1.0;
     depFlag = false;
 
     // (1 - fraction) particle decay
@@ -84,7 +83,6 @@ public:
     tag = "ParticleTracer";
 
     // (1 - fraction) particle deposited
-    wdepos = 1.0;
     depFlag = false;
 
     // (1 - fraction) particle deposited

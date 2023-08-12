@@ -32,7 +32,7 @@
 
 #include "Plume.hpp"
 
-void Plume::advectParticle(double timeRemainder, Particle *par_ptr, WINDSGeneralData *WGD, TURBGeneralData *TGD)
+void Plume::advectParticle(double timeRemainder, Particle *par_ptr, double boxSizeZ, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
   /*
    * this function is advencing the particle -> status is returned in:
@@ -76,6 +76,7 @@ void Plume::advectParticle(double timeRemainder, Particle *par_ptr, WINDSGeneral
   double flux_div_y = 0.0;
   double flux_div_z = 0.0;
 
+  double nuT = 0.0;
   // size_t cellIdx_old = interp->getCellId(xPos,yPos,zPos);
 
   // getting the initial position, for use in setting finished particles
@@ -145,7 +146,7 @@ void Plume::advectParticle(double timeRemainder, Particle *par_ptr, WINDSGeneral
       will need to use the interp3D function
     */
 
-    interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, CoEps);
+    interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
 
     // now need to call makeRealizable on tau
     makeRealizable(txx, txy, txz, tyy, tyz, tzz);
@@ -249,6 +250,7 @@ void Plume::advectParticle(double timeRemainder, Particle *par_ptr, WINDSGeneral
     // now do the Ax=b calculation using the inverted matrix (vecFluct = A*b)
     matmult(A_11, A_12, A_13, A_21, A_22, A_23, A_31, A_32, A_33, b_11, b_21, b_31, uFluct, vFluct, wFluct);
 
+
     // now check to see if the value is rogue or not
     if (std::abs(uFluct) >= vel_threshold || isnan(uFluct)) {
       std::cerr << "Particle # " << par_ptr->particleID << " is rogue, ";
@@ -298,7 +300,7 @@ void Plume::advectParticle(double timeRemainder, Particle *par_ptr, WINDSGeneral
 
     // Deposit mass (vegetation only right now)
     if (par_ptr->depFlag) {
-      depositParticle(xPos, yPos, zPos, disX, disY, disZ, uTot, vTot, wTot, txx, tyy, tzz, CoEps, par_ptr, WGD, TGD);
+      depositParticle(xPos, yPos, zPos, disX, disY, disZ, uTot, vTot, wTot, txx, tyy, tzz, txz, txy, tyz, par_ptr->vs, CoEps, boxSizeZ, nuT, par_ptr, WGD, TGD);
     }
 
     // check and do wall (building and terrain) reflection (based in the method)

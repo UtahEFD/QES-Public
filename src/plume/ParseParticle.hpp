@@ -73,6 +73,9 @@ public:
   double m_kg;
   double rho;
   bool depFlag;
+  double decayConst;
+  double c1;
+  double c2;
   std::string tag;
   /*
   // the initial position for the particle, to not be changed after the simulation starts
@@ -135,7 +138,6 @@ public:
   bool isActive;// this is true until it becomes false.  If a particle leaves the domain or runs out of mass, this becomes false.
 
   // deposition vatiables
-  double wdepos;// (1 - fraction) particle deposited [0,1]
   double Sc;// Schmidt number
   double taud;// characteristic relaxation time [s]
   double vd;// deposition velocity [m/s]
@@ -160,6 +162,9 @@ public:
     m_kg = 0.0;
     rho = 0.0;
     depFlag = false;
+    decayConst = 0;
+    c1 = 2.049;
+    c2 = 1.19;
     tag = "ParticleTracer";
     d_m = d * (1.0E-6);
     m_kg = m * (1.0E-3);
@@ -206,6 +211,9 @@ public:
     m_kg = 0.0;
     rho = 0.0;
     depFlag = false;
+    decayConst = 0;
+    c1 = 2.049;
+    c2 = 1.19;
     tag = "ParticleTracer";
   }
 
@@ -248,6 +256,9 @@ public:
     m_kg = 0.0;
     rho = 0.0;
     depFlag = true;
+    decayConst = 0;
+    c1 = 2.049;
+    c2 = 1.19;
     tag = "ParticleSmall";
   }
 
@@ -262,6 +273,9 @@ public:
     parsePrimitive<double>(true, rho, "particleDensity");
     parsePrimitive<double>(true, d, "particleDiameter");
     parsePrimitive<bool>(true, depFlag, "depositionFlag");
+    parsePrimitive<double>(false, decayConst, "decayConst");
+    parsePrimitive<double>(false, c1, "c1");
+    parsePrimitive<double>(false, c2, "c2");
     d_m = d * (1.0E-6);
     m_kg = m * (1.0E-3);
   }
@@ -295,6 +309,9 @@ public:
     m_kg = 0.0;
     rho = 0.0;
     depFlag = true;
+    decayConst = 0;
+    c1 = 2.049;
+    c2 = 1.19;
     tag = "ParticleLarge";
   }
 
@@ -309,6 +326,9 @@ public:
     parsePrimitive<double>(true, rho, "particleDensity");
     parsePrimitive<double>(true, d, "particleDiameter");
     parsePrimitive<bool>(true, depFlag, "depositionFlag");
+    parsePrimitive<double>(true, decayConst, "decayConst");
+    parsePrimitive<double>(false, c1, "c1");
+    parsePrimitive<double>(false, c2, "c2");
     d_m = d * (1.0E-6);
     m_kg = m * (1.0E-3);
   }
@@ -342,6 +362,9 @@ public:
     m_kg = 0.0;
     rho = 0.0;
     depFlag = true;
+    decayConst = 0;
+    c1 = 2.049;
+    c2 = 1.19;
     tag = "ParticleHeavyGas";
   }
 
@@ -356,6 +379,9 @@ public:
     parsePrimitive<double>(true, rho, "particleDensity");
     parsePrimitive<double>(true, d, "particleDiameter");
     parsePrimitive<bool>(true, depFlag, "depositionFlag");
+    parsePrimitive<double>(true, decayConst, "decayConst");
+    parsePrimitive<double>(false, c1, "c1");
+    parsePrimitive<double>(false, c2, "c2");
     d_m = d * (1.0E-6);
     m_kg = m * (1.0E-3);
   }

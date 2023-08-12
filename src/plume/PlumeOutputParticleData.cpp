@@ -166,7 +166,6 @@ PlumeOutputParticleData::PlumeOutputParticleData(PlumeInputData *PID, Plume *plu
 
   d.resize(numPar, 0.0);
   m.resize(numPar, 0.0);
-  wdepos.resize(numPar, 0.0);
   wdecay.resize(numPar, 0.0);
 
   xPos_init.resize(numPar, 0);
@@ -221,7 +220,6 @@ PlumeOutputParticleData::PlumeOutputParticleData(PlumeInputData *PID, Plume *plu
 
   createAttVector("d", "diameter ofarticle", "mu-m", dim_vect_2d, &d);
   createAttVector("m", "mass of particle", "g", dim_vect_2d, &m);
-  createAttVector("wdepos", "non-deposited fraction", "--", dim_vect_2d, &wdepos);
   createAttVector("wdecay", "non-decay fraction", "--", dim_vect_2d, &wdecay);
 
   createAttVector("xPos_init", "initial-x-position", "m", dim_vect_2d, &xPos_init);
@@ -284,7 +282,6 @@ void PlumeOutputParticleData::save(QEStime timeIn)
       sourceIdx[parID] = parItr->sourceIdx;
       d[parID] = (float)parItr->d;
       m[parID] = (float)parItr->m;
-      wdepos[parID] = (float)parItr->wdepos;
       wdecay[parID] = (float)parItr->wdecay;
 
       xPos_init[parID] = (float)parItr->xPos_init;

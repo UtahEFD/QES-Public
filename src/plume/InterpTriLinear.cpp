@@ -108,6 +108,7 @@ void InterpTriLinear::interpValues(const double &xPos,
                                    double &flux_div_x_out,
                                    double &flux_div_y_out,
                                    double &flux_div_z_out,
+                                   double &nuT_out,
                                    double &CoEps_out)
 {
   // these are the current interp3D variables, as they are used for multiple interpolations for each particle
@@ -151,6 +152,8 @@ void InterpTriLinear::interpValues(const double &xPos,
   interp3D_cellVar(TGD->div_tau_x, wgt, flux_div_x_out);
   interp3D_cellVar(TGD->div_tau_y, wgt, flux_div_y_out);
   interp3D_cellVar(TGD->div_tau_z, wgt, flux_div_z_out);
+
+  interp3D_cellVar(TGD->nuT, wgt, nuT_out);
 }
 
 void InterpTriLinear::setInterp3Dindex_uFace(const double &par_xPos,

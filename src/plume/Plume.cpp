@@ -119,6 +119,12 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   domainZstart = interp->zStart;
   domainZend = interp->zEnd;
 
+  // Need dz for ground deposition
+  double lBndz = PID->colParams->boxBoundsZ1;
+  double uBndz = PID->colParams->boxBoundsZ2;
+  int nBoxesZ = PID->colParams->nBoxesZ;
+  boxSizeZ = (uBndz - lBndz) / (nBoxesZ);
+
   // make copies of important dispersion time variables
   sim_dt = PID->plumeParams->timeStep;
 
@@ -195,7 +201,7 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
   // for every simulation time step
   // //////////////////////////////////////////
 
-  if (debug) {
+  if (debug == true) {
     // start recording the amount of time it takes to perform the simulation
     // time integration loop
     timers.startNewTimer("simulation time integration loop");
@@ -208,7 +214,7 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
   }
 
   QEStime nextUpdate = simTimeCurr + updateFrequency_timeLoop;
-  double simTime = simTimeCurr - simTimeStart;
+  float simTime = simTimeCurr - simTimeStart;
 
   std::cout << "[Plume] \t Advecting particles from " << simTimeCurr << " to " << loopTimeEnd << "\n";
   std::cout << "\t\t total run time = " << loopTimeEnd - simTimeCurr << " s \n";
@@ -277,12 +283,12 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
 #pragma omp parallel for default(none) shared(WGD, TGD, tmp, timeRemainder)
     for (auto k = 0u; k < tmp.size(); ++k) {
       // call to the main particle adection function (in separate file: AdvectParticle.cpp)
-      advectParticle(timeRemainder, tmp[k], WGD, TGD);
+      advectParticle(timeRemainder, tmp[k], boxSizeZ, WGD, TGD);
     }//  END OF OPENMP WORK SHARE
 #else
     for (auto &parItr : particleList) {
       //  call to the main particle adection function (in separate file: AdvectParticle.cpp)
-      advectParticle(timeRemainder, parItr, WGD, TGD);
+      advectParticle(timeRemainder, parItr, boxSizeZ, WGD, TGD);
     }// end of loop
 #endif
 
@@ -690,7 +696,7 @@ void Plume::makeRealizable(double &txx,
   double c = txx * tyy + txx * tzz + tyy * tzz - txy * txy - txz * txz - tyz * tyz;// also invar_yy
   double ks = 1.01 * (-b + std::sqrt(b * b - 16.0 / 3.0 * c)) / (8.0 / 3.0);
 
-  // if the initial guess is bad, use the straight-up invar_xx value
+  // if the initial guess is bad, use the straight up invar_xx value
   if (ks < invarianceTol || isnan(ks)) {
     ks = 0.5 * std::abs(txx + tyy + tzz);// also 0.5*abs(invar_xx)
   }
@@ -856,7 +862,7 @@ void Plume::setBCfunctions(const std::string &xBCtype,
   // https://www.learncpp.com/cpp-tutorial/78-function-pointers/
 
   // output some debug information
-  if (debug) {
+  if (debug == true) {
     std::cout << "xBCtype = \"" << xBCtype << "\"" << std::endl;
     std::cout << "yBCtype = \"" << yBCtype << "\"" << std::endl;
     std::cout << "zBCtype = \"" << zBCtype << "\"" << std::endl;

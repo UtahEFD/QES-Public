@@ -103,10 +103,15 @@ int SourcePoint::emitParticles(const float dt, const float currTime, std::list<P
       cPar->d_m = (1.0E-6) * protoParticle->d;
       cPar->rho = protoParticle->rho;
       cPar->depFlag = protoParticle->depFlag;
+      cPar->decayConst = protoParticle->decayConst;
+      cPar->c1 = protoParticle->c1;
+      cPar->c2 = protoParticle->c2;
 
       cPar->m = sourceStrength / m_rType->m_numPar;
       cPar->m_kg = sourceStrength / m_rType->m_numPar * (1.0E-3);
-
+      cPar->m_o = cPar->m;
+      cPar->m_kg_o = cPar->m * (1.0E-3);
+      // copy constructor instead?
       //std::cout << " par type is: " << cPar->tag << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
 
 
