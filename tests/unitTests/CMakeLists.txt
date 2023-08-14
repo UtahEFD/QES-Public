@@ -47,6 +47,14 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
    cuda_add_executable(plume_vector_classes_CPU
      plume_vector_classes_CPU.cpp)
 
+  set(UNITTESTS
+    util_time
+    winds_terrain
+    turbulence_derivative_CPU
+    plume_interpolation_CPU
+    plume_vector_classes_CPU
+    test_CUDARandomGen)
+
 ELSE ($CACHE{HAS_CUDA_SUPPORT})
 
    add_executable(winds_terrain
@@ -62,15 +70,14 @@ ELSE ($CACHE{HAS_CUDA_SUPPORT})
    add_executable(plume_vector_classes_CPU
            plume_vector_classes_CPU.cpp)
 
+  set(UNITTESTS
+      util_time
+      winds_terrain
+      turbulence_derivative_CPU
+      plume_interpolation_CPU
+      plume_vector_classes_CPU)
+      
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
-
-set(UNITTESTS
-  util_time
-  winds_terrain
-  turbulence_derivative_CPU
-  plume_interpolation_CPU
-  plume_vector_classes_CPU
-  test_CUDARandomGen)
 
 foreach (unittest ${UNITTESTS})
   
