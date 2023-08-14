@@ -27,6 +27,13 @@ add_executable(util_time util_time.cpp)
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
 
+  cuda_add_executable(test_CUDARandomGen
+    CUDARandomKernel.cu CUDARandomKernel.h
+    test_CUDARandomGen.cpp
+    )
+   target_link_libraries(test_CUDARandomGen ${CUDA_LIBRARIES})
+   target_link_libraries(test_CUDARandomGen ${CUDA_curand_LIBRARY})
+
    cuda_add_executable(winds_terrain
      test_DTEHeightField.h test_DTEHeightField.cpp
      winds_terrain.cpp)
@@ -38,7 +45,7 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
            plume_interpolation_CPU.cpp)
 
    cuda_add_executable(plume_vector_classes_CPU
-           plume_vector_classes_CPU.cpp)
+     plume_vector_classes_CPU.cpp)
 
 ELSE ($CACHE{HAS_CUDA_SUPPORT})
 
@@ -62,7 +69,8 @@ set(UNITTESTS
   winds_terrain
   turbulence_derivative_CPU
   plume_interpolation_CPU
-  plume_vector_classes_CPU)
+  plume_vector_classes_CPU
+  test_CUDARandomGen)
 
 foreach (unittest ${UNITTESTS})
   
