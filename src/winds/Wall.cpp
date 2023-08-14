@@ -472,17 +472,17 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
 
       if (WGD->nk[WGD->wall_indices[id]] >= 0.0) {
         z_buffer = WGD->z[k] + WGD->nk[WGD->wall_indices[id]] * coeff * WGD->dz_array[k];
-        for (auto kk = 0u; kk < WGD->z.size(); kk++) {
+        for (auto kk = 0u; kk < WGD->z.size() - 1; ++kk) {
           second_k = kk + 1;
-          if (z_buffer <= WGD->z_face[kk + 1]) {
+          if (z_buffer <= WGD->z_face[kk + 2]) {
             break;
           }
         }
       } else {
         z_buffer = WGD->z[k] + WGD->nk[WGD->wall_indices[id]] * coeff * WGD->dz_array[k];
-        for (auto kk = 0u; kk < WGD->z.size(); kk++) {
+        for (auto kk = 0u; kk < WGD->z.size() - 1; ++kk) {
           second_k = kk + 1;
-          if (z_buffer <= WGD->z_face[kk + 1]) {
+          if (z_buffer <= WGD->z_face[kk + 2]) {
             break;
           }
         }
@@ -538,17 +538,17 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
             }
           }
           z_buffer = WGD->z[k] + WGD->nk[WGD->wall_indices[id]] * (coeff + 1) * WGD->dz_array[k];
-          for (auto kk = 0u; kk < WGD->z.size(); kk++) {
+          for (auto kk = 0u; kk < WGD->z.size() - 1; ++kk) {
             second_k = kk + 1;
-            if (z_buffer <= WGD->z_face[kk + 1]) {
+            if (z_buffer <= WGD->z_face[kk + 2]) {
               break;
             }
           }
         } else {
           z_buffer = WGD->z[k] + WGD->nk[WGD->wall_indices[id]] * coeff * WGD->dz_array[k];
-          for (auto kk = 0u; kk < WGD->z.size(); kk++) {
+          for (auto kk = 0u; kk < WGD->z.size() - 1; ++kk) {
             first_k = kk + 1;
-            if (z_buffer <= WGD->z_face[kk + 1]) {
+            if (z_buffer <= WGD->z_face[kk + 2]) {
               break;
             }
           }

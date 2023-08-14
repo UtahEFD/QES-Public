@@ -61,10 +61,10 @@ public:
   // setup and save output for the given time
   // in this case the saved data is output averaged concentration
   // This is the one function that needs called from outside after constructor time
-  void save(QEStime);
+  void save(QEStime) override;
 
 protected:
-  bool validateFileOtions();
+  bool validateFileOptions_local();
 
 private:
   // default constructor
@@ -83,7 +83,7 @@ private:
   Plume *m_plume;
 
   // all possible output fields need to be add to this list
-  std::vector<std::string> allOutputFields = { "parID", "tStrt", "sourceIdx", "d", "m", "wdepos", "wdecay", "xPos_init", "yPos_init", "zPos_init", "xPos", "yPos", "zPos", "uMean", "vMean", "wMean", "uFluct", "vFluct", "wFluct", "delta_uFluct", "delta_vFluct", "delta_wFluct", "isRogue", "isActive" };
+  std::vector<std::string> allOutputFields = { "parID", "tStrt", "sourceIdx", "d", "m", "wdecay", "xPos_init", "yPos_init", "zPos_init", "xPos", "yPos", "zPos", "uMean", "vMean", "wMean", "uFluct", "vFluct", "wFluct", "delta_uFluct", "delta_vFluct", "delta_wFluct", "isRogue", "isActive" };
   std::vector<std::string> minimalOutputFields = { "parID", "tStrt", "sourceIdx", "xPos", "yPos", "zPos", "isActive" };
 
 
@@ -95,7 +95,6 @@ private:
 
   std::vector<float> d;// list of particle diameter
   std::vector<float> m;// list of particle mass
-  std::vector<float> wdepos;// list of particle non-deposited fraction
   std::vector<float> wdecay;// list of particle non-decay fraction
 
   std::vector<float> xPos_init;// list of initial x positions for the particles

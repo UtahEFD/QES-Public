@@ -97,7 +97,7 @@ void CanopyWindbreak::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *
             if (WGD->terrain[icell_2d] + base_height <= WGD->z[k]) {
               WGD->canopy->canopy_bot_index[icell_2d] = k;
               WGD->canopy->canopy_bot[icell_2d] = WGD->terrain[icell_2d] + base_height;
-              WGD->canopy->canopy_base[icell_2d] = WGD->z_face[k - 1];
+              WGD->canopy->canopy_base[icell_2d] = WGD->z_face[k];
               break;
             }
           }
@@ -180,7 +180,7 @@ void CanopyWindbreak::canopyVegetation(WINDSGeneralData *WGD, int building_id)
     for (auto k = WGD->canopy->canopy_bot_index[icell_2d]; k < WGD->canopy->canopy_top_index[icell_2d]; ++k) {
       int icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
 
-      if ((WGD->z_face[k - 1] - z_b >= understory_height) && (WGD->z_face[k - 1] - z_b <= H)) {
+      if ((WGD->z_face[k] - z_b >= understory_height) && (WGD->z_face[k] - z_b <= H)) {
         // adding modified velocity to the list of node to modifiy
         /*
             this method avoid double appication of the param.
@@ -363,7 +363,7 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
             int k_top = H / WGD->dz + WGD->terrain_id[i + j * (WGD->nx - 1)];
 
             // z-coord relative to the base of the building.
-            z_c = WGD->z[k] - WGD->z_face[WGD->terrain_id[i + j * (WGD->nx - 1)] - 1];
+            z_c = WGD->z[k] - WGD->z_face[WGD->terrain_id[i + j * (WGD->nx - 1)]];
 
             if (i >= WGD->nx - 2 && i <= 0 && j >= WGD->ny - 2 && j <= 0)
               break;

@@ -63,7 +63,7 @@ public:
     values[2] = c;
   }
 
-  virtual void parseValues()
+  void parseValues() override
   {
     values.clear();
     parseTaglessValues(values);
@@ -83,12 +83,12 @@ public:
 
   Vector3Int operator-(const Vector3Int &v1)
   {
-    return Vector3Int(values[0] - v1.values[0], values[1] - v1.values[1], values[2] - v1.values[2]);
+    return { values[0] - v1.values[0], values[1] - v1.values[1], values[2] - v1.values[2] };
   }
 
   friend Vector3Int operator-(const Vector3Int &v1, const Vector3Int &v2)
   {
-    return Vector3Int(v1.values[0] - v2.values[0], v1.values[1] - v2.values[1], v1.values[2] - v2.values[2]);
+    return { v1.values[0] - v2.values[0], v1.values[1] - v2.values[1], v1.values[2] - v2.values[2] };
   }
 
   friend std::ostream &operator<<(std::ostream &out, const Vector3Int &v)

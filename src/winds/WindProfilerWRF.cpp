@@ -72,7 +72,7 @@ void WindProfilerWRF::interpolateWindProfile(const WINDSInputData *WID, WINDSGen
     for (auto j = WGD->halo_index_y; j < WGD->wrf_ny + WGD->halo_index_y; ++j) {
       for (auto i = WGD->halo_index_x + 1; i < WGD->wrf_nx + WGD->halo_index_x; ++i) {
         id = (i - WGD->halo_index_x) + (j - WGD->halo_index_y) * WGD->wrf_nx;
-        zm = WGD->z[k] - WGD->z_face[WGD->terrain_face_id[i + j * WGD->nx] - 1];
+        zm = WGD->z[k] - WGD->z_face[WGD->terrain_face_id[i + j * WGD->nx]];
         icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
         interpolate(WGD->u0[icell_face], zm, id, wrf_ptr->u0_fmw, wrf_ptr->ht_fmw, 1, WGD->wrf_nx * WGD->wrf_ny);
       }
@@ -82,7 +82,7 @@ void WindProfilerWRF::interpolateWindProfile(const WINDSInputData *WID, WINDSGen
     for (auto j = WGD->halo_index_y + 1; j < WGD->wrf_ny + WGD->halo_index_y; ++j) {
       for (auto i = WGD->halo_index_x; i < WGD->wrf_nx + WGD->halo_index_x; ++i) {
         id = (i - WGD->halo_index_x) + (j - WGD->halo_index_y) * WGD->wrf_nx;
-        zm = WGD->z[k] - WGD->z_face[WGD->terrain_face_id[i + j * WGD->nx] - 1];
+        zm = WGD->z[k] - WGD->z_face[WGD->terrain_face_id[i + j * WGD->nx]];
         icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
         interpolate(WGD->v0[icell_face], zm, id, wrf_ptr->v0_fmw, wrf_ptr->ht_fmw, WGD->wrf_nx, WGD->wrf_nx * WGD->wrf_ny);
       }

@@ -32,7 +32,7 @@
 
 #pragma once
 
-#include <math.h>
+#include <cmath>
 #include <algorithm>
 
 struct UTM

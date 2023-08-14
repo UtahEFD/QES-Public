@@ -277,6 +277,29 @@ end
 saveas(hfig,currentPlotName);
 save2pdf(hfig,currentPlotName,hfig.Position(3:4),fsize)
 
+A=interp1(zOverL_cc,expected_wFluct_averages,statisticsGrid_zOverL);
+B=wFluct_averages(end,:);
+
+rmse = sqrt(mean((A-B).^2));
+fprintf("RMSE on mean of wFluct: %f\n",rmse);
+
+A=interp1(zOverL_cc,expected_wFluct_variances,statisticsGrid_zOverL);
+B=wFluct_variances(end,:);
+
+rmse = sqrt(mean((A-B).^2));
+fprintf("RMSE on variance of wFluct: %f\n",rmse);
+
+A=interp1(zOverL_cc,expected_delta_wFluct_averages,statisticsGrid_zOverL);
+B=delta_wFluct_averages(end,:);
+
+rmse = sqrt(mean((A-B).^2));
+fprintf("RMSE on mean of wFluct/delta t: %f\n",rmse);
+
+A=interp1(zOverL_cc,expected_delta_wFluct_variances,statisticsGrid_zOverL);
+B=delta_wFluct_variances(end,:);
+
+rmse = sqrt(mean((A-B).^2));
+fprintf("RMSE on var of wFluct/delta t:: %f\n",rmse);
 
 
 end

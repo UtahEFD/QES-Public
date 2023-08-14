@@ -56,10 +56,12 @@
 #include "LocalMixingDefault.h"
 #include "LocalMixingNetCDF.h"
 #include "LocalMixingSerial.h"
-#include "Mesh.h"
+
 #include "DTEHeightField.h"
 #include "Cut_cell.h"
 #include "Wall.h"
+
+// #include "util/Mesh.h"
 #include "util/NetCDFInput.h"
 #include "util/QEStime.h"
 
@@ -100,7 +102,10 @@ public:
   void printTimeProgress(int);
 
   void resetICellFlag();
-
+  bool isSolid(const int &);
+  bool isCanopy(const int &);
+  bool isTerrain(const int &);
+  bool isBuilding(const int &);
   /**
    * Uses bisection method to find the displacement height of the canopy.
    *
@@ -119,8 +124,6 @@ public:
    * Saves user-defined data to file.
    */
   void save();
-
-
   void loadNetCDFData(int);
 
   ////////////////////////////////////////////////////////////////////////////
@@ -302,4 +305,32 @@ public:
 private:
   // input: store here for multiple time instance.
   NetCDFInput *input; /**< :document this: */
+
+protected:
+  void defineHorizontalGrid();
+  void defineVerticalGrid();
+  void defineVerticalStretching(const float &);
+  void defineVerticalStretching(const std::vector<float> &);
+
+  void allocateMemory();
 };
+
+inline bool WINDSGeneralData::isCanopy(const int &cellID)
+{
+  return (icellflag[cellID] == 20 || icellflag[cellID] == 22 || icellflag[cellID] == 24 || icellflag[cellID] == 28);
+}
+
+inline bool WINDSGeneralData::isBuilding(const int &cellID)
+{
+  return (icellflag[cellID] == 0);
+}
+
+inline bool WINDSGeneralData::isTerrain(const int &cellID)
+{
+  return (icellflag[cellID] == 2);
+}
+
+inline bool WINDSGeneralData::isSolid(const int &cellID)
+{
+  return (icellflag[cellID] == 0 || icellflag[cellID] == 2);
+}

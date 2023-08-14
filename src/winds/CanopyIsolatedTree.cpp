@@ -103,7 +103,7 @@ void CanopyIsolatedTree::setCellFlags(const WINDSInputData *WID, WINDSGeneralDat
             if (WGD->terrain[icell_2d] + base_height <= WGD->z[k]) {
               WGD->canopy->canopy_bot_index[icell_2d] = k;
               WGD->canopy->canopy_bot[icell_2d] = WGD->terrain[icell_2d] + base_height;
-              WGD->canopy->canopy_base[icell_2d] = WGD->z_face[k - 1];
+              WGD->canopy->canopy_base[icell_2d] = WGD->z_face[k];
               break;
             }
           }

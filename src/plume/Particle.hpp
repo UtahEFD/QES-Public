@@ -60,6 +60,9 @@ public:
     m = 0.0;
     m_kg = (1.0E-3) * m;
 
+    m_o = 0.0;//initial particle mass (g)
+    m_kg_o = 0.0;//initial particle mass (kg)
+
     // density of particle
     rho = 0.0;
 
@@ -68,9 +71,10 @@ public:
 
 
     // (1 - fraction) particle deposited
-    wdepos = 1.0;
     depFlag = false;
-
+    decayConst = 0;
+    c1 = 2.049;
+    c2 = 1.19;
     // (1 - fraction) particle decay
     wdecay = 1.0;
   }
@@ -93,9 +97,10 @@ public:
     tag = "ParticleTracer";// tagged as "tracer" so when particle type is unspecified in XML, it defaults to tracer
 
     // (1 - fraction) particle deposited
-    wdepos = 1.0;
     depFlag = false;
-
+    decayConst = 0;
+    c1 = 2.049;
+    c2 = 1.19;
     // (1 - fraction) particle deposited
     wdecay = 1.0;
   }
@@ -174,15 +179,24 @@ public:
   double d_m;// particle diameter diameter [m]
   double m;// particle mass [g]
   double m_kg;// particle mass [kg]
+  double m_o;// initial particle mass [g]
+  double m_kg_o;// initial particle mass [kg]
   double rho;// density of particle
 
   // deposition vatiables
-  double wdepos;// (1 - fraction) particle deposited [0,1]
   double Sc;// Schmidt number
   double taud;// characteristic relaxation time [s]
   double vd;// deposition velocity [m/s]
   bool depFlag;// whether a particle deposits
 
+  // deposition container
+  bool dep_buffer_flag;
+  std::vector<int> dep_buffer_cell;
+  std::vector<float> dep_buffer_val;
+
+  double decayConst;// mass decay constant
+  double c1;// Stk* fit param (exponent)
+  double c2;// Stk* fit param (exponent)
   // settling vatiables
   double dstar;// dimensionless grain diameter
   double Cd;// drag coefficent

@@ -1,0 +1,46 @@
+<QESPlumeParameters>
+  <plumeParameters>
+    <simDur> 2100.0 </simDur>
+    <timeStep> 1.0 </timeStep>
+    <CourantNumber> 0.0 </CourantNumber>
+    <invarianceTol> 1e-10 </invarianceTol>
+    <C_0> 1.0 </C_0>
+    <updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop>
+    <updateFrequency_timeLoop> 300 </updateFrequency_timeLoop>
+  </plumeParameters>
+  <particleOutputParameters>
+    <outputFrequency> 100  </outputFrequency>
+    <outputFields>all</outputFields>
+  </particleOutputParameters>
+  <collectionParameters>
+    <timeAvgStart> 300.0 </timeAvgStart>
+    <timeAvgFreq> 1800.1 </timeAvgFreq>
+    <boxBoundsX1> 0.0 </boxBoundsX1>
+    <boxBoundsX2> 100.0 </boxBoundsX2>
+    <boxBoundsY1> 1.0 </boxBoundsY1>
+    <boxBoundsY2> 99.0 </boxBoundsY2>
+    <boxBoundsZ1> 1.0 </boxBoundsZ1>
+    <boxBoundsZ2> 139.0 </boxBoundsZ2>
+    <nBoxesX> 20 </nBoxesX>
+    <nBoxesY> 49 </nBoxesY>
+    <nBoxesZ> 69 </nBoxesZ>
+  </collectionParameters>
+  <sources>
+    <numSources> 1 </numSources>
+    <SourcePoint>
+      <ReleaseType_continuous>
+        <parPerTimestep> 400 </parPerTimestep>
+      </ReleaseType_continuous>
+      <posX> 20.0 </posX>
+      <posY> 50.0 </posY>
+      <posZ> 70.0 </posZ>
+    </SourcePoint>
+  </sources>
+  <boundaryConditions>
+    <xBCtype>exiting</xBCtype>
+    <yBCtype>exiting</yBCtype>
+    <zBCtype>reflection</zBCtype>
+    <wallReflection>doNothing</wallReflection>
+  </boundaryConditions>
+</QESPlumeParameters>
+

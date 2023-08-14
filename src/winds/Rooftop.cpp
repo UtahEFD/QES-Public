@@ -130,7 +130,7 @@ void PolyBuilding::rooftop(const WINDSInputData *WID, WINDSGeneralData *WGD)
   // Finding index of 1.5 height of the building
   for (auto k = k_end; k < WGD->nz - 1; k++) {
     k_ref = k;
-    if (1.5 * (H + base_height) < WGD->z_face[k]) {
+    if (1.5 * (H + base_height) < WGD->z_face[k + 1]) {
       break;
     }
   }

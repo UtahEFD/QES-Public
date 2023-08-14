@@ -353,7 +353,7 @@ WRFInput::WRFInput(const std::string &filename,
   NcDim fmwdim = wrfInputFile.getVar("U0_FMW").getDim(0);
   int fmwTimeSize = fmwdim.getSize();
 
-  std::vector<size_t> fmw_StartIdx = { fmwTimeSize - 1 };
+  std::vector<size_t> fmw_StartIdx = { static_cast<unsigned long>(fmwTimeSize - 10) };
   std::vector<size_t> fmw_counts = { 1 };
   wrfInputFile.getVar("FRAME0_FMW").getVar(fmw_StartIdx, fmw_counts, &wrfFRAME0_FMW);
 
@@ -366,7 +366,7 @@ WRFInput::WRFInput(const std::string &filename,
       // close file
       wrfInputFile.close();
 
-      usleep(2000000); // 2 sec
+      usleep(2000000);// 2 sec
 
       // re-open
       wrfInputFile.open(m_WRFFilename, NcFile::write);
@@ -444,7 +444,7 @@ WRFInput::WRFInput(const std::string &filename,
     fm_ny = wrfInputFile.getVar("FXLONG").getDim(1).getSize();
     fm_nx = wrfInputFile.getVar("FXLONG").getDim(2).getSize();
 
-    // Need to subtract out borders in the WRF fire mesh, as 
+    // Need to subtract out borders in the WRF fire mesh, as
     // provided from Jan and students
     int sizeHGT_x = wrfInputFile.getVar("HGT").getDim(2).getSize();
     int sizeHGT_y = wrfInputFile.getVar("HGT").getDim(1).getSize();
@@ -461,12 +461,11 @@ WRFInput::WRFInput(const std::string &filename,
     fm_nx = fm_nx - sr_x;
     fm_ny = fm_ny - sr_y;
 
-    
 
     // Need to work towards pulling these values from the XML file to
     // allow user control of the discretization
-    
-    // this parameter needs to come from xml... 
+
+    // this parameter needs to come from xml...
     fm_dz = 12.0f;
 
     std::cout << "WRF Fire Mesh dimensions (nx, ny): " << fm_nx << " by " << fm_ny << std::endl;
@@ -510,9 +509,9 @@ WRFInput::WRFInput(const std::string &filename,
 
     // if specified, use the max height... otherwise, pick one
     // that's about twice the max height to give room for the flow
-    
+
     // fm_nz = (int)ceil(fm_maxWRFAlt * 2.0);// this ONLY works
-                                          // if dz=1.0
+    // if dz=1.0
 
     // Should only need to be concerned about the difference between
     // the max and min height here, rather than building off the max
@@ -521,7 +520,7 @@ WRFInput::WRFInput(const std::string &filename,
     std::cout << "Terrain height range: " << heightRange << std::endl;
 
     // use 110% of height range for now
-    int numZCells = (int)floor((heightRange * 1.10)/ fm_dz) + 1;
+    int numZCells = (int)floor((heightRange * 1.10) / fm_dz) + 1;
     std::cout << "With dz = " << fm_dz << ", nz = " << numZCells << std::endl;
     fm_nz = numZCells;
 
@@ -981,9 +980,9 @@ WRFInput::WRFInput(const std::string &filename,
   dim = wrfInputFile.getVar("U0_FMW").getDim(1);
   int hgtSize = dim.getSize();
 
-  std::vector<size_t> interpWinds_StartIdx = { timeSize - 1, 0, 0, 0 };
+  std::vector<size_t> interpWinds_StartIdx = { static_cast<unsigned long>(timeSize - 1), 0, 0, 0 };
   std::vector<size_t> interpWinds_counts = { 1,
-                                             hgtSize,
+                                             static_cast<unsigned long>(hgtSize),
                                              static_cast<unsigned long>(fm_ny),
                                              static_cast<unsigned long>(fm_nx) };
 
@@ -1001,7 +1000,7 @@ WRFInput::WRFInput(const std::string &filename,
   //
 
   // read the checksum
-  std::vector<size_t> chksum_StartIdx = { timeSize - 1 };
+  std::vector<size_t> chksum_StartIdx = { static_cast<unsigned long>(timeSize - 1) };
   std::vector<size_t> chksum_counts = { 1 };
 
   int wrfCHSUM0_FMW = 0;
@@ -1017,9 +1016,9 @@ WRFInput::WRFInput(const std::string &filename,
   assert(wrfCHSUM0_FMW == chkSum);
 
   // Read the heights
-  std::vector<size_t> interpWindsHT_StartIdx = { timeSize - 1, 0, 0, 0 };
+  std::vector<size_t> interpWindsHT_StartIdx = { static_cast<unsigned long>(timeSize - 1), 0, 0, 0 };
   std::vector<size_t> interpWindsHT_counts = { 1,
-                                               hgtSize };
+                                               static_cast<unsigned long>(hgtSize) };
 
   ht_fmw.resize(1 * hgtSize);
   wrfInputFile.getVar("HT_FMW").getVar(interpWindsHT_StartIdx, interpWindsHT_counts, ht_fmw.data());
@@ -2238,7 +2237,7 @@ void WRFInput::updateFromWRF()
     NcDim fmwdim = wrfInputFile.getVar("U0_FMW").getDim(0);
     int fmwTimeSize = fmwdim.getSize();
 
-    std::vector<size_t> fmw_StartIdx = { fmwTimeSize - 1 };
+    std::vector<size_t> fmw_StartIdx = { static_cast<unsigned long>(fmwTimeSize - 1) };
     std::vector<size_t> fmw_counts = { 1 };
 
     int numWait = 0;
@@ -2287,9 +2286,9 @@ void WRFInput::updateFromWRF()
     dim = wrfInputFile.getVar("U0_FMW").getDim(1);
     int hgtSize = dim.getSize();
 
-    std::vector<size_t> interpWinds_StartIdx = { timeSize - 1, 0, 0, 0 };
+    std::vector<size_t> interpWinds_StartIdx = { static_cast<unsigned long>(timeSize - 1), 0, 0, 0 };
     std::vector<size_t> interpWinds_counts = { 1,
-                                               hgtSize,
+                                               static_cast<unsigned long>(hgtSize),
                                                static_cast<unsigned long>(fm_ny),
                                                static_cast<unsigned long>(fm_nx) };
 
@@ -2307,7 +2306,7 @@ void WRFInput::updateFromWRF()
     //
 
     // read the checksum
-    std::vector<size_t> chksum_StartIdx = { timeSize - 1 };
+    std::vector<size_t> chksum_StartIdx = { static_cast<unsigned long>(timeSize - 1) };
     std::vector<size_t> chksum_counts = { 1 };
 
     int wrfCHSUM0_FMW = 0;
@@ -2321,9 +2320,8 @@ void WRFInput::updateFromWRF()
     std::cout << "WRF file output checksum of FMW fields: " << chkSum << std::endl;
 
     // Read the heights
-    std::vector<size_t> interpWindsHT_StartIdx = { timeSize - 1, 0, 0, 0 };
-    std::vector<size_t> interpWindsHT_counts = { 1,
-                                                 hgtSize };
+    std::vector<size_t> interpWindsHT_StartIdx = { static_cast<unsigned long>(timeSize - 1), 0, 0, 0 };
+    std::vector<size_t> interpWindsHT_counts = { 1, static_cast<unsigned long>(hgtSize) };
 
     // ht_fmw.resize( 1 * hgtSize );
     wrfInputFile.getVar("HT_FMW").getVar(interpWindsHT_StartIdx, interpWindsHT_counts, ht_fmw.data());
@@ -2428,10 +2426,10 @@ void WRFInput::extractWind(WINDSGeneralData *wgd)
   NcVar field_FRAME = wrfInputFile.getVar("FRAME_FMW");
 
   std::vector<size_t> startIdx = { 0, 0, 0 };
-  std::vector<size_t> counts = { 1, 
-				 static_cast<unsigned long>(fm_ny),
-				 static_cast<unsigned long>(fm_nx) };
-  
+  std::vector<size_t> counts = { 1,
+                                 static_cast<unsigned long>(fm_ny),
+                                 static_cast<unsigned long>(fm_nx) };
+
   field_UF.putVar(startIdx, counts, ufOut.data());//, startIdx, counts );
   field_VF.putVar(startIdx, counts, vfOut.data());//, startIdx, counts );
 

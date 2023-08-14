@@ -28,8 +28,8 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file CollectionParameters.hpp 
- * @brief 
+/** @file CollectionParameters.hpp
+ * @brief
  *
  * @note Child of ArgumentParsing
  * @sa ArgumentParsing
@@ -56,13 +56,13 @@ class CollectionParameters : public ParseInterface
 
 private:
 public:
-  int nBoxesX, nBoxesY, nBoxesZ;
-  float boxBoundsX1, boxBoundsY1, boxBoundsZ1;
-  float boxBoundsX2, boxBoundsY2, boxBoundsZ2;
-  float averagingStartTime;// time to start concentration averaging, not the time to start output.
-  float averagingPeriod;// time averaging frequency and output frequency
+  int nBoxesX{}, nBoxesY{}, nBoxesZ{};
+  float boxBoundsX1{}, boxBoundsY1{}, boxBoundsZ1{};
+  float boxBoundsX2{}, boxBoundsY2{}, boxBoundsZ2{};
+  float averagingStartTime{};// time to start concentration averaging, not the time to start output.
+  float averagingPeriod{};// time averaging frequency and output frequency
 
-  virtual void parseValues()
+  void parseValues() override
   {
     parsePrimitive<float>(true, averagingStartTime, "timeAvgStart");
     parsePrimitive<float>(true, averagingPeriod, "timeAvgFreq");

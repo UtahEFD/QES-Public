@@ -256,7 +256,7 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
                   if (abs(s) > 0.0) {
                     if ((WGD->ibuilding_flag[icell_cent] >= 0)
                         && (WGD->allBuildingsV[WGD->ibuilding_flag[icell_cent]]->height_eff < height_eff)
-                        && (WGD->z_face[k] / s < 0.65)) {
+                        && (WGD->z_face[k + 1] / s < 0.65)) {
                       // break if downstream building sorter than current building and H/S < 0.65 (WILL NOT WORK ABOVE TERRAIN)
                       canyon_flag = 0;
                       top_flag = 0;

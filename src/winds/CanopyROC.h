@@ -41,7 +41,7 @@ public:
     parsePrimitive<float>(true, LAD_eff, "LAD_eff");//leaf area per volume of canopy, including aisles. Effective (bulk) LAD. Re-calculated by the code using beta if thinFence==1 (=0.6667 for 2013 validation cases)
     parsePrimitive<float>(true, LAD_avg, "LAD_avg");//vertically averaged LAD for the rowitself, used in UD zone drag calc for vegetative rows only. (=4.3138 for 2013 validation cases)
     parsePrimitive<float>(true, beta, "opticalPorosity");
-    parsePrimitive<float>(false, tkeMax, "tkeMax");
+    parsePrimitive<float>(true, tkeMax, "tkeMax");
     parsePrimitive<float>(false, stdw, "upstreamSigmaW");
     parsePrimitive<float>(false, uustar, "upstreamUstar");//upstream ustar
     parsePrimitive<float>(false, d_v, "displacementHeightParallel");//displacement height in row-parallel winds
@@ -56,6 +56,8 @@ public:
   void orthog_vec(float, float[2], float[2], float[2], float[2]);
   void canopyVegetation(WINDSGeneralData *wgd, int building_id);
   void canopyWake(WINDSGeneralData *wgd, int building_id);
+  void canopyTurbulenceWake(WINDSGeneralData *, TURBGeneralData *, int);
+  void canopyStress(WINDSGeneralData *, TURBGeneralData *, int);
   int getCellFlagCanopy();
   int getCellFlagWake();
   float P2L(float[2], float[2], float[2]);
@@ -66,6 +68,7 @@ private:
   float understory_height;
   std::vector<float> tkeFac;
   std::vector<float> vineLm;
+  float sinA, cosA;// sin cos of row angle
   float beta;// optical porosity
   float a_obf;// bleed flow aerodynamic porosity
   float stdw;// upstream vertical variance
@@ -80,6 +83,35 @@ private:
   std::map<int, float> u0, v0;
   float rL, z0_site;
   float tkeMax;
+
+  // Geometry params (shared by veg and wake portions)
+  float Rx_o[2];
+  float Ry_o[2];
+  float betaAngle;
+  float d_dw;
+  float szo_slope, szo_top, szo_bot, szo_top_uw;
+  float z_mid, k_mid;// mid-canopy height and corresponding k-node
+  float z_b;// base of the canopy
+  float z_rel;// height off the terrain
+
+  // Wake parameterization params (shared by veg and wake portions)
+  float spreadrate_top, spreadrate_bot;
+  float szt_uw, szt_local, szt_Lm;// shear zone thickness variables
+
+  float a_local = 1;// the attenuation due to the closest upwind row only
+  float tkeFacU_local;
+  float tkeFacU = 0;
+  float tkeFacV = 0;
+
+
+  float u_c0, v_c0;// u0 and v0 rotated into row-aligned coordinates
+  float u_c, v_c;// altered (parameterized) u and v, in row-aligned coordinates
+  int N_e;// number of rows in entry region
+
+  // V_c parameterization params (shared by veg and wake portions)
+  float ustar_v_c,
+    psi, psiH, dpsiH, ex, exH, dexH, vH_c, a_v, vref_c, zref, exRef, dexRef, psiRef, dpsiRef;
+  int icell_face_ref, zref_k;
 };
 
 inline int CanopyROC::getCellFlagCanopy()

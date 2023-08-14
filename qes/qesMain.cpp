@@ -49,13 +49,16 @@
 
 #include "winds/Solver.h"
 #include "winds/CPUSolver.h"
+#include "winds/Solver_CPU_RB.h"
+#ifdef HAS_CUDA
 #include "winds/DynamicParallelism.h"
 #include "winds/GlobalMemory.h"
 #include "winds/SharedMemory.h"
+#endif
 
 #include "winds/Sensor.h"
 
-//#include "Args.hpp"
+// #include "Args.hpp"
 #include "plume/PlumeInputData.hpp"
 #include "plume/Plume.hpp"
 #include "plume/PlumeOutput.h"
@@ -86,7 +89,7 @@ int main(int argc, char *argv[])
   WINDSInputData *WID = new WINDSInputData(arguments.qesWindsParamFile);
   if (!WID) {
     QESout::error("QES Input file: " + arguments.qesWindsParamFile
-                   + " not able to be read successfully.");
+                  + " not able to be read successfully.");
   }
   // parse xml settings
 
@@ -96,7 +99,7 @@ int main(int argc, char *argv[])
   // Checking if
   if (arguments.compTurb && !WID->turbParams) {
     QESout::error("Turbulence model is turned on without turbParams in QES Intput file "
-                   + arguments.qesWindsParamFile);
+                  + arguments.qesWindsParamFile);
   }
 
 
@@ -171,8 +174,6 @@ int main(int argc, char *argv[])
     // Run WINDS simulation code
     solver->solve(WID, WGD, !arguments.solveWind);
 
-    std::cout << "Solver done!\n";
-
     // Run turbulence
     if (TGD != nullptr) {
       TGD->run();
@@ -213,8 +214,15 @@ Solver *setSolver(const int solveType, WINDSInputData *WID, WINDSGeneralData *WG
 {
   Solver *solver = nullptr;
   if (solveType == CPU_Type) {
+#ifdef _OPENMP
+    std::cout << "Run Red/Black Solver (CPU) ..." << std::endl;
+    solver = new Solver_CPU_RB(WID, WGD);
+#else
     std::cout << "Run Serial Solver (CPU) ..." << std::endl;
     solver = new CPUSolver(WID, WGD);
+#endif
+
+#ifdef HAS_CUDA
   } else if (solveType == DYNAMIC_P) {
     std::cout << "Run Dynamic Parallel Solver (GPU) ..." << std::endl;
     solver = new DynamicParallelism(WID, WGD);
@@ -224,6 +232,7 @@ Solver *setSolver(const int solveType, WINDSInputData *WID, WINDSGeneralData *WG
   } else if (solveType == Shared_M) {
     std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
     solver = new SharedMemory(WID, WGD);
+#endif
   } else {
     QESout::error("Invalid solve type");
   }

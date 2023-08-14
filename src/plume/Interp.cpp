@@ -65,6 +65,6 @@ Interp::Interp(WINDSGeneralData *WGD)
   yStart = WGD->y[jStart] - 0.5 * dy;
   yEnd = WGD->y[jEnd] + 0.5 * dy;
   // in z-direction (face)
-  zStart = WGD->z_face[kStart - 1];// z_face does not have a ghost cell under the terrain.
-  zEnd = WGD->z_face[kEnd - 1];// z_face does not have a ghost cell under the terrain.
+  zStart = WGD->z_face[kStart];
+  zEnd = WGD->z_face[kEnd];
 }
