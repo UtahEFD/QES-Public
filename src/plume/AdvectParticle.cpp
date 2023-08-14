@@ -32,27 +32,33 @@
 
 #include "Plume.hpp"
 
-void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator parItr, WINDSGeneralData *WGD, TURBGeneralData *TGD)
+void Plume::advectParticle(double timeRemainder, Particle *par_ptr, double boxSizeZ, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
+  /*
+   * this function is advencing the particle -> status is returned in:
+   * - parItr->isRogue
+   * - parItr->isActive
+   * this function take in a particle pointer
+   * and does not do any manipulation on particleList
+   */
 
   double rhoAir = 1.225;// in kg m^-3
   double nuAir = 1.506E-5;// in m^2 s^-1
 
   // set settling velocity
-  (*parItr)->setSettlingVelocity(rhoAir, nuAir);
+  par_ptr->setSettlingVelocity(rhoAir, nuAir);
 
-  //std::cout << "in advpart, par type is: " << typeid(*parItr).name() << " txx=" << (*parItr)->txx_old <<  " tyy=" << (*parItr)->tyy_old << " tzz=" << (*parItr)->tzz_old << " d = " << (*parItr)->d << " m = " << (*parItr)->m << " depFlag = " << (*parItr)->depFlag << " vs = " << (*parItr)->vs << std::endl;
-  // get the current isRogue and isActive information
-  bool isRogue = (*parItr)->isRogue;
-  bool isActive = (*parItr)->isActive;
+  //  get the current isRogue and isActive information
+  bool isRogue = par_ptr->isRogue;
+  bool isActive = par_ptr->isActive;
 
   // getting the current position for where the particle is at for a given time
   // if it is the first time a particle is ever released, then the value is already set at the initial value
   // LA notes: technically this value is the old position to be overwritten with the new position.
   //  I've been tempted for a while to store both. Might have to for correctly implementing reflective building BCs
-  double xPos = (*parItr)->xPos;
-  double yPos = (*parItr)->yPos;
-  double zPos = (*parItr)->zPos;
+  double xPos = par_ptr->xPos;
+  double yPos = par_ptr->yPos;
+  double zPos = par_ptr->zPos;
 
   double disX = 0.0;
   double disY = 0.0;
@@ -70,12 +76,13 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
   double flux_div_y = 0.0;
   double flux_div_z = 0.0;
 
-  //size_t cellIdx_old = interp->getCellId(xPos,yPos,zPos);
+  double nuT = 0.0;
+  // size_t cellIdx_old = interp->getCellId(xPos,yPos,zPos);
 
   // getting the initial position, for use in setting finished particles
-  //double xPos_init = (*parItr)->xPos_init;
-  //double yPos_init = (*parItr)->yPos_init;
-  //double zPos_init = (*parItr)->zPos_init;
+  // double xPos_init = par_ptr->xPos_init;
+  // double yPos_init = par_ptr->yPos_init;
+  // double zPos_init = par_ptr->zPos_init;
 
   // grab the velFluct values.
   // LA notes: hmm, Bailey's code just starts out setting these values to zero,
@@ -83,24 +90,24 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
   //  velFluct_old and velFluct are probably identical and kind of redundant in this implementation
   //  but it shouldn't hurt anything for now, even if it is redundant
   //  besides, it will probably change a bit if we decide to change what is outputted on a regular, and on a debug basis
-  double uFluct = (*parItr)->uFluct;
-  double vFluct = (*parItr)->vFluct;
-  double wFluct = (*parItr)->wFluct;
+  double uFluct = par_ptr->uFluct;
+  double vFluct = par_ptr->vFluct;
+  double wFluct = par_ptr->wFluct;
 
   // get all other values for the particle
   // in this case this, all the old velocity fluctuations and old stress tensor values for the particle
   // LA note: also need to keep track of a delta_velFluct,
   //  but since delta_velFluct is never used, just set later on, it doesn't need grabbed as a value till later
-  double uFluct_old = (*parItr)->uFluct_old;
-  double vFluct_old = (*parItr)->vFluct_old;
-  double wFluct_old = (*parItr)->wFluct_old;
+  double uFluct_old = par_ptr->uFluct_old;
+  double vFluct_old = par_ptr->vFluct_old;
+  double wFluct_old = par_ptr->wFluct_old;
 
-  double txx_old = (*parItr)->txx_old;
-  double txy_old = (*parItr)->txy_old;
-  double txz_old = (*parItr)->txz_old;
-  double tyy_old = (*parItr)->tyy_old;
-  double tyz_old = (*parItr)->tyz_old;
-  double tzz_old = (*parItr)->tzz_old;
+  double txx_old = par_ptr->txx_old;
+  double txy_old = par_ptr->txy_old;
+  double txz_old = par_ptr->txz_old;
+  double tyy_old = par_ptr->tyy_old;
+  double tyz_old = par_ptr->tyz_old;
+  double tzz_old = par_ptr->tzz_old;
 
 
   // need to avoid current tau values going out of scope now that I've added the particle timestep loop
@@ -132,32 +139,27 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
   //  for the last simulation timestep. The problem is that simTimes.at(nSimTimes-1) is greater than simTimes.at(nSimTimes-2) + sim_dt.
   // FMargairaz -> need clean-up the comment
 
-  while (isActive == true && timeRemainder > 0.0) {
+  while (isActive && timeRemainder > 0.0) {
 
     /*
       now get the Lagrangian values for the current iteration from the Interperian grid
       will need to use the interp3D function
     */
 
-    interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, CoEps);
+    interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
 
     // now need to call makeRealizable on tau
     makeRealizable(txx, txy, txz, tyy, tyz, tzz);
 
     // adjusting mean vertical velocity for settling velocity
-    wMean -= (*parItr)->vs;
+    wMean -= par_ptr->vs;
 
 
     // now calculate the particle timestep using the courant number, the velocity fluctuation from the last time,
     // and the grid sizes. Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
 
     int cellId = interp->getCellId(xPos, yPos, zPos);
-    int cellId2d = interp->getCellId2d(xPos, yPos);
-    // LDU: if particle drops below terrain height, remove it (kludge, fix later) (doesn't include halo)
-    if (zPos <= WGD->terrain[cellId2d]) {
-      isActive = false;
-      break;
-    }
+
     double dWall = WGD->mixingLengths[cellId];
     double par_dt = calcCourantTimestep(dWall,
                                         std::abs(uMean) + std::abs(uFluct),
@@ -165,9 +167,9 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
                                         std::abs(wMean) + std::abs(wFluct),
                                         timeRemainder);
 
-    //std::cout << "par_dt = " << par_dt << std::endl;
-    // update the par_time, useful for debugging
-    //par_time = par_time + par_dt;
+    // std::cout << "par_dt = " << par_dt << std::endl;
+    //  update the par_time, useful for debugging
+    // par_time = par_time + par_dt;
 
     // now need to calculate the inverse values for tau
     // directly modifies the values of tau
@@ -179,29 +181,35 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     double lxy = txy;
     double lxz = txz;
     double lyx = txy;
-    //double lyx = 0.0;
+    // double lyx = 0.0;
     double lyy = tyy;
     double lyz = tyz;
     double lzx = txz;
     double lzy = tyz;
-    //double lzx = 0.0;
-    //double lzy = 0.0;
+    // double lzx = 0.0;
+    // double lzy = 0.0;
     double lzz = tzz;
     isRogue = !invert3(lxx, lxy, lxz, lyx, lyy, lyz, lzx, lzy, lzz);
-    if (isRogue == true) {
-      //int cellIdNew = interp->getCellId(xPos,yPos,zPos);
+    if (isRogue) {
+      // int cellIdNew = interp->getCellId(xPos,yPos,zPos);
       std::cerr << "ERROR in Matrix inversion of stress tensor" << std::endl;
       isActive = false;
       break;
     }
 
-    // these are the random numbers for each direction
-    // LA note: should be randn() matlab equivalent, which is a normally distributed random number
-    // LA future work: it is possible the rogue particles are caused by the random number generator stuff.
-    //  Need to look into it at some time.
-    double xRandn = random::norRan();
-    double yRandn = random::norRan();
-    double zRandn = random::norRan();
+// these are the random numbers for each direction
+// LA note: should be randn() matlab equivalent, which is a normally distributed random number
+// LA future work: it is possible the rogue particles are caused by the random number generator stuff.
+//  Need to look into it at some time.
+#ifdef _OPENMP
+    double xRandn = threadRNG[omp_get_thread_num()]->norRan();
+    double yRandn = threadRNG[omp_get_thread_num()]->norRan();
+    double zRandn = threadRNG[omp_get_thread_num()]->norRan();
+#else
+    double xRandn = RNG->norRan();
+    double yRandn = RNG->norRan();
+    double zRandn = RNG->norRan();
+#endif
 
     // now calculate a bunch of values for the current particle
     // calculate the time derivative of the stress tensor: (tau_current - tau_old)/dt
@@ -234,7 +242,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
 
     // now prepare for the Ax=b calculation by calculating the inverted A matrix
     isRogue = !invert3(A_11, A_12, A_13, A_21, A_22, A_23, A_31, A_32, A_33);
-    if (isRogue == true) {
+    if (isRogue) {
       std::cerr << "ERROR in matrix inversion in Langevin equation" << std::endl;
       isActive = false;
       break;
@@ -245,7 +253,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
 
     // now check to see if the value is rogue or not
     if (std::abs(uFluct) >= vel_threshold || isnan(uFluct)) {
-      std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
+      std::cerr << "Particle # " << par_ptr->particleID << " is rogue, ";
       std::cerr << "uFluct = " << uFluct << ", CoEps = " << CoEps << std::endl;
       uFluct = 0.0;
       isActive = false;
@@ -253,7 +261,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
       break;
     }
     if (std::abs(vFluct) >= vel_threshold || isnan(vFluct)) {
-      std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
+      std::cerr << "Particle # " << par_ptr->particleID << " is rogue, ";
       std::cerr << "vFluct = " << vFluct << ", CoEps = " << CoEps << std::endl;
       vFluct = 0.0;
       isActive = false;
@@ -261,7 +269,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
       break;
     }
     if (std::abs(wFluct) >= vel_threshold || isnan(wFluct)) {
-      std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
+      std::cerr << "Particle # " << par_ptr->particleID << " is rogue, ";
       std::cerr << "wFluct = " << wFluct << ", CoEps = " << CoEps << std::endl;
       wFluct = 0.0;
       isActive = false;
@@ -269,7 +277,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
       break;
     }
 
-    if (isRogue == true) {
+    if (isRogue) {
       isActive = false;
       break;
     }
@@ -291,19 +299,19 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     wTot = wMean + wFluct;
 
     // Deposit mass (vegetation only right now)
-    if ((*parItr)->depFlag == true) {
-      depositParticle(xPos, yPos, zPos, disX, disY, disZ, uTot, vTot, wTot, txx, tyy, tzz, CoEps, parItr, WGD, TGD);
+    if (par_ptr->depFlag) {
+      depositParticle(xPos, yPos, zPos, disX, disY, disZ, uTot, vTot, wTot, txx, tyy, tzz, txz, txy, tyz, par_ptr->vs, CoEps, boxSizeZ, nuT, par_ptr, WGD, TGD);
     }
 
     // check and do wall (building and terrain) reflection (based in the method)
-    if (isActive == true) {
+    if (isActive) {
       isActive = wallReflect->reflect(WGD, this, xPos, yPos, zPos, disX, disY, disZ, uFluct, vFluct, wFluct);
     }
 
     // now apply boundary conditions
-    if (isActive == true) isActive = domainBC_x->enforce(xPos, uFluct);
-    if (isActive == true) isActive = domainBC_y->enforce(yPos, vFluct);
-    if (isActive == true) isActive = domainBC_z->enforce(zPos, wFluct);
+    if (isActive) isActive = domainBC_x->enforce(xPos, uFluct);
+    if (isActive) isActive = domainBC_y->enforce(yPos, vFluct);
+    if (isActive) isActive = domainBC_z->enforce(zPos, wFluct);
 
     // now update the old values to be ready for the next particle time iteration
     // the current values are already set for the next iteration by the above calculations
@@ -326,7 +334,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     tyz_old = tyz;
     tzz_old = tzz;
 
-    //cellIdx_old=cellIdx;
+    // cellIdx_old=cellIdx;
 
     // now set the time remainder for the next loop
     // if the par_dt calculated from the Courant Number is greater than the timeRemainder,
@@ -341,46 +349,44 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
   // notice that the values from the particle timestep loop are used directly here,
   //  just need to put the existing vals into storage
   // !!! this is extremely important for output and the next iteration to work correctly
-  (*parItr)->xPos = xPos;
-  (*parItr)->yPos = yPos;
-  (*parItr)->zPos = zPos;
+  par_ptr->xPos = xPos;
+  par_ptr->yPos = yPos;
+  par_ptr->zPos = zPos;
 
-  (*parItr)->disX = disX;
-  (*parItr)->disY = disY;
-  (*parItr)->disZ = disZ;
+  par_ptr->disX = disX;
+  par_ptr->disY = disY;
+  par_ptr->disZ = disZ;
 
-  (*parItr)->uTot = uTot;
-  (*parItr)->vTot = vTot;
-  (*parItr)->wTot = wTot;
+  // par_ptr->uTot = uTot;
+  // par_ptr->vTot = vTot;
+  // par_ptr->wTot = wTot;
 
-  (*parItr)->CoEps = CoEps;
+  par_ptr->CoEps = CoEps;
 
-  (*parItr)->uMean = uMean;
-  (*parItr)->vMean = vMean;
-  (*parItr)->wMean = wMean;
+  par_ptr->uMean = uMean;
+  par_ptr->vMean = vMean;
+  par_ptr->wMean = wMean;
 
-  (*parItr)->uFluct = uFluct;
-  (*parItr)->vFluct = vFluct;
-  (*parItr)->wFluct = wFluct;
+  par_ptr->uFluct = uFluct;
+  par_ptr->vFluct = vFluct;
+  par_ptr->wFluct = wFluct;
 
   // these are the current velFluct values by this point
-  (*parItr)->uFluct_old = uFluct_old;
-  (*parItr)->vFluct_old = vFluct_old;
-  (*parItr)->wFluct_old = wFluct_old;
+  par_ptr->uFluct_old = uFluct_old;
+  par_ptr->vFluct_old = vFluct_old;
+  par_ptr->wFluct_old = wFluct_old;
 
-  (*parItr)->delta_uFluct = delta_uFluct;
-  (*parItr)->delta_vFluct = delta_vFluct;
-  (*parItr)->delta_wFluct = delta_wFluct;
+  par_ptr->delta_uFluct = delta_uFluct;
+  par_ptr->delta_vFluct = delta_vFluct;
+  par_ptr->delta_wFluct = delta_wFluct;
 
-  (*parItr)->txx_old = txx_old;
-  (*parItr)->txy_old = txy_old;
-  (*parItr)->txz_old = txz_old;
-  (*parItr)->tyy_old = tyy_old;
-  (*parItr)->tyz_old = tyz_old;
-  (*parItr)->tzz_old = tzz_old;
+  par_ptr->txx_old = txx_old;
+  par_ptr->txy_old = txy_old;
+  par_ptr->txz_old = txz_old;
+  par_ptr->tyy_old = tyy_old;
+  par_ptr->tyz_old = tyz_old;
+  par_ptr->tzz_old = tzz_old;
 
-  (*parItr)->isRogue = isRogue;
-  (*parItr)->isActive = isActive;
-
-  return;
+  par_ptr->isRogue = isRogue;
+  par_ptr->isActive = isActive;
 }

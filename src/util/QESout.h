@@ -35,15 +35,10 @@
 #include <iostream>
 #include <string>
 
-#ifndef QES_VERSION
-#define QES_VERSION "2.0.0"
-#endif
-
 namespace QESout {
-void splashScreen();
-void error(std::string);
-void warning(std::string);
-void setVerbose();
-void verbose(std::string);
-
+  void splashScreen();
+  void error(std::string);
+  void warning(std::string);
+  void setVerbose();
+  void verbose(std::string);
 };// namespace QESout

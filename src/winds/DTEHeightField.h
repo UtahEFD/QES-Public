@@ -34,7 +34,7 @@
 #define __DTE_HEIGHT_FIELD_H__ 1
 
 #include <string>
-#include "Triangle.h"
+#include "util/Triangle.h"
 #include "util/Vector3.h"
 #include "util/Vector3Int.h"
 

@@ -296,7 +296,7 @@ void PolyBuilding::streetCanyonModified(WINDSGeneralData *WGD)
                   if (std::abs(s) > 0.0) {
                     if ((WGD->ibuilding_flag[icell_cent] >= 0)
                         && (WGD->allBuildingsV[WGD->ibuilding_flag[icell_cent]]->height_eff < height_eff)
-                        && (WGD->z_face[k] / s < 0.65)) {
+                        && (WGD->z_face[k + 1] / s < 0.65)) {
                       // break if downstream building sorter than current building and H/S < 0.65 (WILL NOT WORK ABOVE TERRAIN)
                       canyon_flag = 0;
                       top_flag = 0;
@@ -494,7 +494,7 @@ void PolyBuilding::streetCanyonModified(WINDSGeneralData *WGD)
             cross_vel_mag = gamma * std::abs(velocity_mag * cos(canyon_dir - cross_dir));
 
             // z-coord inside canyon (from the top)
-            z_pos = WGD->z_face[k_ref - 1] - WGD->z[k];
+            z_pos = WGD->z_face[k_ref] - WGD->z[k];
 
             for (auto x_id = x_id_min; x_id <= x_id_max; x_id++) {
               xc = 0.5 * x_id * WGD->dxy;

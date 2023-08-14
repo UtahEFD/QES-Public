@@ -71,6 +71,10 @@ public:
   void applyCanopyVegetation(WINDSGeneralData *WGD);
   void applyCanopyWake(WINDSGeneralData *WGD);
 
+  void applyCanopyTurbulenceWake(WINDSGeneralData *WGD, TURBGeneralData *);
+  void applyCanopyStress(WINDSGeneralData *WGD, TURBGeneralData *);
+
+
   /*
    * For all Canopy classes derived, this need to be defined
   virtual void parseValues()

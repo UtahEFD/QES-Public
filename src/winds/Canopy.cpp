@@ -76,6 +76,7 @@ Canopy::Canopy(const WINDSInputData *WID, WINDSGeneralData *WGD)
 
 void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
 {
+
   auto canopysetup_start = std::chrono::high_resolution_clock::now();// Start recording execution time
 
   if (WID->vegetationParams->SHPData) {
@@ -200,8 +201,35 @@ void Canopy::applyCanopyWake(WINDSGeneralData *WGD)
   return;
 }
 
+void Canopy::applyCanopyTurbulenceWake(WINDSGeneralData *WGD, TURBGeneralData *TGD)
+{
+
+  if (wakeFlag == 1) {
+    for (size_t i = 0; i < allCanopiesV.size(); ++i) {
+      // for now this does the canopy stuff for us
+      //allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
+      allCanopiesV[canopy_id[i]]->canopyTurbulenceWake(WGD, TGD, canopy_id[i]);
+    }
+  }
+
+  return;
+}
+
+void Canopy::applyCanopyStress(WINDSGeneralData *WGD, TURBGeneralData *TGD)
+{
+
+  if (wakeFlag == 1) {
+    for (size_t i = 0; i < allCanopiesV.size(); ++i) {
+      // for now this does the canopy stuff for us
+      //allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
+      allCanopiesV[canopy_id[i]]->canopyStress(WGD, TGD, canopy_id[i]);
+    }
+  }
+
+  return;
+}
 // Function to apply the urban canopy parameterization
-// Based on the version contain Lucas Ulmerlmer's modifications
+// Based on the version contain Lucas Ulmer's modifications
 void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
 {
 
@@ -375,6 +403,21 @@ void Canopy::canopyRegression(WINDSGeneralData *WGD)
         canopy_z0[id] = exp(ym - ((WGD->vk / canopy_ustar[id])) * xm);
 
         //std::cout << xm << " " << ym << " " << sum_y << " " << sum_x_sq << " " << canopy_ustar[id] << " " << canopy_z0[id] << std::endl;
+
+        if (isnan(canopy_z0[id])) {
+          std::cerr << "==============================================================" << std::endl;
+          std::cerr << "[ERROR] canopy regression gives nan" << std::endl;
+          exit(EXIT_FAILURE);
+        }
+
+        /* NEED MODIFICATION!!!
+        if (canopy_z0[id] < WGD->z0 || isnan(canopy_z0[id])) {
+          canopy_z0[id] = WGD->z0;
+          int icell_face = i + j * WGD->nx + canopy_top_index[id] * WGD->nx * WGD->ny;
+          local_mag = sqrt(pow(WGD->u0[icell_face], 2.0) + pow(WGD->v0[icell_face], 2.0));
+          canopy_ustar[id] = 0.3 * local_mag;
+        }
+        */
 
       }// end of if (canopy_top_index[id] > 0)
     }

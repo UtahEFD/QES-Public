@@ -58,7 +58,7 @@ PlumeOutputParticleData::PlumeOutputParticleData(PlumeInputData *PID, Plume *plu
   // setup copy of disp pointer so output data can be grabbed directly
   m_plume = plume_ptr;
 
-  if (PID->partOutParams == 0) {
+  if (PID->partOutParams == nullptr) {
     std::cerr << "[PlumeOutputParticleData] ERROR missing particleOutputParameters from input parameter file" << std::endl;
     exit(EXIT_FAILURE);
   }
@@ -75,7 +75,7 @@ PlumeOutputParticleData::PlumeOutputParticleData(PlumeInputData *PID, Plume *plu
     output_fields.insert(output_fields.end(), fileOP.begin(), fileOP.end());
   }
 
-  valid_output = validateFileOtions();
+  valid_output = validateFileOptions_local();
 
   if (!valid_output) {
     std::cerr << "[PlumeOutputParticleData] ERROR invalid output fields for visulization fields output" << std::endl;
@@ -166,7 +166,6 @@ PlumeOutputParticleData::PlumeOutputParticleData(PlumeInputData *PID, Plume *plu
 
   d.resize(numPar, 0.0);
   m.resize(numPar, 0.0);
-  wdepos.resize(numPar, 0.0);
   wdecay.resize(numPar, 0.0);
 
   xPos_init.resize(numPar, 0);
@@ -219,12 +218,8 @@ PlumeOutputParticleData::PlumeOutputParticleData(PlumeInputData *PID, Plume *plu
   createAttVector("tStrt", "particle-release-time", "s", dim_vect_2d, &tStrt);
   createAttVector("sourceIdx", "particle-sourceID", "--", dim_vect_2d, &sourceIdx);
 
-  createAttVector("sourceIdx", "particle-sourceID", "--", dim_vect_2d, &sourceIdx);
-  createAttVector("sourceIdx", "particle-sourceID", "--", dim_vect_2d, &sourceIdx);
-
   createAttVector("d", "diameter ofarticle", "mu-m", dim_vect_2d, &d);
   createAttVector("m", "mass of particle", "g", dim_vect_2d, &m);
-  createAttVector("wdepos", "non-deposited fraction", "--", dim_vect_2d, &wdepos);
   createAttVector("wdecay", "non-decay fraction", "--", dim_vect_2d, &wdecay);
 
   createAttVector("xPos_init", "initial-x-position", "m", dim_vect_2d, &xPos_init);
@@ -255,7 +250,7 @@ PlumeOutputParticleData::PlumeOutputParticleData(PlumeInputData *PID, Plume *plu
   addOutputFields();
 }
 
-bool PlumeOutputParticleData::validateFileOtions()
+bool PlumeOutputParticleData::validateFileOptions_local()
 {
   // removing duplicate
   sort(output_fields.begin(), output_fields.end());
@@ -279,44 +274,43 @@ void PlumeOutputParticleData::save(QEStime timeIn)
   // only output if it is during the next output time but before the end time
   if (timeIn >= nextOutputTime) {
     // copy particle info into the required output storage containers
-    for (auto parItr = m_plume->particleList.begin(); parItr != m_plume->particleList.end(); parItr++) {
+    for (auto &parItr : m_plume->particleList) {
 
-      int parID = (*parItr)->particleID;
+      int parID = parItr->particleID;
 
-      tStrt[parID] = (*parItr)->tStrt;
-      sourceIdx[parID] = (*parItr)->sourceIdx;
-      d[parID] = (*parItr)->d;
-      m[parID] = (*parItr)->m;
-      wdepos[parID] = (*parItr)->wdepos;
-      wdecay[parID] = (*parItr)->wdecay;
+      tStrt[parID] = (float)parItr->tStrt;
+      sourceIdx[parID] = parItr->sourceIdx;
+      d[parID] = (float)parItr->d;
+      m[parID] = (float)parItr->m;
+      wdecay[parID] = (float)parItr->wdecay;
 
-      xPos_init[parID] = (*parItr)->xPos_init;
-      yPos_init[parID] = (*parItr)->yPos_init;
-      zPos_init[parID] = (*parItr)->zPos_init;
+      xPos_init[parID] = (float)parItr->xPos_init;
+      yPos_init[parID] = (float)parItr->yPos_init;
+      zPos_init[parID] = (float)parItr->zPos_init;
 
-      xPos[parID] = (*parItr)->xPos;
-      yPos[parID] = (*parItr)->yPos;
-      zPos[parID] = (*parItr)->zPos;
+      xPos[parID] = (float)parItr->xPos;
+      yPos[parID] = (float)parItr->yPos;
+      zPos[parID] = (float)parItr->zPos;
 
-      uMean[parID] = (*parItr)->uMean;
-      vMean[parID] = (*parItr)->vMean;
-      wMean[parID] = (*parItr)->wMean;
+      uMean[parID] = (float)parItr->uMean;
+      vMean[parID] = (float)parItr->vMean;
+      wMean[parID] = (float)parItr->wMean;
 
-      uFluct[parID] = (*parItr)->uFluct;
-      vFluct[parID] = (*parItr)->vFluct;
-      wFluct[parID] = (*parItr)->wFluct;
+      uFluct[parID] = (float)parItr->uFluct;
+      vFluct[parID] = (float)parItr->vFluct;
+      wFluct[parID] = (float)parItr->wFluct;
 
-      delta_uFluct[parID] = (*parItr)->delta_uFluct;
-      delta_vFluct[parID] = (*parItr)->delta_vFluct;
-      delta_wFluct[parID] = (*parItr)->delta_wFluct;
+      delta_uFluct[parID] = (float)parItr->delta_uFluct;
+      delta_vFluct[parID] = (float)parItr->delta_vFluct;
+      delta_wFluct[parID] = (float)parItr->delta_wFluct;
 
       // since no boolean output exists, going to have to convert the values to ints
-      if ((*parItr)->isRogue == true)
+      if (parItr->isRogue)
         isRogue[parID] = 1;
       else
         isRogue[parID] = 0;
 
-      if ((*parItr)->isActive == true)
+      if (parItr->isActive)
         isActive[parID] = 1;
       else
         isActive[parID] = 0;
@@ -362,4 +356,4 @@ void PlumeOutputParticleData::save(QEStime timeIn)
     }
 #endif
   }
-};
+}

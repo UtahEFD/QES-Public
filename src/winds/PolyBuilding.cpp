@@ -164,7 +164,7 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
   // Define start index of the building in z-direction
   for (auto k = 1u; k < WGD->z.size(); k++) {
     k_start = k;
-    if (base_height <= WGD->z_face[k]) {
+    if (base_height <= WGD->z_face[k + 1]) {
       break;
     }
   }
@@ -179,7 +179,7 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
 
   // Define cut end index of the building in z-direction
   for (auto k = 0u; k < WGD->z.size(); k++) {
-    k_cut_end = k + 1;
+    k_cut_end = k;
     if (height_eff <= WGD->z_face[k + 1]) {
       break;
     }
@@ -569,9 +569,9 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
                 height_flag = 1;
                 cut_points[counter].z_solid = WGD->dz_array[k];
                 if (k == k_cut_end) {
-                  if (height_eff - WGD->z_face[k_cut_end - 1] < WGD->dz_array[k]) {
+                  if (height_eff - WGD->z_face[k_cut_end] < WGD->dz_array[k]) {
                     height_flag = 0;
-                    cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end - 1];
+                    cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end];
                   }
                 }
                 for (auto ii = 0u; ii < face_intersect.size(); ii++) {
@@ -826,9 +826,9 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
                   cut_points[counter].intersect.push_back(cutVert((x2i - i * WGD->dx), (y2i - j * WGD->dy), 0.0));
                   cut_points[counter].z_solid = WGD->dz_array[k];
                   if (k == k_cut_end) {
-                    if (height_eff - WGD->z_face[k_cut_end - 1] < WGD->dz_array[k]) {
+                    if (height_eff - WGD->z_face[k_cut_end] < WGD->dz_array[k]) {
                       cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                      cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end - 1];
+                      cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end];
                     }
                   }
 
@@ -874,9 +874,9 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
                   cut_points[counter].z_solid = WGD->dz_array[k];
 
                   if (k == k_cut_end) {
-                    if (height_eff - WGD->z_face[k_cut_end - 1] < WGD->dz_array[k]) {
+                    if (height_eff - WGD->z_face[k_cut_end] < WGD->dz_array[k]) {
                       cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                      cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end - 1];
+                      cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end];
                     }
                   }
                   cut_points[counter].face_below.push_back(cutVert((x1i - i * WGD->dx), (y1i - j * WGD->dy), 0.0));
@@ -922,9 +922,9 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
 
                   cut_points[counter].z_solid = WGD->dz_array[k];
                   if (k == k_cut_end) {
-                    if (height_eff - WGD->z_face[k_cut_end - 1] < WGD->dz_array[k]) {
+                    if (height_eff - WGD->z_face[k_cut_end] < WGD->dz_array[k]) {
                       cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                      cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end - 1];
+                      cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end];
                     }
                   }
                   cut_points[counter].face_below.push_back(cutVert((x1i - i * WGD->dx), (y1i - j * WGD->dy), 0.0));
@@ -977,9 +977,9 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
 
                   cut_points[counter].z_solid = WGD->dz_array[k];
                   if (k == k_cut_end) {
-                    if (height_eff - WGD->z_face[k_cut_end - 1] < WGD->dz_array[k]) {
+                    if (height_eff - WGD->z_face[k_cut_end] < WGD->dz_array[k]) {
                       cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                      cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end - 1];
+                      cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end];
                     }
                   }
                   cut_points[counter].face_below.push_back(cutVert((x2i - i * WGD->dx), (y2i - j * WGD->dy), 0.0));
@@ -1026,9 +1026,9 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
 
                   cut_points[counter].z_solid = WGD->dz_array[k];
                   if (k == k_cut_end) {
-                    if (height_eff - WGD->z_face[k_cut_end - 1] < WGD->dz_array[k]) {
+                    if (height_eff - WGD->z_face[k_cut_end] < WGD->dz_array[k]) {
                       cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                      cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end - 1];
+                      cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end];
                     }
                   }
                   cut_points[counter].face_below.push_back(cutVert((x2i - i * WGD->dx), (y2i - j * WGD->dy), 0.0));
@@ -1076,9 +1076,9 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
                 if (WGD->icellflag[icell_cent] == 7) {
                   cut_points[counter].intersect.push_back(cutVert((x1i - i * WGD->dx), (y1i - j * WGD->dy), 0.0));
                   if (k == k_cut_end) {
-                    if (height_eff - WGD->z_face[k_cut_end - 1] < WGD->dz_array[k]) {
+                    if (height_eff - WGD->z_face[k_cut_end] < WGD->dz_array[k]) {
                       cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                      cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end - 1];
+                      cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end];
                     }
                   }
                 }
@@ -1115,9 +1115,9 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
                 if (WGD->icellflag[icell_cent] == 7) {
                   cut_points[counter].intersect.push_back(cutVert((x1i - i * WGD->dx), (y1i - j * WGD->dy), 0.0));
                   if (k == k_cut_end) {
-                    if (height_eff - WGD->z_face[k_cut_end - 1] < WGD->dz_array[k]) {
+                    if (height_eff - WGD->z_face[k_cut_end] < WGD->dz_array[k]) {
                       cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                      cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end - 1];
+                      cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end];
                     }
                   }
                 }
@@ -1155,9 +1155,9 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
 
                   cut_points[counter].z_solid = WGD->dz_array[k];
                   if (k == k_cut_end) {
-                    if (height_eff - WGD->z_face[k_cut_end - 1] < WGD->dz_array[k]) {
+                    if (height_eff - WGD->z_face[k_cut_end] < WGD->dz_array[k]) {
                       cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                      cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end - 1];
+                      cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end];
                     }
                   }
                   cut_points[counter].face_below.push_back(cutVert((x1j - i * WGD->dx), (y1j - j * WGD->dy), 0.0));
@@ -1263,7 +1263,7 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
     }
 
     int k = k_cut_end;
-    if (height_eff - WGD->z_face[k - 1] < WGD->dz_array[k]) {
+    if (height_eff - WGD->z_face[k] < WGD->dz_array[k]) {
       for (auto j = j_start; j <= j_end; j++) {
         for (auto i = i_start; i <= i_end; i++) {
           icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
@@ -1284,7 +1284,7 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
             }
 
             cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-            cut_points[counter].z_solid = height_eff - WGD->z_face[k - 1];
+            cut_points[counter].z_solid = height_eff - WGD->z_face[k];
             if (WGD->icellflag[icell_cent] == 7) {
               cut_points[counter].intersect.push_back(cutVert(WGD->dx, WGD->dy, cut_points[counter].z_solid));
               cut_points[counter].face_below.push_back(cutVert(0.0, 0.0, 0.0));

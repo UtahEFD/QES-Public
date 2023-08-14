@@ -1,8 +1,8 @@
 # emacs backup/tilde files
 *~
 
-build/
-Build/
+build*/
+Build*/
 build_old/
 buildPIV/
 src/docs/*
@@ -44,4 +44,7 @@ data/InputFiles/vineyard_tower_validation/*
 
 # IDE related files
 *.vscode
+*.idea
 
+# MacOS files
+*.DS_Store

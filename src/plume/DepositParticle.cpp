@@ -34,47 +34,57 @@
 #include <math.h>
 #include "Plume.hpp"
 
-void Plume::depositParticle(double xPos, double yPos, double zPos, double disX, double disY, double disZ, double uTot, double vTot, double wTot, double txx, double tyy, double tzz, double CoEps, std::list<Particle *>::iterator parItr, WINDSGeneralData *WGD, TURBGeneralData *TGD)
+void Plume::depositParticle(double xPos, double yPos, double zPos, double disX, double disY, double disZ, double uTot, double vTot, double wTot, double txx, double tyy, double tzz, double txz, double txy, double tyz, double vs, double CoEps, double boxSizeZ, double nuT, Particle *par_ptr, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
 
   double rhoAir = 1.225;// in kg m^-3
   double nuAir = 1.506E-5;// in m^2 s^-1
 
-  if ((*parItr)->isActive == true) {
+  if (par_ptr->isActive == true) {
 
-    //    std::cout << "Deposition code running (particle not necessarily depositing) \n";
-
-    // Determine if particle was in veg cell last time step
+    // Particle position and attributes
     double xPos_old = xPos - disX;
     double yPos_old = yPos - disY;
     double zPos_old = zPos - disZ;
 
     int cellId_old = interp->getCellId(xPos_old, yPos_old, zPos_old);
+    int cellId = interp->getCellId(xPos, yPos, zPos);
+    Vector3Int cellIdx = interp->getCellIndex(cellId);
+    int i = cellIdx[0], j = cellIdx[1], k = cellIdx[2];
 
-    // If so, calculate deposition fraction
-    if (WGD->icellflag[cellId_old] == 20 || WGD->icellflag[cellId_old] == 22 || WGD->icellflag[cellId_old] == 24 || WGD->icellflag[cellId_old] == 28) {
+    double partDist = sqrt(pow(disX, 2) + pow(disY, 2) + pow(disZ, 2));// distance travelled through veg
+    double MTot = sqrt(pow(uTot, 2) + pow(vTot, 2) + pow(wTot, 2));// particle speed [m/s]
 
-      double elementDiameter = 100e-3;// temporarily hard-coded [m]
+
+    // Radial distance-based mass decay from data
+    if (false) {
+
+      // Calculate distance (in x-y plane) from source
+      double distFromSource = pow(pow(xPos - par_ptr->xPos_init, 2)
+                                    + pow(yPos - par_ptr->yPos_init, 2),
+                                  0.5);
+      // Take deposited mass away from particle
+      double P_r = exp(-par_ptr->decayConst * distFromSource);// undeposited fraction of mass
+      par_ptr->m = par_ptr->m_o * P_r;
+      par_ptr->m_kg = par_ptr->m_kg_o * P_r;
+    }
+
+
+    // Apply deposition model depending on particle location
+    if (WGD->isCanopy(cellId_old)) {// if particle was in veg cell last time step
+
+      // Calculate deposition fraction
+      double elementDiameter = 100.0e-3;// temporarily hard-coded [m]
       double leafAreaDensitydep = 5.57;// LAD, temporarily hard-coded [m^-1]
-      double Cc = 1;// Cunningham correction factor, temporarily hard-coded, only important for <10um particles
-
-      double vegDistance = sqrt(pow(disX, 2) + pow(disY, 2) + pow(disZ, 2));// distance travelled through veg
-
-      double MTot = sqrt(pow(uTot, 2) + pow(vTot, 2) + pow(wTot, 2));// particle speed [m/s]
-
-      double parRMS = 1 / sqrt(3) * sqrt(txx + tyy + tzz);// RMS of velocity fluctuations the particle is experiencing [m/s]
-
-      double taylorMicroscale = sqrt((15 * nuAir * 5 * pow(parRMS, 2)) / CoEps);
-
-      double Stk = ((*parItr)->rho * pow((*parItr)->d_m, 2) * MTot * Cc) / (18 * rhoAir * nuAir * elementDiameter);// classical Stokes number
-
+      double Cc = 1.0;// Cunningham correction factor, temporarily hard-coded, only important for <10um particles
+      double parRMS = 1.0 / sqrt(3.0) * sqrt(txx + tyy + tzz);// RMS of velocity fluctuations the particle is experiencing [m/s]
+      double taylorMicroscale = sqrt((15.0 * nuAir * 5.0 * pow(parRMS, 2.0)) / CoEps);
+      double Stk = (par_ptr->rho * pow(par_ptr->d_m, 2.0) * MTot * Cc) / (18.0 * rhoAir * nuAir * elementDiameter);// classical Stokes number
       double ReLambda = parRMS * taylorMicroscale / nuAir;// Taylor microscale Reynolds number
-
-      double depEff = 1 - 1 / (2.049 * pow(pow(ReLambda, 0.3) * Stk, 1.19) + 1);// deposition efficiency (E in Bailey 2018 Eq. 13)
-
+      double depEff = 1.0 - 1.0 / (par_ptr->c1 * pow(pow(ReLambda, 0.3) * Stk, par_ptr->c2) + 1.0);// deposition efficiency (E in Bailey 2018 Eq. 13)
       double ReLeaf = elementDiameter * MTot / nuAir;// leaf Reynolds number
 
-      // Temporary fix to address limitations of Price 2017 model (correlation only valid for 400 < ReLeaf < 6000)
+      // Temporary fix to address limitations of Price 2017 model (their correlation is only valid for 400 < ReLeaf < 6000)
       if (ReLeaf > 6000.0) {
         ReLeaf = 6000.0;
       }
@@ -83,36 +93,55 @@ void Plume::depositParticle(double xPos, double yPos, double zPos, double disX, 
       }
 
       double gam = -6.5e-5 * ReLeaf + 0.43;// non-impaction surface weighting factor
-      //double gam = 0.1; // temporarily set to 1 because of problems (gam is becoming negative, but should be positive and ~0.1)
+      // double gam = 0.1; // temporarily set to 1 because of problems (gam is becoming negative, but should be positive and ~0.1)
 
-      double adjLAD = leafAreaDensitydep * (1 + gam);// LAD adjusted to include non-impaction surface
+      double adjLAD = leafAreaDensitydep * (1.0 + gam);// LAD adjusted to include non-impaction surface
 
-      (*parItr)->wdepos *= exp(-depEff * adjLAD * vegDistance / 2);// the /2 comes from Ross' G function, assuming uniform leaf orientation distribution
+      double P_v = exp(-depEff * adjLAD * partDist * 0.7);// the undeposited mass fraction. The /2 comes from Ross' G function, assuming uniform leaf orientation distribution
 
-      deposition->depcvol[cellId_old] += (1 - (*parItr)->wdepos) * (*parItr)->m;
+      // add deposition amount to the buffer (for parallelization)
+      par_ptr->dep_buffer_flag = true;
+      par_ptr->dep_buffer_cell.push_back(cellId_old);
+      par_ptr->dep_buffer_val.push_back((1.0 - P_v) * par_ptr->m);
+      // deposition->depcvol[cellId_old] += (1.0 - P_v) * par_ptr->m;
 
       // Take deposited mass away from particle
-      (*parItr)->m *= (*parItr)->wdepos;
-      (*parItr)->m_kg *= (*parItr)->wdepos;
+      par_ptr->m *= P_v;
+      par_ptr->m_kg *= P_v;
 
-      //      std::cout << "DEPOSIT CHECKPOINT 0" << std::endl;
-      // Add deposited mass to deposition bins (bins are on QES-Winds grid)
-      //      std::cout << "size of depcvol = " << WGD->depcvol.size() << std::endl;
-      //std::cout << "Mass being added: " << (1 - (*parItr)->wdepos) * (*parItr)->m << std::endl;
+    } else if (WGD->isTerrain(cellId - (WGD->nx - 1) * (WGD->ny - 1))) {// Ground deposition
+      double dt = partDist / MTot;
+      double ustarDep = pow(pow(txz, 2.0) + pow(tyz, 2.0), 0.25);
+      double Sc = nuAir / nuT;
+      double ra = 1.0 / (0.4 * ustarDep) * log(((10000.0 * ustarDep * boxSizeZ) / (2.0 * nuAir) + 1.0 / Sc) / ((100.0 * ustarDep / nuAir) + 1.0 / Sc));
+      double Cc = 1.0;// Cunningham correction factor
+      double Stk_ground = (vs * pow(ustarDep, 2.0)) / (9.81 * nuAir);
+      double rb = 1.0 / (ustarDep * (pow(Sc, -2.0 / 3.0) + pow(10.0, -3.0 / Stk_ground)));
+      double vd = 1.0 / (ra + rb + ra * rb * vs) + vs;
+      double dz_g = WGD->z_face[k] - WGD->z_face[k - 1];
 
-      //     std::cout << "DEPOSIT CHECKPOINT 1" << std::endl;
+      double P_g = exp(-vd * dt / dz_g);
 
-      //std::cout << "particle in homog. veg., mass: " << (*parItr)->m  << " wdepos = " << (*parItr)->wdepos << " depEff = " << depEff << " adjLAD = " << adjLAD << " vegDistance = " << vegDistance << " gam = " << gam << " ReLeaf = " << ReLeaf << " MTot = " << MTot << std::endl;
+      // add deposition amount to the buffer (for parallelization)
+      par_ptr->dep_buffer_flag = true;
+      par_ptr->dep_buffer_cell.push_back(cellId_old);
+      par_ptr->dep_buffer_val.push_back((1.0 - P_g) * par_ptr->m);
+      // deposition->depcvol[cellId] += (1.0 - P_g) * par_ptr->m;
+
+      // Take deposited mass away from particle
+      par_ptr->m *= P_g;
+      par_ptr->m_kg *= P_g;
+
     } else {
       return;
     }
 
     // If particle mass drops below mass of a single particle, set it to zero and inactivate it
-    double oneParMass = (*parItr)->rho * (1 / 6) * M_PI * pow((*parItr)->d_m, 3);
-    if ((*parItr)->m_kg < oneParMass) {
-      (*parItr)->m_kg = 0.0;
-      (*parItr)->m = 0.0;
-      (*parItr)->isActive = false;
+    double oneParMass = par_ptr->rho * (1.0 / 6.0) * M_PI * pow(par_ptr->d_m, 3.0);
+    if (par_ptr->m_kg < oneParMass) {
+      par_ptr->m_kg = 0.0;
+      par_ptr->m = 0.0;
+      par_ptr->isActive = false;
     }
 
   }// if ( isActive == true )
