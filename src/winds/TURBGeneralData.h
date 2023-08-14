@@ -65,6 +65,7 @@ public:
   virtual void run();
 
   void loadNetCDFData(int);
+  void divergenceStress();
 
   // General QUIC Domain Data
   ///@{
@@ -201,7 +202,6 @@ protected:
   void getTurbulentViscosity();
   void stressTensor();
 
-  void divergenceStress();
   void derivativeStress(const std::vector<float> &,
                         const std::vector<float> &,
                         const std::vector<float> &,
