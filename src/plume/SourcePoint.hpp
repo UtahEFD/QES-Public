@@ -29,7 +29,7 @@
  ****************************************************************************/
 
 /** @file SourcePoint.hpp
- * @brief This class represents a specific source type. 
+ * @brief This class represents a specific source type.
  *
  * @note Child of SourceType
  * @sa SourceType
@@ -40,7 +40,7 @@
 
 #include "SourceType.hpp"
 #include "winds/WINDSGeneralData.h"
-//#include "Particles.hpp"
+// #include "Particles.hpp"
 
 class SourcePoint : public SourceType
 {
@@ -75,14 +75,14 @@ public:
     setReleaseType();
     setParticleType();
     // Create particle factories
-    registerParticles();
+    // registerParticles();
 
-    /* 
+    /*
     // Create a generic particle with attributes read from XML
     Particles * particles;
     particles->setParticleValues();
 */
-    //std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
+    // std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
     parsePrimitive<double>(true, posX, "posX");
     parsePrimitive<double>(true, posY, "posY");
     parsePrimitive<double>(true, posZ, "posZ");
@@ -96,6 +96,6 @@ public:
 
   void checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend);
 
-  //template <class parType>
+  // template <class parType>
   int emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles);
 };

@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file ParticleSmall.hpp 
+/** @file ParticleSmall.hpp
  * @brief Derived from Particle.hpp. Small particles have diameter, mass, density, settling, and deposition. No drag effects.
  */
 
@@ -42,27 +42,27 @@ class ParticleSmall : public Particle
 
 public:
   // initializer
-  ParticleSmall()
+  ParticleSmall() : Particle()
   {
     // diameter of particle (micron and m)
-    d = 0.0;
-    d_m = (1.0E-6) * d;
+    // d = 0.0;
+    // d_m = (1.0E-6) * d;
 
     // mass of particle (g and kg)
-    m = 0.0;
-    m_kg = (1.0E-3) * m;
+    // m = 0.0;
+    // m_kg = (1.0E-3) * m;
 
     // density of particle
-    rho = 0.0;
+    // rho = 0.0;
 
     // tag
     tag = "ParticleSmall";
 
     // (1 - fraction) particle deposited
-    depFlag = true;
+    // depFlag = true;
 
     // (1 - fraction) particle decay
-    wdecay = 1.0;
+    // wdecay = 1.0;
   }
 
   // initializer
@@ -104,13 +104,13 @@ public:
   //  }
 
 
-  //void setSettlingVelocity(const double &, const double &);
+  // void setSettlingVelocity(const double &, const double &);
   void setSettlingVelocity(const double &rhoAir, const double &nuAir)
   {
-    //std::cout << "setting vs for small particle, ";
+    // std::cout << "setting vs for small particle, ";
     if (d > 0) {
-      //std::cout << " d>0 in vs calc " << " d_m = " << d_m << " rho = " << rho << std::endl;
-      // dimensionless grain diameter
+      // std::cout << " d>0 in vs calc " << " d_m = " << d_m << " rho = " << rho << std::endl;
+      //  dimensionless grain diameter
       dstar = d_m * pow(9.81 / pow(nuAir, 2.0) * (rho / rhoAir - 1.), 1.0 / 3.0);
       // drag coefficent
       Cd = (432.0 / pow(dstar, 3.0)) * pow(1.0 + 0.022 * pow(dstar, 3.0), 0.54) + 0.47 * (1.0 - exp(-0.15 * pow(dstar, 0.45)));
@@ -119,7 +119,7 @@ public:
       // settling velocity
       vs = wstar * pow(9.81 * nuAir * (rho / rhoAir - 1.0), 1.0 / 3.0);
     } else {
-      //std::cout << " d<=0 in vs calc " << std::endl;
+      // std::cout << " d<=0 in vs calc " << std::endl;
       vs = 0.0;
     }
   }

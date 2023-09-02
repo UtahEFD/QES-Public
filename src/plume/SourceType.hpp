@@ -114,6 +114,15 @@ public:
   // default constructor
   SourceType()
   {
+    std::string tracerstr = "ParticleTracer";
+    std::string smallstr = "ParticleSmall";
+    std::string largestr = "ParticleLarge";
+    std::string heavygasstr = "ParticleHeavyGas";
+
+    particleTypeFactory->RegisterParticles(tracerstr, &particleTracerFactory);
+    particleTypeFactory->RegisterParticles(smallstr, &particleSmallFactory);
+    particleTypeFactory->RegisterParticles(largestr, &particleLargeFactory);
+    particleTypeFactory->RegisterParticles(heavygasstr, &particleHeavyGasFactory);
   }
 
   // destructor

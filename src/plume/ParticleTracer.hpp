@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file ParticleTracer.hpp 
+/** @file ParticleTracer.hpp
  * @brief Derived from Particle.hpp. Tracer particles are massless and do not settle, deposit, or experience drag effects.
  */
 
@@ -42,27 +42,27 @@ class ParticleTracer : public Particle
 
 public:
   // initializer
-  ParticleTracer()
+  ParticleTracer() : Particle()
   {
     // diameter of particle (micron and m)
-    d = 0.0;
-    d_m = (1.0E-6) * d;
+    // d = 0.0;
+    // d_m = (1.0E-6) * d;
 
     // mass of particle (g and kg)
-    m = 0.0;
-    m_kg = (1.0E-3) * m;
+    // m = 0.0;
+    // m_kg = (1.0E-3) * m;
 
     // density of particle
-    rho = 0.0;
+    // rho = 0.0;
 
     // tag
     tag = "ParticleTracer";
 
     // (1 - fraction) particle deposited
-    depFlag = false;
+    // depFlag = false;
 
     // (1 - fraction) particle decay
-    wdecay = 1.0;
+    // wdecay = 1.0;
   }
 
   // initializer
@@ -97,7 +97,7 @@ public:
   /*  void parseValues()
   {
       parType = ParticleType::tracer;
-      
+
   }
 */
 

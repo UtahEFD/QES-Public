@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file ParticleLarge.hpp 
+/** @file ParticleLarge.hpp
  * @brief Derived from Particle.hpp. Large particles have diameter, mass, settling, density, deposition, and drag (though drag isn't implemented yet, LDU 11/16/21)
  */
 
@@ -42,18 +42,18 @@ class ParticleLarge : public Particle
 
 public:
   // initializer
-  ParticleLarge()
+  ParticleLarge() : Particle()
   {
     // diameter of particle (micron and m)
-    d = 0.0;
-    d_m = (1.0E-6) * d;
+    // d = 0.0;
+    // d_m = (1.0E-6) * d;
 
     // mass of particle (g and kg)
-    m = 0.0;
-    m_kg = (1.0E-3) * m;
+    // m = 0.0;
+    // m_kg = (1.0E-3) * m;
 
     // density of particle
-    rho = 0.0;
+    // rho = 0.0;
 
     // tag
     tag = "ParticleLarge";
@@ -62,7 +62,7 @@ public:
     depFlag = true;
 
     // (1 - fraction) particle decay
-    wdecay = 1.0;
+    // wdecay = 1.0;
   }
 
   // initializer
@@ -98,7 +98,7 @@ public:
   {
       parType = ParticleType::large;
       parsePrimitive<double>(false, rho, "particleDensity");
-      parsePrimitive<double>(false, d, "particleDiameter"); 
+      parsePrimitive<double>(false, d, "particleDiameter");
       parsePrimitive<bool>(false, depFlag, "depositionFlag");
   }
 */

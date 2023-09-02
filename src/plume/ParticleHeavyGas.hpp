@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file ParticleHeavyGas.hpp 
+/** @file ParticleHeavyGas.hpp
  * @brief Derived from Particle.hpp. Heavy gas attributes not defined yet, but this script is identical to ParticleSmall and ParticleLarge.
  */
 
@@ -42,18 +42,18 @@ class ParticleHeavyGas : public Particle
 
 public:
   // initializer
-  ParticleHeavyGas()
+  ParticleHeavyGas() : Particle()
   {
     // diameter of particle (micron and m)
-    d = 0.0;
-    d_m = (1.0E-6) * d;
+    // d = 0.0;
+    // d_m = (1.0E-6) * d;
 
     // mass of particle (g and kg)
-    m = 0.0;
-    m_kg = (1.0E-3) * m;
+    // m = 0.0;
+    // m_kg = (1.0E-3) * m;
 
     // density of particle
-    rho = 0.0;
+    // rho = 0.0;
 
     // tag
     tag = "ParticleHeavyGas";
@@ -62,7 +62,7 @@ public:
     depFlag = true;
 
     // (1 - fraction) particle decay
-    wdecay = 1.0;
+    // wdecay = 1.0;
   }
 
   // initializer
@@ -98,7 +98,7 @@ public:
   {
       parType = ParticleType::heavygas;
       parsePrimitive<double>(false, rho, "particleDensity");
-      parsePrimitive<double>(false, d, "particleDiameter"); 
+      parsePrimitive<double>(false, d, "particleDiameter");
       parsePrimitive<bool>(false, depFlag, "depositionFlag");
   }
 */
