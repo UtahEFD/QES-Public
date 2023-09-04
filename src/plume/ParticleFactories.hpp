@@ -28,13 +28,14 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file ParticleFactories.hpp 
- * @brief 
+/** @file ParticleFactories.hpp
+ * @brief
  */
 
 // #pragma once
 
 #include "Particle.hpp"
+#include "ParseParticle.hpp"
 #include <unordered_map>
 
 class ParticleFactory
@@ -106,7 +107,7 @@ public:
   // Function to read in all possible particle types and create factories for them
   void RegisterParticles(std::string particleType, ParticleFactory *particleFactory)
   {
-    //std::cout <<
+    // std::cout <<
     ParticleTypeContainer.insert(std::pair<std::string, ParticleFactory *>(particleType, particleFactory));
   }
 
@@ -122,6 +123,12 @@ public:
     */
     //      std::cout << "Calling create() from the " << particleType << " factory" << std::endl;
     return ParticleTypeContainer.at(particleType)->create();
+    //      std::cout << "done calling create() from the " << particleType << " factory" << std::endl;
+  }
+
+  Particle *Create(const ParseParticle *proptoParticle)
+  {
+    return ParticleTypeContainer.at(proptoParticle->tag)->create();
     //      std::cout << "done calling create() from the " << particleType << " factory" << std::endl;
   }
 };

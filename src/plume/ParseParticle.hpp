@@ -39,6 +39,7 @@
 #pragma once
 
 #include <cmath>
+#include <utility>
 
 #include "util/ParseInterface.h"
 // #include "Particle.hpp"
@@ -62,10 +63,6 @@ protected:
 public:
   ParticleType parType;
 
-  //  std::vector<Particle *> protoParticle_tmp;
-  //  Particle *protoParticle; // prototype particle with values from XML, to be copied to emitted particles
-
-
   // Physical properties
   double d;
   double d_m;
@@ -78,34 +75,23 @@ public:
   double c2;
   std::string tag;
 
-  // default constructor
-  ParseParticle()
-  {
-    d = 0.0;
-    d_m = 0.0;
-    m = 0.0;
-    m_kg = 0.0;
-    rho = 0.0;
-    depFlag = false;
-    decayConst = 0;
-    c1 = 2.049;
-    c2 = 1.19;
-    tag = "ParticleTracer";
-    d_m = d * (1.0E-6);
-    m_kg = m * (1.0E-3);
-  }
+
+  ParseParticle(const bool &flag, std::string str)
+    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0), depFlag(flag), decayConst(0.0), c1(2.049), c2(1.19), tag(std::move(str))
+  {}
 
   // destructor
   ~ParseParticle()
   {
   }
 
-  virtual void parseValues()
-  {
-    parType = ParticleType::tracer;
-  };
-
-  //  virtual void setSettlingVelocity(const double &, const double &) {};
+  virtual void parseValues() = 0;
+  
+private:
+  // default constructor
+  ParseParticle()
+    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0), depFlag(false), decayConst(0.0), c1(2.049), c2(1.19), tag("ParticleTracer")
+  {}
 };
 
 
@@ -115,32 +101,9 @@ protected:
 public:
   ParticleType parType;
 
-  //  std::vector<ParseParticle *> protoParticle_tmp;
-  //  ParseParticle *protoParticle; // prototype particle with values from XML, to be copied to emitted particles
-
-  /*
-  // Physical properties
-  double d;
-  double d_m;
-  double m;
-  double m_kg;
-  double rho;
-  bool depFlag;
-*/
   // default constructor
-  ParseParticleTracer()
-  {
-    d = 0.0;
-    d_m = 0.0;
-    m = 0.0;
-    m_kg = 0.0;
-    rho = 0.0;
-    depFlag = false;
-    decayConst = 0;
-    c1 = 2.049;
-    c2 = 1.19;
-    tag = "ParticleTracer";
-  }
+  ParseParticleTracer() : ParseParticle(false, "ParticleTracer")
+  {}
 
   // destructor
   ~ParseParticleTracer()
@@ -160,32 +123,9 @@ protected:
 public:
   ParticleType parType;
 
-  //  std::vector<ParseParticle *> protoParticle_tmp;
-  //  ParseParticle *protoParticle; // prototype particle with values from XML, to be copied to emitted particles
-
-  /*
-  // Physical properties
-  double d;
-  double d_m;
-  double m;
-  double m_kg;
-  double rho;
-  bool depFlag;
-*/
   // default constructor
-  ParseParticleSmall()
-  {
-    d = 0.0;
-    d_m = 0.0;
-    m = 0.0;
-    m_kg = 0.0;
-    rho = 0.0;
-    depFlag = true;
-    decayConst = 0;
-    c1 = 2.049;
-    c2 = 1.19;
-    tag = "ParticleSmall";
-  }
+  ParseParticleSmall() : ParseParticle(true, "ParticleSmall")
+  {}
 
   // destructor
   ~ParseParticleSmall()
@@ -213,31 +153,9 @@ protected:
 public:
   ParticleType parType;
 
-  //  std::vector<ParseParticle *> protoParticle_tmp;
-  //  ParseParticle *protoParticle; // prototype particle with values from XML, to be copied to emitted particles
-
-  /*
-  // Physical properties
-  double d;
-  double d_m;
-  double m;
-  double m_kg;
-  double rho;
-  bool depFlag;
-*/
   // default constructor
-  ParseParticleLarge()
+  ParseParticleLarge() : ParseParticle(true, "ParticleLarge")
   {
-    d = 0.0;
-    d_m = 0.0;
-    m = 0.0;
-    m_kg = 0.0;
-    rho = 0.0;
-    depFlag = true;
-    decayConst = 0;
-    c1 = 2.049;
-    c2 = 1.19;
-    tag = "ParticleLarge";
   }
 
   // destructor
@@ -266,31 +184,9 @@ protected:
 public:
   ParticleType parType;
 
-  //  std::vector<ParseParticle *> protoParticle_tmp;
-  //  ParseParticle *protoParticle; // prototype particle with values from XML, to be copied to emitted particles
-
-  /*
-  // Physical properties
-  double d;
-  double d_m;
-  double m;
-  double m_kg;
-  double rho;
-  bool depFlag;
-*/
   // default constructor
-  ParseParticleHeavyGas()
+  ParseParticleHeavyGas() : ParseParticle(true, "ParticleHeavyGas")
   {
-    d = 0.0;
-    d_m = 0.0;
-    m = 0.0;
-    m_kg = 0.0;
-    rho = 0.0;
-    depFlag = true;
-    decayConst = 0;
-    c1 = 2.049;
-    c2 = 1.19;
-    tag = "ParticleHeavyGas";
   }
 
   // destructor

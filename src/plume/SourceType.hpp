@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file SourceType.hpp 
+/** @file SourceType.hpp
  * @brief  This class represents a generic sourece type
  *
  * @note Pure virtual child of ParseInterface
@@ -53,7 +53,7 @@
 #include "ReleaseType_continuous.hpp"
 #include "ReleaseType_duration.hpp"
 
-//#include "Interp.h"
+// #include "Interp.h"
 #include "util/ParseInterface.h"
 #include "winds/WINDSGeneralData.h"
 
@@ -82,7 +82,7 @@ public:
   // this is used to set the source ID for a given particle, to know from which source each particle comes from
   // !!! this will only be set correctly if a call to setSourceIdx() is done by the class that sets up a vector of this class.
   int sourceIdx;
-  //Interp *interp;
+  // Interp *interp;
 
   // this is a description variable for determining the source shape. May or may not be used.
   // !!! this needs set by parseValues() in each source generated from input files.
@@ -166,9 +166,9 @@ public:
     parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticleHeavyGas>("ParticleHeavyGas"));
 
     if (protoParticle_tmp.empty()) {
-      //std::cerr << "ERROR (SourceType::setParticleType): there was no input particle type!" << std::endl;
-      //exit(1);
-      protoParticle = new ParseParticle();
+      // std::cerr << "ERROR (SourceType::setParticleType): there was no input particle type!" << std::endl;
+      // exit(1);
+      protoParticle = new ParseParticleTracer();
       return;
     } else if (protoParticle_tmp.size() > 1) {
       std::cerr << "ERROR (SourceType::setParticleType): there was more than one input particle type!" << std::endl;

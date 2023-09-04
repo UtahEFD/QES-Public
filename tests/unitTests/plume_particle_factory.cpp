@@ -38,19 +38,35 @@ TEST_CASE("particle factory", "[in progress]")
 
   auto startTime = std::chrono::high_resolution_clock::now();
   std::vector<Particle *> particleList;
-  particleList.resize(100000);
+
+  particleList.resize(100000, nullptr);
+  ParseParticle *protoParticleTracer = new ParseParticleTracer();
   for (int k = 0; k < 100000; ++k) {
-    particleList[k] = particleTypeFactory->Create(tracerstr);
+    particleList[k] = particleTypeFactory->Create(protoParticleTracer);
   }
+  REQUIRE(particleList[1000]->tag == tracerstr);
+
+  particleList.resize(100000, nullptr);
+  ParseParticle *protoParticleSmall = new ParseParticleSmall();
   for (int k = 0; k < 100000; ++k) {
-    particleList[k] = particleTypeFactory->Create(smallstr);
+    particleList[k] = particleTypeFactory->Create(protoParticleSmall);
   }
+  REQUIRE(particleList[1000]->tag == smallstr);
+
+  particleList.resize(100000, nullptr);
+  ParseParticle *protoParticleLarge = new ParseParticleLarge();
   for (int k = 0; k < 100000; ++k) {
-    particleList[k] = particleTypeFactory->Create(largestr);
+    particleList[k] = particleTypeFactory->Create(protoParticleLarge);
   }
+  REQUIRE(particleList[1000]->tag == largestr);
+
+  particleList.resize(100000, nullptr);
+  ParseParticle *protoParticleHeavyGas = new ParseParticleHeavyGas();
   for (int k = 0; k < 100000; ++k) {
-    particleList[k] = particleTypeFactory->Create(heavygasstr);
+    particleList[k] = particleTypeFactory->Create(protoParticleHeavyGas);
   }
+  REQUIRE(particleList[1000]->tag == heavygasstr);
+
   auto endTime = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> cpuElapsed = endTime - startTime;
   std::cout << "CPU  elapsed time: " << cpuElapsed.count() << " s\n";
