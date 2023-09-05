@@ -42,9 +42,9 @@ class ParseParticleTracer : public ParseParticle
 {
 protected:
 public:
-
   // default constructor
-  ParseParticleTracer() : ParseParticle(false, "ParticleTracer", ParticleType::tracer)
+  ParseParticleTracer()
+    : ParseParticle(false, "ParticleTracer", ParticleType::tracer)
   {}
 
   // destructor
@@ -52,7 +52,7 @@ public:
   {
   }
 
-  virtual void parseValues()
+  void parseValues() override
   {
   }
   friend class ParticleTracer;
@@ -66,25 +66,10 @@ public:
   ParticleTracer()
     : Particle(false, "ParticleTracer", ParticleType::tracer)
   {
-    // diameter of particle (micron and m)
-    // d = 0.0;
-    // d_m = (1.0E-6) * d;
-
-    // mass of particle (g and kg)
-    // m = 0.0;
-    // m_kg = (1.0E-3) * m;
-
-    // density of particle
-    // rho = 0.0;
-
-    // tag
-    // tag = "ParticleTracer";
-
-    // (1 - fraction) particle deposited
-    // depFlag = false;
-
-    // (1 - fraction) particle decay
-    // wdecay = 1.0;
+    //  ParseParticle(const bool &flag, std::string str, const ParticleType &type)
+    //    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0),
+    //      depFlag(flag), decayConst(0.0), c1(2.049), c2(1.19),
+    //      tag(std::move(str)), particleType(type)
   }
 
   // initializer
@@ -119,7 +104,7 @@ public:
 
   //  void setSettlingVelocity(const double &, const double &){
   //    vs = 0.0;
-  void setSettlingVelocity(const double &rhoAir, const double &nuAir)
+  void setSettlingVelocity(const double &rhoAir, const double &nuAir) override
   {
     vs = 0.0;
   }

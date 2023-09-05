@@ -48,11 +48,9 @@ public:
   }
 
   // destructor
-  ~ParseParticleLarge()
-  {
-  }
+  ~ParseParticleLarge() = default;
 
-  virtual void parseValues()
+  void parseValues() override
   {
     parsePrimitive<double>(true, rho, "particleDensity");
     parsePrimitive<double>(true, d, "particleDiameter");
@@ -75,25 +73,10 @@ public:
   ParticleLarge()
     : Particle(true, "ParticleLarge", ParticleType::large)
   {
-    // diameter of particle (micron and m)
-    // d = 0.0;
-    // d_m = (1.0E-6) * d;
-
-    // mass of particle (g and kg)
-    // m = 0.0;
-    // m_kg = (1.0E-3) * m;
-
-    // density of particle
-    // rho = 0.0;
-
-    // tag
-    // tag = "ParticleLarge";
-
-    // (1 - fraction) particle deposited
-    // depFlag = true;
-
-    // (1 - fraction) particle decay
-    // wdecay = 1.0;
+    //  ParseParticle(const bool &flag, std::string str, const ParticleType &type)
+    //    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0),
+    //      depFlag(flag), decayConst(0.0), c1(2.049), c2(1.19),
+    //      tag(std::move(str)), particleType(type)
   }
 
   // initializer
@@ -122,12 +105,10 @@ public:
   }
 
   // destructor
-  ~ParticleLarge()
-  {
-  }
+  ~ParticleLarge() override = default;
 
   //  void setSettlingVelocity(const double &, const double &);
-  void setSettlingVelocity(const double &rhoAir, const double &nuAir)
+  void setSettlingVelocity(const double &rhoAir, const double &nuAir) override
   {
     if (d > 0) {
       // dimensionless grain diameter

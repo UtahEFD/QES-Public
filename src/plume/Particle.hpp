@@ -39,7 +39,6 @@
 
 #include "util/ParseInterface.h"
 
-
 enum ParticleType {
   tracer,
   small,
@@ -54,19 +53,12 @@ protected:
 public:
   // particle type
   ParticleType particleType;
-
-  // Physical properties
-  double d;
-  double d_m;
-  double m;
-  double m_kg;
-  double rho;
-  bool depFlag;
-  double decayConst;
-  double c1;
-  double c2;
   std::string tag;
 
+  // Physical properties
+  double d, d_m, m, m_kg, rho;
+  bool depFlag;
+  double decayConst, c1, c2;
 
   ParseParticle(const bool &flag, std::string str, const ParticleType &type)
     : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0),
@@ -75,9 +67,7 @@ public:
   {}
 
   // destructor
-  ~ParseParticle()
-  {
-  }
+  ~ParseParticle() = default;
 
   virtual void parseValues() = 0;
 
@@ -85,14 +75,20 @@ private:
   // default constructor
   ParseParticle()
     : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0),
-      depFlag(false), decayConst(0.0), c1(2.049), c2(1.19), tag("ParticleTracer")
+      depFlag(false), decayConst(0.0), c1(2.049), c2(1.19),
+      particleType(ParticleType::tracer), tag("ParticleTracer")
   {}
 };
 
 class Particle
 {
 private:
-  Particle() {}
+  Particle()
+    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), m_o(0.0), m_kg_o(0.0), rho(0.0),
+      decayConst(0.0), c1(2.049), c2(1.19), wdecay(1.0),
+      depFlag(false), particleType(ParticleType::tracer), tag("ParticleTracer")
+  {
+  }
 
 protected:
 public:
@@ -131,9 +127,7 @@ public:
   }
 
   // destructor
-  virtual ~Particle()
-  {
-  }
+  virtual ~Particle() = default;
 
   ParticleType particleType;// particle type
   std::string tag;// particle type tag
@@ -228,6 +222,6 @@ public:
 
   // decay variables
   double wdecay;// (1 - fraction) particle decayed [0,1]
-  
+
   virtual void setSettlingVelocity(const double &, const double &){};
 };
