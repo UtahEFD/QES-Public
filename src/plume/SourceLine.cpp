@@ -75,7 +75,9 @@ void SourceLine::checkPosInfo(const double &domainXstart, const double &domainXe
 }
 
 
-int SourceLine::emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles)
+int SourceLine::emitParticles(const float dt,
+                              const float currTime,
+                              std::list<Particle *> &emittedParticles)
 {
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
@@ -84,20 +86,15 @@ int SourceLine::emitParticles(const float dt, const float currTime, std::list<Pa
       // Particle *cPar = new Particle();
       Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
       m_protoParticle->setParticleParameters(cPar);
+
       // generate random point on line between m_pt0 and m_pt1
       double diffX = posX_1 - posX_0;
       double diffY = posY_1 - posY_0;
       double diffZ = posZ_1 - posZ_0;
-
       float t = drand48();
-
-      // Now cPar is a generic particle, only created once (in setParticleType()).
-      // If physical quantities should change per particle, the setParticleType() call should be moved here.
       cPar->xPos_init = posX_0 + t * diffX;
       cPar->yPos_init = posY_0 + t * diffY;
       cPar->zPos_init = posZ_0 + t * diffZ;
-      // int cellId2d = interp->getCellId2d(cPar->xPos_init, cPar->yPos_init);
-      // cPar->zPos_init = posZ_0 + t * diffZ + WGD->terrain[cellId2d];
 
       cPar->m = sourceStrength / m_rType->m_numPar;
       cPar->m_kg = sourceStrength / m_rType->m_numPar * (1.0E-3);

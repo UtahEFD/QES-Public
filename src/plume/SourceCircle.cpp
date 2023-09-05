@@ -64,12 +64,16 @@ void SourceCircle::checkPosInfo(const double &domainXstart, const double &domain
 }
 
 
-int SourceCircle::emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles)
+int SourceCircle::emitParticles(const float dt,
+                                const float currTime,
+                                std::list<Particle *> &emittedParticles)
 {
   // warning!!! this is still a point source! Need to work out the geometry details still
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
-
+    std::random_device rd;// Will be used to obtain a seed for the random number engine
+    std::mt19937 prng(rd());// Standard mersenne_twister_engine seeded with rd()
+    std::uniform_real_distribution<> uniformDistr(0.0, 1.0);
     for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
       // Particle *cPar = new Particle();
@@ -77,19 +81,15 @@ int SourceCircle::emitParticles(const float dt, const float currTime, std::list<
 
       Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
       m_protoParticle->setParticleParameters(cPar);
-
+      
       cPar->xPos_init = posX;
       cPar->yPos_init = posY;
       cPar->zPos_init = posZ;
-      // int cellId2d = interp->getCellId2d(posX, posY);
-      // cPar->zPos_init = posZ + WGD->terrain[cellId2d];
 
       cPar->m = sourceStrength / m_rType->m_numPar;
       cPar->m_kg = sourceStrength / m_rType->m_numPar * (1.0E-3);
       cPar->m_o = cPar->m;
       cPar->m_kg_o = cPar->m * (1.0E-3);
-      // std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
-
 
       cPar->tStrt = currTime;
 

@@ -92,15 +92,11 @@ int SourceFullDomain::emitParticles(const float dt, const float currTime, std::l
       cPar->xPos_init = uniformDistr(prng) * (xDomainEnd - xDomainStart) + xDomainStart;
       cPar->yPos_init = uniformDistr(prng) * (yDomainEnd - yDomainStart) + yDomainStart;
       cPar->zPos_init = uniformDistr(prng) * (zDomainEnd - zDomainStart) + zDomainStart;
-      // int cellId2d = interp->getCellId2d(cPar->xPos_init, cPar->yPos_init);
-      // cPar->zPos_init = uniformDistr(prng) * (zDomainEnd - zDomainStart) + zDomainStart + WGD->terrain[cellId2d];
 
       cPar->m = sourceStrength / m_rType->m_numPar;
       cPar->m_kg = sourceStrength / m_rType->m_numPar * (1.0E-3);
       cPar->m_o = cPar->m;
       cPar->m_kg_o = cPar->m * (1.0E-3);
-      // std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
-
 
       cPar->tStrt = currTime;
 

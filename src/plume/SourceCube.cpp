@@ -91,7 +91,9 @@ void SourceCube::checkPosInfo(const double &domainXstart, const double &domainXe
 }
 
 
-int SourceCube::emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles)
+int SourceCube::emitParticles(const float dt,
+                              const float currTime,
+                              std::list<Particle *> &emittedParticles)
 {
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
@@ -109,8 +111,6 @@ int SourceCube::emitParticles(const float dt, const float currTime, std::list<Pa
       cPar->xPos_init = uniformDistr(prng) * (m_maxX - m_minX) + m_minX;
       cPar->yPos_init = uniformDistr(prng) * (m_maxY - m_minY) + m_minY;
       cPar->zPos_init = uniformDistr(prng) * (m_maxZ - m_minZ) + m_minZ;
-      // int cellId2d = interp->getCellId2d(cPar->xPos_init, cPar->yPos_init);
-      // cPar->zPos_init = uniformDistr(prng) * (m_maxZ - m_minZ) + m_minZ + WGD->terrain[cellId2d];
 
       cPar->m = sourceStrength / m_rType->m_numPar;
       cPar->m_kg = sourceStrength / m_rType->m_numPar * (1.0E-3);
