@@ -86,6 +86,7 @@ int SourceFullDomain::emitParticles(const float dt, const float currTime, std::l
 
       // Particle *cPar = new Particle();
       Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
+      m_protoParticle->setParticleParameters(cPar);
 
       // generate uniform dist in domain
       cPar->xPos_init = uniformDistr(prng) * (xDomainEnd - xDomainStart) + xDomainStart;
@@ -93,14 +94,6 @@ int SourceFullDomain::emitParticles(const float dt, const float currTime, std::l
       cPar->zPos_init = uniformDistr(prng) * (zDomainEnd - zDomainStart) + zDomainStart;
       // int cellId2d = interp->getCellId2d(cPar->xPos_init, cPar->yPos_init);
       // cPar->zPos_init = uniformDistr(prng) * (zDomainEnd - zDomainStart) + zDomainStart + WGD->terrain[cellId2d];
-
-      cPar->d = m_protoParticle->d;
-      cPar->d_m = (1.0E-6) * m_protoParticle->d;
-      cPar->rho = m_protoParticle->rho;
-      cPar->depFlag = m_protoParticle->depFlag;
-      cPar->decayConst = m_protoParticle->decayConst;
-      cPar->c1 = m_protoParticle->c1;
-      cPar->c2 = m_protoParticle->c2;
 
       cPar->m = sourceStrength / m_rType->m_numPar;
       cPar->m_kg = sourceStrength / m_rType->m_numPar * (1.0E-3);

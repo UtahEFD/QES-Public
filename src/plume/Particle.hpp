@@ -46,6 +46,7 @@ enum ParticleType {
   heavygas
 };
 
+class Particle;
 
 class ParseParticle : public ParseInterface
 {
@@ -70,6 +71,8 @@ public:
   ~ParseParticle() = default;
 
   virtual void parseValues() = 0;
+
+  virtual void setParticleParameters(Particle *) = 0;
 
 private:
   // default constructor

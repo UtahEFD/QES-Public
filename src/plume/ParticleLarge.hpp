@@ -38,35 +38,9 @@
 #include "util/Vector3.h"
 #include "Particle.hpp"
 
-class ParseParticleLarge : public ParseParticle
-{
-protected:
-public:
-  // default constructor
-  ParseParticleLarge() : ParseParticle(true, "ParticleLarge", ParticleType::large)
-  {
-  }
-
-  // destructor
-  ~ParseParticleLarge() = default;
-
-  void parseValues() override
-  {
-    parsePrimitive<double>(true, rho, "particleDensity");
-    parsePrimitive<double>(true, d, "particleDiameter");
-    parsePrimitive<bool>(true, depFlag, "depositionFlag");
-    parsePrimitive<double>(true, decayConst, "decayConst");
-    parsePrimitive<double>(false, c1, "c1");
-    parsePrimitive<double>(false, c2, "c2");
-    d_m = d * (1.0E-6);
-    m_kg = m * (1.0E-3);
-  }
-
-  friend class ParticleLarge;
-};
-
 class ParticleLarge : public Particle
 {
+  friend class ParseParticleLarge;
 
 public:
   // initializer
@@ -126,4 +100,41 @@ public:
   }
 
 private:
+};
+
+class ParseParticleLarge : public ParseParticle
+{
+protected:
+public:
+  // default constructor
+  ParseParticleLarge() : ParseParticle(true, "ParticleLarge", ParticleType::large)
+  {
+  }
+
+  // destructor
+  ~ParseParticleLarge() = default;
+
+  void parseValues() override
+  {
+    parsePrimitive<double>(true, rho, "particleDensity");
+    parsePrimitive<double>(true, d, "particleDiameter");
+    parsePrimitive<bool>(true, depFlag, "depositionFlag");
+    parsePrimitive<double>(true, decayConst, "decayConst");
+    parsePrimitive<double>(false, c1, "c1");
+    parsePrimitive<double>(false, c2, "c2");
+    d_m = d * (1.0E-6);
+    m_kg = m * (1.0E-3);
+  }
+
+  void setParticleParameters(Particle *ptr) override
+  {
+    auto *tmp = dynamic_cast<ParticleLarge *>(ptr);
+    tmp->d = d;
+    tmp->d_m = (1.0E-6) * d;
+    tmp->rho = rho;
+    tmp->depFlag = depFlag;
+    tmp->decayConst = decayConst;
+    tmp->c1 = c1;
+    tmp->c2 = c2;
+  }
 };
