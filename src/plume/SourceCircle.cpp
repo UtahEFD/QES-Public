@@ -75,7 +75,7 @@ int SourceCircle::emitParticles(const float dt, const float currTime, std::list<
       // Particle *cPar = new Particle();
 
 
-      Particle *cPar = m_particleTypeFactory->Create(m_protoParticle->tag);
+      Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
 
       cPar->xPos_init = posX;
       cPar->yPos_init = posY;

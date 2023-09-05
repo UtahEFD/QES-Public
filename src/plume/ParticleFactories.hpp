@@ -113,6 +113,6 @@ public:
   void RegisterParticles(const std::string &particleType, ParticleFactory *particleFactory);
 
   // Function to return the actual particle object
-  Particle *Create(const std::string &particleType);
+  // Particle *Create(const std::string &particleType);
   Particle *Create(const ParseParticle *proptoParticle);
 };

@@ -54,22 +54,17 @@ void ParticleTypeFactory::RegisterParticles(const std::string &particleType, Par
 }
 
 // Function to return the actual particle object
-Particle *ParticleTypeFactory::Create(const std::string &particleType)
+Particle *ParticleTypeFactory::Create(const ParseParticle *proptoParticle)
 {
   /*
   std::cout << "Element of ParticleTypeContainer are: " << std::endl;
   for (auto const &pair : ParticleTypeContainer) {
     std::cout << "{" << pair.first << ": " << pair.second << "}\n";
   }
-  std::cout << " ParticleTypeContainer.at(particleType) is: " << ParticleTypeContainer.at(particleType) << std::endl;
+  std::cout << " ParticleTypeContainer.at(proptoParticle->tag) is: "
+            << ParticleTypeContainer.at(proptoParticle->tag) << std::endl;
   */
-  //      std::cout << "Calling create() from the " << particleType << " factory" << std::endl;
-  return ParticleTypeContainer.at(particleType)->create();
-  //      std::cout << "done calling create() from the " << particleType << " factory" << std::endl;
-}
-
-Particle *ParticleTypeFactory::Create(const ParseParticle *proptoParticle)
-{
+  //      std::cout << "Calling create() from the " << proptoParticle->tag << " factory" << std::endl;
   return ParticleTypeContainer.at(proptoParticle->tag)->create();
-  //      std::cout << "done calling create() from the " << particleType << " factory" << std::endl;
+  //      std::cout << "done calling create() from the " << proptoParticle->tag << " factory" << std::endl;
 }
