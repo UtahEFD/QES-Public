@@ -37,6 +37,28 @@
 #include "util/Vector3.h"
 #include "Particle.hpp"
 
+class ParseParticleTracer : public ParseParticle
+{
+protected:
+public:
+  ParticleType parType;
+
+  // default constructor
+  ParseParticleTracer() : ParseParticle(false, "ParticleTracer")
+  {}
+
+  // destructor
+  ~ParseParticleTracer()
+  {
+  }
+
+  virtual void parseValues()
+  {
+    parType = ParticleType::tracer;
+  }
+  friend class ParticleTracer;
+};
+
 class ParticleTracer : public Particle
 {
 

@@ -37,6 +37,38 @@
 #include "util/Vector3.h"
 #include "Particle.hpp"
 
+class ParseParticleHeavyGas : public ParseParticle
+{
+protected:
+public:
+  ParticleType parType;
+
+  // default constructor
+  ParseParticleHeavyGas() : ParseParticle(true, "ParticleHeavyGas")
+  {
+  }
+
+  // destructor
+  ~ParseParticleHeavyGas()
+  {
+  }
+
+  virtual void parseValues()
+  {
+    parType = ParticleType::heavygas;
+    parsePrimitive<double>(true, rho, "particleDensity");
+    parsePrimitive<double>(true, d, "particleDiameter");
+    parsePrimitive<bool>(true, depFlag, "depositionFlag");
+    parsePrimitive<double>(true, decayConst, "decayConst");
+    parsePrimitive<double>(false, c1, "c1");
+    parsePrimitive<double>(false, c2, "c2");
+    d_m = d * (1.0E-6);
+    m_kg = m * (1.0E-3);
+  }
+
+  friend class ParticleHeavyGas;
+};
+
 class ParticleHeavyGas : public Particle
 {
 

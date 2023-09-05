@@ -32,10 +32,10 @@
  * @brief
  */
 
-// #pragma once
+#pragma once
 
 #include "Particle.hpp"
-#include "ParseParticle.hpp"
+// #include "ParseParticle.hpp"
 #include <unordered_map>
 
 class ParticleFactory
@@ -94,7 +94,7 @@ class ParticleTypeFactory
 
 private:
   std::unordered_map<std::string, ParticleFactory *> ParticleTypeContainer;
-
+  
 public:
   ParticleTypeFactory()
   {

@@ -35,15 +35,55 @@
 #pragma once
 
 #include <cmath>
-#include "ParseParticle.hpp"
-/*
+#include <utility>
+
+#include "util/ParseInterface.h"
+
+
 enum ParticleType {
   tracer,
   small,
   large,
   heavygas
 };
-*/
+
+
+class ParseParticle : public ParseInterface
+{
+protected:
+public:
+  ParticleType parType;
+
+  // Physical properties
+  double d;
+  double d_m;
+  double m;
+  double m_kg;
+  double rho;
+  bool depFlag;
+  double decayConst;
+  double c1;
+  double c2;
+  std::string tag;
+
+
+  ParseParticle(const bool &flag, std::string str)
+    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0), depFlag(flag), decayConst(0.0), c1(2.049), c2(1.19), tag(std::move(str))
+  {}
+
+  // destructor
+  ~ParseParticle()
+  {
+  }
+
+  virtual void parseValues() = 0;
+
+private:
+  // default constructor
+  ParseParticle()
+    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0), depFlag(false), decayConst(0.0), c1(2.049), c2(1.19), tag("ParticleTracer")
+  {}
+};
 
 class Particle
 {
