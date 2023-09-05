@@ -41,8 +41,6 @@ class ParseParticleLarge : public ParseParticle
 {
 protected:
 public:
-  ParticleType parType;
-
   // default constructor
   ParseParticleLarge() : ParseParticle(true, "ParticleLarge", ParticleType::large)
   {

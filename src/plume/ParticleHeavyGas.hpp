@@ -41,8 +41,6 @@ class ParseParticleHeavyGas : public ParseParticle
 {
 protected:
 public:
-  ParticleType parType;
-
   // default constructor
   ParseParticleHeavyGas() : ParseParticle(true, "ParticleHeavyGas", ParticleType::heavygas)
   {
@@ -126,7 +124,7 @@ public:
   ~ParticleHeavyGas()
   {
   }
-  
+
   //  void setSettlingVelocity(const double &, const double &);
   void setSettlingVelocity(const double &rhoAir, const double &nuAir)
   {

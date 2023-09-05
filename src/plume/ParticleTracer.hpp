@@ -41,7 +41,6 @@ class ParseParticleTracer : public ParseParticle
 {
 protected:
 public:
-  ParticleType parType;
 
   // default constructor
   ParseParticleTracer() : ParseParticle(false, "ParticleTracer", ParticleType::tracer)
@@ -116,7 +115,7 @@ public:
   ~ParticleTracer()
   {
   }
-  
+
   //  void setSettlingVelocity(const double &, const double &){
   //    vs = 0.0;
   void setSettlingVelocity(const double &rhoAir, const double &nuAir)

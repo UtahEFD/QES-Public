@@ -52,7 +52,6 @@ public:
 
 class ParticleTracerFactory : public ParticleFactory
 {
-
 public:
   Particle *create() override
   {

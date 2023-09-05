@@ -41,8 +41,6 @@ class ParseParticleSmall : public ParseParticle
 {
 protected:
 public:
-  ParticleType parType;
-
   // default constructor
   ParseParticleSmall() : ParseParticle(true, "ParticleSmall", ParticleType::small)
   {}
@@ -125,7 +123,7 @@ public:
   ~ParticleSmall()
   {
   }
-  
+
   // void setSettlingVelocity(const double &, const double &);
   void setSettlingVelocity(const double &rhoAir, const double &nuAir)
   {
