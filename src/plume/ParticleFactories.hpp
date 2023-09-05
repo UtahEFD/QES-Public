@@ -51,7 +51,7 @@ class ParticleTracerFactory : public ParticleFactory
 {
 
 public:
-  virtual Particle *create()
+  Particle *create() override
   {
     //    std::cout << "Creating new ParticleTracer" << std::endl;
     return new ParticleTracer();
@@ -63,7 +63,7 @@ class ParticleSmallFactory : public ParticleFactory
 {
 
 public:
-  virtual Particle *create()
+  Particle *create() override
   {
     return new ParticleSmall();
   }
@@ -73,7 +73,7 @@ class ParticleLargeFactory : public ParticleFactory
 {
 
 public:
-  virtual Particle *create()
+  Particle *create() override
   {
     return new ParticleLarge();
   }
@@ -83,7 +83,7 @@ class ParticleHeavyGasFactory : public ParticleFactory
 {
 
 public:
-  virtual Particle *create()
+  Particle *create() override
   {
     return new ParticleHeavyGas();
   }
@@ -105,14 +105,14 @@ public:
   }
 
   // Function to read in all possible particle types and create factories for them
-  void RegisterParticles(std::string particleType, ParticleFactory *particleFactory)
+  void RegisterParticles(const std::string &particleType, ParticleFactory *particleFactory)
   {
     // std::cout <<
     ParticleTypeContainer.insert(std::pair<std::string, ParticleFactory *>(particleType, particleFactory));
   }
 
   // Function to return the actual particle object
-  Particle *Create(std::string particleType)
+  Particle *Create(const std::string &particleType)
   {
     /*
     std::cout << "Element of ParticleTypeContainer are: " << std::endl;
