@@ -29,7 +29,8 @@
  ****************************************************************************/
 
 /** @file ParticleSmall.hpp
- * @brief Derived from Particle.hpp. Small particles have diameter, mass, density, settling, and deposition. No drag effects.
+ * @brief Derived from Particle.hpp. Small particles have diameter, mass, density, settling, and deposition.
+ * No drag effects.
  */
 
 #pragma once
@@ -133,7 +134,8 @@ public:
       //  dimensionless grain diameter
       dstar = d_m * pow(9.81 / pow(nuAir, 2.0) * (rho / rhoAir - 1.), 1.0 / 3.0);
       // drag coefficent
-      Cd = (432.0 / pow(dstar, 3.0)) * pow(1.0 + 0.022 * pow(dstar, 3.0), 0.54) + 0.47 * (1.0 - exp(-0.15 * pow(dstar, 0.45)));
+      Cd = (432.0 / pow(dstar, 3.0)) * pow(1.0 + 0.022 * pow(dstar, 3.0), 0.54)
+           + 0.47 * (1.0 - exp(-0.15 * pow(dstar, 0.45)));
       // dimensionless settling velociy
       wstar = pow((4.0 * dstar) / (3.0 * Cd), 0.5);
       // settling velocity

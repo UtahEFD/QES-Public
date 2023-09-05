@@ -29,7 +29,8 @@
  ****************************************************************************/
 
 /** @file ParticleTracer.hpp
- * @brief Derived from Particle.hpp. Tracer particles are massless and do not settle, deposit, or experience drag effects.
+ * @brief Derived from Particle.hpp. Tracer particles are massless and do not settle, deposit,
+ * or experience drag effects.
  */
 
 #pragma once
