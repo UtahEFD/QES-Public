@@ -44,7 +44,7 @@ public:
   ParticleType parType;
 
   // default constructor
-  ParseParticleHeavyGas() : ParseParticle(true, "ParticleHeavyGas")
+  ParseParticleHeavyGas() : ParseParticle(true, "ParticleHeavyGas", ParticleType::heavygas)
   {
   }
 
@@ -55,7 +55,6 @@ public:
 
   virtual void parseValues()
   {
-    parType = ParticleType::heavygas;
     parsePrimitive<double>(true, rho, "particleDensity");
     parsePrimitive<double>(true, d, "particleDiameter");
     parsePrimitive<bool>(true, depFlag, "depositionFlag");
@@ -74,7 +73,8 @@ class ParticleHeavyGas : public Particle
 
 public:
   // initializer
-  ParticleHeavyGas() : Particle()
+  ParticleHeavyGas()
+    : Particle(true, "ParticleHeavyGas", ParticleType::heavygas)
   {
     // diameter of particle (micron and m)
     // d = 0.0;
@@ -88,10 +88,10 @@ public:
     // rho = 0.0;
 
     // tag
-    tag = "ParticleHeavyGas";
+    // tag = "ParticleHeavyGas";
 
     // (1 - fraction) particle deposited
-    depFlag = true;
+    // depFlag = true;
 
     // (1 - fraction) particle decay
     // wdecay = 1.0;
@@ -99,6 +99,7 @@ public:
 
   // initializer
   ParticleHeavyGas(const double &d_part, const double &m_part, const double &rho_part)
+    : Particle(true, "ParticleHeavyGas", ParticleType::heavygas)
   {
     // diameter of particle (micron and m)
     d = d_part;
@@ -125,16 +126,7 @@ public:
   ~ParticleHeavyGas()
   {
   }
-
-  /*  void parseValues()
-  {
-      parType = ParticleType::heavygas;
-      parsePrimitive<double>(false, rho, "particleDensity");
-      parsePrimitive<double>(false, d, "particleDiameter");
-      parsePrimitive<bool>(false, depFlag, "depositionFlag");
-  }
-*/
-
+  
   //  void setSettlingVelocity(const double &, const double &);
   void setSettlingVelocity(const double &rhoAir, const double &nuAir)
   {

@@ -28,8 +28,8 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file SourceCircle.cpp 
- * @brief This class represents a specific source type. 
+/** @file SourceCircle.cpp
+ * @brief This class represents a specific source type.
  *
  * @note Child of SourceType
  * @sa SourceType
@@ -37,7 +37,7 @@
 
 #include "SourceCircle.hpp"
 #include "winds/WINDSGeneralData.h"
-//#include "Interp.h"
+// #include "Interp.h"
 
 void SourceCircle::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
@@ -72,30 +72,30 @@ int SourceCircle::emitParticles(const float dt, const float currTime, std::list<
 
     for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
-      //Particle *cPar = new Particle();
+      // Particle *cPar = new Particle();
 
 
-      Particle *cPar = particleTypeFactory->Create(protoParticle->tag);
+      Particle *cPar = m_particleTypeFactory->Create(m_protoParticle->tag);
 
       cPar->xPos_init = posX;
       cPar->yPos_init = posY;
       cPar->zPos_init = posZ;
-      //int cellId2d = interp->getCellId2d(posX, posY);
-      //cPar->zPos_init = posZ + WGD->terrain[cellId2d];
+      // int cellId2d = interp->getCellId2d(posX, posY);
+      // cPar->zPos_init = posZ + WGD->terrain[cellId2d];
 
-      cPar->d = protoParticle->d;
-      cPar->d_m = (1.0E-6) * protoParticle->d;
-      cPar->rho = protoParticle->rho;
-      cPar->depFlag = protoParticle->depFlag;
-      cPar->decayConst = protoParticle->decayConst;
-      cPar->c1 = protoParticle->c1;
-      cPar->c2 = protoParticle->c2;
+      cPar->d = m_protoParticle->d;
+      cPar->d_m = (1.0E-6) * m_protoParticle->d;
+      cPar->rho = m_protoParticle->rho;
+      cPar->depFlag = m_protoParticle->depFlag;
+      cPar->decayConst = m_protoParticle->decayConst;
+      cPar->c1 = m_protoParticle->c1;
+      cPar->c2 = m_protoParticle->c2;
 
       cPar->m = sourceStrength / m_rType->m_numPar;
       cPar->m_kg = sourceStrength / m_rType->m_numPar * (1.0E-3);
       cPar->m_o = cPar->m;
       cPar->m_kg_o = cPar->m * (1.0E-3);
-      //std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
+      // std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
 
 
       cPar->tStrt = currTime;
@@ -106,5 +106,5 @@ int SourceCircle::emitParticles(const float dt, const float currTime, std::list<
     }
   }
 
-  return emittedParticles.size();//m_rType->m_parPerTimestep;
+  return emittedParticles.size();// m_rType->m_parPerTimestep;
 }

@@ -28,8 +28,8 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file SourceCube.cpp 
- * @brief This class represents a specific source type. 
+/** @file SourceCube.cpp
+ * @brief This class represents a specific source type.
  *
  * @note Child of SourceType
  * @sa SourceType
@@ -37,7 +37,7 @@
 
 #include "SourceCube.hpp"
 #include "winds/WINDSGeneralData.h"
-//#include "Interp.h"
+// #include "Interp.h"
 
 void SourceCube::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
@@ -95,35 +95,35 @@ int SourceCube::emitParticles(const float dt, const float currTime, std::list<Pa
 {
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
-    std::random_device rd;//Will be used to obtain a seed for the random number engine
-    std::mt19937 prng(rd());//Standard mersenne_twister_engine seeded with rd()
+    std::random_device rd;// Will be used to obtain a seed for the random number engine
+    std::mt19937 prng(rd());// Standard mersenne_twister_engine seeded with rd()
     std::uniform_real_distribution<> uniformDistr(0.0, 1.0);
 
     for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
-      //Particle *cPar = new Particle();
-      Particle *cPar = particleTypeFactory->Create(protoParticle->tag);
+      // Particle *cPar = new Particle();
+      Particle *cPar = m_particleTypeFactory->Create(m_protoParticle->tag);
 
       // generate uniform dist in domain
       cPar->xPos_init = uniformDistr(prng) * (m_maxX - m_minX) + m_minX;
       cPar->yPos_init = uniformDistr(prng) * (m_maxY - m_minY) + m_minY;
       cPar->zPos_init = uniformDistr(prng) * (m_maxZ - m_minZ) + m_minZ;
-      //int cellId2d = interp->getCellId2d(cPar->xPos_init, cPar->yPos_init);
-      //cPar->zPos_init = uniformDistr(prng) * (m_maxZ - m_minZ) + m_minZ + WGD->terrain[cellId2d];
+      // int cellId2d = interp->getCellId2d(cPar->xPos_init, cPar->yPos_init);
+      // cPar->zPos_init = uniformDistr(prng) * (m_maxZ - m_minZ) + m_minZ + WGD->terrain[cellId2d];
 
-      cPar->d = protoParticle->d;
-      cPar->d_m = (1.0E-6) * protoParticle->d;
-      cPar->rho = protoParticle->rho;
-      cPar->depFlag = protoParticle->depFlag;
-      cPar->decayConst = protoParticle->decayConst;
-      cPar->c1 = protoParticle->c1;
-      cPar->c2 = protoParticle->c2;
+      cPar->d = m_protoParticle->d;
+      cPar->d_m = (1.0E-6) * m_protoParticle->d;
+      cPar->rho = m_protoParticle->rho;
+      cPar->depFlag = m_protoParticle->depFlag;
+      cPar->decayConst = m_protoParticle->decayConst;
+      cPar->c1 = m_protoParticle->c1;
+      cPar->c2 = m_protoParticle->c2;
 
       cPar->m = sourceStrength / m_rType->m_numPar;
       cPar->m_kg = sourceStrength / m_rType->m_numPar * (1.0E-3);
       cPar->m_o = cPar->m;
       cPar->m_kg_o = cPar->m * (1.0E-3);
-      //std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
+      // std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
 
 
       cPar->tStrt = currTime;
@@ -134,5 +134,5 @@ int SourceCube::emitParticles(const float dt, const float currTime, std::list<Pa
     }
   }
 
-  return emittedParticles.size();//m_rType->m_parPerTimestep;
+  return emittedParticles.size();// m_rType->m_parPerTimestep;
 }

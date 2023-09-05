@@ -44,7 +44,7 @@ public:
   ParticleType parType;
 
   // default constructor
-  ParseParticleLarge() : ParseParticle(true, "ParticleLarge")
+  ParseParticleLarge() : ParseParticle(true, "ParticleLarge", ParticleType::large)
   {
   }
 
@@ -55,7 +55,6 @@ public:
 
   virtual void parseValues()
   {
-    parType = ParticleType::large;
     parsePrimitive<double>(true, rho, "particleDensity");
     parsePrimitive<double>(true, d, "particleDiameter");
     parsePrimitive<bool>(true, depFlag, "depositionFlag");
@@ -74,7 +73,8 @@ class ParticleLarge : public Particle
 
 public:
   // initializer
-  ParticleLarge() : Particle()
+  ParticleLarge()
+    : Particle(true, "ParticleLarge", ParticleType::large)
   {
     // diameter of particle (micron and m)
     // d = 0.0;
@@ -88,10 +88,10 @@ public:
     // rho = 0.0;
 
     // tag
-    tag = "ParticleLarge";
+    // tag = "ParticleLarge";
 
     // (1 - fraction) particle deposited
-    depFlag = true;
+    // depFlag = true;
 
     // (1 - fraction) particle decay
     // wdecay = 1.0;
@@ -99,6 +99,7 @@ public:
 
   // initializer
   ParticleLarge(const double &d_part, const double &m_part, const double &rho_part)
+    : Particle(true, "ParticleLarge", ParticleType::large)
   {
     // diameter of particle (micron and m)
     d = d_part;
@@ -125,15 +126,6 @@ public:
   ~ParticleLarge()
   {
   }
-
-  /*  void parseValues()
-  {
-      parType = ParticleType::large;
-      parsePrimitive<double>(false, rho, "particleDensity");
-      parsePrimitive<double>(false, d, "particleDiameter");
-      parsePrimitive<bool>(false, depFlag, "depositionFlag");
-  }
-*/
 
   //  void setSettlingVelocity(const double &, const double &);
   void setSettlingVelocity(const double &rhoAir, const double &nuAir)

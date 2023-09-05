@@ -44,7 +44,7 @@ public:
   ParticleType parType;
 
   // default constructor
-  ParseParticleTracer() : ParseParticle(false, "ParticleTracer")
+  ParseParticleTracer() : ParseParticle(false, "ParticleTracer", ParticleType::tracer)
   {}
 
   // destructor
@@ -54,7 +54,6 @@ public:
 
   virtual void parseValues()
   {
-    parType = ParticleType::tracer;
   }
   friend class ParticleTracer;
 };
@@ -64,7 +63,8 @@ class ParticleTracer : public Particle
 
 public:
   // initializer
-  ParticleTracer() : Particle()
+  ParticleTracer()
+    : Particle(false, "ParticleTracer", ParticleType::tracer)
   {
     // diameter of particle (micron and m)
     // d = 0.0;
@@ -78,7 +78,7 @@ public:
     // rho = 0.0;
 
     // tag
-    tag = "ParticleTracer";
+    // tag = "ParticleTracer";
 
     // (1 - fraction) particle deposited
     // depFlag = false;
@@ -89,6 +89,7 @@ public:
 
   // initializer
   ParticleTracer(const double &d_part, const double &m_part, const double &rho_part)
+    : Particle(false, "ParticleTracer", ParticleType::tracer)
   {
     // diameter of particle (micron and m)
     d = d_part;
@@ -115,14 +116,7 @@ public:
   ~ParticleTracer()
   {
   }
-
-  /*  void parseValues()
-  {
-      parType = ParticleType::tracer;
-
-  }
-*/
-
+  
   //  void setSettlingVelocity(const double &, const double &){
   //    vs = 0.0;
   void setSettlingVelocity(const double &rhoAir, const double &nuAir)

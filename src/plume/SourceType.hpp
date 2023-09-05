@@ -85,9 +85,9 @@ public:
   // !!! this needs set by parseValues() in each source generated from input files by a call to the setReleaseType() function
   ReleaseType *m_rType = nullptr;
 
-  ParseParticle *protoParticle = nullptr;
+  ParseParticle *m_protoParticle = nullptr;
 
-  ParticleTypeFactory *particleTypeFactory = nullptr;
+  ParticleTypeFactory *m_particleTypeFactory = nullptr;
 
   // LA-future work: need a class similar to ReleaseType that describes the input source mass.
   //  This could be mass, mass per time, volume with a density, and volume per time with a density.
@@ -102,7 +102,7 @@ public:
   // default constructor
   SourceType()
   {
-    particleTypeFactory = new ParticleTypeFactory();
+    m_particleTypeFactory = new ParticleTypeFactory();
   }
 
   // destructor
@@ -131,7 +131,7 @@ public:
     parseMultiPolymorphs(false, rType_tmp, Polymorph<ReleaseType, ReleaseType_duration>("ReleaseType_duration"));
 
     // now if the number of release types is not 1, there was a problem, need to quit with an error
-    if (rType_tmp.size() == 0) {
+    if (rType_tmp.empty()) {
       std::cerr << "ERROR (SourceType::setReleaseType): there was no input releaseType!" << std::endl;
       exit(1);
     }
@@ -156,7 +156,7 @@ public:
     if (protoParticle_tmp.empty()) {
       // std::cerr << "ERROR (SourceType::setParticleType): there was no input particle type!" << std::endl;
       // exit(1);
-      protoParticle = new ParseParticleTracer();
+      m_protoParticle = new ParseParticleTracer();
       return;
     } else if (protoParticle_tmp.size() > 1) {
       std::cerr << "ERROR (SourceType::setParticleType): there was more than one input particle type!" << std::endl;
@@ -164,7 +164,7 @@ public:
     }
 
     // the number of release types is 1, so now set the public release type to be the one that we have
-    protoParticle = protoParticle_tmp.at(0);
+    m_protoParticle = protoParticle_tmp.at(0);
   }
 
 

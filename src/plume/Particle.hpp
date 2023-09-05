@@ -52,7 +52,8 @@ class ParseParticle : public ParseInterface
 {
 protected:
 public:
-  ParticleType parType;
+  // particle type
+  ParticleType particleType;
 
   // Physical properties
   double d;
@@ -67,8 +68,10 @@ public:
   std::string tag;
 
 
-  ParseParticle(const bool &flag, std::string str)
-    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0), depFlag(flag), decayConst(0.0), c1(2.049), c2(1.19), tag(std::move(str))
+  ParseParticle(const bool &flag, std::string str, const ParticleType &type)
+    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0),
+      depFlag(flag), decayConst(0.0), c1(2.049), c2(1.19),
+      tag(std::move(str)), particleType(type)
   {}
 
   // destructor
@@ -81,17 +84,23 @@ public:
 private:
   // default constructor
   ParseParticle()
-    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0), depFlag(false), decayConst(0.0), c1(2.049), c2(1.19), tag("ParticleTracer")
+    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0),
+      depFlag(false), decayConst(0.0), c1(2.049), c2(1.19), tag("ParticleTracer")
   {}
 };
 
 class Particle
 {
+private:
+  Particle() {}
+
 protected:
 public:
   // initializer
-  Particle()
-    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), m_o(0.0), m_kg_o(0.0), rho(0.0), tag("ParticleTracer"), depFlag(false), decayConst(0.0), c1(2.049), c2(1.19), wdecay(1.0)
+  Particle(const bool &flag, std::string str, const ParticleType &type)
+    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), m_o(0.0), m_kg_o(0.0), rho(0.0),
+      decayConst(0.0), c1(2.049), c2(1.19), wdecay(1.0),
+      tag(std::move(str)), depFlag(flag), particleType(type)
   {
   }
 
@@ -126,9 +135,7 @@ public:
   {
   }
 
-  ParticleType parType;
-
-
+  ParticleType particleType;// particle type
   std::string tag;// particle type tag
 
   // the initial position for the particle, to not be changed after the simulation starts
@@ -137,7 +144,7 @@ public:
   double zPos_init{};// the initial z component of position for the particle
 
   double tStrt{};// the time of release for the particle
-  int particleID{};// id of particl (for tracking purposes)
+  int particleID{};// id of particle (for tracking purposes)
   int sourceIdx{};// the index of the source the particle came from
 
   // once initial positions are known, can set these values using urb and turb info
@@ -163,7 +170,7 @@ public:
   double disY{};
   double disZ{};
 
-  // Total velocities (mean plus fluct) for each time step
+  // Total velocities (mean and fluctuation) for each time step
   double uTot{};
   double vTot{};
   double wTot{};
@@ -175,7 +182,7 @@ public:
   double vFluct_old{};// v component
   double wFluct_old{};// w component
 
-  // stress tensor from the last iteration (6 component because stress tensor is symetric)
+  // stress tensor from the last iteration (6 component because stress tensor is symmetric)
   double txx_old{};// this is the stress in the x direction on the x face from the last iteration
   double txy_old{};// this is the stress in the y direction on the x face from the last iteration
   double txz_old{};// this is the stress in the z direction on the x face from the last iteration
@@ -187,8 +194,8 @@ public:
   double delta_vFluct{};// this is the difference between the current and last iteration of the vFluct variable
   double delta_wFluct{};// this is the difference between the current and last iteration of the wFluct variable
 
-  bool isRogue{};// this is false until it becomes true. Should not go true. It is whether a particle has gone rogue or not
-  bool isActive{};// this is true until it becomes false.  If a particle leaves the domain or runs out of mass, this becomes false.
+  bool isRogue{};// this is false until it becomes true. Should not go true.
+  bool isActive{};// this is true until it becomes false.
 
   // particle physical property
   double d;// particle diameter diameter [microns]
@@ -199,7 +206,7 @@ public:
   double m_kg_o;// initial particle mass [kg]
   double rho;// density of particle
 
-  // deposition vatiables
+  // deposition variables
   double Sc{};// Schmidt number
   double taud{};// characteristic relaxation time [s]
   double vd{};// deposition velocity [m/s]
@@ -213,15 +220,14 @@ public:
   double decayConst;// mass decay constant
   double c1;// Stk* fit param (exponent)
   double c2;// Stk* fit param (exponent)
-  // settling vatiables
+  // settling variables
   double dstar{};// dimensionless grain diameter
-  double Cd{};// drag coefficent
+  double Cd{};// drag coefficient
   double wstar{};// dimensionless settling velocity
   double vs{};// settling velocity [m/s]
 
-  // decay varables
+  // decay variables
   double wdecay;// (1 - fraction) particle decayed [0,1]
-
-
+  
   virtual void setSettlingVelocity(const double &, const double &){};
 };
