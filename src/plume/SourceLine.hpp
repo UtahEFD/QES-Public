@@ -29,7 +29,7 @@
  ****************************************************************************/
 
 /** @file SourceLine.hpp
- * @brief This class represents a specific source type. 
+ * @brief This class represents a specific source type.
  *
  * @note Child of SourceType
  * @sa SourceType
@@ -40,7 +40,7 @@
 
 #include "SourceType.hpp"
 #include "winds/WINDSGeneralData.h"
-//#include "Particles.hpp"
+// #include "Particles.hpp"
 
 class SourceLine : public SourceType
 {
@@ -75,13 +75,13 @@ public:
     setReleaseType();
     setParticleType();
     // Create particle factories
-    registerParticles();
+    // registerParticles();
     /*
     // Create a generic particle with attributes read from XML
     Particles * particles;
     particles->setParticleValues();
 */
-    //std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
+    // std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
 
     parsePrimitive<double>(true, posX_0, "posX_0");
     parsePrimitive<double>(true, posY_0, "posY_0");

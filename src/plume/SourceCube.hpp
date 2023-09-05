@@ -28,8 +28,8 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file SourceCube.cpp 
- * @brief This class represents a specific source type. 
+/** @file SourceCube.cpp
+ * @brief This class represents a specific source type.
  *
  * @note Child of SourceType
  * @sa SourceType
@@ -40,7 +40,7 @@
 
 #include "SourceType.hpp"
 #include "winds/WINDSGeneralData.h"
-//#include "Particles.hpp"
+// #include "Particles.hpp"
 
 class SourceCube : public SourceType
 {
@@ -75,13 +75,13 @@ public:
     setReleaseType();
     setParticleType();
     // Create particle factories
-    registerParticles();
+    // registerParticles();
     /*
     // Create a generic particle with attributes read from XML
     Particles * particles;
     particles->setParticleValues();
 */
-    //std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
+    // std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
 
 
     parsePrimitive<double>(true, m_minX, "minX");

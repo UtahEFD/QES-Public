@@ -25,13 +25,14 @@ SET( qesPlumeCoreSources
     PlumeOutputParticleData.cpp
 
     BoundaryConditions.hpp
+
     Particle.hpp
-    ParseParticle.hpp
     ParticleFactories.hpp
     ParticleSmall.hpp
     ParticleLarge.hpp
     ParticleHeavyGas.hpp
-    
+    ParticleFactories.cpp
+
     ReleaseType.hpp
     ReleaseType_instantaneous.hpp
     ReleaseType_continuous.hpp

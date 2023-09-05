@@ -29,7 +29,7 @@
  ****************************************************************************/
 
 /** @file SourceFullDomain.hpp
- * @brief This class represents a specific source type. 
+ * @brief This class represents a specific source type.
  *
  * @note Child of SourceType
  * @sa SourceType
@@ -40,7 +40,7 @@
 
 #include "SourceType.hpp"
 #include "winds/WINDSGeneralData.h"
-//#include "Particles.hpp"
+// #include "Particles.hpp"
 
 class SourceFullDomain : public SourceType
 {
@@ -77,14 +77,14 @@ public:
 
     setReleaseType();
     setParticleType();
-    //Create particle factories
-    registerParticles();
+    // Create particle factories
+    // registerParticles();
     /*
     // Create a generic particle with attributes read from XML
     Particles * particles;
     particles->setParticleValues();
 */
-    //std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
+    // std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
 
 
     parsePrimitive<double>(false, sourceStrength, "sourceStrength");

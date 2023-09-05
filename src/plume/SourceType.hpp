@@ -119,10 +119,10 @@ public:
     std::string largestr = "ParticleLarge";
     std::string heavygasstr = "ParticleHeavyGas";
 
-    particleTypeFactory->RegisterParticles(tracerstr, &particleTracerFactory);
-    particleTypeFactory->RegisterParticles(smallstr, &particleSmallFactory);
-    particleTypeFactory->RegisterParticles(largestr, &particleLargeFactory);
-    particleTypeFactory->RegisterParticles(heavygasstr, &particleHeavyGasFactory);
+    // particleTypeFactory->RegisterParticles(tracerstr, &particleTracerFactory);
+    // particleTypeFactory->RegisterParticles(smallstr, &particleSmallFactory);
+    // particleTypeFactory->RegisterParticles(largestr, &particleLargeFactory);
+    // particleTypeFactory->RegisterParticles(heavygasstr, &particleHeavyGasFactory);
   }
 
   // destructor

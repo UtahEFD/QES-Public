@@ -16,25 +16,25 @@
 #include "plume/ParticleHeavyGas.hpp"
 #include "plume/ParticleFactories.hpp"
 
-TEST_CASE("particle factory", "[in progress]")
+TEST_CASE("particle factory", "[Working]")
 {
 
   ParseParticle *protoParticle;
   ParticleTypeFactory *particleTypeFactory = new ParticleTypeFactory();
-  ParticleTracerFactory particleTracerFactory;
-  ParticleSmallFactory particleSmallFactory;
-  ParticleLargeFactory particleLargeFactory;
-  ParticleHeavyGasFactory particleHeavyGasFactory;
+  // ParticleTracerFactory particleTracerFactory;
+  // ParticleSmallFactory particleSmallFactory;
+  // ParticleLargeFactory particleLargeFactory;
+  // ParticleHeavyGasFactory particleHeavyGasFactory;
 
   std::string tracerstr = "ParticleTracer";
   std::string smallstr = "ParticleSmall";
   std::string largestr = "ParticleLarge";
   std::string heavygasstr = "ParticleHeavyGas";
 
-  particleTypeFactory->RegisterParticles(tracerstr, &particleTracerFactory);
-  particleTypeFactory->RegisterParticles(smallstr, &particleSmallFactory);
-  particleTypeFactory->RegisterParticles(largestr, &particleLargeFactory);
-  particleTypeFactory->RegisterParticles(heavygasstr, &particleHeavyGasFactory);
+  // particleTypeFactory->RegisterParticles(tracerstr, &particleTracerFactory);
+  // particleTypeFactory->RegisterParticles(smallstr, &particleSmallFactory);
+  // particleTypeFactory->RegisterParticles(largestr, &particleLargeFactory);
+  // particleTypeFactory->RegisterParticles(heavygasstr, &particleHeavyGasFactory);
 
   auto startTime = std::chrono::high_resolution_clock::now();
   auto endTime = std::chrono::high_resolution_clock::now();
@@ -67,6 +67,7 @@ TEST_CASE("particle factory", "[in progress]")
   }
   REQUIRE(particleList[100]->d == 0.0001);
   REQUIRE(particleList[1000]->tag == tracerstr);
+  REQUIRE(particleList[10000]->parType == ParticleType::tracer);
 
   endTime = std::chrono::high_resolution_clock::now();
   cpuElapsed = endTime - startTime;
@@ -93,6 +94,7 @@ TEST_CASE("particle factory", "[in progress]")
     particleList[k]->m_kg_o = particleList[k]->m * (1.0E-3);
   }
   REQUIRE(particleList[1000]->tag == smallstr);
+  // REQUIRE(particleList[10000]->parType == ParticleType::small);
 
   endTime = std::chrono::high_resolution_clock::now();
   cpuElapsed = endTime - startTime;
@@ -107,6 +109,7 @@ TEST_CASE("particle factory", "[in progress]")
     particleList[k] = particleTypeFactory->Create(protoParticleLarge);
   }
   REQUIRE(particleList[1000]->tag == largestr);
+  // REQUIRE(particleList[10000]->parType == ParticleType::large);
 
   endTime = std::chrono::high_resolution_clock::now();
   cpuElapsed = endTime - startTime;
@@ -121,6 +124,7 @@ TEST_CASE("particle factory", "[in progress]")
     particleList[k] = particleTypeFactory->Create(protoParticleHeavyGas);
   }
   REQUIRE(particleList[1000]->tag == heavygasstr);
+  // REQUIRE(particleList[10000]->parType == ParticleType::heavygas);
 
   endTime = std::chrono::high_resolution_clock::now();
   cpuElapsed = endTime - startTime;
