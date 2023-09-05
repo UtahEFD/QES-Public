@@ -97,7 +97,7 @@ int SourceLine::emitParticles(const float dt,
       cPar->zPos_init = posZ_0 + t * diffZ;
 
       cPar->m = sourceStrength / m_rType->m_numPar;
-      cPar->m_kg = sourceStrength / m_rType->m_numPar * (1.0E-3);
+      cPar->m_kg = cPar->m * (1.0E-3);
       cPar->m_o = cPar->m;
       cPar->m_kg_o = cPar->m * (1.0E-3);
       // std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;

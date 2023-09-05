@@ -78,7 +78,7 @@ int SourcePoint::emitParticles(const float dt,
       cPar->zPos_init = posZ;
 
       cPar->m = sourceStrength / m_rType->m_numPar;
-      cPar->m_kg = sourceStrength / m_rType->m_numPar * (1.0E-3);
+      cPar->m_kg = cPar->m * (1.0E-3);
       cPar->m_o = cPar->m;
       cPar->m_kg_o = cPar->m * (1.0E-3);
 

@@ -80,7 +80,7 @@ int SourceFullDomain::emitParticles(const float dt, const float currTime, std::l
   if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
     std::random_device rd;// Will be used to obtain a seed for the random number engine
     std::mt19937 prng(rd());// Standard mersenne_twister_engine seeded with rd()
-    std::uniform_real_distribution<> uniformDistr(0.0, 1.0);
+    std::uniform_real_distribution<> uniformDistribution(0.0, 1.0);
 
     for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
@@ -89,12 +89,12 @@ int SourceFullDomain::emitParticles(const float dt, const float currTime, std::l
       m_protoParticle->setParticleParameters(cPar);
 
       // generate uniform dist in domain
-      cPar->xPos_init = uniformDistr(prng) * (xDomainEnd - xDomainStart) + xDomainStart;
-      cPar->yPos_init = uniformDistr(prng) * (yDomainEnd - yDomainStart) + yDomainStart;
-      cPar->zPos_init = uniformDistr(prng) * (zDomainEnd - zDomainStart) + zDomainStart;
+      cPar->xPos_init = uniformDistribution(prng) * (xDomainEnd - xDomainStart) + xDomainStart;
+      cPar->yPos_init = uniformDistribution(prng) * (yDomainEnd - yDomainStart) + yDomainStart;
+      cPar->zPos_init = uniformDistribution(prng) * (zDomainEnd - zDomainStart) + zDomainStart;
 
       cPar->m = sourceStrength / m_rType->m_numPar;
-      cPar->m_kg = sourceStrength / m_rType->m_numPar * (1.0E-3);
+      cPar->m_kg = cPar->m * (1.0E-3);
       cPar->m_o = cPar->m;
       cPar->m_kg_o = cPar->m * (1.0E-3);
 

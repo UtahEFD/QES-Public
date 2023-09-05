@@ -73,21 +73,24 @@ int SourceCircle::emitParticles(const float dt,
   if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
     std::random_device rd;// Will be used to obtain a seed for the random number engine
     std::mt19937 prng(rd());// Standard mersenne_twister_engine seeded with rd()
-    std::uniform_real_distribution<> uniformDistr(0.0, 1.0);
+    std::normal_distribution<> normalDistribution(0.0, 1.0);
     for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
       // Particle *cPar = new Particle();
-
-
       Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
       m_protoParticle->setParticleParameters(cPar);
-      
-      cPar->xPos_init = posX;
-      cPar->yPos_init = posY;
-      cPar->zPos_init = posZ;
+
+      // uniform distribution over surface of sphere
+      double nx = normalDistribution(prng);
+      double ny = normalDistribution(prng);
+      double nz = normalDistribution(prng);
+      double overn = 1 / sqrt(nx * nx + ny * ny + nz * nz);
+      cPar->xPos_init = posX + radius * nx * overn;
+      cPar->yPos_init = posY + radius * ny * overn;
+      cPar->zPos_init = posZ + radius * nz * overn;
 
       cPar->m = sourceStrength / m_rType->m_numPar;
-      cPar->m_kg = sourceStrength / m_rType->m_numPar * (1.0E-3);
+      cPar->m_kg = cPar->m * (1.0E-3);
       cPar->m_o = cPar->m;
       cPar->m_kg_o = cPar->m * (1.0E-3);
 
