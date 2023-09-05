@@ -72,13 +72,6 @@ public:
 
     setReleaseType();
     setParticleType();
-    // Create particle factories
-    // registerParticles();
-    /*
-    // Create a generic particle with attributes read from XML
-    Particles * particles;
-    particles->setParticleValues();
-*/
 
     parsePrimitive<double>(true, posX, "posX");
     parsePrimitive<double>(true, posY, "posY");

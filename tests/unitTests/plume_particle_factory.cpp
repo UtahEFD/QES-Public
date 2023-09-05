@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "plume/Particle.hpp"
-#include "plume/ParseParticle.hpp"
 #include "plume/ParticleTracer.hpp"
 #include "plume/ParticleSmall.hpp"
 #include "plume/ParticleLarge.hpp"
@@ -21,20 +20,11 @@ TEST_CASE("particle factory", "[Working]")
 
   ParseParticle *protoParticle;
   ParticleTypeFactory *particleTypeFactory = new ParticleTypeFactory();
-  // ParticleTracerFactory particleTracerFactory;
-  // ParticleSmallFactory particleSmallFactory;
-  // ParticleLargeFactory particleLargeFactory;
-  // ParticleHeavyGasFactory particleHeavyGasFactory;
 
   std::string tracerstr = "ParticleTracer";
   std::string smallstr = "ParticleSmall";
   std::string largestr = "ParticleLarge";
   std::string heavygasstr = "ParticleHeavyGas";
-
-  // particleTypeFactory->RegisterParticles(tracerstr, &particleTracerFactory);
-  // particleTypeFactory->RegisterParticles(smallstr, &particleSmallFactory);
-  // particleTypeFactory->RegisterParticles(largestr, &particleLargeFactory);
-  // particleTypeFactory->RegisterParticles(heavygasstr, &particleHeavyGasFactory);
 
   auto startTime = std::chrono::high_resolution_clock::now();
   auto endTime = std::chrono::high_resolution_clock::now();
