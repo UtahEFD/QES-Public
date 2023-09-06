@@ -64,8 +64,8 @@ void SourceSphereSurface::checkPosInfo(const double &domainXstart, const double 
 }
 
 
-int SourceSphereSurface::emitParticles(const float dt,
-                                       const float currTime,
+int SourceSphereSurface::emitParticles(const float &dt,
+                                       const float &currTime,
                                        std::list<Particle *> &emittedParticles)
 {
   // warning!!! this is still a point source! Need to work out the geometry details still

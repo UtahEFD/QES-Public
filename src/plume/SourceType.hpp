@@ -67,12 +67,15 @@ enum SourceShape {
 
 class SourceType : public ParseInterface
 {
+private:
+  SourceType() = default;
+
 protected:
 public:
   // this is the index of the source in the dispersion class overall list of sources
   // this is used to set the source ID for a given particle, to know from which source each particle comes from
   // !!! this will only be set correctly if a call to setSourceIdx() is done by the class that sets up a vector of this class.
-  int sourceIdx;
+  int sourceIdx = -1;
   // Interp *interp;
 
   // this is a description variable for determining the source shape. May or may not be used.
@@ -99,16 +102,14 @@ public:
   //  based on a string input describing the distribution. Really depends on how easy the implementation details become.
 
 
-  // default constructor
-  SourceType()
+  // constructor
+  explicit SourceType(const SourceShape &type) : m_sShape(type)
   {
     m_particleTypeFactory = new ParticleTypeFactory();
   }
 
   // destructor
-  virtual ~SourceType()
-  {
-  }
+  virtual ~SourceType() = default;
 
 
   // This function uses the temporary variable rType_tmp to parse all the release types found in the .xml file for a given source,
@@ -194,7 +195,12 @@ public:
   //  so long as it is done this way with with future sources very sparingly.
   //  In other words, avoid using this function to set variables unless you have to.
   // !!! each source needs to have this function manually called for them by whatever class sets up a vector of this class.
-  virtual void checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend) = 0;
+  virtual void checkPosInfo(const double &domainXstart,
+                            const double &domainXend,
+                            const double &domainYstart,
+                            const double &domainYend,
+                            const double &domainZstart,
+                            const double &domainZend) = 0;
 
 
   // this function is for appending a new set of particles to the provided vector of particles
@@ -215,5 +221,7 @@ public:
   // !!! Because the input vector is never empty if there is more than one source,
   //   the size of the vector should NOT be used for output for this function!
   //  In order to make this function work correctly, the number of particles to release per timestep needs to be the output
-  virtual int emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles) = 0;
+  virtual int emitParticles(const float &dt,
+                            const float &currTime,
+                            std::list<Particle *> &emittedParticles) = 0;
 };

@@ -61,8 +61,8 @@ void SourcePoint::checkPosInfo(const double &domainXstart, const double &domainX
 }
 
 // template <class typeid(parType).name()>
-int SourcePoint::emitParticles(const float dt,
-                               const float currTime,
+int SourcePoint::emitParticles(const float &dt,
+                               const float &currTime,
                                std::list<Particle *> &emittedParticles)
 {
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime

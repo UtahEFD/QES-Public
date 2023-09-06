@@ -75,8 +75,8 @@ void SourceLine::checkPosInfo(const double &domainXstart, const double &domainXe
 }
 
 
-int SourceLine::emitParticles(const float dt,
-                              const float currTime,
+int SourceLine::emitParticles(const float &dt,
+                              const float &currTime,
                               std::list<Particle *> &emittedParticles)
 {
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime

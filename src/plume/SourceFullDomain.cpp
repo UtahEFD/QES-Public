@@ -72,7 +72,9 @@ void SourceFullDomain::checkPosInfo(const double &domainXstart, const double &do
 }
 
 
-int SourceFullDomain::emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles)
+int SourceFullDomain::emitParticles(const float &dt,
+                                    const float &currTime,
+                                    std::list<Particle *> &emittedParticles)
 {
   // this function WILL fail if checkPosInfo() is not called, because for once checkPosInfo() acts to set the required data for using this function
 

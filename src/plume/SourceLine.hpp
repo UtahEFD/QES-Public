@@ -48,40 +48,29 @@ private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
   // guidelines for how to set these variables within an inherited source are given in SourceType.
 
-  double posX_0;
-  double posY_0;
-  double posZ_0;
-  double posX_1;
-  double posY_1;
-  double posZ_1;
+  double posX_0 = -1.0;
+  double posY_0 = -1.0;
+  double posZ_0 = -1.0;
+  double posX_1 = -1.0;
+  double posY_1 = -1.0;
+  double posZ_1 = -1.0;
   double sourceStrength = 0.0;// total mass released (g)
 protected:
 public:
   // Default constructor
-  SourceLine()
+  SourceLine() : SourceType(SourceShape::line)
   {
   }
 
   // destructor
-  ~SourceLine()
-  {
-  }
+  ~SourceLine() = default;
 
-
-  virtual void parseValues()
+  void parseValues() override
   {
     m_sShape = SourceShape::line;
 
     setReleaseType();
     setParticleType();
-    // Create particle factories
-    // registerParticles();
-    /*
-    // Create a generic particle with attributes read from XML
-    Particles * particles;
-    particles->setParticleValues();
-*/
-    // std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
 
     parsePrimitive<double>(true, posX_0, "posX_0");
     parsePrimitive<double>(true, posY_0, "posY_0");
@@ -94,8 +83,14 @@ public:
   }
 
 
-  void checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend);
+  void checkPosInfo(const double &domainXstart,
+                    const double &domainXend,
+                    const double &domainYstart,
+                    const double &domainYend,
+                    const double &domainZstart,
+                    const double &domainZend) override;
 
-
-  int emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles);
+  int emitParticles(const float &dt,
+                    const float &currTime,
+                    std::list<Particle *> &emittedParticles) override;
 };

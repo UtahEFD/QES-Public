@@ -48,9 +48,9 @@ private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
   // guidelines for how to set these variables within an inherited source are given in SourceType.
 
-  double posX;
-  double posY;
-  double posZ;
+  double posX = -1.0;
+  double posY = -1.0;
+  double posZ = -1.0;
   //  double pRho = 0.0; // particle density (kg/m^3), variable read in from XML // LDU commented 11/16
   //  double pD = 0.0; // particle diameter (microns), variable read in from XML // LDU commented 11/16
   double sourceStrength = 0.0;// total mass released (g)
@@ -58,23 +58,21 @@ private:
 protected:
 public:
   // Default constructor
-  SourcePoint()
+  SourcePoint() : SourceType(SourceShape::point)
   {
   }
 
   // destructor
-  ~SourcePoint()
-  {
-  }
+  ~SourcePoint() = default;
 
 
-  virtual void parseValues()
+  void parseValues() override
   {
     m_sShape = SourceShape::point;
 
     setReleaseType();
     setParticleType();
- 
+
     parsePrimitive<double>(true, posX, "posX");
     parsePrimitive<double>(true, posY, "posY");
     parsePrimitive<double>(true, posZ, "posZ");
@@ -86,8 +84,15 @@ public:
   }
 
 
-  void checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend);
+  void checkPosInfo(const double &domainXstart,
+                    const double &domainXend,
+                    const double &domainYstart,
+                    const double &domainYend,
+                    const double &domainZstart,
+                    const double &domainZend) override;
 
   // template <class parType>
-  int emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles);
+  int emitParticles(const float &dt,
+                    const float &currTime,
+                    std::list<Particle *> &emittedParticles) override;
 };

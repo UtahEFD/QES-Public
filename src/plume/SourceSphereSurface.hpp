@@ -48,28 +48,24 @@ private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
   // guidelines for how to set these variables within an inherited source are given in SourceType.
 
-  double posX;
-  double posY;
-  double posZ;
-  double radius;
+  double posX = -1.0;
+  double posY = -1.0;
+  double posZ = -1.0;
+  double radius = -1.0;
   double sourceStrength = 0.0;// total mass released (g)
 protected:
 public:
   // Default constructor
-  SourceSphereSurface()
+  SourceSphereSurface() : SourceType(SourceShape::sphereSurface)
   {
   }
 
   // destructor
-  ~SourceSphereSurface()
+  ~SourceSphereSurface() = default;
+
+
+  void parseValues() override
   {
-  }
-
-
-  virtual void parseValues()
-  {
-    m_sShape = SourceShape::sphereSurface;
-
     setReleaseType();
     setParticleType();
 
@@ -82,8 +78,15 @@ public:
   }
 
 
-  void checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend);
+  void checkPosInfo(const double &domainXstart,
+                    const double &domainXend,
+                    const double &domainYstart,
+                    const double &domainYend,
+                    const double &domainZstart,
+                    const double &domainZend) override;
 
 
-  int emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles);
+  int emitParticles(const float &dt,
+                    const float &currTime,
+                    std::list<Particle *> &emittedParticles) override;
 };
