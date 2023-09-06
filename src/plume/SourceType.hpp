@@ -71,6 +71,9 @@ private:
   SourceType() = default;
 
 protected:
+  ParticleTypeFactory *m_particleTypeFactory = nullptr;
+  ParseParticle *m_protoParticle = nullptr;
+
 public:
   // this is the index of the source in the dispersion class overall list of sources
   // this is used to set the source ID for a given particle, to know from which source each particle comes from
@@ -87,10 +90,6 @@ public:
   // per time for each source, and the start and end times to be releasing from the source.
   // !!! this needs set by parseValues() in each source generated from input files by a call to the setReleaseType() function
   ReleaseType *m_rType = nullptr;
-
-  ParseParticle *m_protoParticle = nullptr;
-
-  ParticleTypeFactory *m_particleTypeFactory = nullptr;
 
   // LA-future work: need a class similar to ReleaseType that describes the input source mass.
   //  This could be mass, mass per time, volume with a density, and volume per time with a density.
