@@ -78,7 +78,7 @@
 
 #include "SourcePoint.hpp"
 #include "SourceLine.hpp"
-#include "SourceCircle.hpp"
+#include "SourceSphereSurface.hpp"
 #include "SourceCube.hpp"
 #include "SourceFullDomain.hpp"
 

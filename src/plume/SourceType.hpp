@@ -60,7 +60,7 @@
 enum SourceShape {
   point,
   line,
-  circle,
+  sphereSurface,
   cube,
   fullDomain
 };

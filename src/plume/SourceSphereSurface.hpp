@@ -68,7 +68,7 @@ public:
 
   virtual void parseValues()
   {
-    m_sShape = SourceShape::circle;
+    m_sShape = SourceShape::sphereSurface;
 
     setReleaseType();
     setParticleType();

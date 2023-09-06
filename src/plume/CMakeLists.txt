@@ -42,7 +42,7 @@ SET( qesPlumeCoreSources
     SourceType.hpp
     SourcePoint.cpp SourcePoint.hpp
     SourceLine.cpp SourceLine.hpp
-    SourceCircle.cpp SourceCircle.hpp
+    SourceSphereSurface.cpp SourceSphereSurface.hpp
     SourceCube.cpp SourceCube.hpp
     SourceFullDomain.cpp SourceFullDomain.hpp
 

@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Sources.hpp 
+/** @file Sources.hpp
  * @brief This class contains data and variables that set flags and
  * settngs read from the xml.
  *
@@ -41,7 +41,7 @@
 #include "SourceType.hpp"
 #include "SourcePoint.hpp"
 #include "SourceLine.hpp"
-#include "SourceCircle.hpp"
+#include "SourceSphereSurface.hpp"
 #include "SourceCube.hpp"
 #include "SourceFullDomain.hpp"
 
