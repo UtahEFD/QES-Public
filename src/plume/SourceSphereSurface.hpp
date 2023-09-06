@@ -42,7 +42,7 @@
 #include "winds/WINDSGeneralData.h"
 // #include "Particles.hpp"
 
-class SourceCircle : public SourceType
+class SourceSphereSurface : public SourceType
 {
 private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
@@ -56,12 +56,12 @@ private:
 protected:
 public:
   // Default constructor
-  SourceCircle()
+  SourceSphereSurface()
   {
   }
 
   // destructor
-  ~SourceCircle()
+  ~SourceSphereSurface()
   {
   }
 

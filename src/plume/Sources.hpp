@@ -60,7 +60,7 @@ public:
     parsePrimitive<int>(true, numSources, "numSources");
     parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourcePoint>("SourcePoint"));
     parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceLine>("SourceLine"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceCircle>("SourceCircle"));
+    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceSphereSurface>("SourceSphereSurface"));
     parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceCube>("SourceCube"));
     parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceFullDomain>("SourceFullDomain"));
   }

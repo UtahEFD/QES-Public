@@ -39,7 +39,7 @@
 #include "winds/WINDSGeneralData.h"
 // #include "Interp.h"
 
-void SourceCircle::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
+void SourceSphereSurface::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
   if (radius < 0) {
     std::cerr << "ERROR (SourceCircle::checkPosInfo): input radius is negative! radius = \"" << radius << "\"" << std::endl;
@@ -64,9 +64,9 @@ void SourceCircle::checkPosInfo(const double &domainXstart, const double &domain
 }
 
 
-int SourceCircle::emitParticles(const float dt,
-                                const float currTime,
-                                std::list<Particle *> &emittedParticles)
+int SourceSphereSurface::emitParticles(const float dt,
+                                       const float currTime,
+                                       std::list<Particle *> &emittedParticles)
 {
   // warning!!! this is still a point source! Need to work out the geometry details still
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
