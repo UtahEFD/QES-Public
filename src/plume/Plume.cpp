@@ -467,7 +467,7 @@ void Plume::getInputSources(PlumeInputData *PID)
 
   for (auto sIdx = 0; sIdx < numSources_Input; sIdx++) {
     // first create the pointer to the input source
-    SourceType *sPtr;
+    SourceGeometry *sPtr;
 
     // now point the pointer at the source
     sPtr = PID->sources->sources.at(sIdx);

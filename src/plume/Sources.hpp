@@ -53,15 +53,15 @@ class Sources : public ParseInterface
 private:
 public:
   int numSources;// number of sources, you fill in source information for each source next
-  std::vector<SourceType *> sources;// source type and the collection of all the different sources from input
+  std::vector<SourceGeometry *> sources;// source type and the collection of all the different sources from input
 
   virtual void parseValues()
   {
-    parsePrimitive<int>(true, numSources, "numSources");
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourcePoint>("SourcePoint"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceLine>("SourceLine"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceSphereSurface>("SourceSphereSurface"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceCube>("SourceCube"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceFullDomain>("SourceFullDomain"));
+    parsePrimitive<int>(false, numSources, "numSources");
+    parseMultiPolymorphs(false, sources, Polymorph<SourceGeometry, SourceGeometry_Cube>("SourceCube"));
+    parseMultiPolymorphs(false, sources, Polymorph<SourceGeometry, SourceGeometry_FullDomain>("SourceFullDomain"));
+    parseMultiPolymorphs(false, sources, Polymorph<SourceGeometry, SourceGeometry_Line>("SourceLine"));
+    parseMultiPolymorphs(false, sources, Polymorph<SourceGeometry, SourceGeometry_Point>("SourcePoint"));
+    parseMultiPolymorphs(false, sources, Polymorph<SourceGeometry, SourceGeometry_SphereShell>("SourceSphereSurface"));
   }
 };

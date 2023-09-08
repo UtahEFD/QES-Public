@@ -42,11 +42,14 @@
 #include "winds/WINDSGeneralData.h"
 // #include "Particles.hpp"
 
-class SourceSphereSurface : public SourceType
+class SourceGeometry_SphereShell : public SourceGeometry
 {
 private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
   // guidelines for how to set these variables within an inherited source are given in SourceType.
+  std::random_device rd;// Will be used to obtain a seed for the random number engine
+  std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
+  std::normal_distribution<> normalDistribution;
 
   double posX = -1.0;
   double posY = -1.0;
@@ -56,12 +59,14 @@ private:
 protected:
 public:
   // Default constructor
-  SourceSphereSurface() : SourceType(SourceShape::sphereSurface)
+  SourceGeometry_SphereShell() : SourceGeometry(SourceShape::sphereSurface)
   {
+    prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
+    normalDistribution = std::normal_distribution<>(0.0, 1.0);
   }
 
   // destructor
-  ~SourceSphereSurface() = default;
+  ~SourceGeometry_SphereShell() = default;
 
 
   void parseValues() override

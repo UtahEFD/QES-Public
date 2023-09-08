@@ -71,7 +71,7 @@ class ParseSource : public ParseInterface
 private:
 protected:
   ParseParticle *m_protoParticle;
-  SourceType *m_sourceType;
+  SourceGeometry *m_sourceType;
   ReleaseType *m_rType;
 
 public:
@@ -136,7 +136,7 @@ private:
 protected:
   ParticleTypeFactory *m_particleTypeFactory;
   ParseParticle *m_protoParticle;
-  SourceType *m_sourceType;
+  SourceGeometry *m_sourceType;
   ReleaseType *m_rType;
 
 public:

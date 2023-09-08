@@ -65,10 +65,10 @@ enum SourceShape {
   fullDomain
 };
 
-class SourceType : public ParseInterface
+class SourceGeometry : public ParseInterface
 {
 private:
-  SourceType() = default;
+  SourceGeometry() = default;
 
 protected:
   ParticleTypeFactory *m_particleTypeFactory = nullptr;
@@ -102,13 +102,13 @@ public:
 
 
   // constructor
-  explicit SourceType(const SourceShape &type) : m_sShape(type)
+  explicit SourceGeometry(const SourceShape &type) : m_sShape(type)
   {
     m_particleTypeFactory = new ParticleTypeFactory();
   }
 
   // destructor
-  virtual ~SourceType() = default;
+  virtual ~SourceGeometry() = default;
 
 
   // This function uses the temporary variable rType_tmp to parse all the release types found in the .xml file for a given source,

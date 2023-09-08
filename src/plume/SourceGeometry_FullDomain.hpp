@@ -42,7 +42,7 @@
 #include "winds/WINDSGeneralData.h"
 // #include "Particles.hpp"
 
-class SourceFullDomain : public SourceType
+class SourceGeometry_FullDomain : public SourceGeometry
 {
 private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
@@ -58,15 +58,22 @@ private:
   double yDomainEnd = -1.0;
   double zDomainEnd = -1.0;
   double sourceStrength = 0.0;// total mass released (g)
+
+  std::random_device rd;// Will be used to obtain a seed for the random number engine
+  std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
+  std::uniform_real_distribution<> uniformDistribution;
+
 protected:
 public:
   // Default constructor
-  SourceFullDomain() : SourceType(SourceShape::fullDomain)
+  SourceGeometry_FullDomain() : SourceGeometry(SourceShape::fullDomain)
   {
+    prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
+    uniformDistribution = std::uniform_real_distribution<>(0.0, 1.0);
   }
 
   // destructor
-  ~SourceFullDomain() = default;
+  ~SourceGeometry_FullDomain() = default;
 
   void parseValues() override
   {

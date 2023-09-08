@@ -186,7 +186,7 @@ protected:
   double vel_threshold = 0.0;
 
   // ALL Sources that will be used
-  std::vector<SourceType *> allSources;
+  std::vector<SourceGeometry *> allSources;
   // this is the global counter of particles released (used to set particleID)
   int nParsReleased = 0;
 

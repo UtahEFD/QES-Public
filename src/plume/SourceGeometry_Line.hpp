@@ -42,7 +42,7 @@
 #include "winds/WINDSGeneralData.h"
 // #include "Particles.hpp"
 
-class SourceLine : public SourceType
+class SourceGeometry_Line : public SourceGeometry
 {
 private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
@@ -58,12 +58,12 @@ private:
 protected:
 public:
   // Default constructor
-  SourceLine() : SourceType(SourceShape::line)
+  SourceGeometry_Line() : SourceGeometry(SourceShape::line)
   {
   }
 
   // destructor
-  ~SourceLine() = default;
+  ~SourceGeometry_Line() = default;
 
   void parseValues() override
   {

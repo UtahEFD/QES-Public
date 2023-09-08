@@ -41,7 +41,7 @@
 #include <cmath>
 // #include "Interp.h"
 
-void SourcePoint::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
+void SourceGeometry_Point::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
   if (posX < domainXstart || posX > domainXend) {
     std::cerr << "ERROR (SourcePoint::checkPosInfo): input posX is outside of domain! posX = \"" << posX
@@ -61,9 +61,9 @@ void SourcePoint::checkPosInfo(const double &domainXstart, const double &domainX
 }
 
 // template <class typeid(parType).name()>
-int SourcePoint::emitParticles(const float &dt,
-                               const float &currTime,
-                               std::list<Particle *> &emittedParticles)
+int SourceGeometry_Point::emitParticles(const float &dt,
+                                        const float &currTime,
+                                        std::list<Particle *> &emittedParticles)
 {
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {

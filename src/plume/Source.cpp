@@ -76,14 +76,15 @@ void ParseSource::setSourceGeometry()
   // !!! To make this happen, each source is expected to call the function setReleaseType() inside their call of the function parseValues()
   //  setReleaseType uses parseMultiPolymorph() to fill this variable, then checks to make sure it is size 1 as only 1 release type is allowed,
   //  then setReleaseType() sets the variable m_rType to be the one value found in this variable.
-  std::vector<SourceType *> sGeom_tmp;
+  std::vector<SourceGeometry *> sGeom_tmp;
 
   // first parse all the release types into the temporary variable rType_tmp
-  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<SourceType, SourcePoint>("SourcePoint"));
-  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<SourceType, SourceLine>("SourceLine"));
-  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<SourceType, SourceSphereSurface>("SourceSphereSurface"));
-  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<SourceType, SourceCube>("SourceCube"));
-  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<SourceType, SourceFullDomain>("SourceFullDomain"));
+  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<SourceGeometry, SourceGeometry_Cube>("SourceCube"));
+  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<SourceGeometry, SourceGeometry_FullDomain>("SourceFullDomain"));
+  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<SourceGeometry, SourceGeometry_Line>("SourceLine"));
+  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<SourceGeometry, SourceGeometry_Point>("SourcePoint"));
+  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<SourceGeometry, SourceGeometry_SphereShell>("SourceSphereSurface"));
+
 
   // now if the number of release types is not 1, there was a problem, need to quit with an error
   if (sGeom_tmp.empty()) {

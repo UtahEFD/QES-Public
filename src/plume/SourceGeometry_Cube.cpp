@@ -39,7 +39,7 @@
 #include "winds/WINDSGeneralData.h"
 // #include "Interp.h"
 
-void SourceCube::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
+void SourceGeometry_Cube::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
   if (m_minX > m_maxX) {
     std::cerr << "ERROR (SourceCube::checkPosInfo): input minX is greater than input maxX! minX = \"" << m_minX
@@ -91,9 +91,9 @@ void SourceCube::checkPosInfo(const double &domainXstart, const double &domainXe
 }
 
 
-int SourceCube::emitParticles(const float &dt,
-                              const float &currTime,
-                              std::list<Particle *> &emittedParticles)
+int SourceGeometry_Cube::emitParticles(const float &dt,
+                                       const float &currTime,
+                                       std::list<Particle *> &emittedParticles)
 {
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {

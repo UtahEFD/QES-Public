@@ -39,7 +39,7 @@
 #include "winds/WINDSGeneralData.h"
 // #include "Interp.h"
 
-void SourceSphereSurface::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
+void SourceGeometry_SphereShell::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
   if (radius < 0) {
     std::cerr << "ERROR (SourceCircle::checkPosInfo): input radius is negative! radius = \"" << radius << "\"" << std::endl;
@@ -64,16 +64,13 @@ void SourceSphereSurface::checkPosInfo(const double &domainXstart, const double 
 }
 
 
-int SourceSphereSurface::emitParticles(const float &dt,
-                                       const float &currTime,
-                                       std::list<Particle *> &emittedParticles)
+int SourceGeometry_SphereShell::emitParticles(const float &dt,
+                                              const float &currTime,
+                                              std::list<Particle *> &emittedParticles)
 {
   // warning!!! this is still a point source! Need to work out the geometry details still
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
-    std::random_device rd;// Will be used to obtain a seed for the random number engine
-    std::mt19937 prng(rd());// Standard mersenne_twister_engine seeded with rd()
-    std::normal_distribution<> normalDistribution(0.0, 1.0);
     for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
       // Particle *cPar = new Particle();

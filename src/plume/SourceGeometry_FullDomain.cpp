@@ -39,7 +39,7 @@
 #include "winds/WINDSGeneralData.h"
 // #include "Interp.h"
 
-void SourceFullDomain::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
+void SourceGeometry_FullDomain::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
 
   // notice that setting the variables as I am doing right now is not the standard way of doing this function
@@ -72,18 +72,14 @@ void SourceFullDomain::checkPosInfo(const double &domainXstart, const double &do
 }
 
 
-int SourceFullDomain::emitParticles(const float &dt,
-                                    const float &currTime,
-                                    std::list<Particle *> &emittedParticles)
+int SourceGeometry_FullDomain::emitParticles(const float &dt,
+                                             const float &currTime,
+                                             std::list<Particle *> &emittedParticles)
 {
   // this function WILL fail if checkPosInfo() is not called, because for once checkPosInfo() acts to set the required data for using this function
 
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
-    std::random_device rd;// Will be used to obtain a seed for the random number engine
-    std::mt19937 prng(rd());// Standard mersenne_twister_engine seeded with rd()
-    std::uniform_real_distribution<> uniformDistribution(0.0, 1.0);
-
     for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
       // Particle *cPar = new Particle();

@@ -42,7 +42,7 @@
 #include "winds/WINDSGeneralData.h"
 // #include "Particles.hpp"
 
-class SourceCube : public SourceType
+class SourceGeometry_Cube : public SourceGeometry
 {
 private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
@@ -58,12 +58,12 @@ private:
 protected:
 public:
   // Default constructor
-  SourceCube() : SourceType(SourceShape::cube)
+  SourceGeometry_Cube() : SourceGeometry(SourceShape::cube)
   {
   }
 
   // destructor
-  ~SourceCube() = default;
+  ~SourceGeometry_Cube() = default;
 
   void parseValues() override
   {

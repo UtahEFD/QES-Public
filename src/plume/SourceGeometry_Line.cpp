@@ -39,7 +39,7 @@
 #include "winds/WINDSGeneralData.h"
 // #include "Interp.h"
 
-void SourceLine::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
+void SourceGeometry_Line::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
   if (posX_0 < domainXstart || posX_0 > domainXend) {
     std::cerr << "ERROR (SourceLine::checkPosInfo): input posX_0 is outside of domain! posX_0 = \"" << posX_0
@@ -75,9 +75,9 @@ void SourceLine::checkPosInfo(const double &domainXstart, const double &domainXe
 }
 
 
-int SourceLine::emitParticles(const float &dt,
-                              const float &currTime,
-                              std::list<Particle *> &emittedParticles)
+int SourceGeometry_Line::emitParticles(const float &dt,
+                                       const float &currTime,
+                                       std::list<Particle *> &emittedParticles)
 {
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
