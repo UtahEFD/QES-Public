@@ -35,7 +35,7 @@
  * @sa SourceType
  */
 
-#include "SourceCube.hpp"
+#include "SourceGeometry_Cube.hpp"
 #include "winds/WINDSGeneralData.h"
 // #include "Interp.h"
 

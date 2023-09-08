@@ -75,12 +75,9 @@
 #include "WallReflection_TriMesh.h"
 
 #include "Particle.hpp"
+#include "Source.hpp"
 
-#include "SourcePoint.hpp"
-#include "SourceLine.hpp"
-#include "SourceSphereSurface.hpp"
-#include "SourceCube.hpp"
-#include "SourceFullDomain.hpp"
+#include "SourceGeometry.hpp"
 
 class Plume
 {

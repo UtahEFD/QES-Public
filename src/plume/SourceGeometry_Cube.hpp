@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file SourceCircle.hpp
+/** @file SourceCube.cpp
  * @brief This class represents a specific source type.
  *
  * @note Child of SourceType
@@ -38,41 +38,44 @@
 #pragma once
 
 
-#include "SourceType.hpp"
+#include "SourceGeometry.hpp"
 #include "winds/WINDSGeneralData.h"
 // #include "Particles.hpp"
 
-class SourceSphereSurface : public SourceType
+class SourceCube : public SourceType
 {
 private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
   // guidelines for how to set these variables within an inherited source are given in SourceType.
 
-  double posX = -1.0;
-  double posY = -1.0;
-  double posZ = -1.0;
-  double radius = -1.0;
+  double m_minX = -1.0;
+  double m_minY = -1.0;
+  double m_minZ = -1.0;
+  double m_maxX = -1.0;
+  double m_maxY = -1.0;
+  double m_maxZ = -1.0;
   double sourceStrength = 0.0;// total mass released (g)
 protected:
 public:
   // Default constructor
-  SourceSphereSurface() : SourceType(SourceShape::sphereSurface)
+  SourceCube() : SourceType(SourceShape::cube)
   {
   }
 
   // destructor
-  ~SourceSphereSurface() = default;
-
+  ~SourceCube() = default;
 
   void parseValues() override
   {
     setReleaseType();
     setParticleType();
 
-    parsePrimitive<double>(true, posX, "posX");
-    parsePrimitive<double>(true, posY, "posY");
-    parsePrimitive<double>(true, posZ, "posZ");
-    parsePrimitive<double>(true, radius, "radius");
+    parsePrimitive<double>(true, m_minX, "minX");
+    parsePrimitive<double>(true, m_minY, "minY");
+    parsePrimitive<double>(true, m_minZ, "minZ");
+    parsePrimitive<double>(true, m_maxX, "maxX");
+    parsePrimitive<double>(true, m_maxY, "maxY");
+    parsePrimitive<double>(true, m_maxZ, "maxZ");
 
     parsePrimitive<double>(false, sourceStrength, "sourceStrength");
   }

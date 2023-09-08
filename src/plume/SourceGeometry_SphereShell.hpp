@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file SourceLine.hpp
+/** @file SourceCircle.hpp
  * @brief This class represents a specific source type.
  *
  * @note Child of SourceType
@@ -38,46 +38,41 @@
 #pragma once
 
 
-#include "SourceType.hpp"
+#include "SourceGeometry.hpp"
 #include "winds/WINDSGeneralData.h"
 // #include "Particles.hpp"
 
-class SourceLine : public SourceType
+class SourceSphereSurface : public SourceType
 {
 private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
   // guidelines for how to set these variables within an inherited source are given in SourceType.
 
-  double posX_0 = -1.0;
-  double posY_0 = -1.0;
-  double posZ_0 = -1.0;
-  double posX_1 = -1.0;
-  double posY_1 = -1.0;
-  double posZ_1 = -1.0;
+  double posX = -1.0;
+  double posY = -1.0;
+  double posZ = -1.0;
+  double radius = -1.0;
   double sourceStrength = 0.0;// total mass released (g)
 protected:
 public:
   // Default constructor
-  SourceLine() : SourceType(SourceShape::line)
+  SourceSphereSurface() : SourceType(SourceShape::sphereSurface)
   {
   }
 
   // destructor
-  ~SourceLine() = default;
+  ~SourceSphereSurface() = default;
+
 
   void parseValues() override
   {
-    m_sShape = SourceShape::line;
-
     setReleaseType();
     setParticleType();
 
-    parsePrimitive<double>(true, posX_0, "posX_0");
-    parsePrimitive<double>(true, posY_0, "posY_0");
-    parsePrimitive<double>(true, posZ_0, "posZ_0");
-    parsePrimitive<double>(true, posX_1, "posX_1");
-    parsePrimitive<double>(true, posY_1, "posY_1");
-    parsePrimitive<double>(true, posZ_1, "posZ_1");
+    parsePrimitive<double>(true, posX, "posX");
+    parsePrimitive<double>(true, posY, "posY");
+    parsePrimitive<double>(true, posZ, "posZ");
+    parsePrimitive<double>(true, radius, "radius");
 
     parsePrimitive<double>(false, sourceStrength, "sourceStrength");
   }
@@ -89,6 +84,7 @@ public:
                     const double &domainYend,
                     const double &domainZstart,
                     const double &domainZend) override;
+
 
   int emitParticles(const float &dt,
                     const float &currTime,

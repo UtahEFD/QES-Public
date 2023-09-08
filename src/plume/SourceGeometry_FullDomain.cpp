@@ -28,66 +28,72 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file SourceCircle.cpp
+/** @file SourceFullDomain.cpp
  * @brief This class represents a specific source type.
  *
  * @note Child of SourceType
  * @sa SourceType
  */
 
-#include "SourceSphereSurface.hpp"
+#include "SourceGeometry_FullDomain.hpp"
 #include "winds/WINDSGeneralData.h"
 // #include "Interp.h"
 
-void SourceSphereSurface::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
+void SourceFullDomain::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
-  if (radius < 0) {
-    std::cerr << "ERROR (SourceCircle::checkPosInfo): input radius is negative! radius = \"" << radius << "\"" << std::endl;
+
+  // notice that setting the variables as I am doing right now is not the standard way of doing this function
+  xDomainStart = domainXstart;
+  yDomainStart = domainYstart;
+  zDomainStart = domainZstart;
+  xDomainEnd = domainXend;
+  yDomainEnd = domainYend;
+  zDomainEnd = domainZend;
+
+
+  if (xDomainStart > xDomainEnd) {
+    std::cerr << "ERROR (SourceFullDomain::checkPosInfo): input xDomainStart is greater than input xDomainEnd! xDomainStart = \"" << xDomainStart
+              << "\" xDomainEnd = \"" << xDomainEnd << "\"" << std::endl;
+    exit(1);
+  }
+  if (yDomainStart > yDomainEnd) {
+    std::cerr << "ERROR (SourceFullDomain::checkPosInfo): input yDomainStart is greater than input yDomainEnd! yDomainStart = \"" << yDomainStart
+              << "\" yDomainEnd = \"" << yDomainEnd << "\"" << std::endl;
+    exit(1);
+  }
+  if (zDomainStart > zDomainEnd) {
+    std::cerr << "ERROR (SourceFullDomain::checkPosInfo): input zDomainStart is greater than input zDomainEnd! zDomainStart = \"" << zDomainStart
+              << "\" zDomainEnd = \"" << zDomainEnd << "\"" << std::endl;
     exit(1);
   }
 
-  if ((posX - radius) < domainXstart || (posX + radius) > domainXend) {
-    std::cerr << "ERROR (SourceCircle::checkPosInfo): input posX+radius is outside of domain! posX = \"" << posX << "\" radius = \"" << radius
-              << "\" domainXstart = \"" << domainXstart << "\" domainXend = \"" << domainXend << "\"" << std::endl;
-    exit(1);
-  }
-  if ((posY - radius) < domainYstart || (posY + radius) > domainYend) {
-    std::cerr << "ERROR (SourceCircle::checkPosInfo): input posY+radius is outside of domain! posY = \"" << posY << "\" radius = \"" << radius
-              << "\" domainYstart = \"" << domainYstart << "\" domainYend = \"" << domainYend << "\"" << std::endl;
-    exit(1);
-  }
-  if ((posZ - radius) < domainZstart || (posZ + radius) > domainZend) {
-    std::cerr << "ERROR (SourceCircle::checkPosInfo): input posZ is outside of domain! posZ = \"" << posZ << "\" radius = \"" << radius
-              << "\" domainZstart = \"" << domainZstart << "\" domainZend = \"" << domainZend << "\"" << std::endl;
-    exit(1);
-  }
+  // unfortunately there is no easy way to check that the input domain sizes are correct, so the code could potentially fail later on
+  //  cause there is no easy checking method to be implemented here
 }
 
 
-int SourceSphereSurface::emitParticles(const float &dt,
-                                       const float &currTime,
-                                       std::list<Particle *> &emittedParticles)
+int SourceFullDomain::emitParticles(const float &dt,
+                                    const float &currTime,
+                                    std::list<Particle *> &emittedParticles)
 {
-  // warning!!! this is still a point source! Need to work out the geometry details still
+  // this function WILL fail if checkPosInfo() is not called, because for once checkPosInfo() acts to set the required data for using this function
+
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
     std::random_device rd;// Will be used to obtain a seed for the random number engine
     std::mt19937 prng(rd());// Standard mersenne_twister_engine seeded with rd()
-    std::normal_distribution<> normalDistribution(0.0, 1.0);
+    std::uniform_real_distribution<> uniformDistribution(0.0, 1.0);
+
     for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
       // Particle *cPar = new Particle();
       Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
       m_protoParticle->setParticleParameters(cPar);
 
-      // uniform distribution over surface of sphere
-      double nx = normalDistribution(prng);
-      double ny = normalDistribution(prng);
-      double nz = normalDistribution(prng);
-      double overn = 1 / sqrt(nx * nx + ny * ny + nz * nz);
-      cPar->xPos_init = posX + radius * nx * overn;
-      cPar->yPos_init = posY + radius * ny * overn;
-      cPar->zPos_init = posZ + radius * nz * overn;
+      // generate uniform dist in domain
+      cPar->xPos_init = uniformDistribution(prng) * (xDomainEnd - xDomainStart) + xDomainStart;
+      cPar->yPos_init = uniformDistribution(prng) * (yDomainEnd - yDomainStart) + yDomainStart;
+      cPar->zPos_init = uniformDistribution(prng) * (zDomainEnd - zDomainStart) + zDomainStart;
 
       cPar->m = sourceStrength / m_rType->m_numPar;
       cPar->m_kg = cPar->m * (1.0E-3);

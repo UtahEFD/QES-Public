@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file SourceFullDomain.hpp
+/** @file SourceLine.hpp
  * @brief This class represents a specific source type.
  *
  * @note Child of SourceType
@@ -38,40 +38,46 @@
 #pragma once
 
 
-#include "SourceType.hpp"
+#include "SourceGeometry.hpp"
 #include "winds/WINDSGeneralData.h"
 // #include "Particles.hpp"
 
-class SourceFullDomain : public SourceType
+class SourceLine : public SourceType
 {
 private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
   // guidelines for how to set these variables within an inherited source are given in SourceType.
 
-  // this source is a bit weird because the domain size has to be obtained after the input parser.
-  //  this would mean either doing a function call unique to this source to supply the required data during the dispersion constructor
-  //  or by using checkPosInfo() differently than it is normally intended to set the domain size variables
-  double xDomainStart = -1.0;
-  double yDomainStart = -1.0;
-  double zDomainStart = -1.0;
-  double xDomainEnd = -1.0;
-  double yDomainEnd = -1.0;
-  double zDomainEnd = -1.0;
+  double posX_0 = -1.0;
+  double posY_0 = -1.0;
+  double posZ_0 = -1.0;
+  double posX_1 = -1.0;
+  double posY_1 = -1.0;
+  double posZ_1 = -1.0;
   double sourceStrength = 0.0;// total mass released (g)
 protected:
 public:
   // Default constructor
-  SourceFullDomain() : SourceType(SourceShape::fullDomain)
+  SourceLine() : SourceType(SourceShape::line)
   {
   }
 
   // destructor
-  ~SourceFullDomain() = default;
+  ~SourceLine() = default;
 
   void parseValues() override
   {
+    m_sShape = SourceShape::line;
+
     setReleaseType();
     setParticleType();
+
+    parsePrimitive<double>(true, posX_0, "posX_0");
+    parsePrimitive<double>(true, posY_0, "posY_0");
+    parsePrimitive<double>(true, posZ_0, "posZ_0");
+    parsePrimitive<double>(true, posX_1, "posX_1");
+    parsePrimitive<double>(true, posY_1, "posY_1");
+    parsePrimitive<double>(true, posZ_1, "posZ_1");
 
     parsePrimitive<double>(false, sourceStrength, "sourceStrength");
   }
@@ -83,7 +89,6 @@ public:
                     const double &domainYend,
                     const double &domainZstart,
                     const double &domainZend) override;
-
 
   int emitParticles(const float &dt,
                     const float &currTime,

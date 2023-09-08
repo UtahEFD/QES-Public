@@ -28,54 +28,66 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file SourcePoint.cpp
+/** @file SourceCircle.cpp
  * @brief This class represents a specific source type.
  *
  * @note Child of SourceType
  * @sa SourceType
  */
 
-#include "SourcePoint.hpp"
+#include "SourceGeometry_SphereShell.hpp"
 #include "winds/WINDSGeneralData.h"
-#define _USE_MATH_DEFINES
-#include <cmath>
 // #include "Interp.h"
 
-void SourcePoint::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
+void SourceSphereSurface::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
-  if (posX < domainXstart || posX > domainXend) {
-    std::cerr << "ERROR (SourcePoint::checkPosInfo): input posX is outside of domain! posX = \"" << posX
+  if (radius < 0) {
+    std::cerr << "ERROR (SourceCircle::checkPosInfo): input radius is negative! radius = \"" << radius << "\"" << std::endl;
+    exit(1);
+  }
+
+  if ((posX - radius) < domainXstart || (posX + radius) > domainXend) {
+    std::cerr << "ERROR (SourceCircle::checkPosInfo): input posX+radius is outside of domain! posX = \"" << posX << "\" radius = \"" << radius
               << "\" domainXstart = \"" << domainXstart << "\" domainXend = \"" << domainXend << "\"" << std::endl;
     exit(1);
   }
-  if (posY < domainYstart || posY > domainYend) {
-    std::cerr << "ERROR (SourcePoint::checkPosInfo): input posY is outside of domain! posY = \"" << posY
+  if ((posY - radius) < domainYstart || (posY + radius) > domainYend) {
+    std::cerr << "ERROR (SourceCircle::checkPosInfo): input posY+radius is outside of domain! posY = \"" << posY << "\" radius = \"" << radius
               << "\" domainYstart = \"" << domainYstart << "\" domainYend = \"" << domainYend << "\"" << std::endl;
     exit(1);
   }
-  if (posZ < domainZstart || posZ > domainZend) {
-    std::cerr << "ERROR (SourcePoint::checkPosInfo): input posZ is outside of domain! posZ = \"" << posZ
+  if ((posZ - radius) < domainZstart || (posZ + radius) > domainZend) {
+    std::cerr << "ERROR (SourceCircle::checkPosInfo): input posZ is outside of domain! posZ = \"" << posZ << "\" radius = \"" << radius
               << "\" domainZstart = \"" << domainZstart << "\" domainZend = \"" << domainZend << "\"" << std::endl;
     exit(1);
   }
 }
 
-// template <class typeid(parType).name()>
-int SourcePoint::emitParticles(const float &dt,
-                               const float &currTime,
-                               std::list<Particle *> &emittedParticles)
+
+int SourceSphereSurface::emitParticles(const float &dt,
+                                       const float &currTime,
+                                       std::list<Particle *> &emittedParticles)
 {
+  // warning!!! this is still a point source! Need to work out the geometry details still
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
-
+    std::random_device rd;// Will be used to obtain a seed for the random number engine
+    std::mt19937 prng(rd());// Standard mersenne_twister_engine seeded with rd()
+    std::normal_distribution<> normalDistribution(0.0, 1.0);
     for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
+
+      // Particle *cPar = new Particle();
       Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
       m_protoParticle->setParticleParameters(cPar);
 
-      // set initial position
-      cPar->xPos_init = posX;
-      cPar->yPos_init = posY;
-      cPar->zPos_init = posZ;
+      // uniform distribution over surface of sphere
+      double nx = normalDistribution(prng);
+      double ny = normalDistribution(prng);
+      double nz = normalDistribution(prng);
+      double overn = 1 / sqrt(nx * nx + ny * ny + nz * nz);
+      cPar->xPos_init = posX + radius * nx * overn;
+      cPar->yPos_init = posY + radius * ny * overn;
+      cPar->zPos_init = posZ + radius * nz * overn;
 
       cPar->m = sourceStrength / m_rType->m_numPar;
       cPar->m_kg = cPar->m * (1.0E-3);

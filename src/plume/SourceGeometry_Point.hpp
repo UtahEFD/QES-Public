@@ -38,7 +38,7 @@
 #pragma once
 
 
-#include "SourceType.hpp"
+#include "SourceGeometry.hpp"
 #include "winds/WINDSGeneralData.h"
 // #include "Particles.hpp"
 

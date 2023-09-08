@@ -28,80 +28,59 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file SourceLine.cpp
+/** @file SourcePoint.cpp
  * @brief This class represents a specific source type.
  *
  * @note Child of SourceType
  * @sa SourceType
  */
 
-#include "SourceLine.hpp"
+#include "SourceGeometry_Point.hpp"
 #include "winds/WINDSGeneralData.h"
+#define _USE_MATH_DEFINES
+#include <cmath>
 // #include "Interp.h"
 
-void SourceLine::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
+void SourcePoint::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
-  if (posX_0 < domainXstart || posX_0 > domainXend) {
-    std::cerr << "ERROR (SourceLine::checkPosInfo): input posX_0 is outside of domain! posX_0 = \"" << posX_0
+  if (posX < domainXstart || posX > domainXend) {
+    std::cerr << "ERROR (SourcePoint::checkPosInfo): input posX is outside of domain! posX = \"" << posX
               << "\" domainXstart = \"" << domainXstart << "\" domainXend = \"" << domainXend << "\"" << std::endl;
     exit(1);
   }
-  if (posY_0 < domainYstart || posY_0 > domainYend) {
-    std::cerr << "ERROR (SourceLine::checkPosInfo): input posY_0 is outside of domain! posY_0 = \"" << posY_0
+  if (posY < domainYstart || posY > domainYend) {
+    std::cerr << "ERROR (SourcePoint::checkPosInfo): input posY is outside of domain! posY = \"" << posY
               << "\" domainYstart = \"" << domainYstart << "\" domainYend = \"" << domainYend << "\"" << std::endl;
     exit(1);
   }
-  if (posZ_0 < domainZstart || posZ_0 > domainZend) {
-    std::cerr << "ERROR (SourceLine::checkPosInfo): input posZ_0 is outside of domain! posZ_0 = \"" << posZ_0
-              << "\" domainZstart = \"" << domainZstart << "\" domainZend = \"" << domainZend << "\"" << std::endl;
-    exit(1);
-  }
-
-  if (posX_1 < domainXstart || posX_1 > domainXend) {
-    std::cerr << "ERROR (SourceLine::checkPosInfo): input posX_1 is outside of domain! posX_1 = \"" << posX_1
-              << "\" domainXstart = \"" << domainXstart << "\" domainXend = \"" << domainXend << "\"" << std::endl;
-    exit(1);
-  }
-  if (posY_1 < domainYstart || posY_1 > domainYend) {
-    std::cerr << "ERROR (SourceLine::checkPosInfo): input posY_1 is outside of domain! posY_1 = \"" << posY_1
-              << "\" domainYstart = \"" << domainYstart << "\" domainYend = \"" << domainYend << "\"" << std::endl;
-    exit(1);
-  }
-  if (posZ_1 < domainZstart || posZ_1 > domainZend) {
-    std::cerr << "ERROR (SourceLine::checkPosInfo): input posZ_1 is outside of domain! posZ_1 = \"" << posZ_1
+  if (posZ < domainZstart || posZ > domainZend) {
+    std::cerr << "ERROR (SourcePoint::checkPosInfo): input posZ is outside of domain! posZ = \"" << posZ
               << "\" domainZstart = \"" << domainZstart << "\" domainZend = \"" << domainZend << "\"" << std::endl;
     exit(1);
   }
 }
 
-
-int SourceLine::emitParticles(const float &dt,
-                              const float &currTime,
-                              std::list<Particle *> &emittedParticles)
+// template <class typeid(parType).name()>
+int SourcePoint::emitParticles(const float &dt,
+                               const float &currTime,
+                               std::list<Particle *> &emittedParticles)
 {
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
-    for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
-      // Particle *cPar = new Particle();
+    for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
       Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
       m_protoParticle->setParticleParameters(cPar);
 
-      // generate random point on line between m_pt0 and m_pt1
-      double diffX = posX_1 - posX_0;
-      double diffY = posY_1 - posY_0;
-      double diffZ = posZ_1 - posZ_0;
-      float t = drand48();
-      cPar->xPos_init = posX_0 + t * diffX;
-      cPar->yPos_init = posY_0 + t * diffY;
-      cPar->zPos_init = posZ_0 + t * diffZ;
+      // set initial position
+      cPar->xPos_init = posX;
+      cPar->yPos_init = posY;
+      cPar->zPos_init = posZ;
 
       cPar->m = sourceStrength / m_rType->m_numPar;
       cPar->m_kg = cPar->m * (1.0E-3);
       cPar->m_o = cPar->m;
       cPar->m_kg_o = cPar->m * (1.0E-3);
-      // std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
-
 
       cPar->tStrt = currTime;
 

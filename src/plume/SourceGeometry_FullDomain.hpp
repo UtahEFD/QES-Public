@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file SourceCube.cpp
+/** @file SourceFullDomain.hpp
  * @brief This class represents a specific source type.
  *
  * @note Child of SourceType
@@ -38,44 +38,40 @@
 #pragma once
 
 
-#include "SourceType.hpp"
+#include "SourceGeometry.hpp"
 #include "winds/WINDSGeneralData.h"
 // #include "Particles.hpp"
 
-class SourceCube : public SourceType
+class SourceFullDomain : public SourceType
 {
 private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
   // guidelines for how to set these variables within an inherited source are given in SourceType.
 
-  double m_minX = -1.0;
-  double m_minY = -1.0;
-  double m_minZ = -1.0;
-  double m_maxX = -1.0;
-  double m_maxY = -1.0;
-  double m_maxZ = -1.0;
+  // this source is a bit weird because the domain size has to be obtained after the input parser.
+  //  this would mean either doing a function call unique to this source to supply the required data during the dispersion constructor
+  //  or by using checkPosInfo() differently than it is normally intended to set the domain size variables
+  double xDomainStart = -1.0;
+  double yDomainStart = -1.0;
+  double zDomainStart = -1.0;
+  double xDomainEnd = -1.0;
+  double yDomainEnd = -1.0;
+  double zDomainEnd = -1.0;
   double sourceStrength = 0.0;// total mass released (g)
 protected:
 public:
   // Default constructor
-  SourceCube() : SourceType(SourceShape::cube)
+  SourceFullDomain() : SourceType(SourceShape::fullDomain)
   {
   }
 
   // destructor
-  ~SourceCube() = default;
+  ~SourceFullDomain() = default;
 
   void parseValues() override
   {
     setReleaseType();
     setParticleType();
-
-    parsePrimitive<double>(true, m_minX, "minX");
-    parsePrimitive<double>(true, m_minY, "minY");
-    parsePrimitive<double>(true, m_minZ, "minZ");
-    parsePrimitive<double>(true, m_maxX, "maxX");
-    parsePrimitive<double>(true, m_maxY, "maxY");
-    parsePrimitive<double>(true, m_maxZ, "maxZ");
 
     parsePrimitive<double>(false, sourceStrength, "sourceStrength");
   }

@@ -38,12 +38,12 @@
 
 #pragma once
 
-#include "SourceType.hpp"
-#include "SourcePoint.hpp"
-#include "SourceLine.hpp"
-#include "SourceSphereSurface.hpp"
-#include "SourceCube.hpp"
-#include "SourceFullDomain.hpp"
+#include "SourceGeometry.hpp"
+#include "SourceGeometry_Cube.hpp"
+#include "SourceGeometry_FullDomain.hpp"
+#include "SourceGeometry_Line.hpp"
+#include "SourceGeometry_Point.hpp"
+#include "SourceGeometry_SphereShell.hpp"
 
 #include "util/ParseInterface.h"
 
