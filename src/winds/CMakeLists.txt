@@ -13,8 +13,6 @@ SET( qesWindCoreSources
   Cut_cell.cpp
   DTEHeightField.cpp
   handleWINDSArgs.cpp
-  HRRRData.cpp
-  HRRRInput.h
   LocalMixing.cpp
   LocalMixingDefault.cpp
   LocalMixingNetCDF.cpp

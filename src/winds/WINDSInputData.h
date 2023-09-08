@@ -46,7 +46,7 @@
 #include "BuildingsParams.h"
 #include "VegetationParams.h"
 #include "TURBParams.h"
-#include "HRRRInput.h"
+#include "util/HRRRInput.h"
 
 /**
  * @class WINDSInputData

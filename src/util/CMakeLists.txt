@@ -1,4 +1,4 @@
-
+include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library (qesutil ${LIB_TYPE}
@@ -30,6 +30,9 @@ add_library (qesutil ${LIB_TYPE}
   QESFileSystemHandler.cpp
 
   QEStime.cpp
+
+  HRRRData.cpp
+  HRRRInput.h
 )
 
 FILE(GLOB files "*.h")

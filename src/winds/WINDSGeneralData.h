@@ -65,7 +65,7 @@
 //#include "util/Mesh.h"
 #include "util/NetCDFInput.h"
 #include "util/QEStime.h"
-#include "HRRRData.h"
+#include "util/HRRRData.h"
 
 #ifdef HAS_OPTIX
 #include "OptixRayTrace.h"
