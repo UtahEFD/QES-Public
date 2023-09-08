@@ -47,6 +47,7 @@
 #include "WindProfilerWRF.h"
 #include "WindProfilerBarnCPU.h"
 #include "WindProfilerBarnGPU.h"
+#include "WindProfilerHRRR.h"
 
 #include "Building.h"
 #include "Canopy.h"
@@ -247,6 +248,8 @@ public:
 
   // HRRR Input class
   HRRRData *hrrrInputData;
+  std::vector<int> nearest_site_id;
+  std::vector<std::vector<int>> closest_site_ids;
   // Sensor* sensor;      may not need this now
 
   // wind profiler class

@@ -164,7 +164,9 @@ void GIStool::UTMConverter(float &rlon, float &rlat, float &rx, float &ry, int &
   }
 
   // Set Zone parameters
-
+  if (iway == ILONGLAT2UTM) {
+    UTM_PROJECTION_ZONE = std::ceil((rlon+180)/6);
+  }
   zone = UTM_PROJECTION_ZONE;
   // sets central meridian for this zone
   cm = zone * 6.0 - 183.0;

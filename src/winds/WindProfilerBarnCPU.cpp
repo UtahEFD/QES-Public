@@ -176,14 +176,21 @@ void WindProfilerBarnCPU::BarnesInterpolationCPU(const WINDSInputData *WID, WIND
           else if (WGD->z[k] > surf_layer_height
                    && k + WGD->terrain_face_id[site_id[ii]] - 1 < WGD->nz
                    && k_mod > k + WGD->terrain_face_id[site_id[ii]]-1) {
+	    if (abs(WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[ii]]]) > abl_height[ii]) {
+	      continue;
+	    }
             sum_wu += wm[ii][i][j] * u_prof[ii * WGD->nz + k_mod];
             sum_wv += wm[ii][i][j] * v_prof[ii * WGD->nz + k_mod];
             sum_wm += wm[ii][i][j];
-          } else {
-            sum_wu += wm[ii][i][j] * u_prof[ii * WGD->nz + k + WGD->terrain_face_id[site_id[ii]]-1];
-            sum_wv += wm[ii][i][j] * v_prof[ii * WGD->nz + k + WGD->terrain_face_id[site_id[ii]]-1];
+	    } else {
+	    if (abs(WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[ii]]]) > abl_height[ii]) {
+	      continue;
+	    }
+            sum_wu += wm[ii][i][j] * u_prof[ii * WGD->nz + k_mod];
+            sum_wv += wm[ii][i][j] * v_prof[ii * WGD->nz + k_mod];
             sum_wm += wm[ii][i][j];
           }
+	  
         }
 
         icell_face = i + j * WGD->nx + k_mod * WGD->nx * WGD->ny;
@@ -281,10 +288,16 @@ void WindProfilerBarnCPU::BarnesInterpolationCPU(const WINDSInputData *WID, WIND
           else if (WGD->z[k] > surf_layer_height
                    && k + WGD->terrain_face_id[site_id[ii]] - 1 < WGD->nz
                    && k_mod > k + WGD->terrain_face_id[site_id[ii]] - 1) {
+	    if (abs(WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[ii]]]) > abl_height[ii]) {
+	      continue;
+	    }
             sum_wu += wm[ii][i][j] * (u_prof[ii * WGD->nz + k_mod] - u0_int[k_mod + ii * WGD->nz]);
             sum_wv += wm[ii][i][j] * (v_prof[ii * WGD->nz + k_mod] - v0_int[k_mod + ii * WGD->nz]);
             sum_wm += wm[ii][i][j];
-          } else {
+	    } else {
+	    if (abs(WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[ii]]]) > abl_height[ii]) {
+	      continue;
+	    }
             sum_wu += wm[ii][i][j]
                       * (u_prof[ii * WGD->nz + k + WGD->terrain_face_id[site_id[ii]] - 1]
                          - u0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * WGD->nz]);

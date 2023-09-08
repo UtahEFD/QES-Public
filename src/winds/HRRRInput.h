@@ -52,10 +52,12 @@ class HRRRInput : public ParseInterface
 
   std::string HRRRFile; /**< HRRR file name */
   std::vector<std::string> inputFields; /**< HRRR input fields */
+  int interpolationScheme = 0; /**< Interpolation scheme for Interpolation scheme for initial guess field (0-Barnes Scheme (default), 1-Nearest site, 2-Bilinear interpolation) */
 
   virtual void parseValues()
   {
     parseMultiPrimitives<std::string>(false, inputFields, "inputFields");
+    parsePrimitive<int>(false, interpolationScheme, "interpolationScheme");
     HRRRFile = "";
     parsePrimitive<std::string>(false, HRRRFile, "HRRRFile");
     if (HRRRFile != ""){

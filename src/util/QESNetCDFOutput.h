@@ -117,7 +117,7 @@ struct AttVectorChar
 class QESNetCDFOutput : public NetCDFOutput
 {
 public:
-  explicit QESNetCDFOutput(const std::string &);
+  QESNetCDFOutput(std::string);
   virtual ~QESNetCDFOutput()
   {}
 
@@ -133,22 +133,22 @@ protected:
   QESNetCDFOutput() {}
 
   // create attribute scalar based on type of data
-  void createAttScalar(const std::string &, const std::string &, const std::string &, const std::vector<NcDim> &, int *);
-  void createAttScalar(const std::string &, const std::string &, const std::string &, const std::vector<NcDim> &, float *);
-  void createAttScalar(const std::string &, const std::string &, const std::string &, const std::vector<NcDim> &, double *);
+  void createAttScalar(std::string, std::string, std::string, std::vector<NcDim>, int *);
+  void createAttScalar(std::string, std::string, std::string, std::vector<NcDim>, float *);
+  void createAttScalar(std::string, std::string, std::string, std::vector<NcDim>, double *);
 
   // create attribute vector based on type of data
-  void createAttVector(const std::string &, const std::string &, const std::string &, const std::vector<NcDim> &, std::vector<int> *);
-  void createAttVector(const std::string &, const std::string &, const std::string &, const std::vector<NcDim> &, std::vector<float> *);
-  void createAttVector(const std::string &, const std::string &, const std::string &, const std::vector<NcDim> &, std::vector<double> *);
-  void createAttVector(const std::string &, const std::string &, const std::string &, const std::vector<NcDim> &, std::vector<char> *);
+  void createAttVector(std::string, std::string, std::string, std::vector<NcDim>, std::vector<int> *);
+  void createAttVector(std::string, std::string, std::string, std::vector<NcDim>, std::vector<float> *);
+  void createAttVector(std::string, std::string, std::string, std::vector<NcDim>, std::vector<double> *);
+  void createAttVector(std::string, std::string, std::string, std::vector<NcDim>, std::vector<char> *);
 
   void setStartTime(QEStime);
 
   // add fields based on output_fields
   void addOutputFields();
   // removed field
-  void rmOutputField(const std::string &);
+  void rmOutputField(std::string);
   void rmTimeIndepFields();
   // save fields
   void saveOutputFields();

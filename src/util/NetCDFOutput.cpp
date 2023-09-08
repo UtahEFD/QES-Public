@@ -41,14 +41,14 @@ using namespace netCDF;
 using namespace netCDF::exceptions;
 
 // constructor, linked to NetCDF file, replace mode only
-NetCDFOutput ::NetCDFOutput(const std::string &output_file)
+NetCDFOutput ::NetCDFOutput(std::string output_file)
 {
   std::cout << "[NetCDFOutput] \t Writing to " << output_file << std::endl;
   outfile = new NcFile(output_file, NcFile::replace);
 }
 
 
-NcDim NetCDFOutput ::addDimension(const std::string &name, int size)
+NcDim NetCDFOutput ::addDimension(std::string name, int size)
 {
 
   if (size) {
@@ -58,17 +58,13 @@ NcDim NetCDFOutput ::addDimension(const std::string &name, int size)
   }
 }
 
-NcDim NetCDFOutput ::getDimension(const std::string &name)
+NcDim NetCDFOutput ::getDimension(std::string name)
 {
 
   return outfile->getDim(name);
 }
 
-void NetCDFOutput ::addField(const std::string &name,
-                             const std::string &units,
-                             const std::string &long_name,
-                             std::vector<NcDim> dims,
-                             NcType type)
+void NetCDFOutput ::addField(std::string name, std::string units, std::string long_name, std::vector<NcDim> dims, NcType type)
 {
 
   NcVar var;
@@ -79,7 +75,7 @@ void NetCDFOutput ::addField(const std::string &name,
   fields[name] = var;
 }
 
-void NetCDFOutput ::addAtt(const std::string &name, const std::string &att_name, const std::string &att_string)
+void NetCDFOutput ::addAtt(std::string name, std::string att_name, std::string att_string)
 {
 
   NcVar var = fields[name];
@@ -88,7 +84,7 @@ void NetCDFOutput ::addAtt(const std::string &name, const std::string &att_name,
 }
 
 // 1D -> int
-void NetCDFOutput ::saveField1D(const std::string &name, const std::vector<size_t> &index, int *data)
+void NetCDFOutput ::saveField1D(std::string name, const std::vector<size_t> index, int *data)
 {
 
   // write output data
@@ -98,7 +94,7 @@ void NetCDFOutput ::saveField1D(const std::string &name, const std::vector<size_
 }
 
 // 1D -> float
-void NetCDFOutput ::saveField1D(const std::string &name, const std::vector<size_t> &index, float *data)
+void NetCDFOutput ::saveField1D(std::string name, const std::vector<size_t> index, float *data)
 {
 
   // write output data
@@ -108,7 +104,7 @@ void NetCDFOutput ::saveField1D(const std::string &name, const std::vector<size_
 }
 
 // 1D -> double
-void NetCDFOutput ::saveField1D(const std::string &name, const std::vector<size_t> &index, double *data)
+void NetCDFOutput ::saveField1D(std::string name, const std::vector<size_t> index, double *data)
 {
 
   // write output data
@@ -118,7 +114,7 @@ void NetCDFOutput ::saveField1D(const std::string &name, const std::vector<size_
 }
 
 // 2D -> int
-void NetCDFOutput ::saveField2D(const std::string &name, std::vector<int> &data)
+void NetCDFOutput ::saveField2D(std::string name, std::vector<int> &data)
 {
 
   // write output data
@@ -128,7 +124,7 @@ void NetCDFOutput ::saveField2D(const std::string &name, std::vector<int> &data)
 }
 
 // 2D -> float
-void NetCDFOutput ::saveField2D(const std::string &name, std::vector<float> &data)
+void NetCDFOutput ::saveField2D(std::string name, std::vector<float> &data)
 {
 
   // write output data
@@ -138,7 +134,7 @@ void NetCDFOutput ::saveField2D(const std::string &name, std::vector<float> &dat
 }
 
 // 2D -> double
-void NetCDFOutput ::saveField2D(const std::string &name, std::vector<double> &data)
+void NetCDFOutput ::saveField2D(std::string name, std::vector<double> &data)
 {
 
   // write output data
@@ -148,7 +144,7 @@ void NetCDFOutput ::saveField2D(const std::string &name, std::vector<double> &da
 }
 
 // *D -> int
-void NetCDFOutput ::saveField2D(const std::string &name, const std::vector<size_t> &index, const std::vector<size_t> &size, std::vector<int> &data)
+void NetCDFOutput ::saveField2D(std::string name, const std::vector<size_t> index, std::vector<size_t> size, std::vector<int> &data)
 {
 
   // write output data
@@ -158,7 +154,7 @@ void NetCDFOutput ::saveField2D(const std::string &name, const std::vector<size_
 }
 
 // *D -> float
-void NetCDFOutput ::saveField2D(const std::string &name, const std::vector<size_t> &index, const std::vector<size_t> &size, std::vector<float> &data)
+void NetCDFOutput ::saveField2D(std::string name, const std::vector<size_t> index, std::vector<size_t> size, std::vector<float> &data)
 {
 
   // write output data
@@ -168,7 +164,7 @@ void NetCDFOutput ::saveField2D(const std::string &name, const std::vector<size_
 }
 
 // *D -> double
-void NetCDFOutput ::saveField2D(const std::string &name, const std::vector<size_t> &index, const std::vector<size_t> &size, std::vector<double> &data)
+void NetCDFOutput ::saveField2D(std::string name, const std::vector<size_t> index, std::vector<size_t> size, std::vector<double> &data)
 {
 
   // write output data
@@ -178,7 +174,7 @@ void NetCDFOutput ::saveField2D(const std::string &name, const std::vector<size_
 }
 
 // *D -> char
-void NetCDFOutput ::saveField2D(const std::string &name, const std::vector<size_t> &index, const std::vector<size_t> &size, std::vector<char> &data)
+void NetCDFOutput ::saveField2D(std::string name, const std::vector<size_t> index, std::vector<size_t> size, std::vector<char> &data)
 {
 
   // write output data

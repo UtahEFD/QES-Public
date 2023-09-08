@@ -41,14 +41,12 @@
 #include "ESRIShapefile.h"
 
 ESRIShapefile::ESRIShapefile()
-  : minBound(2), maxBound(2), m_poDS(nullptr), m_SpRef(nullptr)
+  : minBound(2), maxBound(2)
 {
   minBound = { std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
   maxBound = { -1.0 * std::numeric_limits<float>::max(), -1.0 * std::numeric_limits<float>::max() };
 }
 
-// OBSOLETE CODE REMOVED BY FMARGAIRAZ
-#if 0
 ESRIShapefile::ESRIShapefile(const std::string &filename,
                              const std::string &bldLayerName,
                              std::vector<std::vector<polyVert>> &polygons,
@@ -62,9 +60,7 @@ ESRIShapefile::ESRIShapefile(const std::string &filename,
   GDALAllRegister();
   loadVectorData(polygons, building_height, heightFactor);
 }
-#endif
-// OBSOLETE CODE REMOVED BY FMARGAIRAZ
-#if 0
+
 ESRIShapefile::ESRIShapefile(const std::string &filename,
                              const std::string &bldLayerName,
                              std::vector<std::vector<polyVert>> &polygons,
@@ -77,7 +73,7 @@ ESRIShapefile::ESRIShapefile(const std::string &filename,
   GDALAllRegister();
   loadVectorData(polygons, features);
 }
-#endif
+
 ESRIShapefile::ESRIShapefile(const std::string &filename, const std::string &bldLayerName)
   : m_filename(filename), m_layerName(bldLayerName), minBound(2), maxBound(2)
 {
@@ -87,7 +83,7 @@ ESRIShapefile::ESRIShapefile(const std::string &filename, const std::string &bld
   GDALAllRegister();
 
   // From -- http://www.gdal.org/gdal_tutorial.html
-  m_poDS = (GDALDataset *)GDALOpenEx(m_filename.c_str(), GDAL_OF_VECTOR, nullptr, nullptr, nullptr);
+  m_poDS = (GDALDataset *)GDALOpenEx(m_filename.c_str(), GDAL_OF_VECTOR, NULL, NULL, NULL);
   if (m_poDS == nullptr) {
     std::cerr << "ESRIShapefile -- could not open data file: " << m_filename << std::endl;
     exit(1);
@@ -107,14 +103,12 @@ ESRIShapefile::ESRIShapefile(const std::string &filename, const std::string &bld
   }
 }
 
-// OBSOLETE CODE REMOVED BY FMARGAIRAZ
-#if 0
 void ESRIShapefile::loadVectorData(std::vector<std::vector<polyVert>> &polygons, std::vector<float> &building_height, float heightFactor)
 {
   int polyCount = 0;
 
   // From -- http://www.gdal.org/gdal_tutorial.html
-  m_poDS = (GDALDataset *)GDALOpenEx(m_filename.c_str(), GDAL_OF_VECTOR, nullptr, nullptr, nullptr);
+  m_poDS = (GDALDataset *)GDALOpenEx(m_filename.c_str(), GDAL_OF_VECTOR, NULL, NULL, NULL);
   if (m_poDS == nullptr) {
     std::cerr << "ESRIShapefile -- could not open data file: " << m_filename << std::endl;
     exit(1);
@@ -211,7 +205,7 @@ void ESRIShapefile::loadVectorData(std::vector<std::vector<polyVert>> &polygons,
 
     OGRGeometry *poGeometry;
     poGeometry = feature->GetGeometryRef();
-    if (poGeometry != nullptr
+    if (poGeometry != NULL
         && wkbFlatten(poGeometry->getGeometryType()) == wkbPoint) {
 #if GDAL_VERSION_NUM >= GDAL_COMPUTE_VERSION(2, 3, 0)
       OGRPoint *poPoint = poGeometry->toPoint();
@@ -222,10 +216,10 @@ void ESRIShapefile::loadVectorData(std::vector<std::vector<polyVert>> &polygons,
     }
 
     // POLYGON
-    else if (poGeometry != nullptr
+    else if (poGeometry != NULL
              && wkbFlatten(poGeometry->getGeometryType()) == wkbPolygon) {
-      // FM CLEANUP - NOT USED
-      // OGRPolygon *poPolygon = (OGRPolygon *)poGeometry;
+      //FM CLEANUP - NOT USED
+      //OGRPolygon *poPolygon = (OGRPolygon *)poGeometry;
 
       OGRLinearRing *pLinearRing = nullptr;
       ;
@@ -264,7 +258,6 @@ void ESRIShapefile::loadVectorData(std::vector<std::vector<polyVert>> &polygons,
   std::cout << "Bounds of SHP: Min=(" << minBound[0] << ", " << minBound[1] << "), Max=(" << maxBound[0] << ", " << maxBound[1] << ")" << std::endl;
   std::cout << "Domain Size: " << (int)ceil(maxBound[0] - minBound[0]) << " X " << (int)ceil(maxBound[1] - minBound[1]) << std::endl;
 }
-#endif
 
 void ESRIShapefile::loadVectorData(std::vector<std::vector<polyVert>> &polygons,
                                    std::map<std::string, std::vector<float>> &features)
@@ -343,17 +336,17 @@ void ESRIShapefile::loadVectorData(std::vector<std::vector<polyVert>> &polygons,
 
       OGRFieldDefn *oField = poFDefn->GetFieldDefn(idxField);
       std::string fn(oField->GetNameRef());
-      // std::cout << "[TEST] Field Name: " << fn << std::endl;
+      //std::cout << "[TEST] Field Name: " << fn << std::endl;
 
       switch (oField->GetType()) {
       case OFTInteger:
-        features[fn].push_back((float)feature->GetFieldAsInteger(idxField));
+        features[fn].push_back(feature->GetFieldAsInteger(idxField));
         break;
       case OFTInteger64:
-        features[fn].push_back((float)feature->GetFieldAsInteger64(idxField));
+        features[fn].push_back(feature->GetFieldAsInteger64(idxField));
         break;
       case OFTReal:
-        features[fn].push_back((float)feature->GetFieldAsDouble(idxField));
+        features[fn].push_back(feature->GetFieldAsDouble(idxField));
         break;
       default:
         std::cerr << "[ERROR]\t ESRIShapefile -- incompatible field type" << std::endl;
@@ -362,7 +355,7 @@ void ESRIShapefile::loadVectorData(std::vector<std::vector<polyVert>> &polygons,
     }
     OGRGeometry *poGeometry;
     poGeometry = feature->GetGeometryRef();
-    if (poGeometry != nullptr
+    if (poGeometry != NULL
         && wkbFlatten(poGeometry->getGeometryType()) == wkbPoint) {
 #if GDAL_VERSION_NUM >= GDAL_COMPUTE_VERSION(2, 3, 0)
       OGRPoint *poPoint = poGeometry->toPoint();
@@ -373,10 +366,10 @@ void ESRIShapefile::loadVectorData(std::vector<std::vector<polyVert>> &polygons,
     }
 
     // POLYGON
-    else if (poGeometry != nullptr
+    else if (poGeometry != NULL
              && wkbFlatten(poGeometry->getGeometryType()) == wkbPolygon) {
-      // FM CLEANUP - NOT USED
-      // OGRPolygon *poPolygon = (OGRPolygon *)poGeometry;
+      //FM CLEANUP - NOT USED
+      //OGRPolygon *poPolygon = (OGRPolygon *)poGeometry;
 
       OGRLinearRing *pLinearRing = nullptr;
 
@@ -387,8 +380,8 @@ void ESRIShapefile::loadVectorData(std::vector<std::vector<polyVert>> &polygons,
       std::vector<polyVert> vertexList(vertexCount);
 
       for (int vidx = 0; vidx < vertexCount; vidx++) {
-        auto x = (float)pLinearRing->getX(vidx);
-        auto y = (float)pLinearRing->getY(vidx);
+        double x = pLinearRing->getX(vidx);
+        double y = pLinearRing->getY(vidx);
 
         if (x < minBound[0]) minBound[0] = x;
         if (y < minBound[1]) minBound[1] = y;
@@ -412,7 +405,7 @@ void ESRIShapefile::loadVectorData(std::vector<std::vector<polyVert>> &polygons,
     }
   }
 
-  // std::cout << "[TEST] number of polygons " << polygons.size() << std::endl;
+  //std::cout << "[TEST] number of polygons " << polygons.size() << std::endl;
 
   std::cout << "\tBounds of SHP: Min=(" << minBound[0] << ", " << minBound[1] << "), Max=(" << maxBound[0] << ", " << maxBound[1] << ")" << std::endl;
   std::cout << "\tDomain Size: " << (int)ceil(maxBound[0] - minBound[0]) << " X " << (int)ceil(maxBound[1] - minBound[1]) << std::endl;

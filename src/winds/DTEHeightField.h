@@ -265,6 +265,7 @@ private:
     float height;
     if (j >= m_nXSize || k >= m_nYSize) {
       height = 0.0;
+      
     }
     // if (j * m_nXSize + k >= m_nXSize * m_nYSize
     else {
@@ -273,12 +274,7 @@ private:
       // Previous code had this -- does not seem correct
       // height = scanline[ abs(k-m_nYSize) * m_nXSize + j ];
 
-      height = scanline[(m_nYSize - 1 - k) * (m_nXSize) + j] - adfMinMax[0];
-      /*if (j == 131 && k == 126) {
-        std::cout << "adfMinMax[0]:  " << adfMinMax[0] << std::endl;
-        std::cout << "scanline[(m_nYSize - 1 - k) * (m_nXSize) + j]:  " << scanline[(m_nYSize - 1 - k) * (m_nXSize) + j] << std::endl;
-        std::cout << "height:  " << height << std::endl;
-      }*/
+      height = scanline[(m_nYSize - k - 1) * (m_nXSize) + j] - adfMinMax[0];
     }
 
     if (height < 0.0 || std::isnan(abs(height))) {

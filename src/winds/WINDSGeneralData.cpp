@@ -252,8 +252,10 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
        - does not support halo for lon/lat coord (site coord == 3)
     */
 
-    if (solverType == 1) {
+    if (solverType == 1 && WID->hrrrInput->interpolationScheme == 0) {
       windProfiler = new WindProfilerBarnCPU();
+    }else if (WID->hrrrInput->interpolationScheme != 0){
+      windProfiler = new WindProfilerHRRR();
 #ifdef HAS_CUDA
     } else {
       windProfiler = new WindProfilerBarnGPU();
@@ -273,14 +275,115 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       std::cout << "Processing HRRR data..." << std::flush;
       hrrrInputData = new HRRRData(WID->hrrrInput->HRRRFile, WID->hrrrInput->inputFields);
       hrrrInputData->findHRRRSensors(WID, this);
+
+      std::vector<int> site_i(hrrrInputData->hrrrSensorID.size(), 0);
+      std::vector<int> site_j(hrrrInputData->hrrrSensorID.size(), 0);
       
       for (size_t i = 0; i < hrrrInputData->hrrrSensorID.size(); i++) {
         // Create new sensor object
         WID->metParams->sensors.push_back(new Sensor());
 	WID->metParams->sensors[i]->site_coord_flag = 1;
-	WID->metParams->sensors[i]->site_xcoord = hrrrInputData->hrrrSensorUTMx[i] - WID->simParams->UTMx;
+	if (WID->simParams->UTMZone == hrrrInputData->hrrrSensorUTMzone[i]){
+	  WID->metParams->sensors[i]->site_xcoord = hrrrInputData->hrrrSensorUTMx[i] - WID->simParams->UTMx;
+	}else{
+	  int end_zone = 729400;
+	  int start_zone = 270570;
+	  int zone_diff = hrrrInputData->hrrrSensorUTMzone[i] - WID->simParams->UTMZone;
+	  WID->metParams->sensors[i]->site_xcoord = (hrrrInputData->hrrrSensorUTMx[i] - start_zone) + (zone_diff - 1) * (end_zone - start_zone) + (end_zone - WID->simParams->UTMx);
+	}
 	WID->metParams->sensors[i]->site_ycoord = hrrrInputData->hrrrSensorUTMy[i] - WID->simParams->UTMy;
+	site_i[i] = WID->metParams->sensors[i]->site_xcoord / dx;
+	site_j[i] = WID->metParams->sensors[i]->site_ycoord / dy;
       }
+
+      float site_distance;
+      float min_distance;
+      if (WID->hrrrInput->interpolationScheme == 1){ // Nearest site interpolation scheme
+	nearest_site_id.resize( nx*ny, 0);
+	for (size_t j = 0; j < ny; j++) {
+	  for (size_t i = 0; i < nx; i++) {
+	    int id = i + j * nx;//Index in horizontal surface
+	    min_distance = 100000.0;
+	    for (size_t ii = 0; ii < hrrrInputData->hrrrSensorID.size(); ii++) {
+	      if (site_i[ii] >= 0 && site_j[ii] >= 0 && site_i[ii] < nx-1 && site_j[ii] < ny-1){
+		site_distance = sqrt(pow (i*dx - WID->metParams->sensors[ii]->site_xcoord, 2.0) + pow (j*dy - WID->metParams->sensors[ii]->site_ycoord, 2.0));
+		if (site_distance < min_distance){
+		  min_distance = site_distance;
+		  nearest_site_id[id] = ii;
+		}
+	      }else{
+		continue;
+	      }
+	    }
+	  }
+	}	
+      }
+      
+      if (WID->hrrrInput->interpolationScheme == 2){ // Bilinear interpolation scheme
+	int site1_id_temp, site2_id_temp, site3_id_temp, site4_id_temp;
+	int k, l, m, n;
+	closest_site_ids.resize((nx-1) * (ny-1));
+	
+	for (size_t j = 1; j < ny-1; j++) {
+	  for (size_t i = 1; i < nx-1; i++) {
+	    int id = i + j * (nx-1);//Index in horizontal surface
+	    //min_id = -1;
+	    //min_distance = 1000000.0;
+	    for (size_t ii = 0; ii < hrrrInputData->hrrrSensorID.size(); ii++) {
+	      site1_id_temp = -1;
+	      site2_id_temp = -1;
+	      site3_id_temp = -1;
+	      site4_id_temp = -1;
+	      site1_id_temp = ii;
+	      k = hrrrInputData->hrrrSensorID[ii]/hrrrInputData->xSize;
+	      l = hrrrInputData->hrrrSensorID[ii] - k * hrrrInputData->xSize;
+	      for (size_t jj = ii; jj < hrrrInputData->hrrrSensorID.size(); jj++) {		
+		m = hrrrInputData->hrrrSensorID[jj]/hrrrInputData->xSize;
+		n = hrrrInputData->hrrrSensorID[jj] - m * hrrrInputData->xSize;
+		if ( m == k && n == l + 1){
+		  site2_id_temp = jj;
+		  break;
+		}
+	      }
+	       
+	      for (size_t jj = ii; jj < hrrrInputData->hrrrSensorID.size(); jj++) {		
+		m = hrrrInputData->hrrrSensorID[jj]/hrrrInputData->xSize;
+		n = hrrrInputData->hrrrSensorID[jj] - m * hrrrInputData->xSize;
+		if ( m == k + 1 && n == l + 1){
+		  site3_id_temp = jj;
+		  break;
+		}
+	      }
+
+	      for (size_t jj = ii; jj < hrrrInputData->hrrrSensorID.size(); jj++) {		
+		m = hrrrInputData->hrrrSensorID[jj]/hrrrInputData->xSize;
+		n = hrrrInputData->hrrrSensorID[jj] - m * hrrrInputData->xSize;
+		if ( m == k + 1 && n == l){
+		  site4_id_temp = jj;
+		  break;
+		}
+	      }
+
+	      if (site1_id_temp != -1 && site2_id_temp != -1 && site3_id_temp != -1 && site4_id_temp != -1){
+		if (j*dy >= WID->metParams->sensors[site1_id_temp]->site_ycoord && j*dy <= WID->metParams->sensors[site3_id_temp]->site_ycoord &&
+		    i*dx >= WID->metParams->sensors[site4_id_temp]->site_xcoord && i*dx <= WID->metParams->sensors[site2_id_temp]->site_xcoord){
+		  closest_site_ids[id].push_back(site1_id_temp);
+		  closest_site_ids[id].push_back(site2_id_temp);
+		  closest_site_ids[id].push_back(site3_id_temp);
+		  closest_site_ids[id].push_back(site4_id_temp);
+		  break;
+		}else{
+		  continue;
+		  }
+	      }else{
+		continue;
+	      }
+	    }	    
+	  }
+	}
+      }
+      
+      
       
       QEStime* hrrrTime;
       for (size_t t = 0; t < hrrrInputData->hrrrTime.size(); t++) {
@@ -291,7 +394,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       }
       
       for (size_t t = 0; t < hrrrInputData->hrrrTime.size(); t++) {
-	hrrrInputData->readData(t);
+	hrrrInputData->readSensorData(t);
         for (size_t i = 0; i < hrrrInputData->hrrrSensorID.size(); i++) {
 	  WID->metParams->sensors[i]->TS.push_back(new TimeSeries);
 	  WID->metParams->sensors[i]->TS[t]->time = sensortime[t];
@@ -306,14 +409,11 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 	    if (hrrrInputData->hrrrShortRadiation[hrrrInputData->hrrrSensorID[i]] > 700){// If strong solar insolation
 	      if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 2.0){// If wind is less than 2m/s
 		WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.4;// Class A stability
-	      }
-	      if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 2.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 3.0){// If wind is greater than 2m/s and less than 3m/s
+	      }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 2.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 3.0){// If wind is greater than 2m/s and less than 3m/s
 		WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.31;// Class A-B stability
-	      }
-	      if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 3.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 5.0){// If wind is greater than 3m/s and less than 5m/s
+	      }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 3.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 5.0){// If wind is greater than 3m/s and less than 5m/s
 		WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.22;// Class B stability
-	      }
-	      if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 5.0){// If wind is greater than 5m/s
+	      }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 5.0){// If wind is greater than 5m/s
 		WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.074;// Class C stability
 	      }
 	    }
@@ -322,17 +422,13 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 	    if (hrrrInputData->hrrrShortRadiation[hrrrInputData->hrrrSensorID[i]] >= 350  && hrrrInputData->hrrrShortRadiation[hrrrInputData->hrrrSensorID[i]] <= 700){// If moderate solar insolation
 	      if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 2.0){// If wind is less than 2m/s
 		WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.31;// Class A-B stability
-	      }
-	      if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 2.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 3.0){// If wind is greater than 2m/s and less than 3m/s
+	      }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 2.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 3.0){// If wind is greater than 2m/s and less than 3m/s
 		WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.22;// Class B stability
-	      }
-	      if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 3.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 5.0){// If wind is greater than 3m/s and less than 5m/s
+	      }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 3.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 5.0){// If wind is greater than 3m/s and less than 5m/s
 		WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.147;// Class B-C stability
-	      }
-	      if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 5.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 6.0){// If wind is greater than 5m/s and less than 6m/s
+	      }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 5.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 6.0){// If wind is greater than 5m/s and less than 6m/s
 		WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.037;// Class C-D stability
-	      }
-	      if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 6.0){// If wind is greater than 6m/s
+	      }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 6.0){// If wind is greater than 6m/s
 		WID->metParams->sensors[i]->TS[t]->site_one_overL = 0.0;// Class D stability
 	      }
 	    }
@@ -341,38 +437,31 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 	    if (hrrrInputData->hrrrShortRadiation[hrrrInputData->hrrrSensorID[i]] < 350){// If slight solar insolation
 	      if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 2.0){// If wind is less than 2m/s
 		WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.22;// Class B stability
-	      }
-	      if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 2.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 5.0){// If wind is greater than 2m/s and less than 5m/s
+	      }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 2.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 5.0){// If wind is greater than 2m/s and less than 5m/s
 		WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.074;// Class C stability
-	      }
-	      if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 5.0){// If wind is greater than 5m/s
+	      }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 5.0){// If wind is greater than 5m/s
 		WID->metParams->sensors[i]->TS[t]->site_one_overL = 0.0;// Class D stability
 	      }
-	    }
-	    
-	    
+	    }	    
 	  }else{// If during night
 	    if (hrrrInputData->hrrrCloudCover[hrrrInputData->hrrrSensorID[i]] > 50.0){// High cloud cover
 	      
 	      if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 3.0){// If wind is less than 3m/s
 		WID->metParams->sensors[i]->TS[t]->site_one_overL = 0.018;// Class E stability
-	      }
-	      if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 3.0){// If wind is greater than 3m/s
+	      }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 3.0){// If wind is greater than 3m/s
 		WID->metParams->sensors[i]->TS[t]->site_one_overL = 0.0;// Class D stability
 	      }	      
 	    }else{// Low cloud cover
 	      
 	      if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 3.0){// If wind is less than 3m/s
 		WID->metParams->sensors[i]->TS[t]->site_one_overL = 0.047;// Class F stability
-	      }
-	      if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 3.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 5.0){// If wind is greater than 3m/s and less than 5m/s
+	      }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 3.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 5.0){// If wind is greater than 3m/s and less than 5m/s
 		WID->metParams->sensors[i]->TS[t]->site_one_overL = 0.018;// Class E stability
-	      }
-	      if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 5.0){// If wind is greater than 5m/s
+	      }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 5.0){// If wind is greater than 5m/s
 		WID->metParams->sensors[i]->TS[t]->site_one_overL = 0.0;// Class D stability
 	      }
 	    }
-	  }
+	    }
 	}
       }
       std::cout << "[done]" << std::endl;
@@ -384,14 +473,13 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 	  WID->metParams->sensors.push_back(new Sensor(WID->metParams->sensorName[i]));
 	}
       }
-    }
-
-    // If there are more than one timestep
-    // if (WID->simParams->totalTimeIncrements > 0) {
-    // Loop to include all the timestep for the first sensor
-    for (size_t i = 0; i < WID->metParams->sensors[0]->TS.size(); i++) {
-      sensortime.push_back(WID->metParams->sensors[0]->TS[i]->time);
-      sensortime_id.push_back(i);
+      // If there are more than one timestep
+      // if (WID->simParams->totalTimeIncrements > 0) {
+      // Loop to include all the timestep for the first sensor
+      for (size_t i = 0; i < WID->metParams->sensors[0]->TS.size(); i++) {
+	sensortime.push_back(WID->metParams->sensors[0]->TS[i]->time);
+	sensortime_id.push_back(i);
+      }
     }
 
     // Loop to include all the unique timesteps of the rest of the sensors
@@ -408,7 +496,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 	  sensortime.push_back(WID->metParams->sensors[i]->TS[j]->time);
 	  sensortime_id.push_back(sensortime.size() - 1);
 	}
-
 	// If the timestep is not allready included in the list
 	if (count == sensortime.size()) {
           sensortime.push_back(WID->metParams->sensors[i]->TS[j]->time);
@@ -433,9 +520,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     } else {
       totalTimeIncrements = WID->simParams->totalTimeIncrements;
     }
-
     
-
     // Adding halo to sensor location (if in QEScoord site_coord_flag==1)
     for (size_t i = 0; i < WID->metParams->sensors.size(); i++) {
       if (WID->metParams->sensors[i]->site_coord_flag == 1) {
@@ -482,7 +567,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       }
     }
   }
-//z0 = 0.01;
 
   // /////////////////////////
   // Definition of the grid

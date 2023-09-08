@@ -55,24 +55,19 @@
 class ESRIShapefile
 {
 public:
-  // OBSOLETE CODE REMOVED BY FMARGAIRAZ
-#if 0
+  ESRIShapefile();
   ESRIShapefile(const std::string &filename,
                 const std::string &layerName,
                 std::vector<std::vector<polyVert>> &polygons,
                 std::vector<float> &building_height,
                 float heightFactor);
-#endif
-// OBSOLETE CODE REMOVED BY FMARGAIRAZ
-#if 0
-   ESRIShapefile(const std::string &filename,
+  ESRIShapefile(const std::string &filename,
                 const std::string &layerName,
                 std::vector<std::vector<polyVert>> &polygons,
                 std::map<std::string, std::vector<float>> &features);
-#endif
   ESRIShapefile(const std::string &filename,
                 const std::string &layerName);
-  ~ESRIShapefile() = default;
+  ~ESRIShapefile();
 
   /**
    * :document this:
@@ -82,8 +77,8 @@ public:
   void getLocalDomain(std::vector<float> &dim)
   {
     assert(dim.size() == 2);
-    dim[0] = ceil(maxBound[0] - minBound[0]);
-    dim[1] = ceil(maxBound[1] - minBound[1]);
+    dim[0] = (int)ceil(maxBound[0] - minBound[0]);
+    dim[1] = (int)ceil(maxBound[1] - minBound[1]);
   }
 
   /**
@@ -109,10 +104,6 @@ public:
   std::map<std::string, std::vector<float>> m_features;
 
 private:
-  ESRIShapefile();
-
-// OBSOLETE CODE REMOVED BY FMARGAIRAZ
-#if 0
   /**
    * :document this:
    *
@@ -120,9 +111,8 @@ private:
    * @param building_height :document this:
    * @param heightFactor :document this:
    */
-  // void loadVectorData(std::vector<std::vector<polyVert>> &polygons, std::vector<float> &building_height, float heightFactor);
-#endif
-  
+  void loadVectorData(std::vector<std::vector<polyVert>> &polygons, std::vector<float> &building_height, float heightFactor);
+
   /**
    * :document this:
    *
@@ -131,13 +121,12 @@ private:
    */
   void loadVectorData(std::vector<std::vector<polyVert>> &polygons, std::map<std::string, std::vector<float>> &feature);
 
-
   std::string m_filename; /**< :document this */
   std::string m_layerName; /**< :document this */
 
-  GDALDataset *m_poDS{}; /**< :document this */
+  GDALDataset *m_poDS; /**< :document this */
 
-  OGRSpatialReference *m_SpRef{};
+  OGRSpatialReference *m_SpRef;
 
   ///@{
   /** :document this */

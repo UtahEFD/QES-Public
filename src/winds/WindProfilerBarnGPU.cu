@@ -132,10 +132,16 @@ __global__ void CalculateInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
         }// If height (above ground) is greater than ASL height and modified index is inside the domain
         else if (d_z[k] > d_surf_layer_height[ii] && k + d_terrain_face_id[d_site_id[id]] - 1 < nz && d_k_mod[ii] > k + d_terrain_face_id[d_site_id[id]] - 1) {
+	  if (abs(d_z[d_terrain_face_id[ii]] - d_z[d_terrain_face_id[d_site_id[id]]]) > d_abl_height[id] || d_z[k] + d_z[d_terrain_face_id[ii]] > d_z[d_terrain_face_id[d_site_id[id]]] + d_abl_height[id] ) {
+	    continue;
+	  }
           d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_u_prof[d_k_mod[ii] + id * nz];
           d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_v_prof[d_k_mod[ii] + id * nz];
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
         } else {
+	  if (abs(d_z[d_terrain_face_id[ii]] - d_z[d_terrain_face_id[d_site_id[id]]]) > d_abl_height[id] || d_z[k] + d_z[d_terrain_face_id[ii]] > d_z[d_terrain_face_id[d_site_id[id]]] + d_abl_height[id] ) {
+	    continue;
+	  }
           d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_u_prof[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz];
           d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_v_prof[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz];
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
@@ -240,10 +246,16 @@ __global__ void CorrectInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_wu
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
         }// If height (above ground) is greater than ASL height and modified index is inside the domain
         else if (d_z[k] > d_surf_layer_height[ii] && k + d_terrain_face_id[d_site_id[id]] - 1 < nz && d_k_mod[ii] > k + d_terrain_face_id[d_site_id[id]] - 1) {
-          d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_u_prof[d_k_mod[ii] + id * nz] - d_u0_int[d_k_mod[ii] + id * nz]);
+	  if (abs(d_z[d_terrain_face_id[ii]] - d_z[d_terrain_face_id[d_site_id[id]]]) > d_abl_height[id] || d_z[k] + d_z[d_terrain_face_id[ii]] > d_z[d_terrain_face_id[d_site_id[id]]] + d_abl_height[id] ) {
+	    continue;
+	  }
+          d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_u_prof[d_k_mod[ii] + id * nz] - d_u0_int[d_k_mod[ii] + id * nz] );
           d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_v_prof[d_k_mod[ii] + id * nz] - d_v0_int[d_k_mod[ii] + id * nz]);
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
         } else {
+	  if (abs(d_z[d_terrain_face_id[ii]] - d_z[d_terrain_face_id[d_site_id[id]]]) > d_abl_height[id] || d_z[k] + d_z[d_terrain_face_id[ii]] > d_z[d_terrain_face_id[d_site_id[id]]] + d_abl_height[id] ) {
+	    continue;
+	  }
           d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_u_prof[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz] - d_u0_int[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz]);
           d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_v_prof[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz] - d_v0_int[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz]);
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];

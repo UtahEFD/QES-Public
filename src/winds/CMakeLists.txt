@@ -14,6 +14,7 @@ SET( qesWindCoreSources
   DTEHeightField.cpp
   handleWINDSArgs.cpp
   HRRRData.cpp
+  HRRRInput.h
   LocalMixing.cpp
   LocalMixingDefault.cpp
   LocalMixingNetCDF.cpp
@@ -34,6 +35,7 @@ SET( qesWindCoreSources
   WindProfilerBarnCPU.cpp
   WindProfilerBarnGPU.cpp
   WindProfilerWRF.cpp
+  WindProfilerHRRR.cpp
   WINDSInputData.h
   WINDSGeneralData.cpp WINDSGeneralData.h
   WINDSOutputVisualization.cpp
