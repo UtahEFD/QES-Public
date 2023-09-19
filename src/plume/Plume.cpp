@@ -154,7 +154,12 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   //  data
   // !!! totalParsToRelease needs calculated very carefully here using
   // information from each of the sources
-  getInputSources(PID);
+  if (PID->sourceParams) {
+    getInputSources(PID);
+  } else {
+    std::cout << "[WARNING]\t no source parameters" << std::endl;
+  }
+
 
   /* setup boundary condition functions */
 
@@ -456,28 +461,23 @@ void Plume::getInputSources(PlumeInputData *PID)
   int numSources_Input = PID->sourceParams->sources.size();
 
   if (numSources_Input == 0) {
-    std::cerr << "[ERROR]\t(Dispersion::getInputSources): there are no sources in the input file!"
-              << std::endl;
+    std::cerr << "[ERROR]\t Plume::getInputSources: \n\t\t there are no sources in the input file!" << std::endl;
     exit(1);
   }
 
   // start at zero particles to release and increment as the number per source
-  // is found out
-  totalParsToRelease = 0;
+  // totalParsToRelease = 0;
 
-  for (auto sIdx = 0; sIdx < numSources_Input; sIdx++) {
-
+  for (auto s : PID->sourceParams->sources) {
     // now do anything that is needed to the source via the pointer
-    PID->sourceParams->sources.at(sIdx)->checkReleaseInfo(PID->plumeParams->timeStep, PID->plumeParams->simDur);
-    PID->sourceParams->sources.at(sIdx)->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
+    s->checkReleaseInfo(PID->plumeParams->timeStep, PID->plumeParams->simDur);
+    s->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
 
     // now determine the number of particles to release for the source and update the overall count
-    totalParsToRelease = totalParsToRelease + PID->sourceParams->sources.at(sIdx)->getNumParticles();
+    totalParsToRelease += s->getNumParticles();
 
-    // create the pointer to the source with the input source class
-    Source *sPtr = new Source(sIdx, PID->sourceParams->sources.at(sIdx));
-    // now add the source pointer to the list of sources
-    allSources.push_back(sPtr);
+    // add source into the vector of sources
+    allSources.push_back(new Source((int)allSources.size(), s));
   }
 }
 
@@ -489,8 +489,8 @@ int Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBGe
 
   std::list<Particle *> nextSetOfParticles;
   int numNewParticles = 0;
-  for (auto sIdx = 0u; sIdx < allSources.size(); sIdx++) {
-    numNewParticles += allSources.at(sIdx)->emitParticles((float)sim_dt, currentTime, nextSetOfParticles);
+  for (auto source : allSources) {
+    numNewParticles += source->emitParticles((float)sim_dt, currentTime, nextSetOfParticles);
   }
 
   setParticleVals(WGD, TGD, nextSetOfParticles);

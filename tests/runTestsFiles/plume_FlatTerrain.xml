@@ -25,17 +25,20 @@
     <nBoxesY> 40 </nBoxesY>
     <nBoxesZ> 40 </nBoxesZ>
   </collectionParameters>
-  <sources>
-    <numSources> 1 </numSources>
-    <SourcePoint>
-      <ReleaseType_continuous>
+  <sourceParameters>
+    <source>
+      <particleTraces>
+      </particleTraces>
+      <releaseType_continuous>
         <parPerTimestep> 100 </parPerTimestep>
-      </ReleaseType_continuous>
-      <posX> 20.0 </posX>
-      <posY> 100.0 </posY>
-      <posZ> 100.0 </posZ>
-    </SourcePoint>
-  </sources>
+      </releaseType_continuous>
+      <sourceGeometry_Point>
+        <posX> 20.0 </posX>
+        <posY> 100.0 </posY>
+        <posZ> 100.0 </posZ>
+      </sourceGeometry_Point>
+    </source>
+  </sourceParameters>
   <boundaryConditions>
     <xBCtype>exiting</xBCtype>
     <yBCtype>exiting</yBCtype>

@@ -25,20 +25,28 @@
     <nBoxesY> 40 </nBoxesY>
     <nBoxesZ> 40 </nBoxesZ>
   </collectionParameters>
-  <sources>
-    <numSources> 1 </numSources>
-    <SourceLine>
-      <ReleaseType_continuous>
+  <sourceParameters>
+    <source>
+      <souceStrength> 5 </souceStrength>
+      <particleSmall>
+        <particleDensity> 2.0 </particleDensity>
+        <particleDiameter> 5 </particleDiameter>
+        <depositionFlag>false</depositionFlag>
+        <decayConst> 0.0 </decayConst>
+      </particleSmall>
+      <releaseType_continuous>
         <parPerTimestep> 100 </parPerTimestep>
-      </ReleaseType_continuous>
-      <posX_0> 20.0 </posX_0>
-      <posY_0> 50.0 </posY_0>
-      <posZ_0> 20.0 </posZ_0>
-      <posX_1> 20.0 </posX_1>
-      <posY_1> 150.0 </posY_1>
-      <posZ_1> 20.0 </posZ_1>
-    </SourceLine>
-  </sources>
+      </releaseType_continuous>
+      <sourceGeometry_Line>
+        <posX_0> 20.0 </posX_0>
+        <posY_0> 50.0 </posY_0>
+        <posZ_0> 20.0 </posZ_0>
+        <posX_1> 20.0 </posX_1>
+        <posY_1> 150.0 </posY_1>
+        <posZ_1> 20.0 </posZ_1>
+      </sourceGeometry_Line>
+    </source>
+  </sourceParameters>
   <boundaryConditions>
     <xBCtype>exiting</xBCtype>
     <yBCtype>exiting</yBCtype>

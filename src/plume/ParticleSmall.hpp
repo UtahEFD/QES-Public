@@ -86,8 +86,7 @@ public:
   void setSettlingVelocity(const double &rhoAir, const double &nuAir) override
   {
     // std::cout << "setting vs for small particle, ";
-    if (d > 0) {
-      // std::cout << " d>0 in vs calc " << " d_m = " << d_m << " rho = " << rho << std::endl;
+    if (d > 0.0 && rho > rhoAir) {
       //  dimensionless grain diameter
       dstar = d_m * pow(9.81 / pow(nuAir, 2.0) * (rho / rhoAir - 1.), 1.0 / 3.0);
       // drag coefficent
