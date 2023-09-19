@@ -1,0 +1,46 @@
+<QESPlumeParameters>
+    <sourceParameters>
+
+        <source>
+            <releaseType_continuous>
+                <parPerTimestep> 400 </parPerTimestep>
+            </releaseType_continuous>
+            <sourceGeometry_Point>
+                <posX> 20.0 </posX>
+                <posY> 50.0 </posY>
+                <posZ> 70.0 </posZ>
+            </sourceGeometry_Point>
+            <particleLarge>
+                <!-- particleDensity in g/m3-->
+                <particleDensity> 1.0 </particleDensity>
+                <!-- particleDiameter in mu-m -->
+                <particleDiameter> 0.001 </particleDiameter>
+                <depositionFlag>true</depositionFlag>
+                <decayConst> 0.1 </decayConst>
+            </particleLarge>
+        </source>
+
+        <source>
+            <releaseType_duration>
+                <releaseStartTime> 100 </releaseStartTime>
+                <releaseEndTime> 100 </releaseEndTime>
+                <parPerTimestep> 400 </parPerTimestep>
+            </releaseType_duration>
+            <sourceGeometry_SphereShell>
+                <posX> 20.0 </posX>
+                <posY> 50.0 </posY>
+                <posZ> 70.0 </posZ>
+                <radius> 2.0 </radius>
+            </sourceGeometry_SphereShell>
+            <particleSmall>
+                <!-- particleDensity in g/m3-->
+                <particleDensity> 1.0 </particleDensity>
+                <!-- particleDiameter in mu-m -->
+                <particleDiameter> 0.001 </particleDiameter>
+                <depositionFlag>true</depositionFlag>
+                <decayConst> 0.1 </decayConst>
+            </particleSmall>
+        </source>
+
+    </sourceParameters>
+</QESPlumeParameters>
