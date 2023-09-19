@@ -107,6 +107,8 @@ public:
   //  move one cell at a time.
   void run(QEStime, WINDSGeneralData *, TURBGeneralData *, std::vector<QESNetCDFOutput *>);
 
+  void addSources(std::vector<Source *> &newSources);
+
   int getTotalParsToRelease() const { return totalParsToRelease; }// accessor
 
   int getNumReleasedParticles() const { return nParsReleased; }// accessor
@@ -210,6 +212,7 @@ protected:
   bool debug = false;
   bool verbose = false;
 
+private:
   void setParticleVals(WINDSGeneralData *, TURBGeneralData *, std::list<Particle *>);
   // this function gets sources from input data and adds them to the allSources vector
   // this function also calls the many check and calc functions for all the input sources
@@ -316,7 +319,6 @@ protected:
                       const std::string &);
 
 
-private:
   Plume()
   {}
 };

@@ -481,6 +481,12 @@ void Plume::getInputSources(PlumeInputData *PID)
   }
 }
 
+void Plume::addSources(std::vector<Source *> &newSources)
+{
+  allSources.insert(allSources.end(), newSources.begin(), newSources.end());
+}
+
+
 int Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
 
