@@ -97,7 +97,7 @@ void ParseSource::setSourceGeometry()
   }
 
   // the number of release types is 1, so now set the public release type to be the one that we have
-  m_sourceType = sGeom_tmp.at(0);
+  m_sourceGeometry = sGeom_tmp.at(0);
 }
 
 void ParseSource::setParticleType()
@@ -136,7 +136,7 @@ void ParseSource::checkPosInfo(const double &domainXstart,
                                const double &domainZstart,
                                const double &domainZend)
 {
-  m_sourceType->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
+  m_sourceGeometry->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
 }
 
 int Source::emitParticles(const float &dt,
@@ -153,7 +153,7 @@ int Source::emitParticles(const float &dt,
       m_protoParticle->setParticleParameters(cPar);
       m_sourceGeometry->setInitialPosition(cPar);
 
-      // cPar->m = sourceStrength / m_rType->m_numPar;
+      cPar->m = sourceStrength / m_releaseType->m_numPar;
       cPar->m_kg = cPar->m * (1.0E-3);
       cPar->m_o = cPar->m;
       cPar->m_kg_o = cPar->m * (1.0E-3);

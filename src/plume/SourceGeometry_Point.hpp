@@ -51,10 +51,7 @@ private:
   double posX = -1.0;
   double posY = -1.0;
   double posZ = -1.0;
-  //  double pRho = 0.0; // particle density (kg/m^3), variable read in from XML // LDU commented 11/16
-  //  double pD = 0.0; // particle diameter (microns), variable read in from XML // LDU commented 11/16
-  double sourceStrength = 0.0;// total mass released (g)
-  //  bool sourceDepFlag = true; // deposition flag (1 for on, 0 for off)
+
 protected:
 public:
   // Default constructor
@@ -68,19 +65,9 @@ public:
 
   void parseValues() override
   {
-    m_sShape = SourceShape::point;
-
-    // setReleaseType();
-    // setParticleType();
-
     parsePrimitive<double>(true, posX, "posX");
     parsePrimitive<double>(true, posY, "posY");
     parsePrimitive<double>(true, posZ, "posZ");
-
-    //    parsePrimitive<double>(false, pRho, "particleDensity"); // LDU commented 11/16
-    //    parsePrimitive<double>(false, pD, "particleDiameter"); // LDU commented 11/16
-    parsePrimitive<double>(false, sourceStrength, "sourceStrength");
-    //    parsePrimitive<bool>(false, sourceDepFlag, "depositionFlag"); // LDU commented 11/16
   }
 
 
@@ -90,6 +77,6 @@ public:
                     const double &domainYend,
                     const double &domainZstart,
                     const double &domainZend) override;
-  
+
   void setInitialPosition(Particle *ptr) override;
 };

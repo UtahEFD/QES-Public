@@ -74,9 +74,6 @@ public:
 
   void parseValues() override
   {
-    // setReleaseType();
-    // setParticleType();
-
     parsePrimitive<double>(true, m_minX, "minX");
     parsePrimitive<double>(true, m_minY, "minY");
     parsePrimitive<double>(true, m_minZ, "minZ");

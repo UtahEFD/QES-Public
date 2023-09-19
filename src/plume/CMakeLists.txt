@@ -46,7 +46,7 @@ SET( qesPlumeCoreSources
     SourceGeometry_Point.cpp SourceGeometry_Point.hpp
     SourceGeometry_SphereShell.cpp SourceGeometry_SphereShell.hpp
 
-    Source.cpp Source.hpp
+    Source.cpp
     
     WallReflection.cpp
     WallReflection_StairStep.cpp

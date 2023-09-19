@@ -71,8 +71,10 @@ class ParseSource : public ParseInterface
 private:
 protected:
   ParseParticle *m_protoParticle{};
-  SourceGeometry *m_sourceType{};
+  SourceGeometry *m_sourceGeometry{};
   ReleaseType *m_releaseType{};
+
+  double sourceStrength = 0.0;// total mass released (g)
 
 public:
   // this is the index of the source in the dispersion class overall list of sources
@@ -130,15 +132,6 @@ public:
     setSourceGeometry();
   }
 
-  // this function is used for setting the sourceIdx variable of this class, and has to be called by the class that sets up a vector of this class.
-  // this is required since each source does NOT know which index it has in the list without information from outside the parsing classes
-  // !!! this needs called by the class that sets up a vector of this class, using the index of the source from the vector
-  // LA note: could set this value directly without a function call, but this makes it seem more deliberate
-  void setSourceIdx(const int &sourceIdx_val)
-  {
-    sourceIdx = sourceIdx_val;
-  }
-
   // this function is for checking the source metadata to make sure all particles will be released within the domain.
   // There is one source so far (SourceFullDomain) that actually uses this function to set a few metaData variables
   //  specific to that source as well as to do checks to make sure particles stay within the domain. This is not a problem
@@ -159,9 +152,9 @@ public:
 class Source
 {
 private:
+protected:
   Source() = default;
 
-protected:
   ParticleTypeFactory *m_particleTypeFactory;
   ParseParticle *m_protoParticle;
   SourceGeometry *m_sourceGeometry;
@@ -176,12 +169,12 @@ protected:
 
   ParticleReleaseType m_rType;
 
+  double sourceStrength = 0.0;// total mass released (g)
 public:
   // this is the index of the source in the dispersion class overall list of sources
   // this is used to set the source ID for a given particle, to know from which source each particle comes from
   // !!! this will only be set correctly if a call to setSourceIdx() is done by the class that sets up a vector of this class.
   int sourceIdx = -1;
-  // Interp *interp;
 
   // accessor to particle type
   ParticleType particleType()
@@ -198,7 +191,10 @@ public:
   {
     return m_rType;
   }
-
+  int getNumParticles()
+  {
+    return m_releaseType->m_numPar;
+  }
   // this is a pointer to the release type, which is expected to be chosen by parseValues() by each source via a call to setReleaseType().
   // this data structure holds information like the total number of particles to be released by the source, the number of particles to release
   // per time for each source, and the start and end times to be releasing from the source.
@@ -218,14 +214,15 @@ public:
   Source(const int &sidx, const ParseSource *in)
   {
     sourceIdx = sidx;
+    sourceStrength = in->sourceStrength;// total mass released (g)
 
     m_protoParticle = in->m_protoParticle;
-    m_sourceGeometry = in->m_sourceType;
+    m_sourceGeometry = in->m_sourceGeometry;
     m_releaseType = in->m_releaseType;
 
     // set types
     m_pType = m_protoParticle->particleType;
-    m_sGeom = m_sourceGeometry->m_sShape;
+    m_sGeom = m_sourceGeometry->m_sGeom;
     m_rType = m_releaseType->parReleaseType;
 
     m_particleTypeFactory = new ParticleTypeFactory();

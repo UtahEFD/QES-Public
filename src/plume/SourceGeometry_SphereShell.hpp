@@ -47,6 +47,7 @@ class SourceGeometry_SphereShell : public SourceGeometry
 private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
   // guidelines for how to set these variables within an inherited source are given in SourceType.
+
   std::random_device rd;// Will be used to obtain a seed for the random number engine
   std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
   std::normal_distribution<> normalDistribution;
@@ -55,11 +56,11 @@ private:
   double posY = -1.0;
   double posZ = -1.0;
   double radius = -1.0;
-  double sourceStrength = 0.0;// total mass released (g)
+
 protected:
 public:
   // Default constructor
-  SourceGeometry_SphereShell() : SourceGeometry(SourceShape::sphereSurface)
+  SourceGeometry_SphereShell() : SourceGeometry(SourceShape::sphereShell)
   {
     prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
     normalDistribution = std::normal_distribution<>(0.0, 1.0);
@@ -71,15 +72,10 @@ public:
 
   void parseValues() override
   {
-    // setReleaseType();
-    // setParticleType();
-
     parsePrimitive<double>(true, posX, "posX");
     parsePrimitive<double>(true, posY, "posY");
     parsePrimitive<double>(true, posZ, "posZ");
     parsePrimitive<double>(true, radius, "radius");
-
-    parsePrimitive<double>(false, sourceStrength, "sourceStrength");
   }
 
 

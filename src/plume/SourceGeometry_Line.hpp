@@ -67,11 +67,6 @@ public:
 
   void parseValues() override
   {
-    // m_sShape = SourceShape::line;
-
-    // setReleaseType();
-    // setParticleType();
-
     parsePrimitive<double>(true, posX_0, "posX_0");
     parsePrimitive<double>(true, posY_0, "posY_0");
     parsePrimitive<double>(true, posZ_0, "posZ_0");

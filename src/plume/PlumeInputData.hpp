@@ -40,7 +40,7 @@
 #include "PlumeParameters.hpp"
 #include "CollectionParameters.hpp"
 #include "ParticleOutputParameters.hpp"
-#include "Sources.hpp"
+#include "SourceParameters.hpp"
 #include "BoundaryConditions.hpp"
 
 #include "util/ParseInterface.h"

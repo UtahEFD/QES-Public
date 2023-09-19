@@ -57,7 +57,6 @@ private:
   double xDomainEnd = -1.0;
   double yDomainEnd = -1.0;
   double zDomainEnd = -1.0;
-  double sourceStrength = 0.0;// total mass released (g)
 
   std::random_device rd;// Will be used to obtain a seed for the random number engine
   std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
@@ -77,12 +76,8 @@ public:
 
   void parseValues() override
   {
-    // setReleaseType();
-    // setParticleType();
-
-    parsePrimitive<double>(false, sourceStrength, "sourceStrength");
+    // no paramter
   }
-
 
   void checkPosInfo(const double &domainXstart,
                     const double &domainXend,

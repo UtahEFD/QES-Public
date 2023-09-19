@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "plume/Source.hpp"
-#include "plume/Sources.hpp"
+#include "plume/SourceParameters.hpp"
 #include "plume/SourceGeometry.hpp"
 #include "plume/SourceGeometry_Cube.hpp"
 #include "plume/SourceGeometry_FullDomain.hpp"
@@ -51,13 +51,18 @@ TEST_CASE("sources", "[in progress]")
 
   REQUIRE(numSources_Input == 2);
 
-  auto *source1 = new Source(0, tID->sourceParams->sources.at(0));
-  REQUIRE(source1->particleType() == ParticleType::large);
-  REQUIRE(source1->geometryType() == SourceShape::point);
-  REQUIRE(source1->releaseType() == ParticleReleaseType::continuous);
+  std::vector<Source *> sources;
+  for (auto s : tID->sourceParams->sources) {
+    sources.push_back(new Source((int)sources.size(), s));
+  }
 
-  auto *source2 = new Source(1, tID->sourceParams->sources.at(1));
-  REQUIRE(source2->particleType() == ParticleType::small);
-  REQUIRE(source2->geometryType() == SourceShape::sphereSurface);
-  REQUIRE(source2->releaseType() == ParticleReleaseType::duration);
+  REQUIRE(sources[0]->sourceIdx == 0);
+  REQUIRE(sources[0]->particleType() == ParticleType::large);
+  REQUIRE(sources[0]->geometryType() == SourceShape::point);
+  REQUIRE(sources[0]->releaseType() == ParticleReleaseType::continuous);
+
+  REQUIRE(sources[1]->sourceIdx == 1);
+  REQUIRE(sources[1]->particleType() == ParticleType::small);
+  REQUIRE(sources[1]->geometryType() == SourceShape::sphereShell);
+  REQUIRE(sources[1]->releaseType() == ParticleReleaseType::duration);
 }

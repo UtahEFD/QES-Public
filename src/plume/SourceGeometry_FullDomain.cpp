@@ -52,17 +52,17 @@ void SourceGeometry_FullDomain::checkPosInfo(const double &domainXstart, const d
 
 
   if (xDomainStart > xDomainEnd) {
-    std::cerr << "ERROR (SourceFullDomain::checkPosInfo): input xDomainStart is greater than input xDomainEnd! xDomainStart = \"" << xDomainStart
+    std::cerr << "[ERROR] \t SourceGeometry_FullDomain::checkPosInfo: \n\t\t input xDomainStart is greater than input xDomainEnd! xDomainStart = \"" << xDomainStart
               << "\" xDomainEnd = \"" << xDomainEnd << "\"" << std::endl;
     exit(1);
   }
   if (yDomainStart > yDomainEnd) {
-    std::cerr << "ERROR (SourceFullDomain::checkPosInfo): input yDomainStart is greater than input yDomainEnd! yDomainStart = \"" << yDomainStart
+    std::cerr << "[ERROR] \t SourceGeometry_FullDomain::checkPosInfo: \n\t\t input yDomainStart is greater than input yDomainEnd! yDomainStart = \"" << yDomainStart
               << "\" yDomainEnd = \"" << yDomainEnd << "\"" << std::endl;
     exit(1);
   }
   if (zDomainStart > zDomainEnd) {
-    std::cerr << "ERROR (SourceFullDomain::checkPosInfo): input zDomainStart is greater than input zDomainEnd! zDomainStart = \"" << zDomainStart
+    std::cerr << "[ERROR] \t SourceGeometry_FullDomain::checkPosInfo: \n\t\t input zDomainStart is greater than input zDomainEnd! zDomainStart = \"" << zDomainStart
               << "\" zDomainEnd = \"" << zDomainEnd << "\"" << std::endl;
     exit(1);
   }

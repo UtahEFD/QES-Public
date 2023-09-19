@@ -59,10 +59,5 @@ public:
   {
     parsePrimitive<int>(false, numSources, "numSources");
     parseMultiElements(false, sources, "source");
-    // parseMultiPolymorphs(false, sources, Polymorph<SourceGeometry, SourceGeometry_Cube>("SourceCube"));
-    // parseMultiPolymorphs(false, sources, Polymorph<SourceGeometry, SourceGeometry_FullDomain>("SourceFullDomain"));
-    // parseMultiPolymorphs(false, sources, Polymorph<SourceGeometry, SourceGeometry_Line>("SourceLine"));
-    // parseMultiPolymorphs(false, sources, Polymorph<SourceGeometry, SourceGeometry_Point>("SourcePoint"));
-    // parseMultiPolymorphs(false, sources, Polymorph<SourceGeometry, SourceGeometry_SphereShell>("SourceSphereSurface"));
   }
 };
