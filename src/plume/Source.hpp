@@ -127,6 +127,8 @@ public:
   //  This is in addition to any other variables required for an individual source that inherits from this class.
   void parseValues() override
   {
+    parsePrimitive<double>(false, sourceStrength, "sourceStrength");
+
     setReleaseType();
     setParticleType();
     setSourceGeometry();
