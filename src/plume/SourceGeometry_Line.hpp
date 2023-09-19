@@ -67,10 +67,10 @@ public:
 
   void parseValues() override
   {
-    m_sShape = SourceShape::line;
+    // m_sShape = SourceShape::line;
 
-    setReleaseType();
-    setParticleType();
+    // setReleaseType();
+    // setParticleType();
 
     parsePrimitive<double>(true, posX_0, "posX_0");
     parsePrimitive<double>(true, posY_0, "posY_0");
@@ -90,7 +90,5 @@ public:
                     const double &domainZstart,
                     const double &domainZend) override;
 
-  int emitParticles(const float &dt,
-                    const float &currTime,
-                    std::list<Particle *> &emittedParticles) override;
+  void setInitialPosition(Particle *ptr) override;
 };

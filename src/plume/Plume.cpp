@@ -201,7 +201,7 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
   // for every simulation time step
   // //////////////////////////////////////////
 
-  if (debug == true) {
+  if (debug) {
     // start recording the amount of time it takes to perform the simulation
     // time integration loop
     timers.startNewTimer("simulation time integration loop");
@@ -453,7 +453,7 @@ double Plume::calcCourantTimestep(const double &d,
 
 void Plume::getInputSources(PlumeInputData *PID)
 {
-  int numSources_Input = PID->sources->sources.size();
+  int numSources_Input = PID->sourceParams->sources.size();
 
   if (numSources_Input == 0) {
     std::cerr << "[ERROR]\t(Dispersion::getInputSources): there are no sources in the input file!"
@@ -466,24 +466,17 @@ void Plume::getInputSources(PlumeInputData *PID)
   totalParsToRelease = 0;
 
   for (auto sIdx = 0; sIdx < numSources_Input; sIdx++) {
-    // first create the pointer to the input source
-    SourceGeometry *sPtr;
-
-    // now point the pointer at the source
-    sPtr = PID->sources->sources.at(sIdx);
 
     // now do anything that is needed to the source via the pointer
-    sPtr->setSourceIdx(sIdx);
-    sPtr->m_rType->calcReleaseInfo(PID->plumeParams->timeStep, PID->plumeParams->simDur);
-    sPtr->m_rType->checkReleaseInfo(PID->plumeParams->timeStep, PID->plumeParams->simDur);
-    sPtr->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
+    PID->sourceParams->sources.at(sIdx)->checkReleaseInfo(PID->plumeParams->timeStep, PID->plumeParams->simDur);
+    PID->sourceParams->sources.at(sIdx)->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
 
-    // now determine the number of particles to release for the source and
-    // update the overall count
-    totalParsToRelease = totalParsToRelease + sPtr->m_rType->m_numPar;
+    // now determine the number of particles to release for the source and update the overall count
+    totalParsToRelease = totalParsToRelease + PID->sourceParams->sources.at(sIdx)->getNumParticles();
 
-    // now add the pointer that points to the source to the list of sources in
-    // dispersion
+    // create the pointer to the source with the input source class
+    Source *sPtr = new Source(sIdx, PID->sourceParams->sources.at(sIdx));
+    // now add the source pointer to the list of sources
     allSources.push_back(sPtr);
   }
 }
@@ -862,7 +855,7 @@ void Plume::setBCfunctions(const std::string &xBCtype,
   // https://www.learncpp.com/cpp-tutorial/78-function-pointers/
 
   // output some debug information
-  if (debug == true) {
+  if (debug) {
     std::cout << "xBCtype = \"" << xBCtype << "\"" << std::endl;
     std::cout << "yBCtype = \"" << yBCtype << "\"" << std::endl;
     std::cout << "zBCtype = \"" << zBCtype << "\"" << std::endl;

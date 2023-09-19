@@ -71,38 +71,10 @@ void SourceGeometry_FullDomain::checkPosInfo(const double &domainXstart, const d
   //  cause there is no easy checking method to be implemented here
 }
 
-
-int SourceGeometry_FullDomain::emitParticles(const float &dt,
-                                             const float &currTime,
-                                             std::list<Particle *> &emittedParticles)
+void SourceGeometry_FullDomain::setInitialPosition(Particle *ptr)
 {
-  // this function WILL fail if checkPosInfo() is not called, because for once checkPosInfo() acts to set the required data for using this function
-
-  // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
-  if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
-    for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
-
-      // Particle *cPar = new Particle();
-      Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
-      m_protoParticle->setParticleParameters(cPar);
-
-      // generate uniform dist in domain
-      cPar->xPos_init = uniformDistribution(prng) * (xDomainEnd - xDomainStart) + xDomainStart;
-      cPar->yPos_init = uniformDistribution(prng) * (yDomainEnd - yDomainStart) + yDomainStart;
-      cPar->zPos_init = uniformDistribution(prng) * (zDomainEnd - zDomainStart) + zDomainStart;
-
-      cPar->m = sourceStrength / m_rType->m_numPar;
-      cPar->m_kg = cPar->m * (1.0E-3);
-      cPar->m_o = cPar->m;
-      cPar->m_kg_o = cPar->m * (1.0E-3);
-
-      cPar->tStrt = currTime;
-
-      cPar->sourceIdx = sourceIdx;
-
-      emittedParticles.push_front(cPar);
-    }
-  }
-
-  return emittedParticles.size();// m_rType->m_parPerTimestep;
+  // generate uniform dist in domain
+  ptr->xPos_init = uniformDistribution(prng) * (xDomainEnd - xDomainStart) + xDomainStart;
+  ptr->yPos_init = uniformDistribution(prng) * (yDomainEnd - yDomainStart) + yDomainStart;
+  ptr->zPos_init = uniformDistribution(prng) * (zDomainEnd - zDomainStart) + zDomainStart;
 }

@@ -70,8 +70,8 @@ public:
   {
     m_sShape = SourceShape::point;
 
-    setReleaseType();
-    setParticleType();
+    // setReleaseType();
+    // setParticleType();
 
     parsePrimitive<double>(true, posX, "posX");
     parsePrimitive<double>(true, posY, "posY");
@@ -90,9 +90,6 @@ public:
                     const double &domainYend,
                     const double &domainZstart,
                     const double &domainZend) override;
-
-  // template <class parType>
-  int emitParticles(const float &dt,
-                    const float &currTime,
-                    std::list<Particle *> &emittedParticles) override;
+  
+  void setInitialPosition(Particle *ptr) override;
 };

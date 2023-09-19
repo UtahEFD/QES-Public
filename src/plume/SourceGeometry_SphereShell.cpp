@@ -39,7 +39,9 @@
 #include "winds/WINDSGeneralData.h"
 // #include "Interp.h"
 
-void SourceGeometry_SphereShell::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
+void SourceGeometry_SphereShell::checkPosInfo(const double &domainXstart, const double &domainXend,
+                                              const double &domainYstart, const double &domainYend,
+                                              const double &domainZstart, const double &domainZend)
 {
   if (radius < 0) {
     std::cerr << "ERROR (SourceCircle::checkPosInfo): input radius is negative! radius = \"" << radius << "\"" << std::endl;
@@ -64,40 +66,14 @@ void SourceGeometry_SphereShell::checkPosInfo(const double &domainXstart, const 
 }
 
 
-int SourceGeometry_SphereShell::emitParticles(const float &dt,
-                                              const float &currTime,
-                                              std::list<Particle *> &emittedParticles)
+void SourceGeometry_SphereShell::setInitialPosition(Particle *ptr)
 {
-  // warning!!! this is still a point source! Need to work out the geometry details still
-  // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
-  if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
-    for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
-
-      // Particle *cPar = new Particle();
-      Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
-      m_protoParticle->setParticleParameters(cPar);
-
-      // uniform distribution over surface of sphere
-      double nx = normalDistribution(prng);
-      double ny = normalDistribution(prng);
-      double nz = normalDistribution(prng);
-      double overn = 1 / sqrt(nx * nx + ny * ny + nz * nz);
-      cPar->xPos_init = posX + radius * nx * overn;
-      cPar->yPos_init = posY + radius * ny * overn;
-      cPar->zPos_init = posZ + radius * nz * overn;
-
-      cPar->m = sourceStrength / m_rType->m_numPar;
-      cPar->m_kg = cPar->m * (1.0E-3);
-      cPar->m_o = cPar->m;
-      cPar->m_kg_o = cPar->m * (1.0E-3);
-
-      cPar->tStrt = currTime;
-
-      cPar->sourceIdx = sourceIdx;
-
-      emittedParticles.push_front(cPar);
-    }
-  }
-
-  return emittedParticles.size();// m_rType->m_parPerTimestep;
+  // uniform distribution over surface of sphere
+  double nx = normalDistribution(prng);
+  double ny = normalDistribution(prng);
+  double nz = normalDistribution(prng);
+  double overn = 1 / sqrt(nx * nx + ny * ny + nz * nz);
+  ptr->xPos_init = posX + radius * nx * overn;
+  ptr->yPos_init = posY + radius * ny * overn;
+  ptr->zPos_init = posZ + radius * nz * overn;
 }

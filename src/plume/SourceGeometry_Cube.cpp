@@ -91,41 +91,10 @@ void SourceGeometry_Cube::checkPosInfo(const double &domainXstart, const double 
 }
 
 
-int SourceGeometry_Cube::emitParticles(const float &dt,
-                                       const float &currTime,
-                                       std::list<Particle *> &emittedParticles)
+void SourceGeometry_Cube::setInitialPosition(Particle *ptr)
 {
-  // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
-  if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
-    std::random_device rd;// Will be used to obtain a seed for the random number engine
-    std::mt19937 prng(rd());// Standard mersenne_twister_engine seeded with rd()
-    std::uniform_real_distribution<> uniformDistribution(0.0, 1.0);
-
-    for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
-
-      // Particle *cPar = new Particle();
-      Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
-      m_protoParticle->setParticleParameters(cPar);
-
-      // generate uniform dist in domain
-      cPar->xPos_init = uniformDistribution(prng) * (m_maxX - m_minX) + m_minX;
-      cPar->yPos_init = uniformDistribution(prng) * (m_maxY - m_minY) + m_minY;
-      cPar->zPos_init = uniformDistribution(prng) * (m_maxZ - m_minZ) + m_minZ;
-
-      cPar->m = sourceStrength / m_rType->m_numPar;
-      cPar->m_kg = cPar->m * (1.0E-3);
-      cPar->m_o = cPar->m;
-      cPar->m_kg_o = cPar->m * (1.0E-3);
-      // std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
-
-
-      cPar->tStrt = currTime;
-
-      cPar->sourceIdx = sourceIdx;
-
-      emittedParticles.push_front(cPar);
-    }
-  }
-
-  return emittedParticles.size();// m_rType->m_parPerTimestep;
+  // generate uniform dist in domain
+  ptr->xPos_init = uniformDistribution(prng) * (m_maxX - m_minX) + m_minX;
+  ptr->yPos_init = uniformDistribution(prng) * (m_maxY - m_minY) + m_minY;
+  ptr->zPos_init = uniformDistribution(prng) * (m_maxZ - m_minZ) + m_minZ;
 }

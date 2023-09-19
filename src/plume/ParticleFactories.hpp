@@ -35,10 +35,10 @@
 #pragma once
 
 #include "Particle.hpp"
-#include "plume/ParticleTracer.hpp"
-#include "plume/ParticleSmall.hpp"
-#include "plume/ParticleLarge.hpp"
-#include "plume/ParticleHeavyGas.hpp"
+#include "ParticleTracer.hpp"
+#include "ParticleSmall.hpp"
+#include "ParticleLarge.hpp"
+#include "ParticleHeavyGas.hpp"
 #include <unordered_map>
 
 class ParticleFactory

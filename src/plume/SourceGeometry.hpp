@@ -71,8 +71,8 @@ private:
   SourceGeometry() = default;
 
 protected:
-  ParticleTypeFactory *m_particleTypeFactory = nullptr;
-  ParseParticle *m_protoParticle = nullptr;
+  // ParticleTypeFactory *m_particleTypeFactory = nullptr;
+  // ParseParticle *m_protoParticle = nullptr;
 
 public:
   // this is the index of the source in the dispersion class overall list of sources
@@ -89,7 +89,7 @@ public:
   // this data structure holds information like the total number of particles to be released by the source, the number of particles to release
   // per time for each source, and the start and end times to be releasing from the source.
   // !!! this needs set by parseValues() in each source generated from input files by a call to the setReleaseType() function
-  ReleaseType *m_rType = nullptr;
+  // ReleaseType *m_rType = nullptr;
 
   // LA-future work: need a class similar to ReleaseType that describes the input source mass.
   //  This could be mass, mass per time, volume with a density, and volume per time with a density.
@@ -104,7 +104,7 @@ public:
   // constructor
   explicit SourceGeometry(const SourceShape &type) : m_sShape(type)
   {
-    m_particleTypeFactory = new ParticleTypeFactory();
+    // m_particleTypeFactory = new ParticleTypeFactory();
   }
 
   // destructor
@@ -117,7 +117,8 @@ public:
   // !!! To make this happen, each source is expected to call the function setReleaseType() inside their call of the function parseValues().
   // LA-notes: it may be possible to move rType_tmp into this function,
   //  but I'm not sure how two pointers pointing to the same variable will act once out of scope.
-  void setReleaseType()
+  /*
+   * void setReleaseType()
   {
     // this variable is a temporary variable to set the publicly available variable m_rType.
     // !!! To make this happen, each source is expected to call the function setReleaseType() inside their call of the function parseValues()
@@ -142,9 +143,10 @@ public:
 
     // the number of release types is 1, so now set the public release type to be the one that we have
     m_rType = rType_tmp.at(0);
-  }
+  } */
 
-  void setParticleType()
+  /*
+   * void setParticleType()
   {
     std::vector<ParseParticle *> protoParticle_tmp;
 
@@ -165,7 +167,7 @@ public:
 
     // the number of release types is 1, so now set the public release type to be the one that we have
     m_protoParticle = protoParticle_tmp.at(0);
-  }
+  } */
 
 
   // this function is used to parse all the variables for each source from the input .xml file
@@ -194,33 +196,8 @@ public:
   //  so long as it is done this way with with future sources very sparingly.
   //  In other words, avoid using this function to set variables unless you have to.
   // !!! each source needs to have this function manually called for them by whatever class sets up a vector of this class.
-  virtual void checkPosInfo(const double &domainXstart,
-                            const double &domainXend,
-                            const double &domainYstart,
-                            const double &domainYend,
-                            const double &domainZstart,
-                            const double &domainZend) = 0;
+  virtual void checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend) = 0;
 
 
-  // this function is for appending a new set of particles to the provided vector of particles
-  // the way this is done differs for each source inheriting from this class, but in general
-  //  the idea is to determine whether the input time is within the time range particles should be released
-  //  then the particle positions are set using the particles to release per time, geometry information, and
-  //  distribution information.
-  // !!! only the particle initial positions, release time, and soureIdx are set for each particle,
-  //  other particle information needs set by whatever called this function
-  //  right after the call to this function to make it work correctly.
-  // Note that this is a pure virtual function - enforces that the derived class MUST define this function
-  //  this is done by the = 0 at the end of the function
-  // LA-future work: There is still room for improvement to this function for each different source.
-  //  It requires determining additional input .xml file information for each source, which still needs worked out.
-  // LA-other notes: currently this is outputting the number of particles to release per time, which is the number of particles
-  //  appended to the list. According to Pete, the int output could be used for returning error messages,
-  //  kind of like the exit success or exit failure return methods.
-  // !!! Because the input vector is never empty if there is more than one source,
-  //   the size of the vector should NOT be used for output for this function!
-  //  In order to make this function work correctly, the number of particles to release per timestep needs to be the output
-  virtual int emitParticles(const float &dt,
-                            const float &currTime,
-                            std::list<Particle *> &emittedParticles) = 0;
+  virtual void setInitialPosition(Particle *ptr) = 0;
 };

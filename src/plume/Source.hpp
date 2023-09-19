@@ -70,9 +70,9 @@ class ParseSource : public ParseInterface
 {
 private:
 protected:
-  ParseParticle *m_protoParticle;
-  SourceGeometry *m_sourceType;
-  ReleaseType *m_rType;
+  ParseParticle *m_protoParticle{};
+  SourceGeometry *m_sourceType{};
+  ReleaseType *m_releaseType{};
 
 public:
   // this is the index of the source in the dispersion class overall list of sources
@@ -83,7 +83,7 @@ public:
 
   // this is a description variable for determining the source shape. May or may not be used.
   // !!! this needs set by parseValues() in each source generated from input files.
-  SourceShape m_sShape;
+  // SourceShape m_sShape;
 
   // this is a pointer to the release type, which is expected to be chosen by parseValues() by each source via a call to setReleaseType().
   // this data structure holds information like the total number of particles to be released by the source, the number of particles to release
@@ -106,6 +106,11 @@ public:
   // destructor
   virtual ~ParseSource() = default;
 
+  int getNumParticles()
+  {
+    return m_releaseType->m_numPar;
+  }
+
   void setReleaseType();
   void setSourceGeometry();
   void setParticleType();
@@ -118,13 +123,36 @@ public:
   // !!! in order for all the different combinations of input variables to work properly for each source, this function requires calls to the
   //  setReleaseType() function and manually setting the variable m_sShape in each version found in sources that inherit from this class.
   //  This is in addition to any other variables required for an individual source that inherits from this class.
-  virtual void parseValues()
+  void parseValues() override
   {
     setReleaseType();
     setParticleType();
     setSourceGeometry();
   }
 
+  // this function is used for setting the sourceIdx variable of this class, and has to be called by the class that sets up a vector of this class.
+  // this is required since each source does NOT know which index it has in the list without information from outside the parsing classes
+  // !!! this needs called by the class that sets up a vector of this class, using the index of the source from the vector
+  // LA note: could set this value directly without a function call, but this makes it seem more deliberate
+  void setSourceIdx(const int &sourceIdx_val)
+  {
+    sourceIdx = sourceIdx_val;
+  }
+
+  // this function is for checking the source metadata to make sure all particles will be released within the domain.
+  // There is one source so far (SourceFullDomain) that actually uses this function to set a few metaData variables
+  //  specific to that source as well as to do checks to make sure particles stay within the domain. This is not a problem
+  //  so long as it is done this way with future sources very sparingly.
+  //  In other words, avoid using this function to set variables unless you have to.
+  // !!! each source needs to have this function manually called for them by whatever class sets up a vector of this class.
+  void checkPosInfo(const double &domainXstart,
+                    const double &domainXend,
+                    const double &domainYstart,
+                    const double &domainYend,
+                    const double &domainZstart,
+                    const double &domainZend);
+
+  void checkReleaseInfo(const double &timestep, const double &simDur);
   friend class Source;
 };
 
@@ -136,8 +164,17 @@ private:
 protected:
   ParticleTypeFactory *m_particleTypeFactory;
   ParseParticle *m_protoParticle;
-  SourceGeometry *m_sourceType;
-  ReleaseType *m_rType;
+  SourceGeometry *m_sourceGeometry;
+  ReleaseType *m_releaseType;
+
+  // particle type
+  ParticleType m_pType;
+
+  // this is a description variable for determining the source shape. May or may not be used.
+  // !!! this needs set by parseValues() in each source generated from input files.
+  SourceShape m_sGeom;
+
+  ParticleReleaseType m_rType;
 
 public:
   // this is the index of the source in the dispersion class overall list of sources
@@ -146,9 +183,21 @@ public:
   int sourceIdx = -1;
   // Interp *interp;
 
-  // this is a description variable for determining the source shape. May or may not be used.
-  // !!! this needs set by parseValues() in each source generated from input files.
-  SourceShape m_sShape;
+  // accessor to particle type
+  ParticleType particleType()
+  {
+    return m_pType;
+  }
+  // accessor to geometry type
+  SourceShape geometryType()
+  {
+    return m_sGeom;
+  }
+  // accessor to release type
+  ParticleReleaseType releaseType()
+  {
+    return m_rType;
+  }
 
   // this is a pointer to the release type, which is expected to be chosen by parseValues() by each source via a call to setReleaseType().
   // this data structure holds information like the total number of particles to be released by the source, the number of particles to release
@@ -166,37 +215,24 @@ public:
 
 
   // constructor
-  explicit Source(const SourceShape &type) : m_sShape(type)
+  Source(const int &sidx, const ParseSource *in)
   {
+    sourceIdx = sidx;
+
+    m_protoParticle = in->m_protoParticle;
+    m_sourceGeometry = in->m_sourceType;
+    m_releaseType = in->m_releaseType;
+
+    // set types
+    m_pType = m_protoParticle->particleType;
+    m_sGeom = m_sourceGeometry->m_sShape;
+    m_rType = m_releaseType->parReleaseType;
+
     m_particleTypeFactory = new ParticleTypeFactory();
   }
 
   // destructor
   virtual ~Source() = default;
-
-  // this function is used for setting the sourceIdx variable of this class, and has to be called by the class that sets up a vector of this class.
-  // this is required since each source does NOT know which index it has in the list without information from outside the parsing classes
-  // !!! this needs called by the class that sets up a vector of this class, using the index of the source from the vector
-  // LA note: could set this value directly without a function call, but this makes it seem more deliberate
-  void setSourceIdx(const int &sourceIdx_val)
-  {
-    sourceIdx = sourceIdx_val;
-  }
-
-
-  // this function is for checking the source metadata to make sure all particles will be released within the domain.
-  // There is one source so far (SourceFullDomain) that actually uses this function to set a few metaData variables
-  //  specific to that source as well as to do checks to make sure particles stay within the domain. This is not a problem
-  //  so long as it is done this way with with future sources very sparingly.
-  //  In other words, avoid using this function to set variables unless you have to.
-  // !!! each source needs to have this function manually called for them by whatever class sets up a vector of this class.
-  virtual void checkPosInfo(const double &domainXstart,
-                            const double &domainXend,
-                            const double &domainYstart,
-                            const double &domainYend,
-                            const double &domainZstart,
-                            const double &domainZend) = 0;
-
 
   // this function is for appending a new set of particles to the provided vector of particles
   // the way this is done differs for each source inheriting from this class, but in general
@@ -206,10 +242,6 @@ public:
   // !!! only the particle initial positions, release time, and soureIdx are set for each particle,
   //  other particle information needs set by whatever called this function
   //  right after the call to this function to make it work correctly.
-  // Note that this is a pure virtual function - enforces that the derived class MUST define this function
-  //  this is done by the = 0 at the end of the function
-  // LA-future work: There is still room for improvement to this function for each different source.
-  //  It requires determining additional input .xml file information for each source, which still needs worked out.
   // LA-other notes: currently this is outputting the number of particles to release per time, which is the number of particles
   //  appended to the list. According to Pete, the int output could be used for returning error messages,
   //  kind of like the exit success or exit failure return methods.
@@ -218,5 +250,5 @@ public:
   //  In order to make this function work correctly, the number of particles to release per timestep needs to be the output
   virtual int emitParticles(const float &dt,
                             const float &currTime,
-                            std::list<Particle *> &emittedParticles) = 0;
+                            std::list<Particle *> &emittedParticles);
 };

@@ -41,7 +41,9 @@
 #include <cmath>
 // #include "Interp.h"
 
-void SourceGeometry_Point::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
+void SourceGeometry_Point::checkPosInfo(const double &domainXstart, const double &domainXend,
+                                        const double &domainYstart, const double &domainYend,
+                                        const double &domainZstart, const double &domainZend)
 {
   if (posX < domainXstart || posX > domainXend) {
     std::cerr << "ERROR (SourcePoint::checkPosInfo): input posX is outside of domain! posX = \"" << posX
@@ -61,34 +63,10 @@ void SourceGeometry_Point::checkPosInfo(const double &domainXstart, const double
 }
 
 // template <class typeid(parType).name()>
-int SourceGeometry_Point::emitParticles(const float &dt,
-                                        const float &currTime,
-                                        std::list<Particle *> &emittedParticles)
+void SourceGeometry_Point::setInitialPosition(Particle *ptr)
 {
-  // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
-  if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
-
-    for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
-      Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
-      m_protoParticle->setParticleParameters(cPar);
-
-      // set initial position
-      cPar->xPos_init = posX;
-      cPar->yPos_init = posY;
-      cPar->zPos_init = posZ;
-
-      cPar->m = sourceStrength / m_rType->m_numPar;
-      cPar->m_kg = cPar->m * (1.0E-3);
-      cPar->m_o = cPar->m;
-      cPar->m_kg_o = cPar->m * (1.0E-3);
-
-      cPar->tStrt = currTime;
-
-      cPar->sourceIdx = sourceIdx;
-
-      emittedParticles.push_front(cPar);
-    }
-  }
-
-  return emittedParticles.size();// m_rType->m_parPerTimestep;
+  // set initial position
+  ptr->xPos_init = posX;
+  ptr->yPos_init = posY;
+  ptr->zPos_init = posZ;
 }

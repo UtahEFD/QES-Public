@@ -55,11 +55,18 @@ private:
   double m_maxY = -1.0;
   double m_maxZ = -1.0;
   double sourceStrength = 0.0;// total mass released (g)
+
+  std::random_device rd;// Will be used to obtain a seed for the random number engine
+  std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
+  std::uniform_real_distribution<> uniformDistribution;
+
 protected:
 public:
   // Default constructor
   SourceGeometry_Cube() : SourceGeometry(SourceShape::cube)
   {
+    prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
+    uniformDistribution = std::uniform_real_distribution<>(0.0, 1.0);
   }
 
   // destructor
@@ -67,8 +74,8 @@ public:
 
   void parseValues() override
   {
-    setReleaseType();
-    setParticleType();
+    // setReleaseType();
+    // setParticleType();
 
     parsePrimitive<double>(true, m_minX, "minX");
     parsePrimitive<double>(true, m_minY, "minY");
@@ -88,8 +95,5 @@ public:
                     const double &domainZstart,
                     const double &domainZend) override;
 
-
-  int emitParticles(const float &dt,
-                    const float &currTime,
-                    std::list<Particle *> &emittedParticles) override;
+  void setInitialPosition(Particle *ptr) override;
 };

@@ -39,7 +39,9 @@
 #include "winds/WINDSGeneralData.h"
 // #include "Interp.h"
 
-void SourceGeometry_Line::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
+void SourceGeometry_Line::checkPosInfo(const double &domainXstart, const double &domainXend,
+                                       const double &domainYstart, const double &domainYend,
+                                       const double &domainZstart, const double &domainZend)
 {
   if (posX_0 < domainXstart || posX_0 > domainXend) {
     std::cerr << "ERROR (SourceLine::checkPosInfo): input posX_0 is outside of domain! posX_0 = \"" << posX_0
@@ -75,41 +77,14 @@ void SourceGeometry_Line::checkPosInfo(const double &domainXstart, const double 
 }
 
 
-int SourceGeometry_Line::emitParticles(const float &dt,
-                                       const float &currTime,
-                                       std::list<Particle *> &emittedParticles)
+void SourceGeometry_Line::setInitialPosition(Particle *ptr)
 {
-  // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
-  if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
-    for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
-
-      // Particle *cPar = new Particle();
-      Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
-      m_protoParticle->setParticleParameters(cPar);
-
-      // generate random point on line between m_pt0 and m_pt1
-      double diffX = posX_1 - posX_0;
-      double diffY = posY_1 - posY_0;
-      double diffZ = posZ_1 - posZ_0;
-      float t = drand48();
-      cPar->xPos_init = posX_0 + t * diffX;
-      cPar->yPos_init = posY_0 + t * diffY;
-      cPar->zPos_init = posZ_0 + t * diffZ;
-
-      cPar->m = sourceStrength / m_rType->m_numPar;
-      cPar->m_kg = cPar->m * (1.0E-3);
-      cPar->m_o = cPar->m;
-      cPar->m_kg_o = cPar->m * (1.0E-3);
-      // std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
-
-
-      cPar->tStrt = currTime;
-
-      cPar->sourceIdx = sourceIdx;
-
-      emittedParticles.push_front(cPar);
-    }
-  }
-
-  return emittedParticles.size();// m_rType->m_parPerTimestep;
+  // generate random point on line between m_pt0 and m_pt1
+  double diffX = posX_1 - posX_0;
+  double diffY = posY_1 - posY_0;
+  double diffZ = posZ_1 - posZ_0;
+  float t = drand48();
+  ptr->xPos_init = posX_0 + t * diffX;
+  ptr->yPos_init = posY_0 + t * diffY;
+  ptr->zPos_init = posZ_0 + t * diffZ;
 }

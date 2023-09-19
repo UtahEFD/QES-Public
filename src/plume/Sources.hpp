@@ -38,7 +38,7 @@
 
 #pragma once
 
-#include "SourceGeometry.hpp"
+#include "Source.hpp"
 #include "SourceGeometry_Cube.hpp"
 #include "SourceGeometry_FullDomain.hpp"
 #include "SourceGeometry_Line.hpp"
@@ -48,20 +48,21 @@
 #include "util/ParseInterface.h"
 
 
-class Sources : public ParseInterface
+class SourceParameters : public ParseInterface
 {
 private:
 public:
   int numSources;// number of sources, you fill in source information for each source next
-  std::vector<SourceGeometry *> sources;// source type and the collection of all the different sources from input
+  std::vector<ParseSource *> sources;// source type and the collection of all the different sources from input
 
   virtual void parseValues()
   {
     parsePrimitive<int>(false, numSources, "numSources");
-    parseMultiPolymorphs(false, sources, Polymorph<SourceGeometry, SourceGeometry_Cube>("SourceCube"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceGeometry, SourceGeometry_FullDomain>("SourceFullDomain"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceGeometry, SourceGeometry_Line>("SourceLine"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceGeometry, SourceGeometry_Point>("SourcePoint"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceGeometry, SourceGeometry_SphereShell>("SourceSphereSurface"));
+    parseMultiElements(false, sources, "source");
+    // parseMultiPolymorphs(false, sources, Polymorph<SourceGeometry, SourceGeometry_Cube>("SourceCube"));
+    // parseMultiPolymorphs(false, sources, Polymorph<SourceGeometry, SourceGeometry_FullDomain>("SourceFullDomain"));
+    // parseMultiPolymorphs(false, sources, Polymorph<SourceGeometry, SourceGeometry_Line>("SourceLine"));
+    // parseMultiPolymorphs(false, sources, Polymorph<SourceGeometry, SourceGeometry_Point>("SourcePoint"));
+    // parseMultiPolymorphs(false, sources, Polymorph<SourceGeometry, SourceGeometry_SphereShell>("SourceSphereSurface"));
   }
 };

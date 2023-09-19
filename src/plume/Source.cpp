@@ -46,9 +46,9 @@ void ParseSource::setReleaseType()
   std::vector<ReleaseType *> rType_tmp;
 
   // first parse all the release types into the temporary variable rType_tmp
-  parseMultiPolymorphs(false, rType_tmp, Polymorph<ReleaseType, ReleaseType_instantaneous>("ReleaseType_instantaneous"));
-  parseMultiPolymorphs(false, rType_tmp, Polymorph<ReleaseType, ReleaseType_continuous>("ReleaseType_continuous"));
-  parseMultiPolymorphs(false, rType_tmp, Polymorph<ReleaseType, ReleaseType_duration>("ReleaseType_duration"));
+  parseMultiPolymorphs(false, rType_tmp, Polymorph<ReleaseType, ReleaseType_instantaneous>("releaseType_instantaneous"));
+  parseMultiPolymorphs(false, rType_tmp, Polymorph<ReleaseType, ReleaseType_continuous>("releaseType_continuous"));
+  parseMultiPolymorphs(false, rType_tmp, Polymorph<ReleaseType, ReleaseType_duration>("releaseType_duration"));
 
   // now if the number of release types is not 1, there was a problem, need to quit with an error
   if (rType_tmp.empty()) {
@@ -61,7 +61,7 @@ void ParseSource::setReleaseType()
   }
 
   // the number of release types is 1, so now set the public release type to be the one that we have
-  m_rType = rType_tmp.at(0);
+  m_releaseType = rType_tmp.at(0);
 }
 
 // This function uses the temporary variable rType_tmp to parse all the release types found in the .xml file for a given source,
@@ -79,20 +79,20 @@ void ParseSource::setSourceGeometry()
   std::vector<SourceGeometry *> sGeom_tmp;
 
   // first parse all the release types into the temporary variable rType_tmp
-  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<SourceGeometry, SourceGeometry_Cube>("SourceCube"));
-  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<SourceGeometry, SourceGeometry_FullDomain>("SourceFullDomain"));
-  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<SourceGeometry, SourceGeometry_Line>("SourceLine"));
-  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<SourceGeometry, SourceGeometry_Point>("SourcePoint"));
-  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<SourceGeometry, SourceGeometry_SphereShell>("SourceSphereSurface"));
+  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<SourceGeometry, SourceGeometry_Cube>("sourceGeometry_Cube"));
+  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<SourceGeometry, SourceGeometry_FullDomain>("sourceGeometry_FullDomain"));
+  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<SourceGeometry, SourceGeometry_Line>("sourceGeometry_Line"));
+  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<SourceGeometry, SourceGeometry_Point>("sourceGeometry_Point"));
+  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<SourceGeometry, SourceGeometry_SphereShell>("sourceGeometry_SphereShell"));
 
 
   // now if the number of release types is not 1, there was a problem, need to quit with an error
   if (sGeom_tmp.empty()) {
-    std::cerr << "ERROR (SourceType::setReleaseType): there was no input releaseType!" << std::endl;
+    std::cerr << "ERROR (SourceType::setSourceGeometry): there was no input Source Geometry!" << std::endl;
     exit(1);
   }
   if (sGeom_tmp.size() > 1) {
-    std::cerr << "ERROR (SourceType::setReleaseType): there was more than one input releaseType!" << std::endl;
+    std::cerr << "ERROR (SourceType::setSourceGeometry): there was more than one input geometry!" << std::endl;
     exit(1);
   }
 
@@ -104,10 +104,10 @@ void ParseSource::setParticleType()
 {
   std::vector<ParseParticle *> protoParticle_tmp;
 
-  parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticleTracer>("ParticleTracer"));
-  parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticleSmall>("ParticleSmall"));
-  parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticleLarge>("ParticleLarge"));
-  parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticleHeavyGas>("ParticleHeavyGas"));
+  parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticleTracer>("particleTracer"));
+  parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticleSmall>("particleSmall"));
+  parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticleLarge>("particleLarge"));
+  parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticleHeavyGas>("particleHeavyGas"));
 
   if (protoParticle_tmp.empty()) {
     // std::cerr << "ERROR (SourceType::setParticleType): there was no input particle type!" << std::endl;
@@ -121,4 +121,52 @@ void ParseSource::setParticleType()
 
   // the number of release types is 1, so now set the public release type to be the one that we have
   m_protoParticle = protoParticle_tmp.at(0);
+}
+
+void ParseSource::checkReleaseInfo(const double &timestep, const double &simDur)
+{
+  m_releaseType->calcReleaseInfo(timestep, simDur);
+  m_releaseType->checkReleaseInfo(timestep, simDur);
+}
+
+void ParseSource::checkPosInfo(const double &domainXstart,
+                               const double &domainXend,
+                               const double &domainYstart,
+                               const double &domainYend,
+                               const double &domainZstart,
+                               const double &domainZend)
+{
+  m_sourceType->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
+}
+
+int Source::emitParticles(const float &dt,
+                          const float &currTime,
+                          std::list<Particle *> &emittedParticles)
+{
+  // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
+  if (currTime >= m_releaseType->m_releaseStartTime && currTime <= m_releaseType->m_releaseEndTime) {
+
+    for (int pidx = 0; pidx < m_releaseType->m_parPerTimestep; pidx++) {
+
+      // Particle *cPar = new Particle();
+      Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
+      m_protoParticle->setParticleParameters(cPar);
+      m_sourceGeometry->setInitialPosition(cPar);
+
+      // cPar->m = sourceStrength / m_rType->m_numPar;
+      cPar->m_kg = cPar->m * (1.0E-3);
+      cPar->m_o = cPar->m;
+      cPar->m_kg_o = cPar->m * (1.0E-3);
+      // std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
+
+
+      cPar->tStrt = currTime;
+
+      cPar->sourceIdx = sourceIdx;
+
+      emittedParticles.push_front(cPar);
+    }
+  }
+
+  return emittedParticles.size();// m_rType->m_parPerTimestep;
 }
