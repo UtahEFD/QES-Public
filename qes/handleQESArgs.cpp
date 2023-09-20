@@ -75,52 +75,7 @@ void QESArgs::processArguments(int argc, char *argv[])
     QESout::setVerbose();
   }
 
-  std::cout << "Summary of QES options: " << std::endl;
-  std::cout << "----------------------------" << std::endl;
-
-  if (solveWind) {
-    if (solveType == CPU_Type)
-#ifdef _OPENMP
-      std::cout << "Wind Solver:\t\t ON\t [Red/Black Solver (CPU)]" << std::endl;
-#else
-      std::cout << "Wind Solver:\t\t ON\t [Serial solver (CPU)]" << std::endl;
-#endif
-    else if (solveType == DYNAMIC_P)
-      std::cout << "Wind Solver:\t\t ON\t [Dynamic Parallel solver (GPU)]" << std::endl;
-    else if (solveType == Global_M)
-      std::cout << "Wind Solver:\t\t ON\t [Global memory solver (GPU)]" << std::endl;
-    else if (solveType == Shared_M)
-      std::cout << "Wind Solver:\t\t ON\t [Shared memory solver (GPU)]" << std::endl;
-    else
-      std::cout << "[WARNING]\t the wind fields are not being calculated" << std::endl;
-  }
-
-  if (compTurb) {
-    std::cout << "Turbulence model:\t ON" << std::endl;
-  } else {
-    std::cout << "Turbulence model:\t OFF" << std::endl;
-  }
-
-  if (compPlume) {
-    std::cout << "Plume model:\t\t ON" << std::endl;
-  } else {
-    std::cout << "Plume model:\t\t OFF" << std::endl;
-  }
-
-  if (verbose) {
-    std::cout << "Verbose:\t\t ON" << std::endl;
-  } else {
-    std::cout << "Verbose:\t\t OFF" << std::endl;
-  }
-
-  std::cout << "----------------------------" << std::endl;
-
-  std::cout << "qesWindsParamFile set to " << qesWindsParamFile << std::endl;
-  if (compPlume) {
-    std::cout << "qesPlumeParamFile set to " << qesPlumeParamFile << std::endl;
-  }
-
-  std::cout << "----------------------------" << std::endl;
+  doParticleDataOutput = isSet("doParticleDataOutput");
 
   isSet("outbasename", netCDFFileBasename);
   if (!netCDFFileBasename.empty()) {
@@ -136,9 +91,6 @@ void QESArgs::processArguments(int argc, char *argv[])
       netCDFFileWksp.append("_windsWk.nc");
     }
 
-    // [FM] the output of turbulence field linked to the flag compTurb
-    // -> subject to change
-    turbOutput = compTurb;// isSet("turbout");
     if (turbOutput) {
       netCDFFileTurb = netCDFFileBasename;
       netCDFFileTurb.append("_turbOut.nc");
@@ -156,31 +108,9 @@ void QESArgs::processArguments(int argc, char *argv[])
     // }
     if (compPlume) {
       outputPlumeFile = netCDFFileBasename + "_plumeOut.nc";
-
-      doParticleDataOutput = isSet("doParticleDataOutput");
-
       if (doParticleDataOutput) {
         outputParticleDataFile = netCDFFileBasename + "_particleInfo.nc";
       }
-    }
-
-    if (!netCDFFileVisu.empty()) {
-      std::cout << "[WINDS]\t Visualization NetCDF output file set:\t " << netCDFFileVisu << std::endl;
-    }
-    if (!netCDFFileWksp.empty()) {
-      std::cout << "[WINDS]\t Workspace NetCDF output file set:\t " << netCDFFileWksp << std::endl;
-    }
-    if (!filenameTerrain.empty()) {
-      std::cout << "[WINDS]\t Terrain triangle mesh output set:\t " << filenameTerrain << std::endl;
-    }
-    if (!netCDFFileTurb.empty()) {
-      std::cout << "[TURB]\t Turbulence NetCDF output file set:\t " << netCDFFileTurb << std::endl;
-    }
-    if (!outputPlumeFile.empty()) {
-      std::cout << "[PLUME]\t Plume NetCDF output file set:\t\t " << outputPlumeFile << std::endl;
-    }
-    if (!outputParticleDataFile.empty()) {
-      std::cout << "[PLUME]\t Particle NetCDF output file set:\t " << outputParticleDataFile << std::endl;
     }
 
   } else {
@@ -193,6 +123,64 @@ void QESArgs::processArguments(int argc, char *argv[])
 
     // doEulDataOutput = false;
     doParticleDataOutput = false;
+  }
+
+  std::cout << "Summary of QES options: " << std::endl;
+  std::cout << "----------------------------" << std::endl;
+  if (solveWind) {
+    if (solveType == CPU_Type)
+#ifdef _OPENMP
+      std::cout << "Wind Solver:\t\t ON\t [Red/Black Solver (CPU)]" << std::endl;
+#else
+      std::cout << "Wind Solver:\t\t ON\t [Serial solver (CPU)]" << std::endl;
+#endif
+    else if (solveType == DYNAMIC_P)
+      std::cout << "Wind Solver:\t\t ON\t [Dynamic Parallel solver (GPU)]" << std::endl;
+    else if (solveType == Global_M)
+      std::cout << "Wind Solver:\t\t ON\t [Global memory solver (GPU)]" << std::endl;
+    else if (solveType == Shared_M)
+      std::cout << "Wind Solver:\t\t ON\t [Shared memory solver (GPU)]" << std::endl;
+    else
+      std::cout << "[WARNING]\t the wind fields are not being calculated" << std::endl;
+  }
+  if (compTurb) {
+    std::cout << "Turbulence model:\t ON" << std::endl;
+  } else {
+    std::cout << "Turbulence model:\t OFF" << std::endl;
+  }
+  if (compPlume) {
+    std::cout << "Plume model:\t\t ON" << std::endl;
+  } else {
+    std::cout << "Plume model:\t\t OFF" << std::endl;
+  }
+  if (verbose) {
+    std::cout << "Verbose:\t\t ON" << std::endl;
+  } else {
+    std::cout << "Verbose:\t\t OFF" << std::endl;
+  }
+  std::cout << "----------------------------" << std::endl;
+  std::cout << "qesWindsParamFile set to " << qesWindsParamFile << std::endl;
+  if (compPlume) {
+    std::cout << "qesPlumeParamFile set to " << qesPlumeParamFile << std::endl;
+  }
+  std::cout << "----------------------------" << std::endl;
+  if (!netCDFFileVisu.empty()) {
+    std::cout << "[WINDS]\t Visualization NetCDF output file set:\t " << netCDFFileVisu << std::endl;
+  }
+  if (!netCDFFileWksp.empty()) {
+    std::cout << "[WINDS]\t Workspace NetCDF output file set:\t " << netCDFFileWksp << std::endl;
+  }
+  if (!filenameTerrain.empty()) {
+    std::cout << "[WINDS]\t Terrain triangle mesh output set:\t " << filenameTerrain << std::endl;
+  }
+  if (!netCDFFileTurb.empty()) {
+    std::cout << "[TURB]\t Turbulence NetCDF output file set:\t " << netCDFFileTurb << std::endl;
+  }
+  if (!outputPlumeFile.empty()) {
+    std::cout << "[PLUME]\t Plume NetCDF output file set:\t\t " << outputPlumeFile << std::endl;
+  }
+  if (!outputParticleDataFile.empty()) {
+    std::cout << "[PLUME]\t Particle NetCDF output file set:\t " << outputParticleDataFile << std::endl;
   }
 
   std::cout << "-------------------------------------------------------------------" << std::endl;

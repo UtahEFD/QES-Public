@@ -327,6 +327,7 @@ private:
 inline void Plume::showCurrentStatus()
 {
   std::cout << "----------------------------------------------------------------- \n";
+  std::cout << "[QES-Plume] \t End run particle summary \n";
   std::cout << "Current simulation time: " << simTimeCurr << "\n";
   std::cout << "Simulation run time: " << simTimeCurr - simTimeStart << "\n";
   std::cout << "Total number of particles released: " << nParsReleased << "\n";
