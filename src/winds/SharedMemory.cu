@@ -207,7 +207,7 @@ void SharedMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool 
   int numblocks = (WGD->numcell_cent / BLOCKSIZE) + 1;
   R.resize(WGD->numcell_cent, 0.0);
 
-  std::cout << "[Solver] Running Shared Memory Solver (GPU) ..." << std::endl;
+  std::cout << "[Solver]\t Running Shared Memory Solver (GPU) ..." << std::endl;
 
   std::vector<float> value(WGD->numcell_cent, 0.0);
   std::vector<float> bvalue(numblocks, 0.0);
@@ -296,9 +296,9 @@ void SharedMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool 
     iter += 1;
   }
 
-  printf("[Solver] Residual after %d itertations: %2.9f\n", iter, max_error[0]);
-  //std::cout << "Error:" << max_error[0] << "\n";
-  //std::cout << "Number of iterations:" << iter << "\n";// Print the number of iterations
+  printf("[Solver]\t Residual after %d itertations: %2.9f\n", iter, max_error[0]);
+  // std::cout << "Error:" << max_error[0] << "\n";
+  // std::cout << "Number of iterations:" << iter << "\n";// Print the number of iterations
 
   dim3 numberOfBlocks3(ceil((WGD->nx * WGD->ny * WGD->nz) / (float)(BLOCKSIZE)), 1, 1);
   // Invoke final velocity (Euler) kernel
@@ -330,5 +330,5 @@ void SharedMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool 
   auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
 
   std::chrono::duration<float> elapsed = finish - start;
-  std::cout << "Elapsed time: " << elapsed.count() << " s\n";// Print out elapsed execution time
+  std::cout << "\t\t Elapsed time: " << elapsed.count() << " s\n";// Print out elapsed execution time
 }

@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 
     // always supposed to output lagrToEulOutput data
     outputPlume.push_back(new PlumeOutput(PID, plume, arguments.outputPlumeFile));
-    if (arguments.doParticleDataOutput == true) {
+    if (arguments.doParticleDataOutput) {
       outputPlume.push_back(new PlumeOutputParticleData(PID, plume, arguments.outputParticleDataFile));
     }
   }
@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
     WGD->applyParametrizations(WID);
 
     // Run WINDS simulation code
-    solver->solve(WID, WGD, !arguments.solveWind);
+    solver->solve(WID, WGD, arguments.solveWind);
 
     // Run turbulence
     if (TGD != nullptr) {
@@ -215,22 +215,17 @@ Solver *setSolver(const int solveType, WINDSInputData *WID, WINDSGeneralData *WG
   Solver *solver = nullptr;
   if (solveType == CPU_Type) {
 #ifdef _OPENMP
-    std::cout << "Run Red/Black Solver (CPU) ..." << std::endl;
     solver = new Solver_CPU_RB(WID, WGD);
 #else
-    std::cout << "Run Serial Solver (CPU) ..." << std::endl;
     solver = new CPUSolver(WID, WGD);
 #endif
 
 #ifdef HAS_CUDA
   } else if (solveType == DYNAMIC_P) {
-    std::cout << "Run Dynamic Parallel Solver (GPU) ..." << std::endl;
     solver = new DynamicParallelism(WID, WGD);
   } else if (solveType == Global_M) {
-    std::cout << "Run Global Memory Solver (GPU) ..." << std::endl;
     solver = new GlobalMemory(WID, WGD);
   } else if (solveType == Shared_M) {
-    std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
     solver = new SharedMemory(WID, WGD);
 #endif
   } else {

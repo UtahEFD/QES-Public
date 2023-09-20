@@ -58,6 +58,9 @@ public:
   Solver_CPU_RB(const WINDSInputData *WID, WINDSGeneralData *WGD)
     : Solver(WID, WGD)
   {
+    std::cout << "-------------------------------------------------------------------" << std::endl;
+    std::cout << "[Solver]\t Initializing Red/Black Solver (CPU) ..." << std::endl;
+    std::cout << "-------------------------------------------------------------------" << std::endl;
   }
 
 protected:

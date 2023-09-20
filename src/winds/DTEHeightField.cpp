@@ -109,7 +109,7 @@ DTEHeightField::DTEHeightField(const std::vector<double> &heightField,
   // correct dimensions
 
   int step = 1;// step size is interpretted incorrectly here for
-    // fire meshes...
+               // fire meshes...
 
   // previously, with regular DEMs we can use the cellSize to
   // determine how we step over the terrain to create the actual
@@ -237,13 +237,14 @@ void DTEHeightField::loadImage()
 
 void DTEHeightField::load()
 {
+  std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "DTEHeightField loading DTE..." << std::endl;
 
   //
   // local variables to hold common variables related to the QES
   // domain
   //
-  //decomposition declarations are a C++17 extension
+  // decomposition declarations are a C++17 extension
   // auto [nx, ny, nz] = m_dim;
   int nx = std::get<0>(m_dim);
   int ny = std::get<1>(m_dim);
@@ -473,7 +474,7 @@ void DTEHeightField::load()
     printProgress((float)(iYline + 1) / (float)(m_nYSize - 1));
   }
   std::cout << std::endl;
-
+  std::cout << "-------------------------------------------------------------------" << std::endl;
   // At end of loop above, all height field data will have been
   // converted to a triangle mesh, stored in m_triList.
 }
@@ -492,9 +493,9 @@ void DTEHeightField::setDomain(Vector3Int &domain, Vector3 &grid)
   }
 
   auto start = std::chrono::high_resolution_clock::now();// Start
-    // recording
-    // execution
-    // time
+                                                         // recording
+                                                         // execution
+                                                         // time
 
   std::cout << "Setting Terrain Boundaries\n";
   for (int q = 0; q < 3; q++) {
@@ -821,9 +822,9 @@ void DTEHeightField::setCellPoints(int i, int j, int nx, int ny, int nz, std::ve
       // intermediate pair.---- != is essentially XOR
       else if ((intermed[0][2][0] != -1) != (intermed[0][2][1] != -1)) {
         int midP = (intermed[0][2][0] != -1 ? intermed[0][2][0] : intermed[0][2][1]);
-        //only need to check 1 and 3 corners
-        //since there is only one intermediate on the diagonal, either 0 or 2 exists in the cell
-        //because of this, if 1 or 3 exists in the cell the intermediate always connects to it
+        // only need to check 1 and 3 corners
+        // since there is only one intermediate on the diagonal, either 0 or 2 exists in the cell
+        // because of this, if 1 or 3 exists in the cell the intermediate always connects to it
         if ((cornerPos[1] == -1 && (intermed[0][1][0] == -1 || intermed[1][2][0] == -1))
             || (cornerPos[1] == 1 && (intermed[0][1][1] == -1 || intermed[1][2][1] == -1))
             || cornerPos[1] == 0)
@@ -847,8 +848,8 @@ void DTEHeightField::setCellPoints(int i, int j, int nx, int ny, int nz, std::ve
       // bot with all bots, then top to all bot intermediates
       else if (intermed[0][2][0] != -1 && intermed[0][2][1] != -1) {
         int midB = intermed[0][2][0], midT = intermed[0][2][1];
-        //for bot, check 0-3, 2-3, 0-1, 1-2  & Corner 1,3
-        //corners
+        // for bot, check 0-3, 2-3, 0-1, 1-2  & Corner 1,3
+        // corners
         if (cornerPos[1] >= 0)
           edgesInCell.push_back(Edge<int>(1, midT));
         if (cornerPos[1] < 0)
@@ -857,7 +858,7 @@ void DTEHeightField::setCellPoints(int i, int j, int nx, int ny, int nz, std::ve
           edgesInCell.push_back(Edge<int>(3, midT));
         if (cornerPos[3] < 0)
           edgesInCell.push_back(Edge<int>(3, midB));
-        //intermeds
+        // intermeds
         for (int first = 0; first < 3; first++)
           for (int second = first + 1; second < 4; second++)
             if ((first != 1 || second != 3) && (first != 0 || second != 2)) {
@@ -869,34 +870,34 @@ void DTEHeightField::setCellPoints(int i, int j, int nx, int ny, int nz, std::ve
                 edgesInCell.push_back(Edge<int>(intermed[first][second][1], midT));
             }
       }
-      //in this case 0 and 2 are either both above or below
-      //this breaks down into further cases
+      // in this case 0 and 2 are either both above or below
+      // this breaks down into further cases
       else {
-        //Note: there should be no case where all points are above or below
-        //this algorithm should not execute under that circumstance
+        // Note: there should be no case where all points are above or below
+        // this algorithm should not execute under that circumstance
 
-        int topBot = (cornerPos[0] > 0 ? 1 : 0);//if the diagonal is across the top, we make a mesh across the top
-        //else we make a mesh across the bottom
+        int topBot = (cornerPos[0] > 0 ? 1 : 0);// if the diagonal is across the top, we make a mesh across the top
+        // else we make a mesh across the bottom
 
-        if (cornerPos[1] != cornerPos[0] && cornerPos[3] != cornerPos[0])//if both corners are away from the diagonal
-        {//create a mesh on the top of the cell
+        if (cornerPos[1] != cornerPos[0] && cornerPos[3] != cornerPos[0])// if both corners are away from the diagonal
+        {// create a mesh on the top of the cell
           edgesInCell.push_back(Edge<int>(intermed[0][3][topBot], intermed[0][1][topBot]));
           edgesInCell.push_back(Edge<int>(intermed[0][3][topBot], intermed[1][2][topBot]));
           edgesInCell.push_back(Edge<int>(intermed[0][3][topBot], intermed[2][3][topBot]));
           edgesInCell.push_back(Edge<int>(intermed[0][1][topBot], intermed[1][2][topBot]));
           edgesInCell.push_back(Edge<int>(intermed[2][3][topBot], intermed[1][2][topBot]));
-          if (cornerPos[1] == (topBot == 1 ? -1 : 1))//if the diag is on the cell top, we check if the corner is out of the bottom vice versa.
-            edgesInCell.push_back(Edge<int>(intermed[0][1][1], intermed[1][2][0]));//make the intermediate face into triangles
-          if (cornerPos[3] == (topBot == 1 ? -1 : 1))//if the diag is on the cell top, we check if the corner is out of the bottom vice versa.
-            edgesInCell.push_back(Edge<int>(intermed[0][3][1], intermed[2][3][0]));//make the intermediate face into triangles
-        } else//at least one has to be
+          if (cornerPos[1] == (topBot == 1 ? -1 : 1))// if the diag is on the cell top, we check if the corner is out of the bottom vice versa.
+            edgesInCell.push_back(Edge<int>(intermed[0][1][1], intermed[1][2][0]));// make the intermediate face into triangles
+          if (cornerPos[3] == (topBot == 1 ? -1 : 1))// if the diag is on the cell top, we check if the corner is out of the bottom vice versa.
+            edgesInCell.push_back(Edge<int>(intermed[0][3][1], intermed[2][3][0]));// make the intermediate face into triangles
+        } else// at least one has to be
         {
-          //triangles from up corner to opposing intermediates
-          if (cornerPos[1] == cornerPos[0])//either c1 to c3 intermeds
+          // triangles from up corner to opposing intermediates
+          if (cornerPos[1] == cornerPos[0])// either c1 to c3 intermeds
           {
             edgesInCell.push_back(Edge<int>(1, intermed[0][3][topBot]));
             edgesInCell.push_back(Edge<int>(1, intermed[2][3][topBot]));
-          } else//or c3 to c1 intermeds
+          } else// or c3 to c1 intermeds
           {
             edgesInCell.push_back(Edge<int>(3, intermed[0][1][topBot]));
             edgesInCell.push_back(Edge<int>(3, intermed[1][2][topBot]));
