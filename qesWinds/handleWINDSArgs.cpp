@@ -76,6 +76,11 @@ void WINDSArgs::processArguments(int argc, char *argv[])
     exit(EXIT_SUCCESS);
   }
 
+  isSet("qesWindsParamFile", qesWindsParamFile);
+  if (qesWindsParamFile.empty()) {
+    QESout::error("qesWindsParamFile not specified");
+  }
+
   solveWind = !isSet("windsolveroff");
   isSet("solvetype", solveType);
 #ifndef HAS_CUDA
@@ -126,12 +131,7 @@ void WINDSArgs::processArguments(int argc, char *argv[])
 
   std::cout << "----------------------------" << std::endl;
 
-  isSet("qesWindsParamFile", qesWindsParamFile);
-  if (!qesWindsParamFile.empty()) {
-    std::cout << "qesWindsParamFile set to " << qesWindsParamFile << std::endl;
-  } else {
-    QESout::error("qesWindsParamFile not specified");
-  }
+  std::cout << "qesWindsParamFile set to " << qesWindsParamFile << std::endl;
 
   std::cout << "----------------------------" << std::endl;
 
@@ -164,16 +164,16 @@ void WINDSArgs::processArguments(int argc, char *argv[])
     }
 
     if (!netCDFFileVisu.empty()) {
-      std::cout << "[WINDS] \t Visualization NetCDF output file set:\t " << netCDFFileVisu << std::endl;
+      std::cout << "[WINDS]\t Visualization NetCDF output file set:\t " << netCDFFileVisu << std::endl;
     }
     if (!netCDFFileWksp.empty()) {
-      std::cout << "[WINDS] \t Workspace NetCDF output file set:\t " << netCDFFileWksp << std::endl;
+      std::cout << "[WINDS]\t Workspace NetCDF output file set:\t " << netCDFFileWksp << std::endl;
     }
     if (!filenameTerrain.empty()) {
-      std::cout << "[WINDS] \t Terrain triangle mesh output set:\t " << filenameTerrain << std::endl;
+      std::cout << "[WINDS]\t Terrain triangle mesh output set:\t " << filenameTerrain << std::endl;
     }
     if (!netCDFFileTurb.empty()) {
-      std::cout << "[TURB] \t Turbulence NetCDF output file set:\t " << netCDFFileTurb << std::endl;
+      std::cout << "[TURB]\t Turbulence NetCDF output file set:\t " << netCDFFileTurb << std::endl;
     }
 
   } else {

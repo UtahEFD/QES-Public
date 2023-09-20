@@ -934,9 +934,7 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
   input->getVariable("timestamp", NcVar_timestamp);
 
   if (NcVar_timestamp.isNull()) {
-    std::cout << "-----------------------------------------------------------------" << std::endl;
-    std::cout << "[WARNING] No timestamp in NetCDF file" << std::endl;
-    std::cout << "-----------------------------------------------------------------" << std::endl;
+    QESout::warning("No timestamp in NetCDF file");
     QEStime tmp("2022-01-01T00:00");
     for (int k = 0; k < nt; k++) {
       // ptime test= from_iso_extended_string(WID->metParams->sensors[i]->TS[t]->timeStamp)
