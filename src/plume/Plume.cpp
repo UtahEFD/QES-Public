@@ -59,8 +59,8 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   : particleList(0), allSources(0)
 {
   std::cout << "-------------------------------------------------------------------" << std::endl;
-  std::cout << "[Plume] \t Setting up simulation details " << std::endl;
-
+  std::cout << "[QES-Plume]\t Initialization of plume model...\n";
+  
   // copy debug information
   doParticleDataOutput = false;// arguments->doParticleDataOutput;
   outputSimInfoFile = false;// arguments->doSimInfoFileOutput;
@@ -81,7 +81,7 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   dxy = WGD->dxy;
 
   // Create instance of Interpolation class
-  std::cout << "[Plume] \t Interpolation Method set to: "
+  std::cout << "[QES-Plume] \t Interpolation Method set to: "
             << PID->plumeParams->interpMethod << std::endl;
   if (PID->plumeParams->interpMethod == "analyticalPowerLaw") {
     interp = new InterpPowerLaw(WGD, TGD, debug);
@@ -197,7 +197,7 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD, std::vector<QESNetCDFOutput *> outputVec)
 {
   auto startTimeAdvec = std::chrono::high_resolution_clock::now();
-  
+
   std::cout << "-------------------------------------------------------------------" << std::endl;
 
   // get the threshold velocity fluctuation to define rogue particles
@@ -223,11 +223,11 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
   QEStime nextUpdate = simTimeCurr + updateFrequency_timeLoop;
   float simTime = simTimeCurr - simTimeStart;
 
-  std::cout << "[Plume] \t Advecting particles from " << simTimeCurr << " to " << loopTimeEnd << "\n";
-  std::cout << "\t\t total run time = " << loopTimeEnd - simTimeCurr << " s \n";
-  std::cout << "\t\t simulation time = " << simTime << " s (iteration = " << simTimeIdx << "). \n";
+  std::cout << "[QES-Plume] \t Advecting particles from " << simTimeCurr << " to " << loopTimeEnd << ".\n"
+            << "\t\t Total run time = " << loopTimeEnd - simTimeCurr << " s "
+            << "(sim time = " << simTime << " s, iteration = " << simTimeIdx << "). \n";
   std::cout << "\t\t Particles: Released = " << nParsReleased << " "
-            << "Active = " << particleList.size() << std::endl;
+            << "Active = " << particleList.size() << "." << std::endl;
 
   // LA note: that this loop goes from 0 to nTimes-2, not nTimes-1. This is
   // because
@@ -363,7 +363,7 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
 
   }// end of time loop
 
-  std::cout << "[Plume] \t End of particles advection at Time = " << simTimeCurr
+  std::cout << "[QES-Plume] \t End of particles advection at Time = " << simTimeCurr
             << " s (iteration = " << simTimeIdx << "). \n";
   std::cout << "\t\t Particles: Released = " << nParsReleased << " "
             << "Active = " << particleList.size() << "." << std::endl;

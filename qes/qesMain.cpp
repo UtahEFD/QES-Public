@@ -202,8 +202,6 @@ int main(int argc, char *argv[])
   }
 
   if (plume != nullptr) {
-    std::cout << "[QES-Plume] \t Finished. \n";
-    std::cout << "End run particle summary \n";
     plume->showCurrentStatus();
   }
 
