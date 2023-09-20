@@ -68,21 +68,27 @@ public:
   float turbUpperBound;
   float backgroundMixing;
 
-  TURBParams()
+  TURBParams() : methodLocalMixing(0), save2file(false),
+                 filename(""), varname("mixlength"),
+                 flagNonLocalMixing(false),
+                 terrainWallFlag(2), buildingWallFlag(2),
+                 turbUpperBound(20.0), backgroundMixing(0.0)
   {}
   ~TURBParams()
   {}
 
   virtual void parseValues()
   {
-    methodLocalMixing = 0;
+
     parsePrimitive<int>(true, methodLocalMixing, "method");
-    save2file = false;
     parsePrimitive<bool>(false, save2file, "save");
-    filename = "";
     parsePrimitive<std::string>(false, filename, "LMfile");
-    varname = "mixlength";// default name
     parsePrimitive<std::string>(false, varname, "varname");
+    parsePrimitive<bool>(false, flagNonLocalMixing, "nonLocalMixing");
+    parsePrimitive<int>(false, terrainWallFlag, "terrainWallFlag");
+    parsePrimitive<int>(false, buildingWallFlag, "buildingWallFlag");
+    parsePrimitive<float>(false, turbUpperBound, "turbUpperBound");
+    parsePrimitive<float>(false, backgroundMixing, "backgroundMixing");
 
 #ifdef HAS_OPTIX
     // defaults for local mixing sample rates -- used with ray
@@ -111,7 +117,7 @@ public:
       methodLocalMixing = 0;
     }
 
-    if ((methodLocalMixing == 4 || save2file == true) && (filename == "")) {
+    if ((methodLocalMixing == 4 || save2file) && (filename.empty())) {
       std::string mess = "No local mixing file provided -> ";
       mess += "set method to height above terrain(methodLocalMixing = 0) ";
       QESout::warning(mess);
@@ -121,7 +127,7 @@ public:
       save2file = "false";
     }
 
-    if (filename != "") {
+    if (!filename.empty()) {
       filename = QESfs::get_absolute_path(filename);
     }
 
@@ -135,19 +141,5 @@ public:
         exit(EXIT_FAILURE);
       }
     }
-
-    flagNonLocalMixing = false;
-    parsePrimitive<bool>(false, flagNonLocalMixing, "nonLocalMixing");
-
-    terrainWallFlag = 2;
-    parsePrimitive<int>(false, terrainWallFlag, "terrainWallFlag");
-    buildingWallFlag = 2;
-    parsePrimitive<int>(false, buildingWallFlag, "buildingWallFlag");
-
-    turbUpperBound = 20.0;
-    parsePrimitive<float>(false, turbUpperBound, "turbUpperBound");
-
-    backgroundMixing = 0.0;
-    parsePrimitive<float>(false, backgroundMixing, "backgroundMixing");
   }
 };

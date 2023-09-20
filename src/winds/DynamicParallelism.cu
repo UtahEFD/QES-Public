@@ -139,7 +139,7 @@ __global__ void calculateError(float *d_lambda, float *d_lambda_old, int nx, int
     }
   }
 
-  //final step of the reduction is made in the mother kernel
+  // final step of the reduction is made in the mother kernel
   return;
 }
 
@@ -231,8 +231,8 @@ __global__ void SOR_iteration(float *d_lambda, float *d_lambda_old, int nx, int 
   }
 
   printf("[Solver] Residual after %d itertations: %2.9f\n", iter, error);
-  //printf("Error = %2.9f\n", error);
-  //printf("Number of iteration = %d\n", iter);
+  // printf("Error = %2.9f\n", error);
+  // printf("Number of iteration = %d\n", iter);
 }
 
 
@@ -240,7 +240,7 @@ DynamicParallelism::DynamicParallelism(const WINDSInputData *WID, WINDSGeneralDa
   : Solver(WID, WGD)
 {
   std::cout << "-------------------------------------------------------------------" << std::endl;
-  std::cout << "[Solver] Initialoization of Dynamic Parallelism Solver" << std::endl;
+  std::cout << "[Solver]\t Initialoization of Dynamic Parallelism Solver" << std::endl;
   int deviceCount = 0;
   cudaError_t error_id = cudaGetDeviceCount(&deviceCount);
 
@@ -344,13 +344,13 @@ void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD,
 
   std::vector<float> value(WGD->numcell_cent, 0.0);
   std::vector<float> bvalue(numblocks, 0.0);
-  //float *d_u0, *d_v0, *d_w0;
+  // float *d_u0, *d_v0, *d_w0;
   float *d_value, *d_bvalue;
   float *d_u, *d_v, *d_w;
   int *d_icellflag;
   float *d_dz_array;
 
-  std::cout << "[Solver] Running Dynamic Parallelim Solver (GPU) ..." << std::endl;
+  std::cout << "[Solver]\t Running Dynamic Parallelim Solver (GPU) ..." << std::endl;
 
   auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
 
@@ -442,5 +442,5 @@ void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD,
   auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
 
   std::chrono::duration<float> elapsed = finish - start;
-  std::cout << "Elapsed time for wind solver: " << elapsed.count() << " s\n";// Print out elapsed execution time
+  std::cout << "\t\t Elapsed time: " << elapsed.count() << " s\n";// Print out elapsed execution time
 }

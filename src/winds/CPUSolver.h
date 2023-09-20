@@ -54,6 +54,9 @@ public:
   CPUSolver(const WINDSInputData *WID, WINDSGeneralData *WGD)
     : Solver(WID, WGD)
   {
+    std::cout << "-------------------------------------------------------------------" << std::endl;
+    std::cout << "[Solver]\t Initializing Serial Solver (CPU) ..." << std::endl;
+    std::cout << "-------------------------------------------------------------------" << std::endl;
   }
 
 protected:

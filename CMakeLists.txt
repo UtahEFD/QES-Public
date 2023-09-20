@@ -15,7 +15,7 @@ CMAKE_POLICY(SET CMP0074 NEW)
 # This creates a variable we could use for tacking on to various folders
 # or install locations based on the version info.  It pulls the Verson information
 # from CMake based on the Version number provided in the PROJECT command.
-PROJECT(QES VERSION 2.0.2)
+PROJECT(QES VERSION 2.1.0)
 SET(QES_VERSION_INFO v${QES_VERSION_MAJOR}.${QES_VERSION_MINOR}.${QES_VERSION_PATCH})
 
 # The following will pass the version into the code as a preprocessor variable
