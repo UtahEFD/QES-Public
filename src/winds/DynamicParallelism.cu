@@ -331,9 +331,6 @@ DynamicParallelism::DynamicParallelism(const WINDSInputData *WID, WINDSGeneralDa
            (unsigned long long)memory_req);
 #endif
   std::cout << "[Solver] " << msg << std::endl;
-
-
-  std::cout << "-------------------------------------------------------------------" << std::endl;
 }
 
 

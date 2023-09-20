@@ -76,7 +76,6 @@ public:
   {
     std::cout << "-------------------------------------------------------------------" << std::endl;
     std::cout << "[Solver]\t Initializing Shared Memory Solver (GPU) ..." << std::endl;
-    std::cout << "-------------------------------------------------------------------" << std::endl;
   }
 
 protected:

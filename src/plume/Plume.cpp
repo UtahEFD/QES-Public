@@ -58,7 +58,7 @@ Plume::Plume(WINDSGeneralData *WGD, TURBGeneralData *TGD)
 Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   : particleList(0), allSources(0)
 {
-
+  std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "[Plume] \t Setting up simulation details " << std::endl;
 
   // copy debug information
@@ -197,6 +197,8 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD, std::vector<QESNetCDFOutput *> outputVec)
 {
   auto startTimeAdvec = std::chrono::high_resolution_clock::now();
+  
+  std::cout << "-------------------------------------------------------------------" << std::endl;
 
   // get the threshold velocity fluctuation to define rogue particles
   vel_threshold = 10.0 * getMaxVariance(TGD);

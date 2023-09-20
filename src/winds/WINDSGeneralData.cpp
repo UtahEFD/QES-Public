@@ -1372,7 +1372,6 @@ void WINDSGeneralData::printTimeProgress(int index)
             << timestamp[index] << std::endl;
   printf("%3d%% [%.*s%*s]\n", val, lpad, PBSTR, rpad, "");
   fflush(stdout);
-  std::cout << "-------------------------------------------------------------------" << std::endl;
 }
 
 
