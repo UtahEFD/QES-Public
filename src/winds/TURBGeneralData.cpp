@@ -40,7 +40,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
 {
 
   auto StartTime = std::chrono::high_resolution_clock::now();
-
+  std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "[QES-TURB]\t Initialization of turbulence model...\n";
   m_WGD = WGDin;
 
@@ -266,7 +266,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
 
 TURBGeneralData::TURBGeneralData(const std::string inputFile, WINDSGeneralData *WGDin)
 {
-
+  std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "[TURB Data] \t Loading QES-turb fields " << std::endl;
 
   m_WGD = WGDin;
@@ -380,6 +380,7 @@ TURBGeneralData::TURBGeneralData(const std::string inputFile, WINDSGeneralData *
 
 TURBGeneralData::TURBGeneralData(WINDSGeneralData *WGDin)
 {
+  std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "[QES-TURB]\t Initialization of turbulence model...\n";
   m_WGD = WGDin;
   // make local copy of grid information
@@ -479,7 +480,6 @@ TURBGeneralData::TURBGeneralData(WINDSGeneralData *WGDin)
 
 void TURBGeneralData::loadNetCDFData(int stepin)
 {
-
   std::cout << "[QES-TURB]\t loading data at step " << stepin << std::endl;
 
   // netCDF variables
@@ -517,8 +517,8 @@ void TURBGeneralData::run()
 {
 
   auto StartTime = std::chrono::high_resolution_clock::now();
-
-  std::cout << "[QES-TURB] \t Running turbulence model..." << std::endl;
+  std::cout << "-------------------------------------------------------------------" << std::endl;
+  std::cout << "[QES-TURB]\t Running turbulence model..." << std::endl;
 
   std::cout << "[QES-TURB]\t Computing friction velocity..." << std::endl;
   frictionVelocity();

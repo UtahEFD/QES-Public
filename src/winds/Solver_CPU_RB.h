@@ -60,7 +60,6 @@ public:
   {
     std::cout << "-------------------------------------------------------------------" << std::endl;
     std::cout << "[Solver]\t Initializing Red/Black Solver (CPU) ..." << std::endl;
-    std::cout << "-------------------------------------------------------------------" << std::endl;
   }
 
 protected:
