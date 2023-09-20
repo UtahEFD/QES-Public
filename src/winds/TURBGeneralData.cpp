@@ -291,7 +291,7 @@ TURBGeneralData::TURBGeneralData(const std::string inputFile, WINDSGeneralData *
   input->getVariable("timestamp", NcVar_timestamp);
 
   if (NcVar_timestamp.isNull()) {
-    std::cout << "[WARNING] No timestamp in NetCDF file" << std::endl;
+    QESout::warning("No timestamp in NetCDF file");
   }
 
   // make local copy of grid information

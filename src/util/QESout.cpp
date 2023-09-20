@@ -63,14 +63,15 @@ void splashScreen()
 
 void error(std::string out)
 {
-  std::cerr << "==============================================================" << std::endl;
-  std::cerr << "[ERROR] " << out << std::endl;
+  std::cerr << "\n===================================================================" << std::endl;
+  std::cerr << "[ERROR]\t " << out << std::endl;
+  std::cerr << "===================================================================" << std::endl;
   exit(EXIT_FAILURE);
 }
 
 void warning(std::string out)
 {
-  std::cerr << "[WARNING] " << out << std::endl;
+  std::cerr << "[!! WARNING !!]\t " << out << std::endl;
 }
 
 void setVerbose()
