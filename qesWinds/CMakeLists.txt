@@ -4,11 +4,13 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
 	CUDA_ADD_EXECUTABLE( qesWinds
-	  qesWindsMain.cpp
+			handleWINDSArgs.cpp
+			qesWindsMain.cpp
 	)
 ELSE ($CACHE{HAS_CUDA_SUPPORT})
 	ADD_EXECUTABLE( qesWinds
-	  qesWindsMain.cpp
+			handleWINDSArgs.cpp
+			qesWindsMain.cpp
 	)
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 

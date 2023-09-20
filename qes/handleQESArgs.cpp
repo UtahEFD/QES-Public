@@ -48,11 +48,13 @@ void QESArgs::processArguments(int argc, char *argv[])
 
   solveWind = !isSet("windsolveroff");
   isSet("solvetype", solveType);
+#ifndef HAS_CUDA
+  // if CUDA is not supported, force the solveType to be CPU no matter
+  solveType = CPU_Type;
+#endif
 
   compTurb = isSet("turbcomp");
   compPlume = isSet("qesPlumeParamFile", qesPlumeParamFile);
-  verbose = isSet("verbose");
-
   if (compPlume) {
     if (compTurb) {
       compTurb = true;
@@ -61,6 +63,11 @@ void QESArgs::processArguments(int argc, char *argv[])
       compTurb = true;
       turbOutput = false;
     }
+  }
+
+  verbose = isSet("verbose");
+  if (verbose) {
+    QESout::setVerbose();
   }
 
   std::cout << "Summary of QES options: " << std::endl;
@@ -104,8 +111,15 @@ void QESArgs::processArguments(int argc, char *argv[])
   std::cout << "----------------------------" << std::endl;
 
   isSet("qesWindsParamFile", qesWindsParamFile);
-  if (!qesWindsParamFile.empty()) std::cout << "qesWindsParamFile set to " << qesWindsParamFile << std::endl;
-  if (!qesPlumeParamFile.empty()) std::cout << "qesPlumeParamFile set to " << qesPlumeParamFile << std::endl;
+  if (!qesWindsParamFile.empty()) {
+    std::cout << "qesWindsParamFile set to " << qesWindsParamFile << std::endl;
+  } else {
+    QESout::error("qesWindsParamFile not specified");
+  }
+
+  if (!qesPlumeParamFile.empty()) {
+    std::cout << "qesPlumeParamFile set to " << qesPlumeParamFile << std::endl;
+  }
 
   std::cout << "----------------------------" << std::endl;
 
@@ -152,22 +166,22 @@ void QESArgs::processArguments(int argc, char *argv[])
     }
 
     if (!netCDFFileVisu.empty()) {
-      std::cout << "Visualization NetCDF output file set to " << netCDFFileVisu << std::endl;
+      std::cout << "[WINDS] \t Visualization NetCDF output file set:\t " << netCDFFileVisu << std::endl;
     }
     if (!netCDFFileWksp.empty()) {
-      std::cout << "Workspace NetCDF output file set to " << netCDFFileWksp << std::endl;
+      std::cout << "[WINDS] \t Workspace NetCDF output file set:\t " << netCDFFileWksp << std::endl;
     }
     if (!filenameTerrain.empty()) {
-      std::cout << "Terrain triangle mesh output set to " << filenameTerrain << std::endl;
+      std::cout << "[WINDS] \t Terrain triangle mesh output set:\t " << filenameTerrain << std::endl;
     }
     if (!netCDFFileTurb.empty()) {
-      std::cout << "Turbulence NetCDF output file set to " << netCDFFileTurb << std::endl;
+      std::cout << "[TURB] \t Turbulence NetCDF output file set:\t " << netCDFFileTurb << std::endl;
     }
     if (!outputPlumeFile.empty()) {
-      std::cout << "Plume NetCDF output file set to " << netCDFFileTurb << std::endl;
+      std::cout << "[PLUME]\t Plume NetCDF output file set:\t\t " << outputPlumeFile << std::endl;
     }
     if (!outputParticleDataFile.empty()) {
-      std::cout << "Particle NetCDF output file set to " << netCDFFileTurb << std::endl;
+      std::cout << "[PLUME]\t Particle NetCDF output file set:\t " << outputParticleDataFile << std::endl;
     }
 
   } else {
@@ -181,5 +195,6 @@ void QESArgs::processArguments(int argc, char *argv[])
     // doEulDataOutput = false;
     doParticleDataOutput = false;
   }
+  
   std::cout << "-------------------------------------------------------------------" << std::endl;
 }
