@@ -9,8 +9,6 @@
 
 #include "util/calcTime.h"
 
-
-#include "plume/handlePlumeArgs.hpp"
 #include "plume/PlumeInputData.hpp"
 #include "util/NetCDFInput.h"
 #include "util/QESout.h"

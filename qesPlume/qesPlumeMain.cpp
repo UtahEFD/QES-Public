@@ -43,7 +43,7 @@
 #include "util/calcTime.h"
 
 
-#include "plume/handlePlumeArgs.hpp"
+#include "handlePlumeArgs.hpp"
 #include "plume/PlumeInputData.hpp"
 #include "util/NetCDFInput.h"
 #include "util/QESout.h"
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
   }
 
   for (int index = 0; index < WGD->totalTimeIncrements; index++) {
-    //load data at
+    // load data at
     TGD->loadNetCDFData(index);
     WGD->loadNetCDFData(index);
 

@@ -55,7 +55,7 @@ WINDSArgs::WINDSArgs()
   reg("qesWindsParamFile", "Specifies input xml settings file", ArgumentParsing::STRING, 'q');
 
   reg("outbasename", "Specifies the basename for netcdf files", ArgumentParsing::STRING, 'o');
-  //reg("visuout", "Turns on the netcdf file to write visulatization results", ArgumentParsing::NONE, 'z');
+  // reg("visuout", "Turns on the netcdf file to write visulatization results", ArgumentParsing::NONE, 'z');
   reg("wkout", "Turns on the netcdf file to write wroking file", ArgumentParsing::NONE, 'w');
   // [FM] the output of turbulence field linked to the flag compTurb
   // reg("turbout", "Turns on the netcdf file to write turbulence file", ArgumentParsing::NONE, 'r');
@@ -76,59 +76,77 @@ void WINDSArgs::processArguments(int argc, char *argv[])
     exit(EXIT_SUCCESS);
   }
 
-  verbose = isSet("verbose");
-  if (verbose) {
-    std::cout << "Verbose Output: ON" << std::endl;
-    QESout::setVerbose();
-  }
-
-  solveWind = isSet("windsolveroff");
-  if (solveWind) std::cout << "the wind fields are not being calculated" << std::endl;
-
+  solveWind = !isSet("windsolveroff");
   isSet("solvetype", solveType);
-
 #ifndef HAS_CUDA
   // if CUDA is not supported, force the solveType to be CPU no matter
-  // what solveType is specified
-  std::cout << "CUDA Support Not Available - Strictly using CPU computations!" << std::endl;
   solveType = CPU_Type;
 #endif
-  
-  if (solveType == CPU_Type)
-    std::cout << "Solving with: Serial solver (CPU)" << std::endl;
-  else if (solveType == DYNAMIC_P)
-    std::cout << "Solving with: Dynamic Parallel solver (GPU)" << std::endl;
-  else if (solveType == Global_M)
-    std::cout << "Solving with: Global memory solver (GPU)" << std::endl;
-  else if (solveType == Shared_M)
-    std::cout << "Solving with: Shared memory solver (GPU)" << std::endl;
 
   compTurb = isSet("turbcomp");
-  if (compTurb) std::cout << "Turbulence model: ON" << std::endl;
-
   fireMode = isSet("firemode");
   if (fireMode) std::cout << "Wind data will be written back to WRF input file." << std::endl;
 
+  verbose = isSet("verbose");
+  if (verbose) {
+    QESout::setVerbose();
+  }
+
+  std::cout << "Summary of QES-WINDS options: " << std::endl;
+  std::cout << "----------------------------" << std::endl;
+
+  if (solveWind) {
+    if (solveType == CPU_Type)
+#ifdef _OPENMP
+      std::cout << "Wind Solver:\t\t ON\t [Red/Black Solver (CPU)]" << std::endl;
+#else
+      std::cout << "Wind Solver:\t\t ON\t [Serial solver (CPU)]" << std::endl;
+#endif
+    else if (solveType == DYNAMIC_P)
+      std::cout << "Wind Solver:\t\t ON\t [Dynamic Parallel solver (GPU)]" << std::endl;
+    else if (solveType == Global_M)
+      std::cout << "Wind Solver:\t\t ON\t [Global memory solver (GPU)]" << std::endl;
+    else if (solveType == Shared_M)
+      std::cout << "Wind Solver:\t\t ON\t [Shared memory solver (GPU)]" << std::endl;
+    else
+      std::cout << "[WARNING]\t the wind fields are not being calculated" << std::endl;
+  }
+
+  if (compTurb) {
+    std::cout << "Turbulence model:\t ON" << std::endl;
+  } else {
+    std::cout << "Turbulence model:\t OFF" << std::endl;
+  }
+
+  if (verbose) {
+    std::cout << "Verbose:\t\t ON" << std::endl;
+  } else {
+    std::cout << "Verbose:\t\t OFF" << std::endl;
+  }
+
+  std::cout << "----------------------------" << std::endl;
+
   isSet("qesWindsParamFile", qesWindsParamFile);
-  if (qesWindsParamFile != "")
+  if (!qesWindsParamFile.empty()) {
     std::cout << "qesWindsParamFile set to " << qesWindsParamFile << std::endl;
-  else
+  } else {
     QESout::error("qesWindsParamFile not specified");
+  }
+
+  std::cout << "----------------------------" << std::endl;
 
   isSet("outbasename", netCDFFileBasename);
-  if (netCDFFileBasename != "") {
-    //visuOutput = isSet("visuout");
+  if (!netCDFFileBasename.empty()) {
+    // visuOutput = isSet("visuout");
     if (visuOutput) {
       netCDFFileVisu = netCDFFileBasename;
       netCDFFileVisu.append("_windsOut.nc");
-      std::cout << "Visualization NetCDF output file set to " << netCDFFileVisu << std::endl;
     }
 
     wkspOutput = isSet("wkout");
     if (wkspOutput) {
       netCDFFileWksp = netCDFFileBasename;
       netCDFFileWksp.append("_windsWk.nc");
-      std::cout << "Workspace NetCDF output file set to " << netCDFFileWksp << std::endl;
     }
 
     // [FM] the output of turbulence field linked to the flag compTurb
@@ -137,21 +155,35 @@ void WINDSArgs::processArguments(int argc, char *argv[])
     if (turbOutput) {
       netCDFFileTurb = netCDFFileBasename;
       netCDFFileTurb.append("_turbOut.nc");
-      std::cout << "Turbulence NetCDF output file set to " << netCDFFileTurb << std::endl;
     }
 
     terrainOut = isSet("terrainout");
     if (terrainOut) {
       filenameTerrain = netCDFFileBasename;
       filenameTerrain.append("_terrainOut.obj");
-      std::cout << "Terrain triangle mesh WILL be output to " << filenameTerrain << std::endl;
+    }
+
+    if (!netCDFFileVisu.empty()) {
+      std::cout << "[WINDS] \t Visualization NetCDF output file set:\t " << netCDFFileVisu << std::endl;
+    }
+    if (!netCDFFileWksp.empty()) {
+      std::cout << "[WINDS] \t Workspace NetCDF output file set:\t " << netCDFFileWksp << std::endl;
+    }
+    if (!filenameTerrain.empty()) {
+      std::cout << "[WINDS] \t Terrain triangle mesh output set:\t " << filenameTerrain << std::endl;
+    }
+    if (!netCDFFileTurb.empty()) {
+      std::cout << "[TURB] \t Turbulence NetCDF output file set:\t " << netCDFFileTurb << std::endl;
     }
 
   } else {
+
     QESout::warning("No output basename set -> output turned off ");
     visuOutput = false;
     wkspOutput = false;
     turbOutput = false;
     terrainOut = false;
   }
+
+  std::cout << "-------------------------------------------------------------------" << std::endl;
 }

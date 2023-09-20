@@ -1088,7 +1088,7 @@ void WINDSGeneralData::allocateMemory()
   v.resize(numcell_face, 0.0);
   w.resize(numcell_face, 0.0);
 
-  std::cout << "[WINDS Data] \t Memory allocation complete." << std::endl;
+  std::cout << "[QES-WINDS]\t Memory allocation complete..." << std::endl;
 }
 
 

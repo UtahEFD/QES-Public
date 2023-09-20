@@ -8,8 +8,6 @@ SET( qesPlumeCoreSources
     Random.cpp
     RandomSingleton.cpp
 
-    handlePlumeArgs.cpp
-    
     Interp.cpp
     InterpNearestCell.cpp
     InterpPowerLaw.cpp
