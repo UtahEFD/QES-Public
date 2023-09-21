@@ -83,16 +83,16 @@ ENDIF()
 # ----------------------------------------------------------
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
-  CUDA_ADD_EXECUTABLE(compareSolvers compareSolvers.cpp)
+  #CUDA_ADD_EXECUTABLE(compareSolvers compareSolvers.cpp)
 
-  target_link_libraries(compareSolvers qeswindscore)
-  target_link_libraries(compareSolvers qeswindsgpu)
-  target_link_libraries(compareSolvers qesutil)
-  IF ($CACHE{HAS_OPTIX_SUPPORT})
-    target_link_libraries(compareSolvers qesOptix)
-  ENDIF()
+  #target_link_libraries(compareSolvers qeswindscore)
+  #target_link_libraries(compareSolvers qeswindsgpu)
+  #target_link_libraries(compareSolvers qesutil)
+  #IF ($CACHE{HAS_OPTIX_SUPPORT})
+  #  target_link_libraries(compareSolvers qesOptix)
+  #ENDIF()
 
-  link_external_libraries(compareSolvers)
+  #link_external_libraries(compareSolvers)
 
 ELSE ($CACHE{HAS_CUDA_SUPPORT})
   # no executable if CUDA is not supported
