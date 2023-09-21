@@ -40,7 +40,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
 {
 
   auto StartTime = std::chrono::high_resolution_clock::now();
-
+  std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "[QES-TURB]\t Initialization of turbulence model...\n";
   m_WGD = WGDin;
 
@@ -62,7 +62,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
 
   flagNonLocalMixing = WID->turbParams->flagNonLocalMixing;
   if (flagNonLocalMixing) {
-    std::cout << "\t\t Non-Local mixing for buidlings: ON \n";
+    std::cout << "[QES-TURB]\t Non-Local mixing for buidlings: ON \n";
   }
 
   if (WID->simParams->verticalStretching > 0) {
@@ -126,29 +126,29 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
 
 
   // definition of the solid wall for loglaw
-  std::cout << "\t\t Defining Solid Walls...\n";
+  std::cout << "[QES-TURB]\t Defining Solid Walls...\n";
   wallVec.push_back(new TURBWallBuilding(WID, m_WGD, this));
   wallVec.push_back(new TURBWallTerrain(WID, m_WGD, this));
   // std::cout << "\t\t Walls Defined...\n";
 
   // mixing length
 
-  std::cout << "\t\t Defining Local Mixing Length...\n";
+  std::cout << "[QES-TURB]\t Defining Local Mixing Length...\n";
   auto mlStartTime = std::chrono::high_resolution_clock::now();
   if (WID->turbParams->methodLocalMixing == 0) {
-    std::cout << "\t\t Default Local Mixing Length...\n";
+    std::cout << "[QES-TURB]\t Default Local Mixing Length...\n";
     localMixing = new LocalMixingDefault();
   } else if (WID->turbParams->methodLocalMixing == 1) {
-    std::cout << "\t\t Computing Local Mixing Length using serial code...\n";
+    std::cout << "[QES-TURB]\t Computing Local Mixing Length using serial code...\n";
     localMixing = new LocalMixingSerial();
   } else if (WID->turbParams->methodLocalMixing == 2) {
     /*******Add raytrace code here********/
-    std::cout << "\t\t Computing mixing length scales..." << std::endl;
+    std::cout << "[QES-TURB]\t Computing mixing length scales..." << std::endl;
     // WID->simParams->DTE_mesh->calculateMixingLength(nx, ny, nz, dx, dy, dz, WGD->icellflag, WGD->mixingLengths);
   } else if (WID->turbParams->methodLocalMixing == 3) {
     localMixing = new LocalMixingOptix();
   } else if (WID->turbParams->methodLocalMixing == 4) {
-    std::cout << "\t\t Loading Local Mixing Length data form NetCDF...\n";
+    std::cout << "[QES-TURB]\t Loading Local Mixing Length data form NetCDF...\n";
     localMixing = new LocalMixingNetCDF();
   } else {
     // this should not happen (checked in TURBParams)
@@ -166,7 +166,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
 
   auto mlEndTime = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> mlElapsed = mlEndTime - mlStartTime;
-  std::cout << "\t\t Local Mixing Defined: elapsed time: " << mlElapsed.count() << " s\n";
+  std::cout << "[QES-TURB]\t Local Mixing Defined: elapsed time: " << mlElapsed.count() << " s\n";
 
   // Caluclating Turbulence quantities (u*,z0,d0) based on morphology of domain.
   bldgH_mean = 0.0;
@@ -176,7 +176,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
   uRef = 0.0;
   uStar = 0.0;
 
-  std::cout << "\t\t Calculating Morphometric parametrization of trubulence..." << std::endl;
+  std::cout << "[QES-TURB]\t Calculating Morphometric parametrization of trubulence..." << std::endl;
 
   if (WID->simParams->DTE_heightField) {
     terrainH_max = *max_element(m_WGD->terrain.begin(), m_WGD->terrain.end());
@@ -215,10 +215,10 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
     zRef = 100.0 * z0d;
   }
 
-  std::cout << "\t\t Computing friction velocity..." << std::endl;
+  std::cout << "[QES-TURB]\t Computing friction velocity..." << std::endl;
   frictionVelocity();
 
-  std::cout << "\t\t Allocating memory...\n";
+  std::cout << "[QES-TURB]\t Allocating memory...\n";
 
   // comp. of the velocity gradient tensor
   Gxx.resize(numcell_cent, 0);
@@ -266,7 +266,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
 
 TURBGeneralData::TURBGeneralData(const std::string inputFile, WINDSGeneralData *WGDin)
 {
-
+  std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "[TURB Data] \t Loading QES-turb fields " << std::endl;
 
   m_WGD = WGDin;
@@ -282,7 +282,7 @@ TURBGeneralData::TURBGeneralData(const std::string inputFile, WINDSGeneralData *
   // nt - number of time instance in data
   input->getDimensionSize("t", nt);
 
-  //get time variables
+  // get time variables
   t.resize(nt);
   input->getVariableData("t", t);
 
@@ -291,9 +291,7 @@ TURBGeneralData::TURBGeneralData(const std::string inputFile, WINDSGeneralData *
   input->getVariable("timestamp", NcVar_timestamp);
 
   if (NcVar_timestamp.isNull()) {
-    std::cout << "-----------------------------------------------------------------" << std::endl;
-    std::cout << "[WARNING] No timestamp in NetCDF file" << std::endl;
-    std::cout << "-----------------------------------------------------------------" << std::endl;
+    QESout::warning("No timestamp in NetCDF file");
   }
 
   // make local copy of grid information
@@ -382,6 +380,7 @@ TURBGeneralData::TURBGeneralData(const std::string inputFile, WINDSGeneralData *
 
 TURBGeneralData::TURBGeneralData(WINDSGeneralData *WGDin)
 {
+  std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "[QES-TURB]\t Initialization of turbulence model...\n";
   m_WGD = WGDin;
   // make local copy of grid information
@@ -481,8 +480,7 @@ TURBGeneralData::TURBGeneralData(WINDSGeneralData *WGDin)
 
 void TURBGeneralData::loadNetCDFData(int stepin)
 {
-
-  std::cout << "[TURB Data] \t loading data at step " << stepin << std::endl;
+  std::cout << "[QES-TURB]\t loading data at step " << stepin << std::endl;
 
   // netCDF variables
   std::vector<size_t> start;
@@ -519,17 +517,17 @@ void TURBGeneralData::run()
 {
 
   auto StartTime = std::chrono::high_resolution_clock::now();
+  std::cout << "-------------------------------------------------------------------" << std::endl;
+  std::cout << "[QES-TURB]\t Running turbulence model..." << std::endl;
 
-  std::cout << "[QES-TURB] \t Running turbulence model..." << std::endl;
-
-  std::cout << "\t\t Computing friction velocity..." << std::endl;
+  std::cout << "[QES-TURB]\t Computing friction velocity..." << std::endl;
   frictionVelocity();
 
-  std::cout << "\t\t Computing Derivatives (Strain Rate)..." << std::endl;
+  std::cout << "[QES-TURB]\t Computing Derivatives (Strain Rate)..." << std::endl;
   derivativeVelocity();
   // std::cout<<"\t\t Derivatives computed."<<std::endl;
 
-  std::cout << "\t\t Computing local mixing length model..." << std::endl;
+  std::cout << "[QES-TURB]\t Computing local mixing length model..." << std::endl;
   getTurbulentViscosity();
 
   //  if (m_WGD->canopy) {
@@ -537,21 +535,21 @@ void TURBGeneralData::run()
   //    m_WGD->canopy->applyCanopyTurbulenceWake(m_WGD, this);
   //  }
   if (m_WGD->canopy) {
-    std::cout << "Applying canopy wake turbulence parameterization...\n";
+    std::cout << "[QES-TURB]\t Applying canopy wake turbulence parameterization...\n";
     m_WGD->canopy->applyCanopyTurbulenceWake(m_WGD, this);
   }
 
-  std::cout << "\t\t Computing Stess Tensor..." << std::endl;
+  std::cout << "[QES-TURB]\t Computing Stess Tensor..." << std::endl;
   stressTensor();
   // std::cout<<"\t\t Stress Tensor computed."<<std::endl;
 
   if (m_WGD->canopy) {
-    std::cout << "Applying canopy stresses...\n";
+    std::cout << "[QES-TURB]\t Applying canopy stresses...\n";
     m_WGD->canopy->applyCanopyStress(m_WGD, this);
   }
 
   if (flagNonLocalMixing) {
-    std::cout << "\t\t Applying non-local mixing..." << std::endl;
+    std::cout << "[QES-TURB]\t Applying non-local mixing..." << std::endl;
 
     for (size_t i = 0; i < m_WGD->allBuildingsV.size(); i++) {
       m_WGD->allBuildingsV[m_WGD->building_id[i]]->NonLocalMixing(m_WGD, this, m_WGD->building_id[i]);
@@ -559,7 +557,7 @@ void TURBGeneralData::run()
     // std::cout<<"\t\t Non-local mixing completed."<<std::endl;
   }
 
-  std::cout << "\t\t Checking Upper Bound of Turbulence Fields..." << std::endl;
+  std::cout << "[QES-TURB]\t Checking Upper Bound of Turbulence Fields..." << std::endl;
   boundTurbFields();
 
   if (backgroundMixing > 0.0) {
@@ -607,8 +605,8 @@ void TURBGeneralData::frictionVelocity()
   uRef = uSum / nVal;
 
   uStar = 0.4 * uRef / log((zRef - d0d) / z0d);
-  std::cout << "\t\t Mean reference velocity at zRef = " << zRef << " m ==> uRef = " << uRef << " m/s" << std::endl;
-  std::cout << "\t\t Mean friction velocity uStar = " << uStar << " m/s" << std::endl;
+  std::cout << "[QES-TURB]\t Mean reference velocity at zRef = " << zRef << " m ==> uRef = " << uRef << " m/s" << std::endl;
+  std::cout << "[QES-TURB]\t Mean friction velocity uStar = " << uStar << " m/s" << std::endl;
 }
 
 void TURBGeneralData::derivativeVelocity()
@@ -686,7 +684,7 @@ void TURBGeneralData::derivativeVelocity()
     }
   }
 
-  std::cout << "\t\t Imposing Wall BC (log law)..." << std::endl;
+  std::cout << "[QES-TURB]\t Imposing Wall BC (log law)..." << std::endl;
   for (auto i = 0u; i < wallVec.size(); i++) {
     wallVec.at(i)->setWallsVelocityDeriv(m_WGD, this);
   }
@@ -752,8 +750,8 @@ void TURBGeneralData::stressTensor()
     float Sxz = 0.5 * (Gxz[cellID] + Gzx[cellID]);
     float Syz = 0.5 * (Gyz[cellID] + Gzy[cellID]);
 
-    //float NU_T = 0.0;
-    //float TKE = 0.0;
+    // float NU_T = 0.0;
+    // float TKE = 0.0;
     float NU_T = nuT[cellID];
     float TKE = tke[cellID];
     float LM = Lm[cellID];
@@ -761,14 +759,14 @@ void TURBGeneralData::stressTensor()
     //
     float SijSij = Sxx * Sxx + Syy * Syy + Szz * Szz + 2.0 * (Sxy * Sxy + Sxz * Sxz + Syz * Syz);
 
-    //NU_T = LM * LM * sqrt(2.0 * SijSij);
-    //TKE = pow((NU_T / (cPope * LM)), 2.0);
+    // NU_T = LM * LM * sqrt(2.0 * SijSij);
+    // TKE = pow((NU_T / (cPope * LM)), 2.0);
 
     if (TKE > tkeBound)
       TKE = tkeBound;
 
     CoEps[cellID] = 5.7 * pow(sqrt(TKE) * cPope, 3.0) / (LM);
-    //tke[cellID] = TKE;
+    // tke[cellID] = TKE;
 
     txx[cellID] = (2.0 / 3.0) * TKE - 2.0 * (NU_T * Sxx);
     tyy[cellID] = (2.0 / 3.0) * TKE - 2.0 * (NU_T * Syy);
@@ -779,7 +777,7 @@ void TURBGeneralData::stressTensor()
 
     // ROTATE INTO SENSOR-ALIGNED
 
-    //float sensorDir = WID->metParams->sensors[i]->TS[0]->site_wind_dir[0];
+    // float sensorDir = WID->metParams->sensors[i]->TS[0]->site_wind_dir[0];
 
     int k_ref = 0;
     float refHeight = 15.0;// reference height for rotation wind direction is arbitrarily set to 15m above terrain
@@ -790,7 +788,7 @@ void TURBGeneralData::stressTensor()
     int localRef = i + j * nx + k_ref * nx * ny;
     float dirRot = atan2(m_WGD->v[localRef], m_WGD->u[localRef]);// radians on the unit circle
 
-    //Rotation matrix
+    // Rotation matrix
     R11 = cos(dirRot);
     R12 = -sin(dirRot);
     R13 = 0.0;
@@ -818,7 +816,7 @@ void TURBGeneralData::stressTensor()
     double tyz_temp = tyz[cellID];
     double tzz_temp = tzz[cellID];
 
-    //Invert rotation matrix
+    // Invert rotation matrix
     invert3(I11, I12, I13, I21, I22, I23, I31, I32, I33);
 
 
@@ -832,7 +830,7 @@ void TURBGeneralData::stressTensor()
 
 
     // DEROTATE
-    //Rotation matrix
+    // Rotation matrix
     dirRot = -dirRot;
     R11 = cos(dirRot);
     R12 = -sin(dirRot);
@@ -854,7 +852,7 @@ void TURBGeneralData::stressTensor()
     I32 = R32;
     I33 = R33;
 
-    //Invert rotation matrix
+    // Invert rotation matrix
     invert3(I11, I12, I13, I21, I22, I23, I31, I32, I33);
 
     matMult(txx_temp, txy_temp, txz_temp, txy_temp, tyy_temp, tyz_temp, txz_temp, tyz_temp, tzz_temp, I11, I12, I13, I21, I22, I23, I31, I32, I33, P11, P12, P13, P21, P22, P23, P31, P32, P33);
@@ -961,7 +959,7 @@ void TURBGeneralData::addBackgroundMixing()
 
 void TURBGeneralData::divergenceStress()
 {
-  std::cout << "\t\t Computing Divergence of Stess Tensor..." << std::endl;
+  std::cout << "[QES-TURB]\t Computing Divergence of Stess Tensor..." << std::endl;
 
   // x-comp of the divergence of the stress tensor
   // div(tau)_x = dtxxdx + dtxydy + dtxzdz

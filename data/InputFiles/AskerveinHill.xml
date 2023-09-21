@@ -13,7 +13,7 @@
 
 	<maxIterations> 500 </maxIterations> 				<!-- Maximum number of iterations (default = 500) -->
 	<tolerance> 1e-9 </tolerance> 					<!-- Convergence criteria (default = 1e-9) -->
-	<meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (original QES) (default), 1-Cut-cell method -->
+	<meshTypeFlag> 1 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (original QES) (default), 1-Cut-cell method -->
 	<domainRotation> 0 </domainRotation>  				<!-- Rotation angle of domain relative to true north -->
 	<originFlag> 0 </originFlag>					<!-- Origin flag (0- DEM coordinates (default), 1- UTM coordinates) -->
 	<DEMDistancex> 0.0 </DEMDistancex> 				<!-- x component (m) of origin in DEM coordinates (if originFlag = 0) -->
