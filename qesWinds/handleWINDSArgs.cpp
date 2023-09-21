@@ -185,5 +185,5 @@ void WINDSArgs::processArguments(int argc, char *argv[])
     terrainOut = false;
   }
 
-  std::cout << "-------------------------------------------------------------------" << std::endl;
+  std::cout << "###################################################################" << std::endl;
 }

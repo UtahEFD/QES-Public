@@ -684,7 +684,7 @@ void TURBGeneralData::derivativeVelocity()
     }
   }
 
-  std::cout << "\t\t Imposing Wall BC (log law)..." << std::endl;
+  std::cout << "[QES-TURB]\t Imposing Wall BC (log law)..." << std::endl;
   for (auto i = 0u; i < wallVec.size(); i++) {
     wallVec.at(i)->setWallsVelocityDeriv(m_WGD, this);
   }
