@@ -30,11 +30,11 @@
       <releaseType_continuous>
         <parPerTimestep>200</parPerTimestep>
       </releaseType_continuous>
-      <sourcePoint>
+      <sourceGeometry_Point>
         <posX> 20.0 </posX>
         <posY> 50.0 </posY>
         <posZ> 4.0 </posZ>
-      </sourcePoint>
+      </sourceGeometry_Point>
     </source>
   </sourceParameters>
   <boundaryConditions>
