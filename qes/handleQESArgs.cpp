@@ -183,5 +183,5 @@ void QESArgs::processArguments(int argc, char *argv[])
     std::cout << "[PLUME]\t Particle NetCDF output file set:\t " << outputParticleDataFile << std::endl;
   }
 
-  std::cout << "-------------------------------------------------------------------" << std::endl;
+  std::cout << "###################################################################" << std::endl;
 }

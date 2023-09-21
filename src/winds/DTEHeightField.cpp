@@ -65,9 +65,21 @@ DTEHeightField::DTEHeightField(const std::string &filename,
     m_cellSize(cellSize), m_dim(dim),
     domain_UTMx(UTMx), domain_UTMy(UTMy)
 {
+  std::cout << "-------------------------------------------------------------------" << std::endl;
+  std::cout << "[DTEHeightField] Initialization Height Field..." << std::endl;
+  std::cout << "Extracting Digital Elevation Data from" << filename << std::endl;
+
+  auto start = std::chrono::high_resolution_clock::now();
+
   GDALAllRegister();
 
   load();
+
+  std::cout << "[DTEHeightField] Loading completed." << std::endl;
+
+  auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
+  std::chrono::duration<float> elapsed_cut = finish - start;
+  std::cout << "\t\t elapsed time: " << elapsed_cut.count() << " s\n";
 }
 
 // Constructor for converting heightfield data to the internal
@@ -81,6 +93,11 @@ DTEHeightField::DTEHeightField(const std::vector<double> &heightField,
                                float halo_y)
   : m_cellSize(cellSize), m_dim(dim)
 {
+  std::cout << "-------------------------------------------------------------------" << std::endl;
+  std::cout << "[DTEHeightField]  Constructing the DTE from WRF input height-field..." << std::endl;
+
+  auto start = std::chrono::high_resolution_clock::now();
+
   Triangle *tPtr = 0;
   m_triList.clear();
 
@@ -186,10 +203,13 @@ DTEHeightField::DTEHeightField(const std::vector<double> &heightField,
     }
   }
 
-  std::cout << "... completed." << std::endl;
-
   // At end of loop above, all height field data will have been
   // converted to a triangle mesh, stored in m_triList.
+  std::cout << "[DTEHeightField]  Loading completed." << std::endl;
+
+  auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
+  std::chrono::duration<float> elapsed_cut = finish - start;
+  std::cout << "\t\t elapsed time: " << elapsed_cut.count() << " s\n";
 }
 
 #if 0
@@ -237,9 +257,8 @@ void DTEHeightField::loadImage()
 
 void DTEHeightField::load()
 {
-  std::cout << "-------------------------------------------------------------------" << std::endl;
-  std::cout << "DTEHeightField loading DTE..." << std::endl;
-
+  std::cout << "Summary of GIS Info:" << std::endl;
+  std::cout << "----------------------------" << std::endl;
   //
   // local variables to hold common variables related to the QES
   // domain
@@ -261,14 +280,9 @@ void DTEHeightField::load()
     exit(EXIT_FAILURE);
   }
 
-  printf("GDAL Driver: %s/%s\n",
+  printf("- GDAL Driver:\t %s/%s\n",
          m_poDataset->GetDriver()->GetDescription(),
          m_poDataset->GetDriver()->GetMetadataItem(GDAL_DMD_LONGNAME));
-
-  printf("\tRaster Size is %dx%dx%d\n",
-         m_poDataset->GetRasterXSize(),
-         m_poDataset->GetRasterYSize(),
-         m_poDataset->GetRasterCount());
 
   // Attempt to get the spatial reference from this dataset -
   // which will help us convert into lat/long
@@ -276,20 +290,25 @@ void DTEHeightField::load()
   // spatialRef = m_poDataset->GetSpatialRef, but in pre-3.0 versions,
   // this comes from GetProjectionRef
   if (m_poDataset->GetProjectionRef() != NULL)
-    printf("\tProjection is `%s'\n", m_poDataset->GetProjectionRef());
+    printf("- Projection:\t `%s'\n", m_poDataset->GetProjectionRef());
+
+  printf("- Raster Size:\t\t %dx%dx%d\n",
+         m_poDataset->GetRasterXSize(),
+         m_poDataset->GetRasterYSize(),
+         m_poDataset->GetRasterCount());
 
   if (m_poDataset->GetGeoTransform(m_geoTransform) == CE_None) {
-    printf("\tDEM Origin = (%.6f,%.6f)\n",
+    printf("- DEM Origin:\t\t (%.6f,%.6f)\n",
            m_geoTransform[0],
            m_geoTransform[3]);
 
-    printf("\tPixel Size = (%.6f,%.6f)\n",
+    printf("- Pixel Size:\t\t (%.6f,%.6f)\n",
            m_geoTransform[1],
            m_geoTransform[5]);
     pixelSizeX = abs(m_geoTransform[1]);
     pixelSizeY = abs(m_geoTransform[5]);
 
-    printf("These should be zero for north up: (%.6f, %.6f)\n",
+    printf("- These should be zero for north up: (%.6f, %.6f)\n",
            m_geoTransform[2],
            m_geoTransform[4]);
   }
@@ -301,7 +320,7 @@ void DTEHeightField::load()
 
   poBand = m_poDataset->GetRasterBand(1);
   poBand->GetBlockSize(&nBlockXSize, &nBlockYSize);
-  printf("\tRaster Block=%dx%d Type=%s, ColorInterp=%s\n",
+  printf("- Raster Block=%dx%d Type=%s, ColorInterp=%s\n",
          nBlockXSize,
          nBlockYSize,
          GDALGetDataTypeName(poBand->GetRasterDataType()),
@@ -312,23 +331,24 @@ void DTEHeightField::load()
   if (!(bGotMin && bGotMax))
     GDALComputeRasterMinMax((GDALRasterBandH)poBand, TRUE, adfMinMax);
 
-  printf("\tRaster Min=%.3fd and Max=%.3f\n", adfMinMax[0], adfMinMax[1]);
+  printf("- Raster Min:\t\t %.3f\n", adfMinMax[0]);
+  printf("- Raster Max:\t\t %.3f\n", adfMinMax[1]);
 
   if (poBand->GetOverviewCount() > 0)
-    printf("\tBand has %d overviews.\n", poBand->GetOverviewCount());
+    printf("- Band has %d overviews.\n", poBand->GetOverviewCount());
 
   if (poBand->GetColorTable() != NULL)
-    printf("\tBand has a color table with %d entries.\n",
+    printf("- Band has a color table with %d entries.\n",
            poBand->GetColorTable()->GetColorEntryCount());
 
   m_rbScale = poBand->GetScale();
-  printf("Band has scale: %.4f\n", m_rbScale);
+  printf("- Band scale:\t\t %.4f\n", m_rbScale);
 
   m_rbOffset = poBand->GetOffset();
-  printf("Band has offset: %.4f\n", m_rbOffset);
+  printf("- Band offset:\t\t %.4f\n", m_rbOffset);
 
   m_rbNoData = poBand->GetNoDataValue();
-  printf("Band has NoData value: %.4f\n", m_rbNoData);
+  printf("- Band 'NoData' value:\t %.4f\n", m_rbNoData);
 
   m_nXSize = poBand->GetXSize();
   m_nYSize = poBand->GetYSize();
@@ -336,10 +356,10 @@ void DTEHeightField::load()
   origin_x = m_geoTransform[0];
   origin_y = m_geoTransform[3] - pixelSizeY * m_nYSize;
 
-  printf("\tDEM size: %dx%d\n", m_nXSize, m_nYSize);
-  printf("\tDEM size: %.1fx%.1f\n", m_nXSize * pixelSizeX, m_nYSize * pixelSizeY);
+  printf("- DEM size:\t\t %dx%d\n", m_nXSize, m_nYSize);
+  printf("- DEM size:\t\t %.1fx%.1f\n", m_nXSize * pixelSizeX, m_nYSize * pixelSizeY);
 
-  printf("\tDomain Origin = (%.6f,%.6f)\n", origin_x, origin_y);
+  printf("- Domain Origin:\t (%.6f,%.6f)\n", origin_x, origin_y);
 
   // UTMx will be correct, but need to subtract halo
   //      demMinX == UTMx - halo_x
@@ -354,16 +374,16 @@ void DTEHeightField::load()
   std::cout << "Mapping between raster coordinates and geo-referenced coordinates" << std::endl;
   double xGeo(0.0), yGeo(0.0);
   convertRasterToGeo(0, 0, xGeo, yGeo);
-  printf("Raster Coordinate (0, 0):\t(%12.7f, %12.7f)\n", xGeo, yGeo);
+  printf("- Raster Coordinate (0, 0):\t(%12.7f, %12.7f)\n", xGeo, yGeo);
 
   convertRasterToGeo(m_nXSize, 0, xGeo, yGeo);
-  printf("Raster Coordinate (%d, 0):\t(%12.7f, %12.7f)\n", m_nXSize, xGeo, yGeo);
+  printf("- Raster Coordinate (%d, 0):\t(%12.7f, %12.7f)\n", m_nXSize, xGeo, yGeo);
 
   convertRasterToGeo(m_nXSize, m_nYSize, xGeo, yGeo);
-  printf("Raster Coordinate (%d, %d):\t(%12.7f, %12.7f)\n", m_nXSize, m_nYSize, xGeo, yGeo);
+  printf("- Raster Coordinate (%d, %d):\t(%12.7f, %12.7f)\n", m_nXSize, m_nYSize, xGeo, yGeo);
 
   convertRasterToGeo(0, m_nYSize, xGeo, yGeo);
-  printf("Raster Coordinate (0, %d):\t(%12.7f, %12.7f)\n", m_nYSize, xGeo, yGeo);
+  printf("- Raster Coordinate (0, %d):\t(%12.7f, %12.7f)\n", m_nYSize, xGeo, yGeo);
 
   if (originFlag == 0) {
     float domain_end_x = origin_x + DEMDistancex + nx * dx;
@@ -426,7 +446,7 @@ void DTEHeightField::load()
   // double xGeo, yGeo;
   Vector3 tc0, tc1, tc2;
 
-
+  std::cout << "----------------------------" << std::endl;
   std::cout << "DEM Loading\n";
 
   float stepX = dx / pixelSizeX;// tie back to dx, dy here.... with scaling of pixelsize
@@ -474,7 +494,7 @@ void DTEHeightField::load()
     printProgress((float)(iYline + 1) / (float)(m_nYSize - 1));
   }
   std::cout << std::endl;
-  std::cout << "-------------------------------------------------------------------" << std::endl;
+  std::cout << "----------------------------" << std::endl;
   // At end of loop above, all height field data will have been
   // converted to a triangle mesh, stored in m_triList.
 }
@@ -497,7 +517,7 @@ void DTEHeightField::setDomain(Vector3Int &domain, Vector3 &grid)
                                                          // execution
                                                          // time
 
-  std::cout << "Setting Terrain Boundaries\n";
+  std::cout << "[DTEHeightField] Setting Terrain Boundaries\n";
   for (int q = 0; q < 3; q++) {
     int triListSize = m_triList.size();
 
@@ -529,9 +549,9 @@ void DTEHeightField::setDomain(Vector3Int &domain, Vector3 &grid)
   auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
 
   std::chrono::duration<double> elapsed = finish - start;
-  std::cout << "\telapsed time: " << elapsed.count() << " s\n";// Print out elapsed execution time
+  std::cout << "\t\t elapsed time: " << elapsed.count() << " s\n";// Print out elapsed execution time
 
-  printf("Newly calculated domain size: %d %d %d\n", domain[0], domain[1], domain[2]);
+  printf("[DTEHeightField] Newly calculated domain size: %d %d %d\n", domain[0], domain[1], domain[2]);
 }
 
 void DTEHeightField::outputOBJ(std::string s)
@@ -606,7 +626,7 @@ void DTEHeightField::printProgress(float percentage)
 void DTEHeightField::setCells(WINDSGeneralData *WGD, const WINDSInputData *WID)
 {
 
-  printf("Setting Cell Data...\n");
+  printf("[DTEHeightField] Setting Cell Data...\n");
 
   std::vector<int> cutCells;
 

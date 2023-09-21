@@ -123,5 +123,5 @@ void PlumeArgs::processArguments(int argc, char *argv[])
   if (doEulDataOutput) {
     std::cout << "[PLUME]\t Particle NetCDF output file set:\t " << outputParticleDataFile << std::endl;
   }
-  std::cout << "-------------------------------------------------------------------" << std::endl;
+  std::cout << "###################################################################" << std::endl;
 }
