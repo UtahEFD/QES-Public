@@ -30,8 +30,8 @@
 			<releaseType_instantaneous>
 				<numPar>100000</numPar>
 			</releaseType_instantaneous>
-			<sourceFullDomain>
-			</sourceFullDomain>
+			<sourceGeometry_FullDomain>
+			</sourceGeometry_FullDomain>
 		</source>
 	</sourceParameters>
 <boundaryConditions>
