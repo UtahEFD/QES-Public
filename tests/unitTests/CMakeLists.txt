@@ -53,6 +53,9 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
   cuda_add_executable(plume_sources
           plume_sources.cpp)
 
+  cuda_add_executable(plume_particle_buffer
+          plume_particle_buffer.cpp)
+
   set(UNITTESTS
     util_time
     winds_terrain
@@ -61,6 +64,7 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
     plume_vector_classes_CPU
     plume_particle_factory
     plume_sources
+    plume_particle_buffer
     test_CUDARandomGen)
 
 ELSE ($CACHE{HAS_CUDA_SUPPORT})
@@ -84,6 +88,9 @@ ELSE ($CACHE{HAS_CUDA_SUPPORT})
    add_executable(plume_sources
            plume_sources.cpp)
 
+   add_executable(plume_particle_buffer
+           plume_particle_buffer.cpp)
+
   set(UNITTESTS
       util_time
       winds_terrain
@@ -91,7 +98,8 @@ ELSE ($CACHE{HAS_CUDA_SUPPORT})
       plume_interpolation_CPU
       plume_vector_classes_CPU
       plume_particle_factory
-      plume_sources)
+      plume_sources
+      plume_particle_buffer)
       
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 

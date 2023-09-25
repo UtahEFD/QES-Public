@@ -114,7 +114,8 @@ public:
   int getNumReleasedParticles() const { return nParsReleased; }// accessor
   int getNumRogueParticles() const { return isRogueCount; }// accessor
   int getNumNotActiveParticles() const { return isNotActiveCount; }// accessor
-  int getNumCurrentParticles() const { return particleList.size(); }// accessor
+  // int getNumCurrentParticles() const { return (int)particleList.size(); }// accessor
+  int getNumCurrentParticles() const { return tracerList->nbr_used; }// accessor
 
   QEStime getSimTimeStart() const { return simTimeStart; }
   QEStime getSimTimeCurrent() const { return simTimeCurr; }
@@ -124,6 +125,8 @@ public:
   // This the storage for all particles
   // the sources can set these values, then the other values are set using urb and turb info using these values
   std::list<Particle *> particleList;
+
+  ParticleManager<ParticleTracer> *tracerList;
 
 #ifdef _OPENMP
   // if using openmp the RNG is not thread safe, use an array of RNG (one per thread)
@@ -214,6 +217,8 @@ protected:
 
 private:
   void setParticleVals(WINDSGeneralData *, TURBGeneralData *, std::list<Particle *>);
+  void setParticleVals(WINDSGeneralData *, TURBGeneralData *);
+  void setParticle(WINDSGeneralData *WGD, TURBGeneralData *TGD, Particle *par_ptr);
   // this function gets sources from input data and adds them to the allSources vector
   // this function also calls the many check and calc functions for all the input sources
   // !!! note that these check and calc functions have to be called here
@@ -330,7 +335,7 @@ inline void Plume::showCurrentStatus()
   std::cout << "Current simulation time: " << simTimeCurr << "\n";
   std::cout << "Simulation run time: " << simTimeCurr - simTimeStart << "\n";
   std::cout << "Total number of particles released: " << nParsReleased << "\n";
-  std::cout << "Current number of particles in simulation: " << particleList.size() << "\n";
+  std::cout << "Current number of particles in simulation: " << tracerList->active() << "\n";
   std::cout << "Number of rogue particles: " << isRogueCount << "\n";
   std::cout << "Number of deleted particles: " << isNotActiveCount << "\n";
   std::cout << "----------------------------------------------------------------- \n"

@@ -31,6 +31,7 @@
 /** @file Plume.cpp */
 
 #include "Plume.hpp"
+#include <queue>
 
 Plume::Plume(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   : particleList(0), allSources(0)
@@ -60,7 +61,7 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
   std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "[QES-Plume]\t Initialization of plume model...\n";
-  
+
   // copy debug information
   doParticleDataOutput = false;// arguments->doParticleDataOutput;
   outputSimInfoFile = false;// arguments->doSimInfoFileOutput;
@@ -146,6 +147,8 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   isNotActiveCount = 0;
   // set the particle counter to zero
   nParsReleased = 0;
+
+  tracerList = new ParticleManager<ParticleTracer>();
 
   // get sources from input data and add them to the allSources vector
   // this also calls the many check and calc functions for all the input sources
@@ -247,6 +250,7 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
   while (simTimeCurr < loopTimeEnd) {
     // need to release new particles -> add new particles to the number to move
     int nParsToRelease = generateParticleList(simTime, WGD, TGD);
+
     if (debug) {
       std::cout << "Time = " << simTime << " s (iteration = " << simTimeIdx
                 << "). Finished emitting particles "
@@ -286,11 +290,14 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
     auto startTime = std::chrono::high_resolution_clock::now();
     // FM: openmp parallelization of the advection loop
 #ifdef _OPENMP
-    std::vector<Particle *> tmp(particleList.begin(), particleList.end());
-#pragma omp parallel for default(none) shared(WGD, TGD, tmp, timeRemainder)
-    for (auto k = 0u; k < tmp.size(); ++k) {
-      // call to the main particle adection function (in separate file: AdvectParticle.cpp)
-      advectParticle(timeRemainder, tmp[k], boxSizeZ, WGD, TGD);
+    // std::vector<Particle *> tmp(particleList.begin(), particleList.end());
+    // #pragma omp parallel for default(none) shared(WGD, TGD, tmp, timeRemainder)
+//    for (auto k = 0u; k < tmp.size(); ++k) {
+// advectParticle(timeRemainder, tmp[k], boxSizeZ, WGD, TGD);
+// call to the main particle adection function (in separate file: AdvectParticle.cpp)
+#pragma omp parallel for default(none) shared(WGD, TGD, timeRemainder)
+    for (auto k = 0u; k < tracerList->size(); ++k) {
+      advectParticle(timeRemainder, &tracerList->buffer[k], boxSizeZ, WGD, TGD);
     }//  END OF OPENMP WORK SHARE
 #else
     for (auto &parItr : particleList) {
@@ -300,18 +307,29 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
 #endif
 
     //  flush deposition buffer
-    for (auto &parItr : particleList) {
-      if (parItr->dep_buffer_flag) {
-        for (auto n = 0u; n < parItr->dep_buffer_cell.size(); ++n) {
-          deposition->depcvol[parItr->dep_buffer_cell[n]] += parItr->dep_buffer_val[n];
+    /*for (auto &parItr : particleList) {
+    if (parItr->dep_buffer_flag) {
+      for (auto n = 0u; n < parItr->dep_buffer_cell.size(); ++n) {
+        deposition->depcvol[parItr->dep_buffer_cell[n]] += parItr->dep_buffer_val[n];
+      }
+      parItr->dep_buffer_flag = false;
+      parItr->dep_buffer_cell.clear();
+      parItr->dep_buffer_val.clear();
+    }
+  }*/
+
+    for (auto &parItr : tracerList->buffer) {
+      if (parItr.dep_buffer_flag) {
+        for (auto n = 0u; n < parItr.dep_buffer_cell.size(); ++n) {
+          deposition->depcvol[parItr.dep_buffer_cell[n]] += parItr.dep_buffer_val[n];
         }
-        parItr->dep_buffer_flag = false;
-        parItr->dep_buffer_cell.clear();
-        parItr->dep_buffer_val.clear();
+        parItr.dep_buffer_flag = false;
+        parItr.dep_buffer_cell.clear();
+        parItr.dep_buffer_val.clear();
       }
     }
 
-    for (auto &parItr : particleList) {
+    /*for (auto &parItr : particleList) {
       // now update the isRogueCount and isNotActiveCount
       if (parItr->isRogue) {
         isRogueCount = isRogueCount + 1;
@@ -320,9 +338,15 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
         isNotActiveCount = isNotActiveCount + 1;
         needToScrub = true;
       }
-    }// end of loop for (parItr == particleList.begin(); parItr !=
+    }*/
+    // end of loop for (parItr == particleList.begin(); parItr !=
     // particleList.end() ; parItr++ )
 
+    for (const auto &parItr : tracerList->buffer) {// now update the isRogueCount and isNotActiveCount
+      if (parItr.isRogue) {
+        isRogueCount = isRogueCount + 1;
+      }
+    }
     // incrementation of time and timestep
     simTimeIdx++;
     simTimeCurr += timeRemainder;
@@ -335,12 +359,14 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
     for (auto &id_out : outputVec) {
       id_out->save(simTimeCurr);
     }
-
+    tracerList->scrub_buffer();
     // For all particles that need to be removed from the particle
     // advection, remove them now
-    if (needToScrub) {
-      scrubParticleList();
-    }
+    // if (needToScrub) {
+    //  scrubParticleList();
+    // }
+
+
     // output the time, isRogueCount, and isNotActiveCount information for all
     // simulations, but only when the updateFrequency allows
     if (simTimeCurr >= nextUpdate || (simTimeCurr == loopTimeEnd)) {
@@ -352,7 +378,8 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
       } else {
         std::cout << "Time = " << simTimeCurr << " (sim time = " << simTime << " s, iteration = " << simTimeIdx << "). "
                   << "Particles: Released = " << nParsReleased << " "
-                  << "Active = " << particleList.size() << "." << std::endl;
+                  << "Active = " << tracerList->active() << "." << std::endl;
+        //<< "Active = " << particleList.size() << "." << std::endl;
       }
       nextUpdate += (float)updateFrequency_timeLoop;
       // output advection loop runtime if in debug mode
@@ -366,7 +393,8 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
   std::cout << "[QES-Plume] \t End of particles advection at Time = " << simTimeCurr
             << " s (iteration = " << simTimeIdx << "). \n";
   std::cout << "\t\t Particles: Released = " << nParsReleased << " "
-            << "Active = " << particleList.size() << "." << std::endl;
+            << "Active = " << tracerList->active() << "." << std::endl;
+  //<< "Active = " << particleList.size() << "." << std::endl;
 
   // DEBUG - get the amount of time it takes to perform the simulation time
   // integration loop
@@ -495,17 +523,23 @@ int Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBGe
   // Add new particles now
   // - walk over all sources and add the emitted particles from
 
-  std::list<Particle *> nextSetOfParticles;
+  /*std::list<Particle *> nextSetOfParticles;
   int numNewParticles = 0;
   for (auto source : allSources) {
     numNewParticles += source->emitParticles((float)sim_dt, currentTime, nextSetOfParticles);
   }
-
   setParticleVals(WGD, TGD, nextSetOfParticles);
+  */
+
+  int numNewParticles = 0;
+  for (auto source : allSources) {
+    numNewParticles += source->emitParticles((float)sim_dt, currentTime, tracerList);
+  }
+  setParticleVals(WGD, TGD);
 
   // append all the new particles on to the big particle
   // advection list
-  particleList.insert(particleList.end(), nextSetOfParticles.begin(), nextSetOfParticles.end());
+  // particleList.insert(particleList.end(), nextSetOfParticles.begin(), nextSetOfParticles.end());
 
   // now calculate the number of particles to release for this timestep
   return numNewParticles;
@@ -544,84 +578,112 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, std::li
 #pragma omp parallel for default(none) shared(WGD, TGD, tmp)
   for (auto k = 0u; k < tmp.size(); ++k) {
     // set particle ID (use global particle counter)
-    Particle *par_ptr = tmp[k];
-    // nParsReleased++;
+    setParticle(WGD, TGD, tmp[k]);
+  }
+}
 
-    // set the positions to be used by the simulation to the initial positions
-    par_ptr->xPos = par_ptr->xPos_init;
-    par_ptr->yPos = par_ptr->yPos_init;
-    par_ptr->zPos = par_ptr->zPos_init;
+void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD)
+{
+  // at this time, should be a list of each and every particle that exists at
+  // the given time particles and sources can potentially be added to the list
+  // elsewhere
+  // for (auto parItr = newParticles.begin(); parItr != newParticles.end(); parItr++) {
+  for (auto k : tracerList->added) {
+    // set particle ID (use global particle counter)
+    tracerList->buffer[k].particleID = nParsReleased;
+    nParsReleased++;
+  }
 
-    // get the sigma values from the QES grid for the particle value
-    double sig_x, sig_y, sig_z;
-    // get the tau values from the QES grid for the particle value
-    double txx, txy, txz, tyy, tyz, tzz;
+  // #pragma omp parallel for default(none) shared(WGD, TGD, tmp)
+  // for (auto parItr = tmp.begin(); parItr != tmp.end(); parItr++) {
+  //  set particle ID (use global particle counter)
+  //(*parItr)->particleID = nParsReleased;
+  //
+#pragma omp parallel for default(none) shared(WGD, TGD)
+  for (auto k = 0u; k < tracerList->added.size(); ++k) {
+    // set particle ID (use global particle counter)
+    setParticle(WGD, TGD, &tracerList->buffer[tracerList->added[k]]);
+  }
+}
 
-    interp->interpInitialValues(par_ptr->xPos,
-                                par_ptr->yPos,
-                                par_ptr->zPos,
-                                TGD,
-                                sig_x,
-                                sig_y,
-                                sig_z,
-                                txx,
-                                txy,
-                                txz,
-                                tyy,
-                                tyz,
-                                tzz);
 
-    // now set the initial velocity fluctuations for the particle
-    // The  sqrt of the variance is to match Bailey's code
-    // normally distributed random number
+void Plume::setParticle(WINDSGeneralData *WGD, TURBGeneralData *TGD, Particle *par_ptr)
+{
+
+  // set the positions to be used by the simulation to the initial positions
+  par_ptr->xPos = par_ptr->xPos_init;
+  par_ptr->yPos = par_ptr->yPos_init;
+  par_ptr->zPos = par_ptr->zPos_init;
+
+  // get the sigma values from the QES grid for the particle value
+  double sig_x, sig_y, sig_z;
+  // get the tau values from the QES grid for the particle value
+  double txx, txy, txz, tyy, tyz, tzz;
+
+  interp->interpInitialValues(par_ptr->xPos,
+                              par_ptr->yPos,
+                              par_ptr->zPos,
+                              TGD,
+                              sig_x,
+                              sig_y,
+                              sig_z,
+                              txx,
+                              txy,
+                              txz,
+                              tyy,
+                              tyz,
+                              tzz);
+
+  // now set the initial velocity fluctuations for the particle
+  // The  sqrt of the variance is to match Bailey's code
+  // normally distributed random number
 #ifdef _OPENMP
-    par_ptr->uFluct = sig_x * threadRNG[omp_get_thread_num()]->norRan();
-    par_ptr->vFluct = sig_y * threadRNG[omp_get_thread_num()]->norRan();
-    par_ptr->wFluct = sig_z * threadRNG[omp_get_thread_num()]->norRan();
+  par_ptr->uFluct = sig_x * threadRNG[omp_get_thread_num()]->norRan();
+  par_ptr->vFluct = sig_y * threadRNG[omp_get_thread_num()]->norRan();
+  par_ptr->wFluct = sig_z * threadRNG[omp_get_thread_num()]->norRan();
 #else
-    par_ptr->uFluct = sig_x * RNG->norRan();
-    par_ptr->vFluct = sig_y * RNG->norRan();
-    par_ptr->wFluct = sig_z * RNG->norRan();
+  par_ptr->uFluct = sig_x * RNG->norRan();
+  par_ptr->vFluct = sig_y * RNG->norRan();
+  par_ptr->wFluct = sig_z * RNG->norRan();
 #endif
 
 
-    // set the initial values for the old velFluct values
-    par_ptr->uFluct_old = par_ptr->uFluct;
-    par_ptr->vFluct_old = par_ptr->vFluct;
-    par_ptr->wFluct_old = par_ptr->wFluct;
+  // set the initial values for the old velFluct values
+  par_ptr->uFluct_old = par_ptr->uFluct;
+  par_ptr->vFluct_old = par_ptr->vFluct;
+  par_ptr->wFluct_old = par_ptr->wFluct;
 
-    // now need to call makeRealizable on tau
-    makeRealizable(txx, txy, txz, tyy, tyz, tzz);
+  // now need to call makeRealizable on tau
+  makeRealizable(txx, txy, txz, tyy, tyz, tzz);
 
-    // set tau_old to the interpolated values for each position
-    par_ptr->txx_old = txx;
-    par_ptr->txy_old = txy;
-    par_ptr->txz_old = txz;
-    par_ptr->tyy_old = tyy;
-    par_ptr->tyz_old = tyz;
-    par_ptr->tzz_old = tzz;
+  // set tau_old to the interpolated values for each position
+  par_ptr->txx_old = txx;
+  par_ptr->txy_old = txy;
+  par_ptr->txz_old = txz;
+  par_ptr->tyy_old = tyy;
+  par_ptr->tyz_old = tyz;
+  par_ptr->tzz_old = tzz;
 
-    // set delta_velFluct values to zero for now
-    par_ptr->delta_uFluct = 0.0;
-    par_ptr->delta_vFluct = 0.0;
-    par_ptr->delta_wFluct = 0.0;
+  // set delta_velFluct values to zero for now
+  par_ptr->delta_uFluct = 0.0;
+  par_ptr->delta_vFluct = 0.0;
+  par_ptr->delta_wFluct = 0.0;
 
-    // set isRogue to false and isActive to true for each particle
-    // isActive = true as particle relased is active immediately
-    par_ptr->isRogue = false;
-    par_ptr->isActive = true;
+  // set isRogue to false and isActive to true for each particle
+  // isActive = true as particle relased is active immediately
+  par_ptr->isRogue = false;
+  par_ptr->isActive = true;
 
-    int cellIdNew = interp->getCellId(par_ptr->xPos, par_ptr->yPos, par_ptr->zPos);
-    if ((WGD->icellflag[cellIdNew] == 0) && (WGD->icellflag[cellIdNew] == 2)) {
-      // std::cerr << "WARNING invalid initial position" << std::endl;
-      par_ptr->isActive = false;
-    }
+  int cellIdNew = interp->getCellId(par_ptr->xPos, par_ptr->yPos, par_ptr->zPos);
+  if ((WGD->icellflag[cellIdNew] == 0) && (WGD->icellflag[cellIdNew] == 2)) {
+    // std::cerr << "WARNING invalid initial position" << std::endl;
+    par_ptr->isActive = false;
+  }
 
-    double det = txx * (tyy * tzz - tyz * tyz) - txy * (txy * tzz - tyz * txz) + txz * (txy * tyz - tyy * txz);
-    if (std::abs(det) < 1e-10) {
-      // std::cerr << "WARNING invalid position stress" << std::endl;
-      par_ptr->isActive = false;
-    }
+  double det = txx * (tyy * tzz - tyz * tyz) - txy * (txy * tzz - tyz * txz) + txz * (txy * tyz - tyy * txz);
+  if (std::abs(det) < 1e-10) {
+    // std::cerr << "WARNING invalid position stress" << std::endl;
+    par_ptr->isActive = false;
   }
 }
 

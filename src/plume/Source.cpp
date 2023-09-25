@@ -170,3 +170,38 @@ int Source::emitParticles(const float &dt,
 
   return emittedParticles.size();// m_rType->m_parPerTimestep;
 }
+
+int Source::emitParticles(const float &dt,
+                          const float &currTime,
+                          ParticleManager<ParticleTracer> *particleList)
+{
+  int emitted = 0;
+  // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
+  if (currTime >= m_releaseType->m_releaseStartTime && currTime <= m_releaseType->m_releaseEndTime) {
+
+    particleList->check_size(m_releaseType->m_parPerTimestep);
+    for (int pidx = 0; pidx < m_releaseType->m_parPerTimestep; pidx++) {
+
+      // Particle *cPar = new Particle();
+      particleList->add();
+      // Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
+      Particle *cPar = &particleList->buffer[particleList->added.back()];
+      // m_protoParticle->setParticleParameters(cPar);
+      m_sourceGeometry->setInitialPosition(cPar);
+
+      cPar->m = sourceStrength / m_releaseType->m_numPar;
+      cPar->m_kg = cPar->m * (1.0E-3);
+      cPar->m_o = cPar->m;
+      cPar->m_kg_o = cPar->m * (1.0E-3);
+      // std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
+
+
+      cPar->tStrt = currTime;
+
+      cPar->sourceIdx = sourceIdx;
+    }
+    emitted = (int)particleList->added.size();
+  }
+
+  return emitted;// m_rType->m_parPerTimestep;
+}
