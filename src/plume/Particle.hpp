@@ -192,7 +192,7 @@ public:
   double delta_wFluct{};// this is the difference between the current and last iteration of the wFluct variable
 
   bool isRogue{};// this is false until it becomes true. Should not go true.
-  bool isActive{};// this is true until it becomes false.
+  bool isActive = false;// this is true until it becomes false.
 
   // particle physical property
   double d;// particle diameter diameter [microns]

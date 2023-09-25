@@ -53,6 +53,7 @@
 #include "ParticleLarge.hpp"
 #include "ParticleHeavyGas.hpp"
 
+#include "ParticleManager.h"
 #include "ParticleFactories.hpp"
 
 #include "ReleaseType.hpp"
@@ -250,4 +251,8 @@ public:
   virtual int emitParticles(const float &dt,
                             const float &currTime,
                             std::list<Particle *> &emittedParticles);
+
+  virtual int emitParticles(const float &dt,
+                            const float &currTime,
+                            ParticleManager<ParticleTracer> *particleList);
 };

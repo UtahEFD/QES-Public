@@ -25,6 +25,8 @@ SET( qesPlumeCoreSources
     BoundaryConditions.hpp
     DomainBoundaryConditions.cpp
 
+    ParticleManager.cpp
+
     Particle.hpp
     ParticleFactories.hpp
     ParticleSmall.hpp
