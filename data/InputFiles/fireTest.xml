@@ -1,5 +1,5 @@
 <simulationParameters>
-        <DEM>../GISFiles/L2F_elevation40_UTM.tif</DEM>
+        <!--DEM>../GISFiles/L2F_elevation40_UTM.tif</DEM-->
   	<halo_x> 16.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 16.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
     <domain> 110 110 125 </domain> <!-- nx,ny,nz-->
@@ -124,9 +124,9 @@
   <!--LMfile>Fire_mixlength.nc</LMfile--> <!-- Address to mixing lethng location--> 
 <!--/localMixingParam-->
 <fires>
-	<!--numFires>1</numFires -->
+	<numFires>1</numFires>
 	<fuelType>3</fuelType>
-	<fuelMap>../data/FireFiles/L2F_fuel40_UTM.tif</fuelMap>
+	<!--fuelMap>../data/FireFiles/L2F_fuel40_UTM.tif</fuelMap-->
 	<fmc> 0.065 </fmc>
 
     <courant> 0.5 </courant>

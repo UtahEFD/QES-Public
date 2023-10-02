@@ -67,7 +67,7 @@ public:
   TURBParams *turbParams = nullptr; /**< :document this: */
   BuildingsParams *buildingsParams = nullptr; /**< :document this: */
   VegetationParams *vegetationParams = nullptr; /**< :document this: */
-  Fires* fires; /**< :document this: */
+  Fires *fires = nullptr; /**< :document this: */
 
   WINDSInputData()
   {

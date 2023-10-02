@@ -7,9 +7,12 @@
 
 #include <string>
 #include "util/ParseInterface.h"
+#include "util/ParseVector.h"
 #include "util/Vector3.h"
+#include "util/Vector3Int.h"
 #include "winds/DTEHeightField.h"
 #include "ignition.h"
+#include "winds/Mesh.h"
 
 class Fires : public ParseInterface
 {
@@ -30,12 +33,18 @@ public:
     parsePrimitive<int>(true, fieldFlag, "fieldFlag");
     fuelFile = "";
     parsePrimitive<std::string>(false, fuelFile, "fuelMap");
+    if (fuelFile != ""){
+      fuelFile = QESfs::get_absolute_path(fuelFile);
+    }
   }
+
+
   void parseTree(pt::ptree t)
   {
     setTree(t);
     setParents("root");
     parseValues();
+
   }
 };
 #endif

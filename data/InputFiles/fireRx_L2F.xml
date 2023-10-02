@@ -10,12 +10,7 @@
 
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 1 </totalTimeIncrements>
-	<rooftopFlag> 1 </rooftopFlag>
-	<upwindCavityFlag> 2 </upwindCavityFlag>
-	<streetCanyonFlag> 1 </streetCanyonFlag>
-	<streetIntersectionFlag> 0 </streetIntersectionFlag>
-	<wakeFlag> 2 </wakeFlag>
-	<sidewallFlag> 1 </sidewallFlag>
+
 	<maxIterations> 500 </maxIterations>
 	<tolerance> 1E-9 </tolerance>
 	<meshTypeFlag> 0 </meshTypeFlag>
@@ -44,24 +39,33 @@
        		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
        		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
        		<height> 9.0 </height> 				<!-- Height of the sensor -->
-       		<speed> 12.6 </speed> 					<!-- Measured speed at the sensor height -->       		
+       		<speed> 9.9 </speed> 					<!-- Measured speed at the sensor height -->       		
        		<direction> 130.0 </direction> 				<!-- Wind direction of sensor -->
     	    </timeSeries>
 	</sensor>                      					<!-- End of sensor section --> 
 </metParams>
-
+<buildingsParams>
+  <wallRoughness> 0.1 </wallRoughness>
+  	<rooftopFlag> 1 </rooftopFlag>
+	<upwindCavityFlag> 2 </upwindCavityFlag>
+	<streetCanyonFlag> 1 </streetCanyonFlag>
+	<streetIntersectionFlag> 0 </streetIntersectionFlag>
+	<wakeFlag> 2 </wakeFlag>
+	<sidewallFlag> 1 </sidewallFlag>
+</buildingsParams>
 <fires>
 	<numFires> 1 </numFires>
-	<fireDur> 11600 </fireDur>
+	<fireDur> 10000 </fireDur>
 	<!--fireDur> 100 </fireDur-->
 	<fuelType> 102 </fuelType>
 	<fmc> 0.14 </fmc>			<!-- Fuel moisture -->
-	<!--fuelMap>../data/FireFiles/L2F_fuel40_UTM.tif</fuelMap-->
+	<fuelMap>../FireFiles/L2F_fuel40_UTM.tif</fuelMap>
 	<ignition>
      		<height> 1.0 </height>
      		<baseHeight> 0 </baseHeight> <!--meters-->
      		<xStart> 1465.0 </xStart> <!--meters-->
      		<yStart> 1110.0 </yStart> <!--meters-->
+
      		<length> 16.0 </length> <!--meters-->
      		<width>  16.0 </width> <!--meters-->
    	</ignition>
