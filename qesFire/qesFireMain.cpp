@@ -378,8 +378,8 @@ int main(int argc, char *argv[])
       /**
 	* Advance fire time from variable fire timestep
 	**/
-      //simTimeCurr += fire->dt;
-      simTimeCurr += 10;
+      simTimeCurr += fire->dt;
+      //simTimeCurr += 10;
       std::cout << "time = " << simTimeCurr << endl;
 
       /**
