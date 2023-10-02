@@ -154,7 +154,12 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   //  data
   // !!! totalParsToRelease needs calculated very carefully here using
   // information from each of the sources
-  getInputSources(PID);
+  if (PID->sourceParams) {
+    getInputSources(PID);
+  } else {
+    std::cout << "[WARNING]\t no source parameters" << std::endl;
+  }
+
 
   /* setup boundary condition functions */
 
@@ -203,7 +208,7 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
   // for every simulation time step
   // //////////////////////////////////////////
 
-  if (debug == true) {
+  if (debug) {
     // start recording the amount of time it takes to perform the simulation
     // time integration loop
     timers.startNewTimer("simulation time integration loop");
@@ -455,40 +460,34 @@ double Plume::calcCourantTimestep(const double &d,
 
 void Plume::getInputSources(PlumeInputData *PID)
 {
-  int numSources_Input = PID->sources->sources.size();
+  int numSources_Input = PID->sourceParams->sources.size();
 
   if (numSources_Input == 0) {
-    std::cerr << "[ERROR]\t(Dispersion::getInputSources): there are no sources in the input file!"
-              << std::endl;
+    std::cerr << "[ERROR]\t Plume::getInputSources: \n\t\t there are no sources in the input file!" << std::endl;
     exit(1);
   }
 
   // start at zero particles to release and increment as the number per source
-  // is found out
-  totalParsToRelease = 0;
+  // totalParsToRelease = 0;
 
-  for (auto sIdx = 0; sIdx < numSources_Input; sIdx++) {
-    // first create the pointer to the input source
-    SourceType *sPtr;
-
-    // now point the pointer at the source
-    sPtr = PID->sources->sources.at(sIdx);
-
+  for (auto s : PID->sourceParams->sources) {
     // now do anything that is needed to the source via the pointer
-    sPtr->setSourceIdx(sIdx);
-    sPtr->m_rType->calcReleaseInfo(PID->plumeParams->timeStep, PID->plumeParams->simDur);
-    sPtr->m_rType->checkReleaseInfo(PID->plumeParams->timeStep, PID->plumeParams->simDur);
-    sPtr->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
+    s->checkReleaseInfo(PID->plumeParams->timeStep, PID->plumeParams->simDur);
+    s->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
 
-    // now determine the number of particles to release for the source and
-    // update the overall count
-    totalParsToRelease = totalParsToRelease + sPtr->m_rType->m_numPar;
+    // now determine the number of particles to release for the source and update the overall count
+    totalParsToRelease += s->getNumParticles();
 
-    // now add the pointer that points to the source to the list of sources in
-    // dispersion
-    allSources.push_back(sPtr);
+    // add source into the vector of sources
+    allSources.push_back(new Source((int)allSources.size(), s));
   }
 }
+
+void Plume::addSources(std::vector<Source *> &newSources)
+{
+  allSources.insert(allSources.end(), newSources.begin(), newSources.end());
+}
+
 
 int Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
@@ -498,8 +497,8 @@ int Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBGe
 
   std::list<Particle *> nextSetOfParticles;
   int numNewParticles = 0;
-  for (auto sIdx = 0u; sIdx < allSources.size(); sIdx++) {
-    numNewParticles += allSources.at(sIdx)->emitParticles((float)sim_dt, currentTime, nextSetOfParticles);
+  for (auto source : allSources) {
+    numNewParticles += source->emitParticles((float)sim_dt, currentTime, nextSetOfParticles);
   }
 
   setParticleVals(WGD, TGD, nextSetOfParticles);
@@ -864,7 +863,7 @@ void Plume::setBCfunctions(const std::string &xBCtype,
   // https://www.learncpp.com/cpp-tutorial/78-function-pointers/
 
   // output some debug information
-  if (debug == true) {
+  if (debug) {
     std::cout << "xBCtype = \"" << xBCtype << "\"" << std::endl;
     std::cout << "yBCtype = \"" << yBCtype << "\"" << std::endl;
     std::cout << "zBCtype = \"" << zBCtype << "\"" << std::endl;

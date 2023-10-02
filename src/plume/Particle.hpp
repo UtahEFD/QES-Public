@@ -218,10 +218,10 @@ public:
   double c1;// Stk* fit param (exponent)
   double c2;// Stk* fit param (exponent)
   // settling variables
-  double dstar{};// dimensionless grain diameter
-  double Cd{};// drag coefficient
-  double wstar{};// dimensionless settling velocity
-  double vs{};// settling velocity [m/s]
+  double dstar = 0;// dimensionless grain diameter
+  double Cd = 0;// drag coefficient
+  double wstar = 0;// dimensionless settling velocity
+  double vs = 0;// settling velocity [m/s]
 
   // decay variables
   double wdecay;// (1 - fraction) particle decayed [0,1]

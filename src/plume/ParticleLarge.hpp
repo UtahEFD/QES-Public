@@ -84,7 +84,7 @@ public:
   //  void setSettlingVelocity(const double &, const double &);
   void setSettlingVelocity(const double &rhoAir, const double &nuAir) override
   {
-    if (d > 0) {
+    if (d > 0 && rho > rhoAir) {
       // dimensionless grain diameter
       dstar = d_m * pow(9.81 / pow(nuAir, 2.0) * (rho / rhoAir - 1.), 1.0 / 3.0);
       // drag coefficent

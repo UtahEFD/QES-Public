@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file SourceCube.cpp
+/** @file SourceLine.hpp
  * @brief This class represents a specific source type.
  *
  * @note Child of SourceType
@@ -38,44 +38,41 @@
 #pragma once
 
 
-#include "SourceType.hpp"
+#include "SourceGeometry.hpp"
 #include "winds/WINDSGeneralData.h"
 // #include "Particles.hpp"
 
-class SourceCube : public SourceType
+class SourceGeometry_Line : public SourceGeometry
 {
 private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
   // guidelines for how to set these variables within an inherited source are given in SourceType.
 
-  double m_minX = -1.0;
-  double m_minY = -1.0;
-  double m_minZ = -1.0;
-  double m_maxX = -1.0;
-  double m_maxY = -1.0;
-  double m_maxZ = -1.0;
+  double posX_0 = -1.0;
+  double posY_0 = -1.0;
+  double posZ_0 = -1.0;
+  double posX_1 = -1.0;
+  double posY_1 = -1.0;
+  double posZ_1 = -1.0;
   double sourceStrength = 0.0;// total mass released (g)
 protected:
 public:
   // Default constructor
-  SourceCube() : SourceType(SourceShape::cube)
+  SourceGeometry_Line() : SourceGeometry(SourceShape::line)
   {
   }
 
   // destructor
-  ~SourceCube() = default;
+  ~SourceGeometry_Line() = default;
 
   void parseValues() override
   {
-    setReleaseType();
-    setParticleType();
-
-    parsePrimitive<double>(true, m_minX, "minX");
-    parsePrimitive<double>(true, m_minY, "minY");
-    parsePrimitive<double>(true, m_minZ, "minZ");
-    parsePrimitive<double>(true, m_maxX, "maxX");
-    parsePrimitive<double>(true, m_maxY, "maxY");
-    parsePrimitive<double>(true, m_maxZ, "maxZ");
+    parsePrimitive<double>(true, posX_0, "posX_0");
+    parsePrimitive<double>(true, posY_0, "posY_0");
+    parsePrimitive<double>(true, posZ_0, "posZ_0");
+    parsePrimitive<double>(true, posX_1, "posX_1");
+    parsePrimitive<double>(true, posY_1, "posY_1");
+    parsePrimitive<double>(true, posZ_1, "posZ_1");
 
     parsePrimitive<double>(false, sourceStrength, "sourceStrength");
   }
@@ -88,8 +85,5 @@ public:
                     const double &domainZstart,
                     const double &domainZend) override;
 
-
-  int emitParticles(const float &dt,
-                    const float &currTime,
-                    std::list<Particle *> &emittedParticles) override;
+  void setInitialPosition(Particle *ptr) override;
 };

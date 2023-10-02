@@ -35,60 +35,36 @@
  * @sa SourceType
  */
 
-#include "SourcePoint.hpp"
+#include "SourceGeometry_Point.hpp"
 #include "winds/WINDSGeneralData.h"
 #define _USE_MATH_DEFINES
 #include <cmath>
 // #include "Interp.h"
 
-void SourcePoint::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
+void SourceGeometry_Point::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
   if (posX < domainXstart || posX > domainXend) {
-    std::cerr << "ERROR (SourcePoint::checkPosInfo): input posX is outside of domain! posX = \"" << posX
+    std::cerr << "[ERROR] \t SourceGeometry_Point::checkPosInfo: \n\t\t input posX is outside of domain! posX = \"" << posX
               << "\" domainXstart = \"" << domainXstart << "\" domainXend = \"" << domainXend << "\"" << std::endl;
     exit(1);
   }
   if (posY < domainYstart || posY > domainYend) {
-    std::cerr << "ERROR (SourcePoint::checkPosInfo): input posY is outside of domain! posY = \"" << posY
+    std::cerr << "[ERROR] \t SourceGeometry_Point::checkPosInfo: \n\t\t input posY is outside of domain! posY = \"" << posY
               << "\" domainYstart = \"" << domainYstart << "\" domainYend = \"" << domainYend << "\"" << std::endl;
     exit(1);
   }
   if (posZ < domainZstart || posZ > domainZend) {
-    std::cerr << "ERROR (SourcePoint::checkPosInfo): input posZ is outside of domain! posZ = \"" << posZ
+    std::cerr << "[ERROR] \t SourceGeometry_Point::checkPosInfo: \n\t\t input posZ is outside of domain! posZ = \"" << posZ
               << "\" domainZstart = \"" << domainZstart << "\" domainZend = \"" << domainZend << "\"" << std::endl;
     exit(1);
   }
 }
 
 // template <class typeid(parType).name()>
-int SourcePoint::emitParticles(const float &dt,
-                               const float &currTime,
-                               std::list<Particle *> &emittedParticles)
+void SourceGeometry_Point::setInitialPosition(Particle *ptr)
 {
-  // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
-  if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
-
-    for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
-      Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
-      m_protoParticle->setParticleParameters(cPar);
-
-      // set initial position
-      cPar->xPos_init = posX;
-      cPar->yPos_init = posY;
-      cPar->zPos_init = posZ;
-
-      cPar->m = sourceStrength / m_rType->m_numPar;
-      cPar->m_kg = cPar->m * (1.0E-3);
-      cPar->m_o = cPar->m;
-      cPar->m_kg_o = cPar->m * (1.0E-3);
-
-      cPar->tStrt = currTime;
-
-      cPar->sourceIdx = sourceIdx;
-
-      emittedParticles.push_front(cPar);
-    }
-  }
-
-  return emittedParticles.size();// m_rType->m_parPerTimestep;
+  // set initial position
+  ptr->xPos_init = posX;
+  ptr->yPos_init = posY;
+  ptr->zPos_init = posZ;
 }

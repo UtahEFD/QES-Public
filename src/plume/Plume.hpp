@@ -75,12 +75,9 @@
 #include "WallReflection_TriMesh.h"
 
 #include "Particle.hpp"
+#include "Source.hpp"
 
-#include "SourcePoint.hpp"
-#include "SourceLine.hpp"
-#include "SourceSphereSurface.hpp"
-#include "SourceCube.hpp"
-#include "SourceFullDomain.hpp"
+#include "SourceGeometry.hpp"
 
 class Plume
 {
@@ -109,6 +106,8 @@ public:
   //  that is used to do an additional time remainder time integration loop for each particle, forcing particles to only
   //  move one cell at a time.
   void run(QEStime, WINDSGeneralData *, TURBGeneralData *, std::vector<QESNetCDFOutput *>);
+
+  void addSources(std::vector<Source *> &newSources);
 
   int getTotalParsToRelease() const { return totalParsToRelease; }// accessor
 
@@ -189,7 +188,7 @@ protected:
   double vel_threshold = 0.0;
 
   // ALL Sources that will be used
-  std::vector<SourceType *> allSources;
+  std::vector<Source *> allSources;
   // this is the global counter of particles released (used to set particleID)
   int nParsReleased = 0;
 
@@ -213,6 +212,7 @@ protected:
   bool debug = false;
   bool verbose = false;
 
+private:
   void setParticleVals(WINDSGeneralData *, TURBGeneralData *, std::list<Particle *>);
   // this function gets sources from input data and adds them to the allSources vector
   // this function also calls the many check and calc functions for all the input sources
@@ -319,7 +319,6 @@ protected:
                       const std::string &);
 
 
-private:
   Plume()
   {}
 };

@@ -25,17 +25,18 @@
     <nBoxesY> 49 </nBoxesY>
     <nBoxesZ> 69 </nBoxesZ>
   </collectionParameters>
-  <sources>
-    <numSources> 1 </numSources>
-    <SourcePoint>
-      <ReleaseType_continuous>
+  <sourceParameters>
+    <source>
+      <releaseType_continuous>
         <parPerTimestep> 400 </parPerTimestep>
-      </ReleaseType_continuous>
-      <posX> 20.0 </posX>
-      <posY> 50.0 </posY>
-      <posZ> 70.0 </posZ>
-    </SourcePoint>
-  </sources>
+      </releaseType_continuous>
+      <sourceGeometry_Point>
+        <posX> 20.0 </posX>
+        <posY> 50.0 </posY>
+        <posZ> 70.0 </posZ>
+      </sourceGeometry_Point>
+    </source>
+  </sourceParameters>
   <boundaryConditions>
     <xBCtype>exiting</xBCtype>
     <yBCtype>exiting</yBCtype>

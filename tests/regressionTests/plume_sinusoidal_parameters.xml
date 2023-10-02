@@ -25,14 +25,15 @@
 	<nBoxesY> 5 </nBoxesY>
 	<nBoxesZ> 20 </nBoxesZ>
 </collectionParameters>
-<sources>
-  	<numSources> 1 </numSources>
-  	<SourceFullDomain>
-		<ReleaseType_instantaneous>
+<sourceParameters>
+  	<source>
+		<releaseType_instantaneous>
 			<numPar>200000</numPar>
-		</ReleaseType_instantaneous>
-  	</SourceFullDomain>
-</sources>
+		</releaseType_instantaneous>
+		<sourceGeometry_FullDomain>
+  		</sourceGeometry_FullDomain>
+	</source>
+</sourceParameters>
 <boundaryConditions>
   	<xBCtype>periodic</xBCtype>
   	<yBCtype>periodic</yBCtype>
