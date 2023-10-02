@@ -463,7 +463,8 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
 float Fire ::computeTimeStep()
 {
   // spread rates
-  float r, r_max;
+  float r = 0;
+  float r_max = 0;
 
   // get max spread rate
   for (int j = 0; j < ny - 1; j++) {
@@ -476,6 +477,10 @@ float Fire ::computeTimeStep()
   std::cout << "max ROS = " << r_max << std::endl;
   if (r_max < 0.3) {
     r_max = 0.3;
+  }
+  else if (isnan(r_max)){
+    r_max = 0.3;
+    std::cout<<"r_max is NaN, setting to 0.3"<<std::endl;
   }
   float dt = courant * dx / r_max;
  
@@ -1259,7 +1264,6 @@ struct Fire::FireProperties Fire ::balbi(FuelProperties *fuel, float u_mid, floa
     fp.T = TFlame;
     fp.tau = tau;
     fp.K = KDrag;
-    fp.H0 = H0;
   }
   return fp;
 }

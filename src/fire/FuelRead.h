@@ -33,7 +33,6 @@
 #define __FUEL_READ_HPP__ 1
 
 #include <string>
-#include "winds/Triangle.h"
 #include "util/Vector3.h"
 #include "util/Vector3Int.h"
 

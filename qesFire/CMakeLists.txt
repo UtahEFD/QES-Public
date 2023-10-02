@@ -1,18 +1,28 @@
-include_directories(${CMAKE_SOURCE_DIR})
+
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
-CUDA_ADD_EXECUTABLE( qesFire
-handleQESArgs.cpp
-  qesFireMain.cpp
+IF ($CACHE{HAS_CUDA_SUPPORT})
+	CUDA_ADD_EXECUTABLE( qesFire
+		handleQESArgs.cpp
+  	qesFireMain.cpp
   )
+ELSE ($CACHE{HAS_CUDA_SUPPORT})
+	ADD_EXECUTABLE( qesFire
+		handleQESArgs.cpp
+		qesFireMain.cpp
+	)
+ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 target_link_libraries(qesFire curand)
 target_link_libraries(qesFire qeswindscore)
+IF ($CACHE{HAS_CUDA_SUPPORT})
+	target_link_libraries(qesFire qeswindsgpu)
+ENDIF()
 target_link_libraries(qesFire qesfirecore)
 target_link_libraries(qesFire qesplumecore)
 target_link_libraries(qesFire qesutil)
 
-IF (HAS_OPTIX_SUPPORT MATCHES ON)
+IF ($CACHE{HAS_OPTIX_SUPPORT})
   target_link_libraries(qesFire qesOptix)
 ENDIF()
 

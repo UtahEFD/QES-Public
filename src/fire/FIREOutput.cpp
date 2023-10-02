@@ -38,8 +38,7 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd, Fire *fire, std::string output_fil
   v_out.resize(numcell_cout, 0.0);
   w_out.resize(numcell_cout, 0.0);
   icellflag_out.resize(numcell_cout, 0.0);
-
-  std::cout << "test 1" << std::endl;
+  
   // set cell-centered data dimensions
   // space dimensions
   NcDim NcDim_x = addDimension("xdim", wgd_->nx - 1);

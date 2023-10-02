@@ -39,7 +39,8 @@
     	<streetCanyonFlag> 0 </streetCanyonFlag> 			<!-- Street canyon flag (0-none, 1-Roeckle w/ Fackrel (default)) -->
     	<streetIntersectionFlag> 0 </streetIntersectionFlag> 		<!--Street intersection flag (0-off, 1-on) -->
     	<wakeFlag> 1 </wakeFlag> 					<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle (default), 3-Area Scaled) -->
-    	<sidewallFlag> 1 </sidewallFlag> 				<!-- Sidewall flag (0-off, 1-on (default)) -->
+	<highRiseFlag> 0 </highRiseFlag>
+	<sidewallFlag> 1 </sidewallFlag> 				<!-- Sidewall flag (0-off, 1-on (default)) -->
 	<numBuildings> 1 </numBuildings>
 	<numPolygonNodes> 0 </numPolygonNodes>
 

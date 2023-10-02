@@ -402,11 +402,13 @@ endfunction()
 add_subdirectory(src/util)
 add_subdirectory(src/winds)
 add_subdirectory(src/plume)
+add_subdirectory(src/fire)
 
 add_subdirectory(scratch)
 
 add_subdirectory(qesWinds)
 add_subdirectory(qesPlume)
+add_subdirectory(qesFire)
 add_subdirectory(qes)
 
 # ----------------------------------------------------------

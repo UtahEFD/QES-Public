@@ -43,7 +43,6 @@
 
 #include "util/calcTime.h"
 
-#include "plume/handlePlumeArgs.hpp"
 #include "plume/PlumeInputData.hpp"
 #include "util/NetCDFInput.h"
 #include "plume/Plume.hpp"
@@ -67,10 +66,12 @@
 
 #include "winds/Solver.h"
 #include "winds/CPUSolver.h"
+#include "winds/Solver_CPU_RB.h"
+#ifdef HAS_CUDA
 #include "winds/DynamicParallelism.h"
 #include "winds/GlobalMemory.h"
 #include "winds/SharedMemory.h"
-
+#endif
 #include "winds/Sensor.h"
 
 #include "fire/Fire.h"
@@ -86,7 +87,9 @@ using namespace netCDF::exceptions; //plume
 
 int main(int argc, char *argv[])
 {
-  // QES-Winds - Version output information
+  QESout::splashScreen();
+  /*
+    // QES-Winds - Version output information
   std::string Revision = "0";
   std::cout << "QES-Fire "
             << "1.0.0" << std::endl;
@@ -94,7 +97,8 @@ int main(int argc, char *argv[])
 #ifdef HAS_OPTIX
   std::cout << "OptiX is available!" << std::endl;
 #endif
-
+  */
+  
   // ///////////////////////////////////
   // Parse Command Line arguments
   // ///////////////////////////////////
@@ -181,10 +185,18 @@ int main(int argc, char *argv[])
   // Run the QES-Winds Solver
   //
   // //////////////////////////////////////////
+  /*
   Solver *solver = nullptr;
   if (arguments.solveType == CPU_Type) {
+    #ifdef _OPENMP
+    std::cout << "Run Red/Black Solver (CPU) ..." << std::endl;
+    solver = new Solver_CPU_RB(WID, WGD);
+    #else
     std::cout << "Run Serial Solver (CPU) ..." << std::endl;
     solver = new CPUSolver(WID, WGD);
+    #endif
+
+    #ifdef HAS_CUDA
   } else if (arguments.solveType == DYNAMIC_P) {
     std::cout << "Run Dynamic Parallel Solver (GPU) ..." << std::endl;
     solver = new DynamicParallelism(WID, WGD);
@@ -194,10 +206,35 @@ int main(int argc, char *argv[])
   } else if (arguments.solveType == Shared_M) {
     std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
     solver = new SharedMemory(WID, WGD);
+    #endif
   } else {
     QESout::error("Invalid solve type");
   }
+  */
+    Solver *solver = nullptr;
+  if (arguments.solveType == CPU_Type) {
+#ifdef _OPENMP
+    std::cout << "Run Red/Black Solver (CPU) ..." << std::endl;
+    solver = new Solver_CPU_RB(WID, WGD);
+#else
+    std::cout << "Run Serial Solver (CPU) ..." << std::endl;
+    solver = new CPUSolver(WID, WGD);
+#endif
 
+#ifdef HAS_CUDA
+  } else if (arguments.solveType == DYNAMIC_P) {
+    std::cout << "Run Dynamic Parallel Solver (GPU) ..." << std::endl;
+    solver = new DynamicParallelism(WID, WGD);
+  } else if (arguments.solveType == Global_M) {
+    std::cout << "Run Global Memory Solver (GPU) ..." << std::endl;
+    solver = new GlobalMemory(WID, WGD);
+  } else if (arguments.solveType == Shared_M) {
+    std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
+    solver = new SharedMemory(WID, WGD);
+#endif
+  } else {
+    QESout::error("Invalid solve type");
+  }
 
   // /////////////////////////////
   //
@@ -307,8 +344,9 @@ int main(int argc, char *argv[])
       /**
        * Run ROS model to get initial spread rate and fire properties
        **/
+
       fire->run(solver, WGD);
-      
+    
       /**
        * Calculate fire-induced winds from burning cells
        **/
