@@ -1,11 +1,9 @@
 
 Inactive Modules:
-  1) boost/1.66.0
-
-Due to MODULEPATH changes, the following have been reloaded:
-  1) netcdf-cxx/4.3.0
+  1) boost/1.77.0     3) intel-oneapi-mpi/2021.4.0     5) netcdf-cxx/4.2
+  2) gdal/3.3.3       4) netcdf-c/4.8.1
 
 The following have been reloaded with a version change:
-  1) gcc/5.4.0 => gcc/8.1.0
+  1) gcc/8.5.0 => gcc/8.1.0
 
-/uufs/notchpeak.peaks/sys/var/slurm/slurmd.spool/notch055//job1910205/slurm_script: line 13: .: ../build/qesFire/qesFire: cannot execute binary file
+/uufs/notchpeak.peaks/sys/var/slurm/slurmd.spool/notch055//job7177405/slurm_script: line 13: ..: command not found

@@ -29,11 +29,26 @@
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 #include <iostream>
+#include <netcdf>
+#include <stdlib.h>
+#include <cstdlib>
+#include <cstdio>
+#include <algorithm>
+
 
 #include <boost/foreach.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+
+#include "util/calcTime.h"
+
+#include "plume/handlePlumeArgs.hpp"
+#include "plume/PlumeInputData.hpp"
+#include "util/NetCDFInput.h"
+#include "plume/Plume.hpp"
+#include "plume/PlumeOutput.h"
+#include "plume/PlumeOutputParticleData.h"
 
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
@@ -66,6 +81,8 @@ namespace pt = boost::property_tree;
 using namespace boost::gregorian;
 using namespace boost::posix_time;
 
+using namespace netCDF;             //plume
+using namespace netCDF::exceptions; //plume
 
 int main(int argc, char *argv[])
 {
@@ -115,6 +132,13 @@ int main(int argc, char *argv[])
       QESout::error("No dem file specified as input");
     }
   }
+  /**
+  // parse Plume xml settings
+  PlumeInputData *PID = new PlumeInputData(arguments.qesPlumeParamFile);
+  if (!PID)
+    QESout::error("QES-Plume input file: " + arguments.qesPlumeParamFile + " not able to be read successfully.");
+  **/
+  
   // Generate the general WINDS data from all inputs
   WINDSGeneralData *WGD = new WINDSGeneralData(WID, arguments.solveType);
 
@@ -139,6 +163,19 @@ int main(int argc, char *argv[])
     outputVec.push_back(new TURBOutput(TGD, arguments.netCDFFileTurb));
   }
 
+  /**
+    // Create instance of Plume model class
+  Plume *plume = new Plume(PID, WGD, TGD);
+
+  // create output instance
+  std::vector<QESNetCDFOutput *> PoutputVec;
+  // always supposed to output lagrToEulOutput data
+  PoutputVec.push_back(new PlumeOutput(PID, plume, arguments.outputPlumeFile));
+  if (arguments.doParticleDataOutput == true) {
+    PoutputVec.push_back(new PlumeOutputParticleData(PID, plume, arguments.outputParticleDataFile));
+  }
+  **/
+  
   // //////////////////////////////////////////
   //
   // Run the QES-Winds Solver
@@ -179,7 +216,6 @@ int main(int argc, char *argv[])
      **/
 
   std::vector<QESNetCDFOutput *> outFire;
-  std::cout << "test" << std::endl;
   outFire.push_back(new FIREOutput(WGD, fire, arguments.netCDFFileFireOut));
 
 
@@ -226,15 +262,15 @@ int main(int argc, char *argv[])
 
     std::cout << "Solver done!\n";
 
-
     /**
        * Run turbulence if specified
        **/
-
+   
     if (TGD != nullptr) {
       TGD->run();
+      std::cout << "Turbulance calculated\n";
     }
-
+   
     /**
        * Save initial fields from sensor time to reset after each time+fire loop
        **/
@@ -258,6 +294,16 @@ int main(int argc, char *argv[])
        **/
 
     while (simTimeCurr < endtime) {
+          /**
+       * Reset icellflag values
+       **/
+      WGD->resetICellFlag();
+
+      /**
+       * Create initial velocity field from the new sensors
+       **/
+      WGD->applyWindProfile(WID, index, arguments.solveType);
+    
       /**
        * Run ROS model to get initial spread rate and fire properties
        **/
@@ -266,17 +312,20 @@ int main(int argc, char *argv[])
       /**
        * Calculate fire-induced winds from burning cells
        **/
-      //auto start = std::chrono::high_resolution_clock::now();// Start recording executiontime
       fire->potential(WGD);
-      //auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
 
-      //std::chrono::duration<float> elapsed = finish - start;
-      //std::cout << "Plume solve: elapsed time: " << elapsed.count() << " s\n";// Print out elapsed execution time for fire-induced winds
+       /** 
+       * Apply parameterizations
+       **/
+      WGD->applyParametrizations(WID);
 
       /**
        * Run run wind solver to calculate mass conserved velocity field including fire-induced winds
        **/
       solver->solve(WID, WGD, !arguments.solveWind);
+      if (TGD != nullptr) {
+	TGD->run();
+      }
 
       /**
        * Run ROS model to calculate spread rates with updated winds
@@ -288,12 +337,22 @@ int main(int argc, char *argv[])
        **/
       fire->move(solver, WGD);
 
-
       /**
 	* Advance fire time from variable fire timestep
 	**/
-      simTimeCurr += fire->dt;
+      //simTimeCurr += fire->dt;
+      simTimeCurr += 10;
       std::cout << "time = " << simTimeCurr << endl;
+
+      /**
+      std::cout << "------Running Plume------" << std::endl;
+      //PID->sources->sources = 
+      QEStime pendtime;///< End time for fire time loop
+      //pendtime = WGD->timestamp[index] + PID->plumeParams->simDur;
+      pendtime = simTimeCurr; //run until end of fire timestep
+      plume->run(pendtime, WGD, TGD, PoutputVec);
+      std::cout << "------Plume Finished------" << std::endl;
+      **/
 
 
       /**
@@ -304,14 +363,15 @@ int main(int argc, char *argv[])
       }
 
       /**
-	 * Reset wind fieldsto initial values for sensor timestep
+	 * Reset wind fields to initial values for sensor timestep
 	 **/
-      WGD->u0 = Fu0;
-      WGD->v0 = Fv0;
-      WGD->w0 = Fw0;
+      //WGD->u0 = Fu0;
+      //WGD->v0 = Fv0;
+      //WGD->w0 = Fw0;
     }
+  
+
   }
-
-
+  std::cout << "Simulation finished" << std::endl;
   exit(EXIT_SUCCESS);
 }
