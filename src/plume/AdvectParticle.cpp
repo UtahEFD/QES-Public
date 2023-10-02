@@ -32,8 +32,15 @@
 
 #include "Plume.hpp"
 
-void Plume::advectParticle(double timeRemainder, Particle *par_ptr, WINDSGeneralData *WGD, TURBGeneralData *TGD)
+void Plume::advectParticle(double timeRemainder, Particle *par_ptr, double boxSizeZ, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
+  /*
+   * this function is advencing the particle -> status is returned in:
+   * - parItr->isRogue
+   * - parItr->isActive
+   * this function take in a particle pointer
+   * and does not do any manipulation on particleList
+   */
 
   double rhoAir = 1.225;// in kg m^-3
   double nuAir = 1.506E-5;// in m^2 s^-1
@@ -69,6 +76,7 @@ void Plume::advectParticle(double timeRemainder, Particle *par_ptr, WINDSGeneral
   double flux_div_y = 0.0;
   double flux_div_z = 0.0;
 
+  double nuT = 0.0;
   // size_t cellIdx_old = interp->getCellId(xPos,yPos,zPos);
 
   // getting the initial position, for use in setting finished particles
@@ -138,7 +146,7 @@ void Plume::advectParticle(double timeRemainder, Particle *par_ptr, WINDSGeneral
       will need to use the interp3D function
     */
 
-    interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, CoEps);
+    interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
 
     // now need to call makeRealizable on tau
     makeRealizable(txx, txy, txz, tyy, tyz, tzz);
@@ -151,12 +159,7 @@ void Plume::advectParticle(double timeRemainder, Particle *par_ptr, WINDSGeneral
     // and the grid sizes. Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
 
     int cellId = interp->getCellId(xPos, yPos, zPos);
-    int cellId2d = interp->getCellId2d(xPos, yPos);
-    // LDU: if particle drops below terrain height, remove it (kludge, fix later) (doesn't include halo)
-    if (zPos <= WGD->terrain[cellId2d]) {
-      isActive = false;
-      break;
-    }
+
     double dWall = WGD->mixingLengths[cellId];
     double par_dt = calcCourantTimestep(dWall,
                                         std::abs(uMean) + std::abs(uFluct),
@@ -194,13 +197,19 @@ void Plume::advectParticle(double timeRemainder, Particle *par_ptr, WINDSGeneral
       break;
     }
 
-    // these are the random numbers for each direction
-    // LA note: should be randn() matlab equivalent, which is a normally distributed random number
-    // LA future work: it is possible the rogue particles are caused by the random number generator stuff.
-    //  Need to look into it at some time.
+// these are the random numbers for each direction
+// LA note: should be randn() matlab equivalent, which is a normally distributed random number
+// LA future work: it is possible the rogue particles are caused by the random number generator stuff.
+//  Need to look into it at some time.
+#ifdef _OPENMP
+    double xRandn = threadRNG[omp_get_thread_num()]->norRan();
+    double yRandn = threadRNG[omp_get_thread_num()]->norRan();
+    double zRandn = threadRNG[omp_get_thread_num()]->norRan();
+#else
     double xRandn = RNG->norRan();
     double yRandn = RNG->norRan();
     double zRandn = RNG->norRan();
+#endif
 
     // now calculate a bunch of values for the current particle
     // calculate the time derivative of the stress tensor: (tau_current - tau_old)/dt
@@ -291,7 +300,7 @@ void Plume::advectParticle(double timeRemainder, Particle *par_ptr, WINDSGeneral
 
     // Deposit mass (vegetation only right now)
     if (par_ptr->depFlag) {
-      depositParticle(xPos, yPos, zPos, disX, disY, disZ, uTot, vTot, wTot, txx, tyy, tzz, CoEps, par_ptr, WGD, TGD);
+      depositParticle(xPos, yPos, zPos, disX, disY, disZ, uTot, vTot, wTot, txx, tyy, tzz, txz, txy, tyz, par_ptr->vs, CoEps, boxSizeZ, nuT, par_ptr, WGD, TGD);
     }
 
     // check and do wall (building and terrain) reflection (based in the method)

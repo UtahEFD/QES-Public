@@ -65,30 +65,10 @@ public:
   // This is the one function that needs called from outside after constructor time
   void save(QEStime);
 
-private:
-  // default constructor
-  PlumeOutput() {}
-
-  // time averaging frequency control information
-  // in this case, this is also the output control information
-  // time to start concentration averaging, not the time to start output.
-  QEStime averagingStartTime;
   // averaging period in seconds
   float averagingPeriod;
-  //
-  float ongoingAveragingTime;
-
-  // variables needed for getting proper averaging and output time control
-  // next output time value that is updated each time save is called and output occurs.
-  // Also initializes a restart of the particle binning for the next time averaging period
-  QEStime nextOutputTime;
-
-  // pointer to the class that save needs to use to get the data for the concentration calculation
-  Plume *m_plume;
-
   // need the simulation timeStep for use in concentration averaging
   float timeStep;
-
   // Sampling box variables for calculating concentration data
   // Number of boxes to use for the sampling box
   int nBoxesX, nBoxesY, nBoxesZ;// Copies of the input: nBoxesX, Y, and Z.
@@ -101,6 +81,26 @@ private:
   std::vector<float> xBoxCen, yBoxCen, zBoxCen;// list of x,y, and z points for the concentration sampling box information
   std::vector<int> pBox;// sampling box particle counter (for average)
   std::vector<float> conc;// concentration values (for output)
+
+private:
+  // default constructor
+  PlumeOutput() {}
+
+  // time averaging frequency control information
+  // in this case, this is also the output control information
+  // time to start concentration averaging, not the time to start output.
+  QEStime averagingStartTime;
+  //
+  float ongoingAveragingTime;
+
+  // variables needed for getting proper averaging and output time control
+  // next output time value that is updated each time save is called and output occurs.
+  // Also initializes a restart of the particle binning for the next time averaging period
+  QEStime nextOutputTime;
+
+  // pointer to the class that save needs to use to get the data for the concentration calculation
+  Plume *m_plume;
+
 
   // function for counting the number of particles in the sampling boxes
   void boxCount();

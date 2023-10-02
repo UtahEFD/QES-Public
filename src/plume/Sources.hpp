@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Sources.hpp 
+/** @file Sources.hpp
  * @brief This class contains data and variables that set flags and
  * settngs read from the xml.
  *
@@ -41,7 +41,7 @@
 #include "SourceType.hpp"
 #include "SourcePoint.hpp"
 #include "SourceLine.hpp"
-#include "SourceCircle.hpp"
+#include "SourceSphereSurface.hpp"
 #include "SourceCube.hpp"
 #include "SourceFullDomain.hpp"
 
@@ -60,7 +60,7 @@ public:
     parsePrimitive<int>(true, numSources, "numSources");
     parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourcePoint>("SourcePoint"));
     parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceLine>("SourceLine"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceCircle>("SourceCircle"));
+    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceSphereSurface>("SourceSphereSurface"));
     parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceCube>("SourceCube"));
     parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceFullDomain>("SourceFullDomain"));
   }

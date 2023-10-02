@@ -187,7 +187,7 @@ void CanopyHomogeneous::canopyVegetation(WINDSGeneralData *WGD, int canopy_id)
                                                         WGD->vk,
                                                         0.0);
       // std::cout << "WGD->vk:" << WGD->vk << "\n";
-      //if (WGD->canopy->canopy_d[icell_2d] >= 10000 || isnan(WGD->canopy->canopy_d[icell_2d])) {
+      // if (WGD->canopy->canopy_d[icell_2d] >= 10000 || isnan(WGD->canopy->canopy_d[icell_2d])) {
       if (WGD->canopy->canopy_d[icell_2d] > WGD->canopy->canopy_height[icell_2d]) {
         std::cerr << "bisection failed to converge \n"
                   << "\t canopy ID = " << canopy_id << "; Height = " << H << "\n"
@@ -224,15 +224,15 @@ void CanopyHomogeneous::canopyVegetation(WINDSGeneralData *WGD, int canopy_id)
 
           // FM -> calculate averaged attenuation coef. (TO BE TESTE)
           // check if attenuation below or above is different
-          if (WGD->canopy->canopy_atten_coeff[icell_cent + nx_canopy * ny_canopy] != WGD->canopy->canopy_atten_coeff[icell_cent]
-              || WGD->canopy->canopy_atten_coeff[icell_cent - nx_canopy * ny_canopy] != WGD->canopy->canopy_atten_coeff[icell_cent]) {
+          if (WGD->canopy->canopy_atten_coeff[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)] != WGD->canopy->canopy_atten_coeff[icell_cent]
+              || WGD->canopy->canopy_atten_coeff[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] != WGD->canopy->canopy_atten_coeff[icell_cent]) {
             num_atten = 1;
-            if (WGD->canopy->canopy_atten_coeff[icell_cent + nx_canopy * ny_canopy] > 0) {
-              avg_atten += WGD->canopy->canopy_atten_coeff[icell_cent + nx_canopy * ny_canopy];
+            if (WGD->canopy->canopy_atten_coeff[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)] > 0) {
+              avg_atten += WGD->canopy->canopy_atten_coeff[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)];
               num_atten += 1;
             }
-            if (WGD->canopy->canopy_atten_coeff[icell_cent - nx_canopy * ny_canopy] > 0) {
-              avg_atten += WGD->canopy->canopy_atten_coeff[icell_cent - nx_canopy * ny_canopy];
+            if (WGD->canopy->canopy_atten_coeff[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] > 0) {
+              avg_atten += WGD->canopy->canopy_atten_coeff[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)];
               num_atten += 1;
             }
             avg_atten /= num_atten;

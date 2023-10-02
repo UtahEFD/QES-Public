@@ -29,7 +29,7 @@
  ****************************************************************************/
 
 /** @file SourcePoint.cpp
- * @brief This class represents a specific source type. 
+ * @brief This class represents a specific source type.
  *
  * @note Child of SourceType
  * @sa SourceType
@@ -39,7 +39,7 @@
 #include "winds/WINDSGeneralData.h"
 #define _USE_MATH_DEFINES
 #include <cmath>
-//#include "Interp.h"
+// #include "Interp.h"
 
 void SourcePoint::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
@@ -60,55 +60,27 @@ void SourcePoint::checkPosInfo(const double &domainXstart, const double &domainX
   }
 }
 
-//template <class typeid(parType).name()>
-int SourcePoint::emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles)
+// template <class typeid(parType).name()>
+int SourcePoint::emitParticles(const float &dt,
+                               const float &currTime,
+                               std::list<Particle *> &emittedParticles)
 {
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
 
     for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
-      //parType *cPar = new parType();
-      //Particle *cPar = new Particle();
-      /*
-      ParticleTypeFactory particleTypeFactory;
-      ParticleTracerFactory particleTracerFactory;
-      ParticleSmallFactory particleSmallFactory;
-      ParticleLargeFactory particleLargeFactory;
-      ParticleHeavyGasFactory particleHeavyGasFactory;
-      std::string tracerstr = "ParticleTracer";
-      std::string smallstr = "ParticleSmall";
-      std::string largestr = "ParticleLarge";
-      std::string heavygasstr = "ParticleHeavyGas";
-      particleTypeFactory.RegisterParticles(tracerstr,&particleTracerFactory);
-      particleTypeFactory.RegisterParticles(smallstr,&particleSmallFactory);
-      particleTypeFactory.RegisterParticles(largestr,&particleLargeFactory);
-      particleTypeFactory.RegisterParticles(heavygasstr,&particleHeavyGasFactory);
-      */
-      //std::cout << "Creating cPar via factory " << std::endl;
-      Particle *cPar = particleTypeFactory->Create(protoParticle->tag);
+      Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
+      m_protoParticle->setParticleParameters(cPar);
 
-      //ParticleTracerFactory particleTracerFactoryTest;
-      //Particle * cPar = particleTracerFactoryTest.create();
-      //Particle * cPar = new ParticleSmall();
-      //std::cout << "cPar is: " << cPar << " particleTracerFactoryTest is: " << particleTracerFactoryTest << std::endl;
-      //std::cout << "Done creating cPar via factory " << std::endl;
-
+      // set initial position
       cPar->xPos_init = posX;
       cPar->yPos_init = posY;
       cPar->zPos_init = posZ;
-      //int cellId2d = interp->getCellId2d(posX, posY);
-      //cPar->zPos_init = posZ + WGD->terrain[cellId2d];
-
-      cPar->d = protoParticle->d;
-      cPar->d_m = (1.0E-6) * protoParticle->d;
-      cPar->rho = protoParticle->rho;
-      cPar->depFlag = protoParticle->depFlag;
 
       cPar->m = sourceStrength / m_rType->m_numPar;
-      cPar->m_kg = sourceStrength / m_rType->m_numPar * (1.0E-3);
-
-      //std::cout << " par type is: " << cPar->tag << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
-
+      cPar->m_kg = cPar->m * (1.0E-3);
+      cPar->m_o = cPar->m;
+      cPar->m_kg_o = cPar->m * (1.0E-3);
 
       cPar->tStrt = currTime;
 
@@ -118,5 +90,5 @@ int SourcePoint::emitParticles(const float dt, const float currTime, std::list<P
     }
   }
 
-  return emittedParticles.size();//m_rType->m_parPerTimestep;
+  return emittedParticles.size();// m_rType->m_parPerTimestep;
 }

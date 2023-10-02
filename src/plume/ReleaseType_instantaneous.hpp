@@ -28,8 +28,8 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file ReleaseType_continuous.hpp 
- * @brief This class represents a specific release type. 
+/** @file ReleaseType_continuous.hpp
+ * @brief This class represents a specific release type.
  *
  * @note Child of ReleaseType
  * @sa ReleaseType
@@ -46,36 +46,28 @@ private:
   //  double m_releaseEndTime, and int m_numPar from ReleaseType.
   // guidelines for how to set these variables within an inherited ReleaseType are given in ReleaseType.hpp.
 
-  int numPar;
-
 
 protected:
 public:
   // Default constructor
-  ReleaseType_instantaneous()
+  ReleaseType_instantaneous() : ReleaseType(ParticleReleaseType::instantaneous)
   {
   }
 
   // destructor
-  ~ReleaseType_instantaneous()
+  ~ReleaseType_instantaneous() = default;
+
+
+  void parseValues() override
   {
+    parsePrimitive<int>(true, m_numPar, "numPar");
   }
 
-
-  virtual void parseValues()
-  {
-    parReleaseType = ParticleReleaseType::instantaneous;
-
-    parsePrimitive<int>(true, numPar, "numPar");
-  }
-
-
-  void calcReleaseInfo(const double &timestep, const double &simDur)
+  void calcReleaseInfo(const double &timestep, const double &simDur) override
   {
     // set the overall releaseType variables from the variables found in this class
-    m_parPerTimestep = numPar;
+    m_parPerTimestep = m_numPar;
     m_releaseStartTime = 0;
     m_releaseEndTime = 0;
-    m_numPar = numPar;
   }
 };

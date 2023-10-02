@@ -48,7 +48,7 @@
 class Vector3
 {
 protected:
-  //std::vector<float> values;
+  // std::vector<float> values;
   float values[3];
 
 public:
@@ -58,7 +58,7 @@ public:
   }
 
   /*
-    template <typename X> 
+    template <typename X>
     Vector3(const Vector3<X>& newV)
     {
     values[0] = newV[0];
@@ -110,7 +110,7 @@ public:
    */
   bool operator==(const Vector3 &v)
   {
-    //if (std::is_same<T,float>::value || std::is_same<T, double>::value)
+    // if (std::is_same<T,float>::value || std::is_same<T, double>::value)
     return FLOATS_ARE_EQUAL(values[0], v.values[0]) && FLOATS_ARE_EQUAL(values[1], v.values[1]) && FLOATS_ARE_EQUAL(values[2], v.values[2]);
     /*else
       return v.values[0] == values[0] && v.values[1] == values[1] && v.values[2] == values[2];*/
@@ -134,7 +134,7 @@ public:
     return *this;
   }
 
-  // scalor substraction (assignment)
+  // scalar subtraction (assignment)
   Vector3 &operator-=(const Vector3 &v)
   {
     values[0] -= v.values[0];
@@ -143,7 +143,7 @@ public:
     return *this;
   }
 
-  // scalor multiplication (assignment)
+  // scalar multiplication (assignment)
   Vector3 &operator*=(const float &a)
   {
     values[0] *= a;
@@ -152,7 +152,7 @@ public:
     return *this;
   }
 
-  // scalor division (assignment)
+  // scalar division (assignment)
   Vector3 &operator/=(const float &a)
   {
     values[0] /= a;
@@ -164,13 +164,13 @@ public:
   // addition operator
   Vector3 operator-(const Vector3 &v1)
   {
-    return Vector3(values[0] - v1.values[0], values[1] - v1.values[1], values[2] - v1.values[2]);
+    return { values[0] - v1.values[0], values[1] - v1.values[1], values[2] - v1.values[2] };
   }
 
-  // substraction operator
+  // subtraction operator
   Vector3 operator+(const Vector3 &v1)
   {
-    return Vector3(values[0] + v1.values[0], values[1] + v1.values[1], values[2] + v1.values[2]);
+    return { values[0] + v1.values[0], values[1] + v1.values[1], values[2] + v1.values[2] };
   }
 
   // scalar product (dot product)
@@ -182,9 +182,9 @@ public:
   // vector product
   Vector3 cross(const Vector3 &v1) const
   {
-    return Vector3(values[1] * v1.values[2] - values[2] * v1.values[1],
-                   values[2] * v1.values[0] - values[0] * v1.values[2],
-                   values[0] * v1.values[1] - values[1] * v1.values[0]);
+    return { values[1] * v1.values[2] - values[2] * v1.values[1],
+             values[2] * v1.values[0] - values[0] * v1.values[2],
+             values[0] * v1.values[1] - values[1] * v1.values[0] };
   }
 
   // scalar product (dot product)
@@ -197,34 +197,34 @@ public:
   // multiplication by scalar
   Vector3 operator*(const float &a)
   {
-    return Vector3(a * values[0], a * values[1], a * values[2]);
+    return { a * values[0], a * values[1], a * values[2] };
   }
 
   // return the length of the vector
-  float length(void) const
+  float length() const
   {
     return sqrtf(values[0] * values[0] + values[1] * values[1] + values[2] * values[2]);
   }
 
-  // multiplication by scaler
+  // multiplication by scalar
   friend Vector3 operator*(const float &a, const Vector3 &v1)
   {
-    return Vector3(a * v1.values[0], a * v1.values[1], a * v1.values[2]);
+    return { a * v1.values[0], a * v1.values[1], a * v1.values[2] };
   }
 
   // division by scalar
   Vector3 operator/(const float &a)
   {
-    return Vector3(values[0] / a, values[1] / a, values[2] / a);
+    return { values[0] / a, values[1] / a, values[2] / a };
   }
 
-  // relfection
+  // reflection v.reflect(n) = v - 2*(v*n)*n
   Vector3 reflect(const Vector3 &n)
   {
-    return *this - 2.0 * (*this * n) * n;
+    return *this - 2.0f * (*this * n) * n;
   }
 
-  // distance with other vector where this is extemity (ie v1.distance(v2) = |v1 - v2|)
+  // distance with other vector where this is extremity (ie v1.distance(v2) = |v1 - v2|)
   float distance(Vector3 &v2)
   {
     return (sqrtf((values[0] - v2[0]) * (values[0] - v2[0]) + (values[1] - v2[1]) * (values[1] - v2[1]) + (values[2] - v2[2]) * (values[2] - v2[2])));
@@ -239,7 +239,7 @@ public:
 
   friend Vector3 operator-(const Vector3 &v1, const Vector3 &v2)
   {
-    return Vector3(v1.values[0] - v2.values[0], v1.values[1] - v2.values[1], v1.values[2] - v2.values[2]);
+    return { v1.values[0] - v2.values[0], v1.values[1] - v2.values[1], v1.values[2] - v2.values[2] };
   }
 
   friend std::ostream &operator<<(std::ostream &out, const Vector3 &v)

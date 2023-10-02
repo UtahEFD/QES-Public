@@ -40,7 +40,7 @@
 
 #include "QESNetCDFOutput.h"
 
-QESNetCDFOutput::QESNetCDFOutput(std::string output_file)
+QESNetCDFOutput::QESNetCDFOutput(const std::string &output_file)
   : NetCDFOutput(output_file)
 {
   NcDim_t = addDimension("t");
@@ -56,7 +56,7 @@ QESNetCDFOutput::QESNetCDFOutput(std::string output_file)
   addField("timestamp", "--", "date time using format: YYYY-MM-DDThh:mm:ss", dim_vect_tstr, ncChar);
 
   timestamp_out.resize(dateStrLen, '0');
-};
+}
 
 void QESNetCDFOutput::setStartTime(QEStime in)
 {
@@ -68,7 +68,7 @@ void QESNetCDFOutput::setStartTime(QEStime in)
 bool QESNetCDFOutput::validateFileOptions()
 {
 
-  if (all_output_fields.size() == 0) {
+  if (all_output_fields.empty()) {
     std::cerr << "[QES-output] ERROR all output fields undefine -> cannot validate file options" << std::endl;
     exit(EXIT_FAILURE);
   }
@@ -88,10 +88,10 @@ bool QESNetCDFOutput::validateFileOptions()
 //----------------------------------------
 // create attribute scalar
 // -> int
-void QESNetCDFOutput::createAttScalar(std::string name,
-                                      std::string long_name,
-                                      std::string units,
-                                      std::vector<NcDim> dims,
+void QESNetCDFOutput::createAttScalar(const std::string &name,
+                                      const std::string &long_name,
+                                      const std::string &units,
+                                      const std::vector<NcDim> &dims,
                                       int *data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
@@ -99,10 +99,10 @@ void QESNetCDFOutput::createAttScalar(std::string name,
   map_att_scalar_int.emplace(name, att);
 }
 // -> float
-void QESNetCDFOutput::createAttScalar(std::string name,
-                                      std::string long_name,
-                                      std::string units,
-                                      std::vector<NcDim> dims,
+void QESNetCDFOutput::createAttScalar(const std::string &name,
+                                      const std::string &long_name,
+                                      const std::string &units,
+                                      const std::vector<NcDim> &dims,
                                       float *data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
@@ -110,10 +110,10 @@ void QESNetCDFOutput::createAttScalar(std::string name,
   map_att_scalar_flt.emplace(name, att);
 }
 // -> double
-void QESNetCDFOutput::createAttScalar(std::string name,
-                                      std::string long_name,
-                                      std::string units,
-                                      std::vector<NcDim> dims,
+void QESNetCDFOutput::createAttScalar(const std::string &name,
+                                      const std::string &long_name,
+                                      const std::string &units,
+                                      const std::vector<NcDim> &dims,
                                       double *data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
@@ -124,10 +124,10 @@ void QESNetCDFOutput::createAttScalar(std::string name,
 //----------------------------------------
 // create attribute Vector
 // -> int
-void QESNetCDFOutput::createAttVector(std::string name,
-                                      std::string long_name,
-                                      std::string units,
-                                      std::vector<NcDim> dims,
+void QESNetCDFOutput::createAttVector(const std::string &name,
+                                      const std::string &long_name,
+                                      const std::string &units,
+                                      const std::vector<NcDim> &dims,
                                       std::vector<int> *data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
@@ -135,10 +135,10 @@ void QESNetCDFOutput::createAttVector(std::string name,
   map_att_vector_int.emplace(name, att);
 }
 // -> float
-void QESNetCDFOutput::createAttVector(std::string name,
-                                      std::string long_name,
-                                      std::string units,
-                                      std::vector<NcDim> dims,
+void QESNetCDFOutput::createAttVector(const std::string &name,
+                                      const std::string &long_name,
+                                      const std::string &units,
+                                      const std::vector<NcDim> &dims,
                                       std::vector<float> *data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
@@ -146,10 +146,10 @@ void QESNetCDFOutput::createAttVector(std::string name,
   map_att_vector_flt.emplace(name, att);
 }
 // -> double
-void QESNetCDFOutput::createAttVector(std::string name,
-                                      std::string long_name,
-                                      std::string units,
-                                      std::vector<NcDim> dims,
+void QESNetCDFOutput::createAttVector(const std::string &name,
+                                      const std::string &long_name,
+                                      const std::string &units,
+                                      const std::vector<NcDim> &dims,
                                       std::vector<double> *data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
@@ -158,10 +158,10 @@ void QESNetCDFOutput::createAttVector(std::string name,
 }
 
 // -> char (for time)
-void QESNetCDFOutput::createAttVector(std::string name,
-                                      std::string long_name,
-                                      std::string units,
-                                      std::vector<NcDim> dims,
+void QESNetCDFOutput::createAttVector(const std::string &name,
+                                      const std::string &long_name,
+                                      const std::string &units,
+                                      const std::vector<NcDim> &dims,
                                       std::vector<char> *data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
@@ -212,38 +212,38 @@ void QESNetCDFOutput::addOutputFields()
 
   // add scalar fields
   // -> int
-  for (AttScalarInt att : output_scalar_int) {
+  for (const AttScalarInt &att : output_scalar_int) {
     addField(att.name, att.units, att.long_name, att.dimensions, ncInt);
   }
   // -> float
-  for (AttScalarFlt att : output_scalar_flt) {
+  for (const AttScalarFlt &att : output_scalar_flt) {
     addField(att.name, att.units, att.long_name, att.dimensions, ncFloat);
   }
   // -> double
-  for (AttScalarDbl att : output_scalar_dbl) {
+  for (const AttScalarDbl &att : output_scalar_dbl) {
     addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
   }
   // add vector fields
   // -> int
-  for (AttVectorInt att : output_vector_int) {
+  for (const AttVectorInt &att : output_vector_int) {
     addField(att.name, att.units, att.long_name, att.dimensions, ncInt);
   }
   // -> int
-  for (AttVectorFlt att : output_vector_flt) {
+  for (const AttVectorFlt &att : output_vector_flt) {
     addField(att.name, att.units, att.long_name, att.dimensions, ncFloat);
   }
   // -> double
-  for (AttVectorDbl att : output_vector_dbl) {
+  for (const AttVectorDbl &att : output_vector_dbl) {
     addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
   }
   // -> char
-  for (AttVectorChar att : output_vector_char) {
+  for (const AttVectorChar &att : output_vector_char) {
     addField(att.name, att.units, att.long_name, att.dimensions, ncChar);
   }
-};
+}
 
 
-void QESNetCDFOutput::rmOutputField(std::string name)
+void QESNetCDFOutput::rmOutputField(const std::string &name)
 {
   /*
     This function remove a field from the output vectors
@@ -308,7 +308,7 @@ void QESNetCDFOutput::rmOutputField(std::string name)
       return;
     }
   }
-};
+}
 
 void QESNetCDFOutput::rmTimeIndepFields()
 {
@@ -362,7 +362,7 @@ void QESNetCDFOutput::rmTimeIndepFields()
       output_vector_dbl.erase(output_vector_dbl.begin() + i);
     }
   }
-};
+}
 
 void QESNetCDFOutput::saveOutputFields()
 {
@@ -374,7 +374,7 @@ void QESNetCDFOutput::saveOutputFields()
     FMargairaz
   */
 
-  //std::cout << fields["t"].getDim(0).getSize() << std::endl;
+  // std::cout << fields["t"].getDim(0).getSize() << std::endl;
 
   if (output_counter == 0 && !flagStartTimeSet) {
     setStartTime(timeCurrent);
@@ -389,7 +389,7 @@ void QESNetCDFOutput::saveOutputFields()
   saveField1D("t", time_index, &time);
 
   timeCurrent.getTimestamp(timestamp);
-  //std::copy(timestamp.begin(), timestamp.end(), timestamp_out.begin());
+  // std::copy(timestamp.begin(), timestamp.end(), timestamp_out.begin());
   for (int i = 0; i < dateStrLen; ++i) {
     timestamp_out[i] = timestamp[i];
   }
@@ -424,7 +424,7 @@ void QESNetCDFOutput::saveOutputFields()
     std::vector<size_t> vector_index;
     std::vector<size_t> vector_size;
 
-    // if var is time dep -> special treatement for time
+    // if var is time dep -> special treatment for time
     if (output_vector_int[i].dimensions[0].getName() == "t") {
       vector_index.push_back(static_cast<size_t>(output_counter));
       vector_size.push_back(1);
@@ -452,7 +452,7 @@ void QESNetCDFOutput::saveOutputFields()
     std::vector<size_t> vector_index;
     std::vector<size_t> vector_size;
 
-    // if var is time dep -> special treatement for time
+    // if var is time dep -> special treatment for time
     if (output_vector_flt[i].dimensions[0].getName() == "t") {
       vector_index.push_back(static_cast<size_t>(output_counter));
       vector_size.push_back(1);
@@ -480,7 +480,7 @@ void QESNetCDFOutput::saveOutputFields()
     std::vector<size_t> vector_index;
     std::vector<size_t> vector_size;
 
-    // if var is time dep -> special treatement for time
+    // if var is time dep -> special treatment for time
     if (output_vector_dbl[i].dimensions[0].getName() == "t") {
       vector_index.push_back(static_cast<size_t>(output_counter));
       vector_size.push_back(1);
@@ -508,7 +508,7 @@ void QESNetCDFOutput::saveOutputFields()
     std::vector<size_t> vector_index;
     std::vector<size_t> vector_size;
 
-    // if var is time dep -> special treatement for time
+    // if var is time dep -> special treatment for time
     if (output_vector_char[i].dimensions[0].getName() == "t") {
       vector_index.push_back(static_cast<size_t>(output_counter));
       vector_size.push_back(1);
@@ -523,4 +523,4 @@ void QESNetCDFOutput::saveOutputFields()
   }
 
   output_counter++;
-};
+}

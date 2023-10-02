@@ -39,25 +39,36 @@ void QEStime::setTimeToNow()
   m_ptime = UTCtime;
 }
 
-void QEStime::setTimestamp(time_t t)
+void QEStime::setTimestamp(const btime::ptime &t)
+{
+  m_ptime = t;
+}
+
+void QEStime::setTimestamp(const time_t &t)
 {
   m_ptime = btime::from_time_t(t);
 }
 
-void QEStime::setTimestamp(std::string t)
+void QEStime::setTimestamp(const std::string &t)
 {
   m_ptime = btime::from_iso_extended_string(t);
-}
-
-QEStime &QEStime::operator=(const std::string &t)
-{
-  m_ptime = btime::from_iso_extended_string(t);
-  return *this;
 }
 
 QEStime &QEStime::operator=(const btime::ptime &t)
 {
   m_ptime = t;
+  return *this;
+}
+
+QEStime &QEStime::operator=(const time_t &t)
+{
+  m_ptime = btime::from_time_t(t);
+  return *this;
+}
+
+QEStime &QEStime::operator=(const std::string &t)
+{
+  m_ptime = btime::from_iso_extended_string(t);
   return *this;
 }
 
@@ -94,7 +105,7 @@ QEStime &QEStime::operator+=(const float &dt)
 QEStime QEStime::operator+(const float &dt)
 {
   btime::time_duration tt = btime::milliseconds((int)round(1000.0 * (double)dt));
-  QEStime t = this->m_ptime + tt;
+  QEStime t(this->m_ptime + tt);
   return t;
 }
 

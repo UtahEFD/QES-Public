@@ -59,7 +59,7 @@ public:
   {
   }
 
-  Triangle(Vector3 aN, Vector3 bN, Vector3 cN)
+  Triangle(const Vector3 &aN, const Vector3 &bN, const Vector3 &cN)
     : a(aN), b(bN), c(cN)
   {
     Vector3 v(bN - aN);
@@ -98,5 +98,5 @@ public:
    * @param ray the ray to be checked for intersection
    * @param rec the HitRecord to be updated
    */
-  bool rayTriangleIntersect(Ray ray, HitRecord &rec, float t0, float t1);
+  bool rayTriangleIntersect(const Ray &ray, HitRecord &rec, float t0, float t1);
 };

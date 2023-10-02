@@ -41,6 +41,9 @@
 
 WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 {
+  std::cout << "-------------------------------------------------------------------" << std::endl;
+  std::cout << "[QES-WINDS]\t Initialization of wind model...\n";
+
   // converting the domain rotation to radians from degrees -- input
   // assumes degrees
   theta = (WID->simParams->domainRotation * pi / 180.0);
@@ -52,8 +55,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   // main input structure.
   //
   // This is done to make reference to nx, ny and nz easier in this function
-  //Vector3Int domainInfo;
-  //domainInfo = *(WID->simParams->domain);
+  // Vector3Int domainInfo;
+  // domainInfo = *(WID->simParams->domain);
   nx = WID->simParams->domain[0];
   ny = WID->simParams->domain[1];
   nz = WID->simParams->domain[2];
@@ -62,8 +65,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   ny += 1;// +1 for Staggered grid
   nz += 2;// +2 for staggered grid and ghost cell
 
-  //Vector3 gridInfo;
-  //gridInfo = *(WID->simParams->grid);
+  // Vector3 gridInfo;
+  // gridInfo = *(WID->simParams->grid);
   dx = WID->simParams->grid[0];// Grid resolution in x-direction
   dy = WID->simParams->grid[1];// Grid resolution in y-direction
   dz = WID->simParams->grid[2];// Grid resolution in z-direction
@@ -219,7 +222,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         for (int t = 0; t < 1; t++) {
           std::cout << "\tTime Series: " << t << std::endl;
 
-          sensortime.push_back(t);
+          sensortime.emplace_back(time_t(t));
           sensortime_id.push_back(t);
           timestamp.push_back(sensortime[t]);
 
@@ -256,10 +259,10 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       windProfiler = new WindProfilerBarnGPU();
     }
 #else
-  } else {
-    std::cout << "No CUDA support - using CPU Barnes" << std::endl;
-    windProfiler = new WindProfilerBarnCPU();
-  }
+    } else {
+      std::cout << "No CUDA support - using CPU Barnes" << std::endl;
+      windProfiler = new WindProfilerBarnCPU();
+    }
 #endif
 
     // If the sensor file specified in the xml
@@ -271,7 +274,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     }
 
     // If there are more than one timestep
-    //if (WID->simParams->totalTimeIncrements > 0) {
+    // if (WID->simParams->totalTimeIncrements > 0) {
     // Loop to include all the timestep for the first sensor
     for (size_t i = 0; i < WID->metParams->sensors[0]->TS.size(); i++) {
       sensortime.push_back(WID->metParams->sensors[0]->TS[i]->time);
@@ -329,7 +332,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
   // Pete could move to input param processing...
   assert(WID->metParams->sensors.size() > 0);// extra
-  std::cout << "Sensors have been loaded (total sensors = " << WID->metParams->sensors.size() << ")." << std::endl;
+  std::cout << "[QES-WINDS]\t Sensors have been loaded (total sensors = " << WID->metParams->sensors.size() << ")." << std::endl;
 
   // /////////////////////////
   // Calculation of z0 domain info MAY need to move to WINDSInputData
@@ -369,95 +372,19 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   // /////////////////////////
   // Definition of the grid
   // /////////////////////////
-
-  // vertical grid (can be uniform or stretched)
-  dz_array.resize(nz - 1, 0.0);
-  z.resize(nz - 1);
-  z_face.resize(nz);
-
   if (WID->simParams->verticalStretching == 0) {// Uniform vertical grid
-    for (size_t k = 1; k < z.size(); k++) {
-      dz_array[k] = dz;
-    }
+    defineVerticalStretching(dz);
   } else if (WID->simParams->verticalStretching == 1) {// Stretched vertical grid
-    for (size_t k = 1; k < z.size(); k++) {
-      dz_array[k] = WID->simParams->dz_value[k - 1];// Read in custom dz values and set them to dz_array
-    }
+    defineVerticalStretching(WID->simParams->dz_value);// Read in custom dz values and set them to dz_array
   }
-
-  dz_array[0] = dz_array[1];// Value for ghost cell below the surface
-  dz = *std::min_element(dz_array.begin(), dz_array.end());// Set dz to minimum value of
-
-  // Location of face in z-dir
-  z_face[0] = -dz_array[0];
-  z_face[1] = -0.0;
-  for (size_t k = 2; k < z_face.size(); ++k) {
-    z_face[k] = z_face[k - 1] + dz_array[k - 1];
-  }
-
-  // Location of cell centers in z-dir
-  z[0] = -0.5 * dz_array[0];
-  for (size_t k = 1; k < z.size(); ++k) {
-    z[k] = 0.5 * (z_face[k] + z_face[k + 1]);
-  }
+  defineVerticalGrid();
+  defineHorizontalGrid();
 
 
-  // horizontal grid (x-direction)
-  x.resize(nx - 1);
-  for (auto i = 0; i < nx - 1; i++) {
-    x[i] = (i + 0.5) * dx;// Location of face centers in x-dir
-  }
-
-  // horizontal grid (y-direction)
-  y.resize(ny - 1);
-  for (auto j = 0; j < ny - 1; j++) {
-    y[j] = (j + 0.5) * dy;// Location of face centers in y-dir
-  }
-
-  // Resize the coefficients for use with the solver
-  e.resize(numcell_cent, 1.0);
-  f.resize(numcell_cent, 1.0);
-  g.resize(numcell_cent, 1.0);
-  h.resize(numcell_cent, 1.0);
-  m.resize(numcell_cent, 1.0);
-  n.resize(numcell_cent, 1.0);
-
-  building_volume_frac.resize(numcell_cent, 1.0);
-  terrain_volume_frac.resize(numcell_cent, 1.0);
-  ni.resize(numcell_cent, 0.0);
-  nj.resize(numcell_cent, 0.0);
-  nk.resize(numcell_cent, 0.0);
-  ti.resize(numcell_cent, 0.0);
-  tj.resize(numcell_cent, 0.0);
-  tk.resize(numcell_cent, 0.0);
-  center_id.resize(numcell_cent, 1);
-  wall_distance.resize(numcell_cent, 0.0);
-
-  icellflag.resize(numcell_cent, 1);
-  icellflag_initial.resize(numcell_cent, 1);
-  icellflag_footprint.resize(numcell_cout_2d, 1);
-
-  ibuilding_flag.resize(numcell_cent, -1);
-
-  mixingLengths.resize(numcell_cent, 0.0);
-
-  terrain.resize(numcell_cout_2d, 0.0);
-  terrain_face_id.resize(nx * ny, 1);
-  terrain_id.resize((nx - 1) * (ny - 1), 1);
-
-  /////////////////////////////////////////
-
-  // Set the Wind Velocity data elements to be of the correct size
-  // Initialize u0,v0,w0,u,v and w to 0.0
-  u0.resize(numcell_face, 0.0);
-  v0.resize(numcell_face, 0.0);
-  w0.resize(numcell_face, 0.0);
-
-  u.resize(numcell_face, 0.0);
-  v.resize(numcell_face, 0.0);
-  w.resize(numcell_face, 0.0);
-
-  std::cout << "Memory allocation complete." << std::endl;
+  // /////////////////////////
+  // Allocate memory
+  // /////////////////////////
+  allocateMemory();
 
   // defining ground solid cells (ghost cells below the surface)
   for (int j = 0; j < ny - 1; j++) {
@@ -657,7 +584,13 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     }
 
     if (WID->simParams->meshTypeFlag == 0 && WID->simParams->readCoefficientsFlag == 0) {
+      ///////////////////////////////////
+      // Stair-step (original QUIC)    //
+      ///////////////////////////////////
+
       auto start_stair = std::chrono::high_resolution_clock::now();
+      std::cout << "[QES-WINDS]\t Stair-step method for terrain..." << std::endl;
+
       for (int i = 0; i < nx - 1; i++) {
         for (int j = 0; j < ny - 1; j++) {
           // Gets height of the terrain for each cell
@@ -667,9 +600,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
               break;
             }
 
-            // ////////////////////////////////
-            // Stair-step (original QUIC)    //
-            // ////////////////////////////////
             icell_cent = i + j * (nx - 1) + (k + 1) * (nx - 1) * (ny - 1);
             icellflag[icell_cent] = 2;
           }
@@ -679,7 +609,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       auto finish_stair = std::chrono::high_resolution_clock::now();// Finish recording execution time
 
       std::chrono::duration<float> elapsed_stair = finish_stair - start_stair;
-      std::cout << "Elapsed time for terrain with stair-step: " << elapsed_stair.count() << " s\n";
+      std::cout << "\t\t elapsed time: " << elapsed_stair.count() << " s\n";
     }
 
     if (WID->simParams->meshTypeFlag == 1 && WID->simParams->readCoefficientsFlag == 0) {
@@ -688,15 +618,16 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       //////////////////////////////////
 
       auto start_cut = std::chrono::high_resolution_clock::now();
+      std::cout << "[QES-WINDS]\t Cut-cell method for terrain..." << std::endl;
 
       // Calling calculateCoefficient function to calculate area fraction coefficients for cut-cells
-      //WID->simParams->DTE_heightField->setCells(cells, this, WID);
+      // WID->simParams->DTE_heightField->setCells(cells, this, WID);
       WID->simParams->DTE_heightField->setCells(this, WID);
 
       auto finish_cut = std::chrono::high_resolution_clock::now();// Finish recording execution time
 
       std::chrono::duration<float> elapsed_cut = finish_cut - start_cut;
-      std::cout << "Elapsed time for terrain with cut-cell: " << elapsed_cut.count() << " s\n";
+      std::cout << "\t\t elapsed time: " << elapsed_cut.count() << " s\n";
     }
   }
   ///////////////////////////////////////////////////////
@@ -745,7 +676,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     auto buildingsetup_start = std::chrono::high_resolution_clock::now();// Start recording execution time
     //
     if (WID->buildingsParams->SHPData) {
-      std::cout << "Creating buildings from shapefile..." << std::flush;
+      std::cout << "[QES-WINDS]\t Creating buildings from shapefile..." << std::flush;
 
 
       float corner_height, min_height;
@@ -811,14 +742,15 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         allBuildingsV[bId]->setCellFlags(WID, this, bId);
         effective_height.push_back(allBuildingsV[bId]->height_eff);
       }
-      std::cout << "[done]" << std::endl;
+      std::cout << "\r[QES-WINDS]\t Creating buildings from shapefile... [DONE]" << std::endl;
     }
 
-    std::cout << "Consolidating building data..." << std::endl;
+    if (!WID->buildingsParams->buildings.empty()) {
+      std::cout << "[QES-WINDS]\t Consolidating building data..." << std::endl;
+    }
 
     float corner_height, min_height;
     for (size_t i = 0; i < WID->buildingsParams->buildings.size(); i++) {
-
       allBuildingsV.push_back(WID->buildingsParams->buildings[i]);
       int j = allBuildingsV.size() - 1;
       building_id.push_back(j);
@@ -858,14 +790,14 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     // do this... (remember some are canopies) so we may need a
     // virtual function in the Building class to get the appropriate
     // data for the sort.
-    std::cout << "Sorting buildings by height..." << std::flush;
+    std::cout << "[QES-WINDS]\t Sorting buildings by height..." << std::flush;
     mergeSort(effective_height, building_id);
-    std::cout << "[done]" << std::endl;
+    std::cout << "\r[QES-WINDS]\t Sorting buildings by height... [DONE]" << std::endl;
 
     auto buildingsetup_finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
 
     std::chrono::duration<float> elapsed_cut = buildingsetup_finish - buildingsetup_start;
-    std::cout << "Elapsed time for building setup : " << elapsed_cut.count() << " s\n";
+    std::cout << "\t\t elapsed time: " << elapsed_cut.count() << " s\n";
   }
 
 
@@ -878,16 +810,16 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
   auto wallsetup_start = std::chrono::high_resolution_clock::now();
 
-  std::cout << "Defining Solid Walls..." << std::flush;
+  std::cout << "[QES-WINDS]\t Defining solid walls..." << std::flush;
   wall = new Wall();
   // Boundary condition for building edges
   wall->defineWalls(this);
   wall->solverCoefficients(this);
-  std::cout << "[done]" << std::endl;
+  std::cout << "\r[QES-WINDS]\t Defining solid walls... [DONE]" << std::endl;
 
   auto wallsetup_finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
   std::chrono::duration<float> elapsed_wall = wallsetup_finish - wallsetup_start;
-  std::cout << "Elapsed time for defining walls: " << elapsed_wall.count() << " s\n";
+  std::cout << "\t\t elapsed time: " << elapsed_wall.count() << " s\n";
 
   for (auto id = 0u; id < icellflag.size(); id++) {
     icellflag_initial[id] = icellflag[id];
@@ -929,15 +861,14 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     NCDFInput->getVariableData("m", start, count, m);
     NCDFInput->getVariableData("n", start, count, n);
   }
-
-  return;
 }
 
 
 WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
 {
-
-  std::cout << "[WINDS Data] \t Loading QES-winds fields " << std::endl;
+  std::cout << "-------------------------------------------------------------------" << std::endl;
+  std::cout << "[QES-WINDS]\t Initialization of wind model...\n";
+  std::cout << "[WINDS Data]\t Loading QES-winds fields " << std::endl;
 
   // fullname passed to WINDSGeneralData
   input = new NetCDFInput(inputFile);
@@ -999,6 +930,9 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
     }
   }
 
+  // Allocate memory
+  allocateMemory();
+
   // get time variables
   std::vector<float> t;
   t.resize(nt);
@@ -1009,9 +943,7 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
   input->getVariable("timestamp", NcVar_timestamp);
 
   if (NcVar_timestamp.isNull()) {
-    std::cout << "-----------------------------------------------------------------" << std::endl;
-    std::cout << "[WARNING] No timestamp in NetCDF file" << std::endl;
-    std::cout << "-----------------------------------------------------------------" << std::endl;
+    QESout::warning("No timestamp in NetCDF file");
     QEStime tmp("2022-01-01T00:00");
     for (int k = 0; k < nt; k++) {
       // ptime test= from_iso_extended_string(WID->metParams->sensors[i]->TS[t]->timeStamp)
@@ -1058,10 +990,72 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
   } else {// => no external terrain data provided
     std::cout << "[WINDS Data] \t no terrain data found -> assumed flat" << std::endl;
   }
+}
 
-  // icellflag (see .h for velues)
-  icellflag.resize(numcell_cent, -1);
-  /// coefficients for SOR solver
+void WINDSGeneralData::defineVerticalStretching(const float &dz_value)
+{
+  // vertical grid (can be uniform or stretched)
+  dz_array.resize(nz - 1, 0.0);
+  // Uniform vertical grid
+  for (float &k : dz_array) {
+    k = dz_value;
+  }
+}
+
+void WINDSGeneralData::defineVerticalStretching(const std::vector<float> &dz_value)
+{
+  // vertical grid (can be uniform or stretched)
+  dz_array.resize(nz - 1, 0.0);
+  // Stretched vertical grid
+  for (size_t k = 1; k < dz_array.size(); ++k) {
+    dz_array[k] = dz_value[k - 1];// Read in custom dz values and set them to dz_array
+  }
+  dz_array[0] = dz_array[1];// Value for ghost cell below the surface
+  dz = *std::min_element(dz_array.begin(), dz_array.end());// Set dz to minimum value of
+}
+
+void WINDSGeneralData::defineVerticalGrid()
+{
+  // Location of face in z-dir
+  z_face.resize(nz, 0.0);
+  z_face[0] = -dz_array[0];
+  z_face[1] = 0.0;
+  for (size_t k = 2; k < z_face.size(); ++k) {
+    z_face[k] = z_face[k - 1] + dz_array[k - 1];
+  }
+
+  // Location of cell centers in z-dir
+  z.resize(nz - 1, 0.0);
+  z[0] = -0.5f * dz_array[0];
+  for (size_t k = 1; k < z.size(); ++k) {
+    z[k] = 0.5f * (z_face[k] + z_face[k + 1]);
+  }
+}
+
+void WINDSGeneralData::defineHorizontalGrid()
+{
+  // horizontal grid (x-direction)
+  x.resize(nx - 1);
+  for (auto i = 0; i < nx - 1; ++i) {
+    x[i] = ((float)i + 0.5f) * dx;// Location of face centers in x-dir
+  }
+
+  // horizontal grid (y-direction)
+  y.resize(ny - 1);
+  for (auto j = 0; j < ny - 1; ++j) {
+    y[j] = ((float)j + 0.5f) * dy;// Location of face centers in y-dir
+  }
+}
+
+void WINDSGeneralData::allocateMemory()
+{
+  std::cout << "[QES-WINDS]\t Allocation Memory..." << std::flush;
+  numcell_cout = (nx - 1) * (ny - 1) * (nz - 2);// Total number of cell-centered values in domain
+  numcell_cout_2d = (nx - 1) * (ny - 1);// Total number of horizontal cell-centered values in domain
+  numcell_cent = (nx - 1) * (ny - 1) * (nz - 1);// Total number of cell-centered values in domain
+  numcell_face = nx * ny * nz;// Total number of face-centered values in domain
+
+  // Resize the coefficients for use with the solver
   e.resize(numcell_cent, 1.0);
   f.resize(numcell_cent, 1.0);
   g.resize(numcell_cent, 1.0);
@@ -1077,35 +1071,39 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
   ti.resize(numcell_cent, 0.0);
   tj.resize(numcell_cent, 0.0);
   tk.resize(numcell_cent, 0.0);
+  center_id.resize(numcell_cent, 1);
+  wall_distance.resize(numcell_cent, 0.0);
 
   icellflag.resize(numcell_cent, 1);
+  icellflag_initial.resize(numcell_cent, 1);
+  icellflag_footprint.resize(numcell_cout_2d, 1);
+
   ibuilding_flag.resize(numcell_cent, -1);
 
   mixingLengths.resize(numcell_cent, 0.0);
 
   terrain.resize(numcell_cout_2d, 0.0);
-  terrain_id.resize(nx * ny, 1);
-  z0_domain_u.resize(nx * ny, 0.1);
-  z0_domain_v.resize(nx * ny, 0.1);
-
+  terrain_face_id.resize(nx * ny, 1);
+  terrain_id.resize((nx - 1) * (ny - 1), 1);
 
   // Set the Wind Velocity data elements to be of the correct size
-  // Initialize u0,v0,w0,u,v and w to 0.0
+  // Initialize u0,v0, and w0 to 0.0
   u0.resize(numcell_face, 0.0);
   v0.resize(numcell_face, 0.0);
   w0.resize(numcell_face, 0.0);
-
+  // Initialize u,v and w to 0.0
   u.resize(numcell_face, 0.0);
   v.resize(numcell_face, 0.0);
   w.resize(numcell_face, 0.0);
 
-  return;
+  std::cout << "\r[QES-WINDS]\t Allocation Memory... [DONE]" << std::endl;
 }
+
 
 void WINDSGeneralData::loadNetCDFData(int stepin)
 {
 
-  std::cout << "[WINDS Data] \t loading data at step " << stepin
+  std::cout << "[WINDS Data] \t Loading data at step " << stepin
             << " (" << timestamp[stepin] << ")" << std::endl;
 #if 0
   std::vector<size_t> start_time;
@@ -1181,7 +1179,7 @@ void WINDSGeneralData::loadNetCDFData(int stepin)
 }
 void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex, int solveType)
 {
-  std::cout << "Applying Wind Profile...\n";
+  std::cout << "[QES-WINDS]\t Applying Wind Profile...\n";
 
   u0.clear();
   v0.clear();
@@ -1260,7 +1258,7 @@ void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex
   auto end_InputWindProfile = std::chrono::high_resolution_clock::now();// Finish recording execution time
 
   std::chrono::duration<float> elapsed_InputWindProfile = end_InputWindProfile - start_InputWindProfile;
-  std::cout << "Elapsed time for input wind profile: " << elapsed_InputWindProfile.count() << " s\n";
+  std::cout << "\t\t elapsed time: " << elapsed_InputWindProfile.count() << " s\n";
   return;
 }
 
@@ -1268,12 +1266,13 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
 {
 
   auto start_param = std::chrono::high_resolution_clock::now();// Start recording execution time
+  std::cout << "[QES-WINDS]\t Applying parameterizations...\n";
 
   // ///////////////////////////////////////
   // Generic Parameterization Related Stuff
   // ///////////////////////////////////////
   if (canopy) {
-    std::cout << "Applying vegetation parameterization...\n";
+    std::cout << "[QES-WINDS]\t Applying vegetation parameterization...\n";
     canopy->applyCanopyVegetation(this);
   }
 
@@ -1282,7 +1281,7 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     //   Upwind Cavity Parameterization     ///
     ///////////////////////////////////////////
     if (WID->buildingsParams->upwindCavityFlag > 0) {
-      std::cout << "Applying upwind cavity parameterization...\n";
+      std::cout << "[QES-WINDS]\t Applying upwind cavity parameterization...\n";
       for (size_t i = 0; i < allBuildingsV.size(); i++) {
         allBuildingsV[building_id[i]]->upwindCavity(WID, this);
       }
@@ -1292,7 +1291,7 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     //   Far-Wake and Cavity Parameterizations     ///
     //////////////////////////////////////////////////
     if (WID->buildingsParams->wakeFlag > 0) {
-      std::cout << "Applying wake behind building parameterization...\n";
+      std::cout << "[QES-WINDS]\t Applying wake behind building parameterization...\n";
       for (size_t i = 0; i < allBuildingsV.size(); i++) {
         allBuildingsV[building_id[i]]->polygonWake(WID, this, building_id[i]);
       }
@@ -1302,12 +1301,12 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     //   Street Canyon Parameterization     ///
     ///////////////////////////////////////////
     if (WID->buildingsParams->streetCanyonFlag == 1) {
-      std::cout << "Applying street canyon parameterization...\n";
+      std::cout << "[QES-WINDS]\t Applying street canyon parameterization...\n";
       for (size_t i = 0; i < allBuildingsV.size(); i++) {
         allBuildingsV[building_id[i]]->streetCanyon(this);
       }
     } else if (WID->buildingsParams->streetCanyonFlag == 2) {
-      std::cout << "Applying street canyon parameterization...\n";
+      std::cout << "[QES-WINDS]\t Applying street canyon parameterization...\n";
       for (size_t i = 0; i < allBuildingsV.size(); i++) {
         allBuildingsV[building_id[i]]->streetCanyonModified(this);
       }
@@ -1317,7 +1316,7 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     //      Sidewall Parameterization       ///
     ///////////////////////////////////////////
     if (WID->buildingsParams->sidewallFlag > 0) {
-      std::cout << "Applying sidewall parameterization...\n";
+      std::cout << "[QES-WINDS]\t Applying sidewall parameterization...\n";
       for (size_t i = 0; i < allBuildingsV.size(); i++) {
         allBuildingsV[building_id[i]]->sideWall(WID, this);
       }
@@ -1328,7 +1327,7 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     //      Rooftop Parameterization        ///
     ///////////////////////////////////////////
     if (WID->buildingsParams->rooftopFlag > 0) {
-      std::cout << "Applying rooftop parameterization...\n";
+      std::cout << "[QES-WINDS]\t Applying rooftop parameterization...\n";
       for (size_t i = 0; i < allBuildingsV.size(); i++) {
         allBuildingsV[building_id[i]]->rooftop(WID, this);
       }
@@ -1339,7 +1338,7 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
   // Generic Parameterization Related Stuff
   // ///////////////////////////////////////
   if (canopy) {
-    std::cout << "Applying canopy wake parameterization...\n";
+    std::cout << "[QES-WINDS]\t Applying canopy wake parameterization...\n";
     canopy->applyCanopyWake(this);
   }
 
@@ -1360,9 +1359,7 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
   auto finish_param = std::chrono::high_resolution_clock::now();// Finish recording execution time
 
   std::chrono::duration<float> elapsed_param = finish_param - start_param;
-  std::cout << "Elapsed time for parameterization: " << elapsed_param.count() << " s\n";
-
-  return;
+  std::cout << "\t\t elapsed time: " << elapsed_param.count() << " s\n";
 }
 
 void WINDSGeneralData::resetICellFlag()
@@ -1380,11 +1377,11 @@ void WINDSGeneralData::printTimeProgress(int index)
   int lpad = (int)(percentage * PBWIDTH);
   int rpad = PBWIDTH - lpad;
   std::cout << "-------------------------------------------------------------------" << std::endl;
-  std::cout << "Running time step (" << index + 1 << "/" << totalTimeIncrements << ") at "
-            << timestamp[index] << std::endl;
+  std::cout << "[QES-WINDS]\t Wind field at " << timestamp[index] << " "
+            << "(" << index + 1 << "/" << totalTimeIncrements << ")." << std::endl;
   printf("%3d%% [%.*s%*s]\n", val, lpad, PBSTR, rpad, "");
   fflush(stdout);
-  std::cout << "-------------------------------------------------------------------" << std::endl;
+  std::cout << "----------------------------" << std::endl;
 }
 
 

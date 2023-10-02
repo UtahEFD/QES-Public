@@ -5,10 +5,9 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 #LINK_DIRECTORIES (${CMAKE_BINARY_DIR}/quicutil/)
 
 SET( qesPlumeCoreSources
+    Random.cpp
     RandomSingleton.cpp
 
-    handlePlumeArgs.cpp
-    
     Interp.cpp
     InterpNearestCell.cpp
     InterpPowerLaw.cpp
@@ -24,13 +23,14 @@ SET( qesPlumeCoreSources
     PlumeOutputParticleData.cpp
 
     BoundaryConditions.hpp
+
     Particle.hpp
-    ParseParticle.hpp
     ParticleFactories.hpp
     ParticleSmall.hpp
     ParticleLarge.hpp
     ParticleHeavyGas.hpp
-    
+    ParticleFactories.cpp
+
     ReleaseType.hpp
     ReleaseType_instantaneous.hpp
     ReleaseType_continuous.hpp
@@ -40,7 +40,7 @@ SET( qesPlumeCoreSources
     SourceType.hpp
     SourcePoint.cpp SourcePoint.hpp
     SourceLine.cpp SourceLine.hpp
-    SourceCircle.cpp SourceCircle.hpp
+    SourceSphereSurface.cpp SourceSphereSurface.hpp
     SourceCube.cpp SourceCube.hpp
     SourceFullDomain.cpp SourceFullDomain.hpp
 

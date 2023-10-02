@@ -36,7 +36,7 @@
 #include "util/QESNetCDFOutput.h"
 #include "util/QESout.h"
 
-#include "winds/handleWINDSArgs.h"
+#include "handleWINDSArgs.h"
 
 #include "winds/WINDSInputData.h"
 #include "winds/WINDSGeneralData.h"
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
   // ///////////////////////////////////
 
   // Parse the base XML QUIC file -- contains simulation parameters
-  //WINDSInputData* WID = parseXMLTree(arguments.quicFile);
+  // WINDSInputData* WID = parseXMLTree(arguments.quicFile);
   WINDSInputData *WID = new WINDSInputData(arguments.qesWindsParamFile);
   if (!WID) {
     QESout::error("QES Input file: " + arguments.qesWindsParamFile + " not able to be read successfully.");
@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
       solver->solve(WID, WGD, !arguments.solveWind);
     }
 
-    //std::cout << "Solver done!\n";
+    // std::cout << "Solver done!\n";
 
     // Run turbulence
     if (TGD != nullptr)

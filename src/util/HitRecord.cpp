@@ -46,6 +46,7 @@ HitRecord::HitRecord()
 }
 
 HitRecord::HitRecord(void *hitNode, bool isHit)
+  : t(0.0)
 {
   this->hitNode = hitNode;
   this->isHit = isHit;
@@ -53,6 +54,7 @@ HitRecord::HitRecord(void *hitNode, bool isHit)
 }
 
 HitRecord::HitRecord(void *hitNode, bool isHit, float hitDist)
+  : t(0.0)
 {
   this->hitNode = hitNode;
   this->isHit = isHit;

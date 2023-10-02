@@ -16,15 +16,6 @@
         <verticalStretching>0</verticalStretching>
         <cellSize>0.2 0.2 0.1</cellSize>
     </simulationParameters>
-    <buildingsParams>
-        <streetIntersectionFlag>0</streetIntersectionFlag>
-        <streetCanyonFlag>0</streetCanyonFlag>
-        <upwindCavityFlag>0</upwindCavityFlag>
-        <rooftopFlag>0</rooftopFlag>
-        <wakeFlag>0</wakeFlag>
-        <sidewallFlag>0</sidewallFlag>
-        <wallRoughness>0.1</wallRoughness>
-    </buildingsParams>
     <metParams>
         <z0_domain_flag>0</z0_domain_flag>
         <sensor>

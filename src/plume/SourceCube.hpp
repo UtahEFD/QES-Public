@@ -28,8 +28,8 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file SourceCube.cpp 
- * @brief This class represents a specific source type. 
+/** @file SourceCube.cpp
+ * @brief This class represents a specific source type.
  *
  * @note Child of SourceType
  * @sa SourceType
@@ -40,7 +40,7 @@
 
 #include "SourceType.hpp"
 #include "winds/WINDSGeneralData.h"
-//#include "Particles.hpp"
+// #include "Particles.hpp"
 
 class SourceCube : public SourceType
 {
@@ -48,41 +48,27 @@ private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
   // guidelines for how to set these variables within an inherited source are given in SourceType.
 
-  double m_minX;
-  double m_minY;
-  double m_minZ;
-  double m_maxX;
-  double m_maxY;
-  double m_maxZ;
+  double m_minX = -1.0;
+  double m_minY = -1.0;
+  double m_minZ = -1.0;
+  double m_maxX = -1.0;
+  double m_maxY = -1.0;
+  double m_maxZ = -1.0;
   double sourceStrength = 0.0;// total mass released (g)
 protected:
 public:
   // Default constructor
-  SourceCube()
+  SourceCube() : SourceType(SourceShape::cube)
   {
   }
 
   // destructor
-  ~SourceCube()
+  ~SourceCube() = default;
+
+  void parseValues() override
   {
-  }
-
-
-  virtual void parseValues()
-  {
-    m_sShape = SourceShape::cube;
-
     setReleaseType();
     setParticleType();
-    // Create particle factories
-    registerParticles();
-    /*
-    // Create a generic particle with attributes read from XML
-    Particles * particles;
-    particles->setParticleValues();
-*/
-    //std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
-
 
     parsePrimitive<double>(true, m_minX, "minX");
     parsePrimitive<double>(true, m_minY, "minY");
@@ -95,8 +81,15 @@ public:
   }
 
 
-  void checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend);
+  void checkPosInfo(const double &domainXstart,
+                    const double &domainXend,
+                    const double &domainYstart,
+                    const double &domainYend,
+                    const double &domainZstart,
+                    const double &domainZend) override;
 
 
-  int emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles);
+  int emitParticles(const float &dt,
+                    const float &currTime,
+                    std::list<Particle *> &emittedParticles) override;
 };

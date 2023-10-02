@@ -36,7 +36,7 @@
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
-#include <math.h>
+#include <cmath>
 #include <vector>
 #include <chrono>
 
@@ -58,6 +58,8 @@ public:
   Solver_CPU_RB(const WINDSInputData *WID, WINDSGeneralData *WGD)
     : Solver(WID, WGD)
   {
+    std::cout << "-------------------------------------------------------------------" << std::endl;
+    std::cout << "[Solver]\t Initializing Red/Black Solver (CPU) ..." << std::endl;
   }
 
 protected:
@@ -71,5 +73,5 @@ protected:
    * @param WGD :document this:
    * @param solveWind :document this:
    */
-  virtual void solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind);
+  void solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind) override;
 };
