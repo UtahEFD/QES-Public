@@ -612,7 +612,7 @@ void Fire ::run(Solver *solver, WINDSGeneralData *WGD)
     }
 
     // get horizontal wind at flame height
-    int cell_face = ii + jj * nx + kh * ny * nx;
+    int cell_face = ii + jj * nx + (kh+1) * ny * nx;
     float u = 0.5 * (WGD->u[cell_face] + WGD->u[cell_face + 1]);
     float v = 0.5 * (WGD->v[cell_face] + WGD->v[cell_face + nx]);
     // run Balbi model
@@ -852,7 +852,8 @@ void Fire ::potential(WINDSGeneralData *WGD)
 
                   // modify potential fields
 
-                  int cellCentPot = ipot + jpot * (nx - 1) + (kpot - 1) * (nx - 1) * (ny - 1);
+                  //int cellCentPot = ipot + jpot * (nx - 1) + (kpot - 1) * (nx - 1) * (ny - 1);
+		  int cellCentPot = ipot + jpot * (nx - 1) + (kpot) * (nx - 1) * (ny - 1);
                   Pot_u[cellCentPot] += u_p;
                   Pot_v[cellCentPot] += v_p;
                   Pot_w[cellCentPot] += w_p;
@@ -1264,6 +1265,7 @@ struct Fire::FireProperties Fire ::balbi(FuelProperties *fuel, float u_mid, floa
     fp.T = TFlame;
     fp.tau = tau;
     fp.K = KDrag;
+    fp.H0 = H0;
   }
   return fp;
 }

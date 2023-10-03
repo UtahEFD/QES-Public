@@ -88,16 +88,6 @@ using namespace netCDF::exceptions; //plume
 int main(int argc, char *argv[])
 {
   QESout::splashScreen();
-  /*
-    // QES-Winds - Version output information
-  std::string Revision = "0";
-  std::cout << "QES-Fire "
-            << "1.0.0" << std::endl;
-
-#ifdef HAS_OPTIX
-  std::cout << "OptiX is available!" << std::endl;
-#endif
-  */
   
   // ///////////////////////////////////
   // Parse Command Line arguments
@@ -125,24 +115,6 @@ int main(int argc, char *argv[])
     QESout::error("Turbulence model is turned on without turbParams in QES Intput file "
                    + arguments.qesWindsParamFile);
   }
-
-
-  if (arguments.terrainOut) {
-    if (WID->simParams->DTE_heightField) {
-      std::cout << "Creating terrain OBJ....\n";
-      WID->simParams->DTE_heightField->outputOBJ(arguments.filenameTerrain);
-      std::cout << "OBJ created....\n";
-    } else {
-      QESout::error("No dem file specified as input");
-    }
-  }
-  /**
-  // parse Plume xml settings
-  PlumeInputData *PID = new PlumeInputData(arguments.qesPlumeParamFile);
-  if (!PID)
-    QESout::error("QES-Plume input file: " + arguments.qesPlumeParamFile + " not able to be read successfully.");
-  **/
-  
   // Generate the general WINDS data from all inputs
   WINDSGeneralData *WGD = new WINDSGeneralData(WID, arguments.solveType);
 
@@ -156,7 +128,15 @@ int main(int argc, char *argv[])
     outputVec.push_back(new WINDSOutputWorkspace(WGD, arguments.netCDFFileWksp));
   }
 
-
+  if (arguments.terrainOut) {
+    if (WID->simParams->DTE_heightField) {
+      std::cout << "Creating terrain OBJ....\n";
+      WID->simParams->DTE_heightField->outputOBJ(arguments.filenameTerrain);
+      std::cout << "OBJ created....\n";
+    } else {
+      QESout::error("No dem file specified as input");
+    }
+  }
   // Generate the general TURB data from WINDS data
   // based on if the turbulence output file is defined
   TURBGeneralData *TGD = nullptr;
@@ -166,51 +146,34 @@ int main(int argc, char *argv[])
   if (arguments.compTurb && arguments.turbOutput) {
     outputVec.push_back(new TURBOutput(TGD, arguments.netCDFFileTurb));
   }
-
-  /**
-    // Create instance of Plume model class
-  Plume *plume = new Plume(PID, WGD, TGD);
-
+  // parse Plume xml settings
+  PlumeInputData *PID = nullptr;
+  Plume *plume = nullptr;
   // create output instance
   std::vector<QESNetCDFOutput *> PoutputVec;
-  // always supposed to output lagrToEulOutput data
-  PoutputVec.push_back(new PlumeOutput(PID, plume, arguments.outputPlumeFile));
-  if (arguments.doParticleDataOutput == true) {
-    PoutputVec.push_back(new PlumeOutputParticleData(PID, plume, arguments.outputParticleDataFile));
+  if(arguments.compPlume){
+    PID = new PlumeInputData(arguments.qesPlumeParamFile);
+    if (!PID)
+      QESout::error("QES-Plume input file: " + arguments.qesPlumeParamFile + " not able to be read successfully.");
+    // Create instance of Plume model class
+    plume = new Plume(PID, WGD, TGD);
+    
+    // always supposed to output lagrToEulOutput data
+    PoutputVec.push_back(new PlumeOutput(PID, plume, arguments.outputPlumeFile));
+    if (arguments.doParticleDataOutput == true) {
+      PoutputVec.push_back(new PlumeOutputParticleData(PID, plume, arguments.outputParticleDataFile));
+    }
   }
-  **/
+  
+
+
+  
   
   // //////////////////////////////////////////
   //
   // Run the QES-Winds Solver
   //
   // //////////////////////////////////////////
-  /*
-  Solver *solver = nullptr;
-  if (arguments.solveType == CPU_Type) {
-    #ifdef _OPENMP
-    std::cout << "Run Red/Black Solver (CPU) ..." << std::endl;
-    solver = new Solver_CPU_RB(WID, WGD);
-    #else
-    std::cout << "Run Serial Solver (CPU) ..." << std::endl;
-    solver = new CPUSolver(WID, WGD);
-    #endif
-
-    #ifdef HAS_CUDA
-  } else if (arguments.solveType == DYNAMIC_P) {
-    std::cout << "Run Dynamic Parallel Solver (GPU) ..." << std::endl;
-    solver = new DynamicParallelism(WID, WGD);
-  } else if (arguments.solveType == Global_M) {
-    std::cout << "Run Global Memory Solver (GPU) ..." << std::endl;
-    solver = new GlobalMemory(WID, WGD);
-  } else if (arguments.solveType == Shared_M) {
-    std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
-    solver = new SharedMemory(WID, WGD);
-    #endif
-  } else {
-    QESout::error("Invalid solve type");
-  }
-  */
     Solver *solver = nullptr;
   if (arguments.solveType == CPU_Type) {
 #ifdef _OPENMP
@@ -378,19 +341,21 @@ int main(int argc, char *argv[])
       /**
 	* Advance fire time from variable fire timestep
 	**/
-      //simTimeCurr += fire->dt;
-      simTimeCurr += 10;
+      simTimeCurr += fire->dt;
+      //simTimeCurr += 10;
       std::cout << "time = " << simTimeCurr << endl;
 
-      /**
-      std::cout << "------Running Plume------" << std::endl;
-      //PID->sources->sources = 
-      QEStime pendtime;///< End time for fire time loop
-      //pendtime = WGD->timestamp[index] + PID->plumeParams->simDur;
-      pendtime = simTimeCurr; //run until end of fire timestep
-      plume->run(pendtime, WGD, TGD, PoutputVec);
-      std::cout << "------Plume Finished------" << std::endl;
-      **/
+      if (plume != nullptr){
+	std::cout << "------Running Plume------" << std::endl;
+	
+	//std::vector<Source *> &newSources;
+	//plume->addSources(newSources);
+	QEStime pendtime;///< End time for fire time loop
+	//pendtime = WGD->timestamp[index] + PID->plumeParams->simDur;
+	pendtime = simTimeCurr; //run until end of fire timestep
+	plume->run(pendtime, WGD, TGD, PoutputVec);
+	std::cout << "------Plume Finished------" << std::endl;
+      }
 
 
       /**
