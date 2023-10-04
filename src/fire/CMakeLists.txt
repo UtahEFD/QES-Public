@@ -16,5 +16,16 @@ CUDA_ADD_LIBRARY( qesfirecore
   )
 
 
+IF ($CACHE{HAS_CUDA_SUPPORT})
+    CUDA_ADD_LIBRARY( qesfirecore
+            ${qesFireCoreSources}
+            )
+ELSE ($CACHE{HAS_CUDA_SUPPORT})
+    ADD_LIBRARY( qesfirecore
+            ${qesFireCoreSources}
+            )
+ENDIF ($CACHE{HAS_CUDA_SUPPORT})
+
+
 
 
