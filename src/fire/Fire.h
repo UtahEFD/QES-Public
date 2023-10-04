@@ -23,6 +23,7 @@
 #include <math.h>
 #include <cmath>
 #include <netcdf>
+#include "SourceFire.h"
 
 using namespace netCDF;
 using namespace netCDF::exceptions;

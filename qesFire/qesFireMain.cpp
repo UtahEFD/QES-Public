@@ -76,6 +76,7 @@
 
 #include "fire/Fire.h"
 #include "fire/FIREOutput.h"
+#include "fire/SourceFire.h"
 #include <chrono>
 namespace pt = boost::property_tree;
 
@@ -342,16 +343,19 @@ int main(int argc, char *argv[])
 	* Advance fire time from variable fire timestep
 	**/
       simTimeCurr += fire->dt;
-      //simTimeCurr += 10;
+      
       std::cout << "time = " << simTimeCurr << endl;
 
       if (plume != nullptr){
 	std::cout << "------Running Plume------" << std::endl;
 	
-	//std::vector<Source *> &newSources;
-	//plume->addSources(newSources);
+	SourceFire source = SourceFire(50, 50, 1.5, 200);
+	source.setSource(); 
+	std::vector<Source *> sourceList;
+	sourceList.push_back(dynamic_cast<Source*>(&source));
+	plume->addSources(sourceList);
+	
 	QEStime pendtime;///< End time for fire time loop
-	//pendtime = WGD->timestamp[index] + PID->plumeParams->simDur;
 	pendtime = simTimeCurr; //run until end of fire timestep
 	plume->run(pendtime, WGD, TGD, PoutputVec);
 	std::cout << "------Plume Finished------" << std::endl;
