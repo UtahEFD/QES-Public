@@ -62,6 +62,7 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
   Force.resize((nx - 1) * (ny - 1));
   z_mix.resize((nx - 1) * (ny - 1));
   z_mix_old.resize((nx - 1) * (ny - 1));
+  smoke_flag.resize((nx -1) * (ny - 1));
   /**
 	* Read Potential Field
 	**/
@@ -398,16 +399,18 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
         int idx = i + j * (nx - 1);
         fire_cells[idx].state.burn_flag = 1;
         fire_cells[idx].state.front_flag = 1;
+	
       }
     }
   }
   /** 
-	*  Set up burn flag field
+	*  Set up burn flag field and smoke flag field
 	*/
   for (int j = 0; j < ny - 1; j++) {
     for (int i = 0; i < nx - 1; i++) {
       int idx = i + j * (nx - 1);
       burn_flag[idx] = fire_cells[idx].state.burn_flag;
+      smoke_flag[idx] = fire_cells[idx].state.burn_flag;
     }
   }
   std::cout << "burn initialized" << std::endl;
@@ -1000,9 +1003,10 @@ void Fire ::move(Solver *solver, WINDSGeneralData *WGD)
       if (front_map[idx] <= 1 && burn_flag[idx] < 1) {
         fire_cells[idx].state.burn_flag = 0.5;
       }
-      // if level set < threshold, set burn flag to 1
+      // if level set < threshold, set burn flag to 1 and start smoke flag
       if (front_map[idx] <= 0.1 && burn_flag[idx] < 1) {
         fire_cells[idx].state.burn_flag = 1;
+	smoke_flag[idx] = 1;
       }
       // update burn flag field
       burn_flag[idx] = fire_cells[idx].state.burn_flag;

@@ -13,8 +13,10 @@ SET( qesFireCoreSources
   OldFuelProperties.hpp
   FuelRead.h
   FuelRead.cpp
-	SourceFire.h
-SourceFire.cpp
+  SourceFire.h
+  SourceFire.cpp
+  Smoke.h
+  Smoke.cpp
   )
 
 

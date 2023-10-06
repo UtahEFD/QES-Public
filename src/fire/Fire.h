@@ -24,18 +24,20 @@
 #include <cmath>
 #include <netcdf>
 #include "SourceFire.h"
+#include "Smoke.h"
 
 using namespace netCDF;
 using namespace netCDF::exceptions;
 
 class FuelProperties;
-
+//class Smoke;
 
 class Fire
 {
 
 
 public:
+
   Fire(WINDSInputData *, WINDSGeneralData *);
 
   struct FireProperties
@@ -88,6 +90,7 @@ public:
   // output fields
   std::vector<float> burn_flag;
   std::vector<float> burn_out;
+  std::vector<int> smoke_flag;
   std::vector<float> Pot_w_out;
   std::vector<float> fuel_map;
 

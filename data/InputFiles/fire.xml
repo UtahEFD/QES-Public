@@ -70,8 +70,8 @@
     	<baseHeight> 0 </baseHeight> <!--meters-->
     	<xStart> 15.0 </xStart> <!--meters-->
     	<yStart> 30.0 </yStart> <!--meters-->
-    	<length> 2.0 </length> <!--meters-->
-    	<width>  2.0 </width> <!--meters-->
+    	<length> 1.0 </length> <!--meters-->
+    	<width>  1.0 </width> <!--meters-->
     </ignition>
 
 </fires>
