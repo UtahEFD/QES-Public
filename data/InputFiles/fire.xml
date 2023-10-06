@@ -58,7 +58,7 @@
 </buildingsParams>
 
 <fires>
-	<fireDur> 100 </fireDur>
+	<fireDur> 1000 </fireDur>
 	<fuelType> 203 </fuelType>
 	<!-- fuelMap>../data/FireFiles/test.tif</fuelMap -->
 	<fmc> 0.02 </fmc>

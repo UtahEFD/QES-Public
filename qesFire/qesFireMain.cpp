@@ -367,10 +367,10 @@ int main(int argc, char *argv[])
 	      float z_pos = WGD->terrain[idx]+1;
 	      float ppt = 20;
 	      std::cout<<"x = "<<x_pos<<", y = "<<y_pos<<", z = "<<z_pos<<std::endl;
-	      SourceFire source = SourceFire(x_pos, y_pos, z_pos, ppt);
-	      source.setSource(); 
+	      SourceFire *source = new SourceFire(x_pos, y_pos, z_pos, ppt);
+	      source->setSource(); 
 	      std::vector<Source *> sourceList;
-	      sourceList.push_back(dynamic_cast<Source*>(&source));
+	      sourceList.push_back(dynamic_cast<Source*>(source));
 	      // Add source to plume
 	      plume->addSources(sourceList);
 	      // Clear smoke flag in fire program so no duplicate source set next time step
@@ -378,6 +378,7 @@ int main(int argc, char *argv[])
 	    }
 	  }	  
 	}
+	std::cout<<"Plume run"<<std::endl;
 	QEStime pendtime;///< End time for fire time loop
 	pendtime = simTimeCurr; //run until end of fire timestep
 	plume->run(pendtime, WGD, TGD, PoutputVec);

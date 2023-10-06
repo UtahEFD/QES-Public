@@ -1,7 +1,7 @@
 <QESPlumeParameters>
   <plumeParameters>
     <CourantNumber> 0.25 </CourantNumber>
-    <simDur> 100.0 </simDur><!-- this is the amount of time to run the simulation -->
+    <simDur> 1000.0 </simDur><!-- this is the amount of time to run the simulation -->
     <timeStep> 1.0 </timeStep><!-- this is the overall integration timestep -->
     <invarianceTol> 1e-5 </invarianceTol>     <!-- tolerance in makeRealizeable on the stress tensor -->
     <interpolationMethod>triLinear</interpolationMethod> 
@@ -24,12 +24,12 @@
 <sourceParameters>
   <source>
     <releaseType_continuous>
-	  <parPerTimestep> 10 </parPerTimestep>
+	  <parPerTimestep> 1 </parPerTimestep>
     </releaseType_continuous>
     <sourceGeometry_Point>
-      <posX> 30 </posX>
+      <posX> 15 </posX>
       <posY> 30 </posY>
-      <posZ> 1.5 </posZ>
+      <posZ> 1 </posZ>
     </sourceGeometry_Point>
   </source>
 </sourceParameters>
