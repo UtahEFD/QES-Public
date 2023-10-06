@@ -29,7 +29,7 @@
 	</sensor>                      					<!-- End of sensor section -->
 </metParams>
 <turbParams>
-  <method>3</method>   <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
+  <method>0</method>   <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
   <samples>2000</samples>
 </turbParams>
 <buildingsParams>
