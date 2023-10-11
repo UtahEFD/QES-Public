@@ -74,3 +74,15 @@ void SourceGeometry_SphereShell::setInitialPosition(Particle *ptr)
   ptr->yPos_init = posY + radius * ny * overn;
   ptr->zPos_init = posZ + radius * nz * overn;
 }
+
+void SourceGeometry_SphereShell::setInitialPosition(double &x, double &y, double &z)
+{
+  // uniform distribution over surface of sphere
+  double nx = normalDistribution(prng);
+  double ny = normalDistribution(prng);
+  double nz = normalDistribution(prng);
+  double overn = 1 / sqrt(nx * nx + ny * ny + nz * nz);
+  x = posX + radius * nx * overn;
+  y = posY + radius * ny * overn;
+  z = posZ + radius * nz * overn;
+}

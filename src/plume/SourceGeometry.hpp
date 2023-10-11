@@ -41,10 +41,6 @@
 #include <list>
 
 #include "Particle.hpp"
-#include "ParticleTracer.hpp"
-#include "ParticleSmall.hpp"
-#include "ParticleLarge.hpp"
-#include "ParticleHeavyGas.hpp"
 
 #include "ParticleFactories.hpp"
 
@@ -78,7 +74,7 @@ public:
   // this is a description variable for determining the source shape. May or may not be used.
   // !!! this needs set by parseValues() in each source generated from input files.
   SourceShape m_sGeom;
-  
+
   // constructor
   explicit SourceGeometry(const SourceShape &type) : m_sGeom(type)
   {
@@ -101,4 +97,7 @@ public:
 
   // this function set the initial position of each particle
   virtual void setInitialPosition(Particle *ptr) = 0;
+
+  // this function set the initial position of each particle
+  virtual void setInitialPosition(double&,double&,double&) = 0;
 };

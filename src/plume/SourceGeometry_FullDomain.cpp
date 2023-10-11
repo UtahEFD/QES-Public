@@ -78,3 +78,11 @@ void SourceGeometry_FullDomain::setInitialPosition(Particle *ptr)
   ptr->yPos_init = uniformDistribution(prng) * (yDomainEnd - yDomainStart) + yDomainStart;
   ptr->zPos_init = uniformDistribution(prng) * (zDomainEnd - zDomainStart) + zDomainStart;
 }
+
+void SourceGeometry_FullDomain::setInitialPosition(double &x, double &y, double &z)
+{
+  // generate uniform dist in domain
+  x = uniformDistribution(prng) * (xDomainEnd - xDomainStart) + xDomainStart;
+  y = uniformDistribution(prng) * (yDomainEnd - yDomainStart) + yDomainStart;
+  z = uniformDistribution(prng) * (zDomainEnd - zDomainStart) + zDomainStart;
+}

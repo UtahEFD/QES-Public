@@ -111,21 +111,46 @@ TEST_CASE("buffer", "[in progress]")
     for (int pidx = 0; pidx < 1000; ++pidx) {
       particleManager.add();
     }
-
     for (auto &p : particleManager.buffer) {
       float t = drand48();
       advect(&p);
       if (t > 0.8)
         p.isActive = false;
     }
-    particleManager.scrub_buffer();
   }
 
-  std::cout << particleManager.size() << " " << particleManager.nbr_used << std::endl;
+  std::cout << particleManager.size() << " " << particleManager.active() << std::endl;
 
   finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
   elapsed = finish - start;
   std::cout << "elapsed time: " << elapsed.count() << " s\n";
 
+  REQUIRE(particleManager.buffer[particleManager.added.back()].particleID == 10000 * 1000 - 1);
   REQUIRE(particleManager.size() == 6000);
+}
+
+TEST_CASE("buffer large", "[in progress]")
+{
+  auto start = std::chrono::high_resolution_clock::now();
+
+  ParticleManager<ParticleTracer> particleManager(10000);
+  for (int k = 0; k < 10000; ++k) {
+    particleManager.check_size(1000);
+
+    for (int pidx = 0; pidx < 1000; ++pidx) {
+      particleManager.add();
+    }
+    for (auto &p : particleManager.buffer) {
+      float t = drand48();
+      advect(&p);
+      if (t > 0.8)
+        p.isActive = false;
+    }
+  }
+
+  std::cout << particleManager.size() << " " << particleManager.active() << std::endl;
+
+  auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
+  std::chrono::duration<float> elapsed = finish - start;
+  std::cout << "elapsed time: " << elapsed.count() << " s\n";
 }
