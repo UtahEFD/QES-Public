@@ -86,3 +86,15 @@ void SourceGeometry_Line::setInitialPosition(Particle *ptr)
   ptr->yPos_init = posY_0 + t * diffY;
   ptr->zPos_init = posZ_0 + t * diffZ;
 }
+
+void SourceGeometry_Line::setInitialPosition(double &x, double &y, double &z)
+{
+  // generate random point on line between m_pt0 and m_pt1
+  double diffX = posX_1 - posX_0;
+  double diffY = posY_1 - posY_0;
+  double diffZ = posZ_1 - posZ_0;
+  float t = drand48();
+  x = posX_0 + t * diffX;
+  y = posY_0 + t * diffY;
+  z = posZ_0 + t * diffZ;
+}

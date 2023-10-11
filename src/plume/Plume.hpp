@@ -115,7 +115,7 @@ public:
   int getNumRogueParticles() const { return isRogueCount; }// accessor
   int getNumNotActiveParticles() const { return isNotActiveCount; }// accessor
   // int getNumCurrentParticles() const { return (int)particleList.size(); }// accessor
-  int getNumCurrentParticles() const { return tracerList->nbr_used; }// accessor
+  int getNumCurrentParticles() const { return tracerList->nbr_active(); }// accessor
 
   QEStime getSimTimeStart() const { return simTimeStart; }
   QEStime getSimTimeCurrent() const { return simTimeCurr; }
@@ -335,7 +335,7 @@ inline void Plume::showCurrentStatus()
   std::cout << "Current simulation time: " << simTimeCurr << "\n";
   std::cout << "Simulation run time: " << simTimeCurr - simTimeStart << "\n";
   std::cout << "Total number of particles released: " << nParsReleased << "\n";
-  std::cout << "Current number of particles in simulation: " << tracerList->active() << "\n";
+  std::cout << "Current number of particles in simulation: " << tracerList->nbr_active() << "\n";
   std::cout << "Number of rogue particles: " << isRogueCount << "\n";
   std::cout << "Number of deleted particles: " << isNotActiveCount << "\n";
   std::cout << "----------------------------------------------------------------- \n"

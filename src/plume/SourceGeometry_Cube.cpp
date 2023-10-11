@@ -98,3 +98,11 @@ void SourceGeometry_Cube::setInitialPosition(Particle *ptr)
   ptr->yPos_init = uniformDistribution(prng) * (m_maxY - m_minY) + m_minY;
   ptr->zPos_init = uniformDistribution(prng) * (m_maxZ - m_minZ) + m_minZ;
 }
+
+void SourceGeometry_Cube::setInitialPosition(double &x, double &y, double &z)
+{
+  // generate uniform dist in domain
+  x = uniformDistribution(prng) * (m_maxX - m_minX) + m_minX;
+  y = uniformDistribution(prng) * (m_maxY - m_minY) + m_minY;
+  z = uniformDistribution(prng) * (m_maxZ - m_minZ) + m_minZ;
+}

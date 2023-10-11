@@ -68,3 +68,11 @@ void SourceGeometry_Point::setInitialPosition(Particle *ptr)
   ptr->yPos_init = posY;
   ptr->zPos_init = posZ;
 }
+
+void SourceGeometry_Point::setInitialPosition(double &x, double &y, double &z)
+{
+  // set initial position
+  x = posX;
+  y = posY;
+  z = posZ;
+}

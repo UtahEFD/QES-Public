@@ -79,4 +79,5 @@ public:
                     const double &domainZend) override;
 
   void setInitialPosition(Particle *ptr) override;
+  void setInitialPosition(double &, double &, double &) override;
 };

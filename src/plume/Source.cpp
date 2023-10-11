@@ -185,22 +185,25 @@ int Source::emitParticles(const float &dt,
       // Particle *cPar = new Particle();
       particleList->add();
       // Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
-      Particle *cPar = &particleList->buffer[particleList->added.back()];
+      // ParticleTracer *cPar = particleList->get_last_added();
+      // Particle *cPar = &particleList->buffer[particleList->added.back()];
       // m_protoParticle->setParticleParameters(cPar);
-      m_sourceGeometry->setInitialPosition(cPar);
+      m_sourceGeometry->setInitialPosition(particleList->get_last_added()->xPos_init,
+                                           particleList->get_last_added()->yPos_init,
+                                           particleList->get_last_added()->zPos_init);
 
-      cPar->m = sourceStrength / m_releaseType->m_numPar;
-      cPar->m_kg = cPar->m * (1.0E-3);
-      cPar->m_o = cPar->m;
-      cPar->m_kg_o = cPar->m * (1.0E-3);
-      // std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
+      // cPar->m = sourceStrength / m_releaseType->m_numPar;
+      // cPar->m_kg = cPar->m * (1.0E-3);
+      // cPar->m_o = cPar->m;
+      // cPar->m_kg_o = cPar->m * (1.0E-3);
+      //  std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
 
-
-      cPar->tStrt = currTime;
-
-      cPar->sourceIdx = sourceIdx;
+      particleList->get_last_added()->tStrt = currTime;
+      particleList->get_last_added()->sourceIdx = sourceIdx;
     }
-    emitted = (int)particleList->added.size();
+    emitted = (int)particleList->nbr_added();
+  } else {
+    particleList->check_size(0);
   }
 
   return emitted;// m_rType->m_parPerTimestep;
