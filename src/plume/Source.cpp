@@ -151,7 +151,7 @@ int Source::emitParticles(const float &dt,
       // Particle *cPar = new Particle();
       Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
       m_protoParticle->setParticleParameters(cPar);
-      m_sourceGeometry->setInitialPosition(cPar);
+      m_sourceGeometry->setInitialPosition(cPar->xPos_init, cPar->yPos_init, cPar->zPos_init);
 
       cPar->m = sourceStrength / m_releaseType->m_numPar;
       cPar->m_kg = cPar->m * (1.0E-3);
@@ -178,33 +178,20 @@ int Source::emitParticles(const float &dt,
   int emitted = 0;
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_releaseType->m_releaseStartTime && currTime <= m_releaseType->m_releaseEndTime) {
-
     particleList->check_size(m_releaseType->m_parPerTimestep);
-    for (int pidx = 0; pidx < m_releaseType->m_parPerTimestep; pidx++) {
-
-      // Particle *cPar = new Particle();
-      particleList->add();
+    for (int pidx = 0; pidx < m_releaseType->m_parPerTimestep; ++pidx) {
       // Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
-      // ParticleTracer *cPar = particleList->get_last_added();
-      // Particle *cPar = &particleList->buffer[particleList->added.back()];
       // m_protoParticle->setParticleParameters(cPar);
-      m_sourceGeometry->setInitialPosition(particleList->get_last_added()->xPos_init,
-                                           particleList->get_last_added()->yPos_init,
-                                           particleList->get_last_added()->zPos_init);
-
-      // cPar->m = sourceStrength / m_releaseType->m_numPar;
-      // cPar->m_kg = cPar->m * (1.0E-3);
-      // cPar->m_o = cPar->m;
-      // cPar->m_kg_o = cPar->m * (1.0E-3);
-      //  std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
-
-      particleList->get_last_added()->tStrt = currTime;
-      particleList->get_last_added()->sourceIdx = sourceIdx;
+      particleList->add();
+      m_sourceGeometry->setInitialPosition(particleList->last_added()->xPos_init,
+                                           particleList->last_added()->yPos_init,
+                                           particleList->last_added()->zPos_init);
+      particleList->last_added()->tStrt = currTime;
+      particleList->last_added()->sourceIdx = sourceIdx;
     }
     emitted = (int)particleList->nbr_added();
   } else {
     particleList->check_size(0);
   }
-
-  return emitted;// m_rType->m_parPerTimestep;
+  return emitted;
 }

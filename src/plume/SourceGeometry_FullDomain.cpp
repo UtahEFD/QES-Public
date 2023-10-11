@@ -36,8 +36,6 @@
  */
 
 #include "SourceGeometry_FullDomain.hpp"
-#include "winds/WINDSGeneralData.h"
-// #include "Interp.h"
 
 void SourceGeometry_FullDomain::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
@@ -69,14 +67,6 @@ void SourceGeometry_FullDomain::checkPosInfo(const double &domainXstart, const d
 
   // unfortunately there is no easy way to check that the input domain sizes are correct, so the code could potentially fail later on
   //  cause there is no easy checking method to be implemented here
-}
-
-void SourceGeometry_FullDomain::setInitialPosition(Particle *ptr)
-{
-  // generate uniform dist in domain
-  ptr->xPos_init = uniformDistribution(prng) * (xDomainEnd - xDomainStart) + xDomainStart;
-  ptr->yPos_init = uniformDistribution(prng) * (yDomainEnd - yDomainStart) + yDomainStart;
-  ptr->zPos_init = uniformDistribution(prng) * (zDomainEnd - zDomainStart) + zDomainStart;
 }
 
 void SourceGeometry_FullDomain::setInitialPosition(double &x, double &y, double &z)

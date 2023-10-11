@@ -36,10 +36,8 @@
  */
 
 #include "SourceGeometry_Point.hpp"
-#include "winds/WINDSGeneralData.h"
 #define _USE_MATH_DEFINES
 #include <cmath>
-// #include "Interp.h"
 
 void SourceGeometry_Point::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
@@ -58,15 +56,6 @@ void SourceGeometry_Point::checkPosInfo(const double &domainXstart, const double
               << "\" domainZstart = \"" << domainZstart << "\" domainZend = \"" << domainZend << "\"" << std::endl;
     exit(1);
   }
-}
-
-// template <class typeid(parType).name()>
-void SourceGeometry_Point::setInitialPosition(Particle *ptr)
-{
-  // set initial position
-  ptr->xPos_init = posX;
-  ptr->yPos_init = posY;
-  ptr->zPos_init = posZ;
 }
 
 void SourceGeometry_Point::setInitialPosition(double &x, double &y, double &z)

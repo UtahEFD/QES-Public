@@ -36,7 +36,6 @@
  */
 
 #include "SourceGeometry_SphereShell.hpp"
-#include "winds/WINDSGeneralData.h"
 
 void SourceGeometry_SphereShell::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
@@ -60,19 +59,6 @@ void SourceGeometry_SphereShell::checkPosInfo(const double &domainXstart, const 
               << "\" domainZstart = \"" << domainZstart << "\" domainZend = \"" << domainZend << "\"" << std::endl;
     exit(1);
   }
-}
-
-
-void SourceGeometry_SphereShell::setInitialPosition(Particle *ptr)
-{
-  // uniform distribution over surface of sphere
-  double nx = normalDistribution(prng);
-  double ny = normalDistribution(prng);
-  double nz = normalDistribution(prng);
-  double overn = 1 / sqrt(nx * nx + ny * ny + nz * nz);
-  ptr->xPos_init = posX + radius * nx * overn;
-  ptr->yPos_init = posY + radius * ny * overn;
-  ptr->zPos_init = posZ + radius * nz * overn;
 }
 
 void SourceGeometry_SphereShell::setInitialPosition(double &x, double &y, double &z)
