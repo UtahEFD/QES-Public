@@ -37,10 +37,7 @@
 
 #pragma once
 
-
 #include "SourceGeometry.hpp"
-#include "winds/WINDSGeneralData.h"
-// #include "Particles.hpp"
 
 class SourceGeometry_SphereShell : public SourceGeometry
 {
@@ -86,6 +83,5 @@ public:
                     const double &domainZstart,
                     const double &domainZend) override;
 
-  void setInitialPosition(Particle *ptr) override;
   void setInitialPosition(double &, double &, double &) override;
 };

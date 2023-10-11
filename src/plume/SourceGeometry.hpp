@@ -96,8 +96,5 @@ public:
   virtual void checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend) = 0;
 
   // this function set the initial position of each particle
-  virtual void setInitialPosition(Particle *ptr) = 0;
-
-  // this function set the initial position of each particle
-  virtual void setInitialPosition(double&,double&,double&) = 0;
+  virtual void setInitialPosition(double &, double &, double &) = 0;
 };

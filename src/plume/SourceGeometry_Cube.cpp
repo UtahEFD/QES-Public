@@ -36,8 +36,6 @@
  */
 
 #include "SourceGeometry_Cube.hpp"
-#include "winds/WINDSGeneralData.h"
-// #include "Interp.h"
 
 void SourceGeometry_Cube::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
@@ -88,15 +86,6 @@ void SourceGeometry_Cube::checkPosInfo(const double &domainXstart, const double 
               << "\" domainZstart = \"" << domainZstart << "\" domainZend = \"" << domainZend << "\"" << std::endl;
     exit(1);
   }
-}
-
-
-void SourceGeometry_Cube::setInitialPosition(Particle *ptr)
-{
-  // generate uniform dist in domain
-  ptr->xPos_init = uniformDistribution(prng) * (m_maxX - m_minX) + m_minX;
-  ptr->yPos_init = uniformDistribution(prng) * (m_maxY - m_minY) + m_minY;
-  ptr->zPos_init = uniformDistribution(prng) * (m_maxZ - m_minZ) + m_minZ;
 }
 
 void SourceGeometry_Cube::setInitialPosition(double &x, double &y, double &z)

@@ -119,13 +119,13 @@ TEST_CASE("buffer", "[in progress]")
     }
   }
 
-  std::cout << particleManager.size() << " " << particleManager.active() << std::endl;
+  std::cout << particleManager.size() << " " << particleManager.nbr_active() << std::endl;
 
   finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
   elapsed = finish - start;
   std::cout << "elapsed time: " << elapsed.count() << " s\n";
 
-  REQUIRE(particleManager.buffer[particleManager.added.back()].particleID == 10000 * 1000 - 1);
+  REQUIRE(particleManager.last_added()->particleID == 10000 * 1000 - 1);
   REQUIRE(particleManager.size() == 6000);
 }
 
@@ -148,7 +148,7 @@ TEST_CASE("buffer large", "[in progress]")
     }
   }
 
-  std::cout << particleManager.size() << " " << particleManager.active() << std::endl;
+  std::cout << particleManager.size() << " " << particleManager.nbr_active() << std::endl;
 
   auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
   std::chrono::duration<float> elapsed = finish - start;

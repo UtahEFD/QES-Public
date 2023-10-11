@@ -90,11 +90,11 @@ public:
     return nbr_used;
   }
 
-  T *get_last_added()
+  T *last_added()
   {
     return &buffer[added.back()];
   }
-  
+
   void check_size(const int &new_part)
   {
     size_t nbr_used = scrub_buffer();

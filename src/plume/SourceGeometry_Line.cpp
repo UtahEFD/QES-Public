@@ -36,8 +36,6 @@
  */
 
 #include "SourceGeometry_Line.hpp"
-#include "winds/WINDSGeneralData.h"
-// #include "Interp.h"
 
 void SourceGeometry_Line::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
@@ -72,19 +70,6 @@ void SourceGeometry_Line::checkPosInfo(const double &domainXstart, const double 
               << "\" domainZstart = \"" << domainZstart << "\" domainZend = \"" << domainZend << "\"" << std::endl;
     exit(1);
   }
-}
-
-
-void SourceGeometry_Line::setInitialPosition(Particle *ptr)
-{
-  // generate random point on line between m_pt0 and m_pt1
-  double diffX = posX_1 - posX_0;
-  double diffY = posY_1 - posY_0;
-  double diffZ = posZ_1 - posZ_0;
-  float t = drand48();
-  ptr->xPos_init = posX_0 + t * diffX;
-  ptr->yPos_init = posY_0 + t * diffY;
-  ptr->zPos_init = posZ_0 + t * diffZ;
 }
 
 void SourceGeometry_Line::setInitialPosition(double &x, double &y, double &z)
