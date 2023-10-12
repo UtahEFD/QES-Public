@@ -36,7 +36,6 @@
  */
 
 #include "Source.hpp"
-#include "Plume.hpp"
 
 void ParseSource::setReleaseType()
 {
@@ -138,72 +137,4 @@ void ParseSource::checkPosInfo(const double &domainXstart,
                                const double &domainZend)
 {
   m_sourceGeometry->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
-}
-
-int Source::emitParticles(const float &dt,
-                          const float &currTime,
-                          std::list<Particle *> &emittedParticles)
-{
-  // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
-  if (currTime >= m_releaseType->m_releaseStartTime && currTime <= m_releaseType->m_releaseEndTime) {
-
-    for (int pidx = 0; pidx < m_releaseType->m_parPerTimestep; pidx++) {
-
-      // Particle *cPar = new Particle();
-      Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
-      m_protoParticle->setParticleParameters(cPar);
-      m_sourceGeometry->setInitialPosition(cPar->xPos_init, cPar->yPos_init, cPar->zPos_init);
-
-      cPar->m = sourceStrength / m_releaseType->m_numPar;
-      cPar->m_kg = cPar->m * (1.0E-3);
-      cPar->m_o = cPar->m;
-      cPar->m_kg_o = cPar->m * (1.0E-3);
-      // std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
-
-
-      cPar->tStrt = currTime;
-
-      cPar->sourceIdx = sourceIdx;
-
-      emittedParticles.push_front(cPar);
-    }
-  }
-
-  return emittedParticles.size();// m_rType->m_parPerTimestep;
-}
-int Source::getNewParticleNumber(const float &dt, const float &currTime)
-{
-  if (currTime >= m_releaseType->m_releaseStartTime && currTime <= m_releaseType->m_releaseEndTime) {
-    return m_releaseType->m_parPerTimestep;
-  } else {
-    return 0;
-  }
-}
-
-void Source::emitParticles(const float &dt,
-                           const float &currTime,
-                           ParticleContainers *particles)
-{
-  int emitted = 0;
-  // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
-  if (currTime >= m_releaseType->m_releaseStartTime && currTime <= m_releaseType->m_releaseEndTime) {
-    if (!particles->tracers->check_size(m_releaseType->m_parPerTimestep)) {
-      std::cerr << "[ERROR] particle container hill formed (not enough space)" << std::endl;
-      exit(1);
-    }
-    for (int pidx = 0; pidx < m_releaseType->m_parPerTimestep; ++pidx) {
-      // Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
-      // m_protoParticle->setParticleParameters(cPar);
-      particles->tracers->insert();
-      m_sourceGeometry->setInitialPosition(particles->tracers->last_added()->xPos_init,
-                                           particles->tracers->last_added()->yPos_init,
-                                           particles->tracers->last_added()->zPos_init);
-      particles->tracers->last_added()->tStrt = currTime;
-      particles->tracers->last_added()->sourceIdx = sourceIdx;
-    }
-    // emitted = (int)m_particleList->nbr_added();
-  } else {
-    // m_particleList->check_size(0);
-  }
-  // return emitted;
 }

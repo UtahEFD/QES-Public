@@ -54,6 +54,13 @@ public:
     //      tag(std::move(str)), particleType(type)
   }
 
+  explicit ParticleSmall(const size_t &ID)
+    : Particle(true, "ParticleSmall", ParticleType::small)
+  {
+    isActive = true;
+    particleID = ID;
+  }
+
   // initializer
   ParticleSmall(const double &d_part, const double &m_part, const double &rho_part)
     : Particle(true, "ParticleSmall", ParticleType::small)

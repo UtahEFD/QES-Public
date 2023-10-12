@@ -48,7 +48,9 @@ SET( qesPlumeCoreSources
     SourceGeometry_SphereShell.cpp SourceGeometry_SphereShell.hpp
 
     Source.cpp
-    
+    Source_Tracers.cpp
+    Source_HeavyParticles.cpp
+
     WallReflection.cpp
     WallReflection_StairStep.cpp
     WallReflection_TriMesh.cpp

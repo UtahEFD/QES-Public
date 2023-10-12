@@ -77,7 +77,7 @@
 #include "Particle.hpp"
 #include "ParticleContainers.h"
 #include "Source.hpp"
-#include "SourceGeometry.hpp"
+#include "Source_Tracers.h"
 
 class Plume
 {
@@ -115,7 +115,7 @@ public:
   int getNumRogueParticles() const { return isRogueCount; }// accessor
   int getNumNotActiveParticles() const { return isNotActiveCount; }// accessor
   // int getNumCurrentParticles() const { return (int)particleList.size(); }// accessor
-  int getNumCurrentParticles() const { return particles->nbr_active(); }// accessor
+  int getNumCurrentParticles() const { return particles->get_nbr_active(); }// accessor
 
   QEStime getSimTimeStart() const { return simTimeStart; }
   QEStime getSimTimeCurrent() const { return simTimeCurr; }
@@ -228,7 +228,7 @@ private:
   void getInputSources(PlumeInputData *);
 
   // this function generates the list of particle to be released at a given time
-  int generateParticleList(float, WINDSGeneralData *, TURBGeneralData *);
+  void generateParticleList(float, WINDSGeneralData *, TURBGeneralData *);
 
   // this function scrubs the inactive particle for the particle list (particleList)
   void scrubParticleList();
@@ -335,8 +335,8 @@ inline void Plume::showCurrentStatus()
   std::cout << "[QES-Plume] \t End run particle summary \n";
   std::cout << "Current simulation time: " << simTimeCurr << "\n";
   std::cout << "Simulation run time: " << simTimeCurr - simTimeStart << "\n";
-  std::cout << "Total number of particles released: " << nParsReleased << "\n";
-  std::cout << "Current number of particles in simulation: " << particles->nbr_active() << "\n";
+  std::cout << "Total number of particles released: " << particles->get_nbr_inserted() << "\n";
+  std::cout << "Current number of particles in simulation: " << particles->get_nbr_active() << "\n";
   std::cout << "Number of rogue particles: " << isRogueCount << "\n";
   std::cout << "Number of deleted particles: " << isNotActiveCount << "\n";
   std::cout << "----------------------------------------------------------------- \n"
