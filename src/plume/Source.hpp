@@ -65,6 +65,7 @@
 #include "util/ParseInterface.h"
 #include "winds/WINDSGeneralData.h"
 
+class Plume;
 class Source;
 
 class ParseSource : public ParseInterface
@@ -172,6 +173,8 @@ protected:
 
   ParticleReleaseType m_rType;
 
+  ParticleManager<ParticleTracer> *m_particleList;
+
   double sourceStrength = 0.0;// total mass released (g)
 public:
   // this is the index of the source in the dispersion class overall list of sources
@@ -229,6 +232,8 @@ public:
     m_rType = m_releaseType->parReleaseType;
 
     m_particleTypeFactory = new ParticleTypeFactory();
+
+    //m_particleList = particleList;
   }
 
   // destructor
@@ -252,7 +257,10 @@ public:
                             const float &currTime,
                             std::list<Particle *> &emittedParticles);
 
-  virtual int emitParticles(const float &dt,
-                            const float &currTime,
-                            ParticleManager<ParticleTracer> *particleList);
+  virtual int getNewParticleNumber(const float &dt,
+                                   const float &currTime);
+
+  virtual void emitParticles(const float &dt,
+                             const float &currTime,
+                             Plume *plume);
 };

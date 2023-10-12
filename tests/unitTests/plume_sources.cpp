@@ -52,6 +52,7 @@ TEST_CASE("sources", "[in progress]")
   REQUIRE(numSources_Input == 2);
 
   std::vector<Source *> sources;
+  auto *tracerList = new ParticleManager<ParticleTracer>();
   for (auto s : tID->sourceParams->sources) {
     sources.push_back(new Source((int)sources.size(), s));
   }

@@ -530,11 +530,23 @@ int Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBGe
   }
   setParticleVals(WGD, TGD, nextSetOfParticles);
   */
+  std::unordered_map<ParticleType, int, std::hash<int>> test;
+
+  // std::unordered_map<ParticleType, int, std::hash<int>> test;
+
 
   int numNewParticles = 0;
   for (auto source : allSources) {
-    numNewParticles += source->emitParticles((float)sim_dt, currentTime, tracerList);
+    test[source->particleType()] = 1;
+    numNewParticles += source->getNewParticleNumber((float)sim_dt, currentTime);
   }
+
+  tracerList->check_size(numNewParticles);
+
+  for (auto source : allSources) {
+    source->emitParticles((float)sim_dt, currentTime, this);
+  }
+
   setParticleVals(WGD, TGD);
 
   // append all the new particles on to the big particle
