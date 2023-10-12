@@ -75,8 +75,8 @@
 #include "WallReflection_TriMesh.h"
 
 #include "Particle.hpp"
+#include "ParticleContainers.h"
 #include "Source.hpp"
-
 #include "SourceGeometry.hpp"
 
 class Plume
@@ -115,7 +115,7 @@ public:
   int getNumRogueParticles() const { return isRogueCount; }// accessor
   int getNumNotActiveParticles() const { return isNotActiveCount; }// accessor
   // int getNumCurrentParticles() const { return (int)particleList.size(); }// accessor
-  int getNumCurrentParticles() const { return tracerList->nbr_active(); }// accessor
+  int getNumCurrentParticles() const { return particles->nbr_active(); }// accessor
 
   QEStime getSimTimeStart() const { return simTimeStart; }
   QEStime getSimTimeCurrent() const { return simTimeCurr; }
@@ -126,7 +126,8 @@ public:
   // the sources can set these values, then the other values are set using urb and turb info using these values
   std::list<Particle *> particleList;
 
-  ParticleManager<ParticleTracer> *tracerList;
+  // ManagedContainer<ParticleTracer> *tracerList;
+  ParticleContainers *particles;
 
 #ifdef _OPENMP
   // if using openmp the RNG is not thread safe, use an array of RNG (one per thread)
@@ -335,7 +336,7 @@ inline void Plume::showCurrentStatus()
   std::cout << "Current simulation time: " << simTimeCurr << "\n";
   std::cout << "Simulation run time: " << simTimeCurr - simTimeStart << "\n";
   std::cout << "Total number of particles released: " << nParsReleased << "\n";
-  std::cout << "Current number of particles in simulation: " << tracerList->nbr_active() << "\n";
+  std::cout << "Current number of particles in simulation: " << particles->nbr_active() << "\n";
   std::cout << "Number of rogue particles: " << isRogueCount << "\n";
   std::cout << "Number of deleted particles: " << isNotActiveCount << "\n";
   std::cout << "----------------------------------------------------------------- \n"

@@ -54,6 +54,7 @@
 #include "ParticleHeavyGas.hpp"
 
 #include "ParticleManager.h"
+#include "ParticleContainers.h"
 #include "ParticleFactories.hpp"
 
 #include "ReleaseType.hpp"
@@ -159,10 +160,10 @@ private:
 protected:
   Source() = default;
 
-  ParticleTypeFactory *m_particleTypeFactory;
-  ParseParticle *m_protoParticle;
-  SourceGeometry *m_sourceGeometry;
-  ReleaseType *m_releaseType;
+  ParticleTypeFactory *m_particleTypeFactory{};
+  ParseParticle *m_protoParticle{};
+  SourceGeometry *m_sourceGeometry{};
+  ReleaseType *m_releaseType{};
 
   // particle type
   ParticleType m_pType;
@@ -172,8 +173,6 @@ protected:
   SourceShape m_sGeom;
 
   ParticleReleaseType m_rType;
-
-  ParticleManager<ParticleTracer> *m_particleList;
 
   double sourceStrength = 0.0;// total mass released (g)
 public:
@@ -233,7 +232,7 @@ public:
 
     m_particleTypeFactory = new ParticleTypeFactory();
 
-    //m_particleList = particleList;
+    // m_particleList = particleList;
   }
 
   // destructor
@@ -262,5 +261,5 @@ public:
 
   virtual void emitParticles(const float &dt,
                              const float &currTime,
-                             Plume *plume);
+                             ParticleContainers *particles);
 };

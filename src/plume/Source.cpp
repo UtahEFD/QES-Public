@@ -182,21 +182,24 @@ int Source::getNewParticleNumber(const float &dt, const float &currTime)
 
 void Source::emitParticles(const float &dt,
                            const float &currTime,
-                           Plume *plume)
+                           ParticleContainers *particles)
 {
   int emitted = 0;
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_releaseType->m_releaseStartTime && currTime <= m_releaseType->m_releaseEndTime) {
-    // m_particleList->check_size(m_releaseType->m_parPerTimestep);
+    if (!particles->tracers->check_size(m_releaseType->m_parPerTimestep)) {
+      std::cerr << "[ERROR] particle container hill formed (not enough space)" << std::endl;
+      exit(1);
+    }
     for (int pidx = 0; pidx < m_releaseType->m_parPerTimestep; ++pidx) {
       // Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
       // m_protoParticle->setParticleParameters(cPar);
-      plume->tracerList->add();
-      m_sourceGeometry->setInitialPosition(plume->tracerList->last_added()->xPos_init,
-                                           plume->tracerList->last_added()->yPos_init,
-                                           plume->tracerList->last_added()->zPos_init);
-      plume->tracerList->last_added()->tStrt = currTime;
-      plume->tracerList->last_added()->sourceIdx = sourceIdx;
+      particles->tracers->insert();
+      m_sourceGeometry->setInitialPosition(particles->tracers->last_added()->xPos_init,
+                                           particles->tracers->last_added()->yPos_init,
+                                           particles->tracers->last_added()->zPos_init);
+      particles->tracers->last_added()->tStrt = currTime;
+      particles->tracers->last_added()->sourceIdx = sourceIdx;
     }
     // emitted = (int)m_particleList->nbr_added();
   } else {
