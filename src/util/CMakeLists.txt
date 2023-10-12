@@ -23,7 +23,8 @@ add_library (qesutil ${LIB_TYPE}
   SphereDirections.cpp SphereDirections.h
   Vector3.h
 
-  
+  ManagedContainer.h
+
   NetCDFInput.cpp
   NetCDFOutput.cpp
   QESNetCDFOutput.cpp 

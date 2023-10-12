@@ -366,7 +366,7 @@ void PlumeOutput::boxCount()
 
   }// particle loop */
 
-  for (auto &par : m_plume->tracerList->buffer) {
+  for (auto &par : m_plume->particles->tracers->elements) {
     // because particles all start out as active now, need to also check the release time
     if (par.isActive) {
 
