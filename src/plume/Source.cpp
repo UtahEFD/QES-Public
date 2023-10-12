@@ -36,6 +36,7 @@
  */
 
 #include "Source.hpp"
+#include "Plume.hpp"
 
 void ParseSource::setReleaseType()
 {
@@ -170,28 +171,36 @@ int Source::emitParticles(const float &dt,
 
   return emittedParticles.size();// m_rType->m_parPerTimestep;
 }
+int Source::getNewParticleNumber(const float &dt, const float &currTime)
+{
+  if (currTime >= m_releaseType->m_releaseStartTime && currTime <= m_releaseType->m_releaseEndTime) {
+    return m_releaseType->m_parPerTimestep;
+  } else {
+    return 0;
+  }
+}
 
-int Source::emitParticles(const float &dt,
-                          const float &currTime,
-                          ParticleManager<ParticleTracer> *particleList)
+void Source::emitParticles(const float &dt,
+                           const float &currTime,
+                           Plume *plume)
 {
   int emitted = 0;
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_releaseType->m_releaseStartTime && currTime <= m_releaseType->m_releaseEndTime) {
-    particleList->check_size(m_releaseType->m_parPerTimestep);
+    // m_particleList->check_size(m_releaseType->m_parPerTimestep);
     for (int pidx = 0; pidx < m_releaseType->m_parPerTimestep; ++pidx) {
       // Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
       // m_protoParticle->setParticleParameters(cPar);
-      particleList->add();
-      m_sourceGeometry->setInitialPosition(particleList->last_added()->xPos_init,
-                                           particleList->last_added()->yPos_init,
-                                           particleList->last_added()->zPos_init);
-      particleList->last_added()->tStrt = currTime;
-      particleList->last_added()->sourceIdx = sourceIdx;
+      plume->tracerList->add();
+      m_sourceGeometry->setInitialPosition(plume->tracerList->last_added()->xPos_init,
+                                           plume->tracerList->last_added()->yPos_init,
+                                           plume->tracerList->last_added()->zPos_init);
+      plume->tracerList->last_added()->tStrt = currTime;
+      plume->tracerList->last_added()->sourceIdx = sourceIdx;
     }
-    emitted = (int)particleList->nbr_added();
+    // emitted = (int)m_particleList->nbr_added();
   } else {
-    particleList->check_size(0);
+    // m_particleList->check_size(0);
   }
-  return emitted;
+  // return emitted;
 }
