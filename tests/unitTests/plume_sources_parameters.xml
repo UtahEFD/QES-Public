@@ -10,20 +10,14 @@
                 <posY> 50.0 </posY>
                 <posZ> 70.0 </posZ>
             </sourceGeometry_Point>
-            <particleLarge>
-                <!-- particleDensity in g/m3-->
-                <particleDensity> 1.0 </particleDensity>
-                <!-- particleDiameter in mu-m -->
-                <particleDiameter> 0.001 </particleDiameter>
-                <depositionFlag>true</depositionFlag>
-                <decayConst> 0.1 </decayConst>
-            </particleLarge>
+            <particleTracer>
+            </particleTracer>
         </source>
 
         <source>
             <releaseType_duration>
                 <releaseStartTime> 100 </releaseStartTime>
-                <releaseEndTime> 100 </releaseEndTime>
+                <releaseEndTime> 200 </releaseEndTime>
                 <parPerTimestep> 400 </parPerTimestep>
             </releaseType_duration>
             <sourceGeometry_SphereShell>

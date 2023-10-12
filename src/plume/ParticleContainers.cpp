@@ -33,7 +33,7 @@
 
 #include "ParticleContainers.h"
 
-int ParticleContainers::nbr_rogue()
+int ParticleContainers::get_nbr_rogue()
 {
   // now update the isRogueCount
   int isRogueCount = 0;
@@ -50,15 +50,34 @@ int ParticleContainers::nbr_rogue()
   return isRogueCount;
 }
 
-int ParticleContainers::nbr_active()
+int ParticleContainers::get_nbr_active()
 {
-  return tracers->nbr_active()
-         + heavy_particles->nbr_active();
+  return tracers->get_nbr_active()
+         + heavy_particles->get_nbr_active();
 }
+
+int ParticleContainers::get_nbr_inserted()
+{
+  return tracers->get_nbr_inserted()
+         + heavy_particles->get_nbr_inserted();
+}
+
+void ParticleContainers::prepare(const int &nbr, const ParticleType &in)
+{
+  nbr_particle_to_add[in] += nbr;
+}
+void ParticleContainers::sweep()
+{
+  tracers->sweep(nbr_particle_to_add[ParticleType::tracer]);
+  nbr_particle_to_add[ParticleType::tracer] = 0;
+  heavy_particles->sweep(nbr_particle_to_add[ParticleType::small]);
+  nbr_particle_to_add[ParticleType::small] = 0;
+}
+
 
 void ParticleContainers::container_info()
 {
   std::cout << "Particle Container info" << std::endl;
-  std::cout << "tracer:" << tracers->size() << " " << tracers->nbr_active() << std::endl;
-  std::cout << "heavy particles:" << heavy_particles->size() << " " << heavy_particles->nbr_active() << std::endl;
+  std::cout << "tracer:          " << tracers->size() << " " << tracers->get_nbr_active() << std::endl;
+  std::cout << "heavy particles: " << heavy_particles->size() << " " << heavy_particles->get_nbr_active() << std::endl;
 }

@@ -68,6 +68,10 @@ public:
   {
     // set the overall releaseType variables from the variables found in this class
     double releaseDur = m_releaseEndTime - m_releaseStartTime;
+    if (releaseDur <= 0) {
+      std::cerr << "[ERROR]" << std::endl;
+      exit(1);
+    }
     int nReleaseTimes = std::ceil(releaseDur / timestep);
     m_numPar = m_parPerTimestep * nReleaseTimes;
   }

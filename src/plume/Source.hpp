@@ -66,7 +66,6 @@
 #include "util/ParseInterface.h"
 #include "winds/WINDSGeneralData.h"
 
-class Plume;
 class Source;
 
 class ParseSource : public ParseInterface
@@ -120,6 +119,21 @@ public:
   void setSourceGeometry();
   void setParticleType();
 
+  ParticleType particleType()
+  {
+    return m_protoParticle->particleType;
+  }
+  // accessor to geometry type
+  SourceShape geometryType()
+  {
+    return m_sourceGeometry->m_sGeom;
+  }
+  // accessor to release type
+  ParticleReleaseType releaseType()
+  {
+    return m_releaseType->parReleaseType;
+  }
+
 
   // this function is used to parse all the variables for each source from the input .xml file
   // each source overloads this function with their own version, allowing different combinations of input variables for each source,
@@ -160,19 +174,14 @@ private:
 protected:
   Source() = default;
 
+  ParticleType m_pType;
+  SourceShape m_sGeom;
+  ParticleReleaseType m_rType;
+
   ParticleTypeFactory *m_particleTypeFactory{};
   ParseParticle *m_protoParticle{};
   SourceGeometry *m_sourceGeometry{};
   ReleaseType *m_releaseType{};
-
-  // particle type
-  ParticleType m_pType;
-
-  // this is a description variable for determining the source shape. May or may not be used.
-  // !!! this needs set by parseValues() in each source generated from input files.
-  SourceShape m_sGeom;
-
-  ParticleReleaseType m_rType;
 
   double sourceStrength = 0.0;// total mass released (g)
 public:
@@ -208,12 +217,6 @@ public:
   // LA-future work: need a class similar to ReleaseType that describes the input source mass.
   //  This could be mass, mass per time, volume with a density, and volume per time with a density.
 
-  // LA-future work: need a class similar to ReleaseType that describes how to distribute the particles along the source geometry
-  //  This could be uniform, random normal distribution, ... I still need to think of more distributions.
-  // On second thought, this may not be possible to do like ReleaseType, it may need to be specific to each source geometry.
-  //  so maybe it needs to be more like BoundaryConditions, where each source determines which pointer function to choose for emitting particles
-  //  based on a string input describing the distribution. Really depends on how easy the implementation details become.
-
 
   // constructor
   Source(const int &sidx, const ParseSource *in)
@@ -229,37 +232,15 @@ public:
     m_pType = m_protoParticle->particleType;
     m_sGeom = m_sourceGeometry->m_sGeom;
     m_rType = m_releaseType->parReleaseType;
-
-    m_particleTypeFactory = new ParticleTypeFactory();
-
-    // m_particleList = particleList;
   }
 
   // destructor
   virtual ~Source() = default;
 
-  // this function is for appending a new set of particles to the provided vector of particles
-  // the way this is done differs for each source inheriting from this class, but in general
-  //  the idea is to determine whether the input time is within the time range particles should be released
-  //  then the particle positions are set using the particles to release per time, geometry information, and
-  //  distribution information.
-  // !!! only the particle initial positions, release time, and soureIdx are set for each particle,
-  //  other particle information needs set by whatever called this function
-  //  right after the call to this function to make it work correctly.
-  // LA-other notes: currently this is outputting the number of particles to release per time, which is the number of particles
-  //  appended to the list. According to Pete, the int output could be used for returning error messages,
-  //  kind of like the exit success or exit failure return methods.
-  // !!! Because the input vector is never empty if there is more than one source,
-  //   the size of the vector should NOT be used for output for this function!
-  //  In order to make this function work correctly, the number of particles to release per timestep needs to be the output
-  virtual int emitParticles(const float &dt,
-                            const float &currTime,
-                            std::list<Particle *> &emittedParticles);
-
   virtual int getNewParticleNumber(const float &dt,
-                                   const float &currTime);
+                                   const float &currTime) = 0;
 
   virtual void emitParticles(const float &dt,
                              const float &currTime,
-                             ParticleContainers *particles);
+                             ParticleContainers *particles) = 0;
 };

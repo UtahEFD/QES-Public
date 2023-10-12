@@ -28,12 +28,16 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file ParticleContainer.h
+/** @file Source_Tracer.hpp
+ * @brief  This class represents a generic source type
  */
 
 #pragma once
 
-#include <unordered_map>
+#include <random>
+#include <list>
+
+#include "Source.hpp"
 
 #include "Particle.hpp"
 #include "ParticleTracer.hpp"
@@ -41,32 +45,30 @@
 #include "ParticleLarge.hpp"
 #include "ParticleHeavyGas.hpp"
 
-#include "util/ManagedContainer.h"
+#include "ParticleManager.h"
+#include "ParticleContainers.h"
+#include "ParticleFactories.hpp"
 
-class ParticleContainers
+#include "ReleaseType.hpp"
+#include "ReleaseType_instantaneous.hpp"
+#include "ReleaseType_continuous.hpp"
+#include "ReleaseType_duration.hpp"
+
+// #include "Interp.h"
+#include "util/ParseInterface.h"
+#include "winds/WINDSGeneralData.h"
+
+class Source_Tracers : public Source
 {
-private:
-  std::unordered_map<ParticleType, int, std::hash<int>> nbr_particle_to_add;
-
 public:
-  ManagedContainer<ParticleTracer> *tracers;
-  ManagedContainer<ParticleSmall> *heavy_particles;
+  Source_Tracers(const int &sidx, const ParseSource *in) : Source(sidx, in) {}
+  // destructor
+  virtual ~Source_Tracers() = default;
 
-  ParticleContainers()
-  {
-    tracers = new ManagedContainer<ParticleTracer>();
-    nbr_particle_to_add[ParticleType::tracer] = 0;
+  virtual int getNewParticleNumber(const float &dt,
+                                   const float &currTime) override;
 
-    heavy_particles = new ManagedContainer<ParticleSmall>();
-    nbr_particle_to_add[ParticleType::small] = 0;
-  }
-
-  int get_nbr_rogue();
-  int get_nbr_active();
-  int get_nbr_inserted();
-
-  void prepare(const int &, const ParticleType &);
-
-  void sweep();
-  void container_info();
+  virtual void emitParticles(const float &dt,
+                             const float &currTime,
+                             ParticleContainers *particles) override;
 };

@@ -75,8 +75,9 @@ public:
 
   size_t front() { return available.front(); }
   size_t size() { return elements.size(); }
-  size_t nbr_added() { return added.size(); }
-  size_t nbr_active()
+  size_t get_nbr_added() { return added.size(); }
+  size_t get_nbr_inserted() { return nbr_inserted; }
+  size_t get_nbr_active()
   {
     size_t nbr_used = 0;
     for (auto &p : elements) {
