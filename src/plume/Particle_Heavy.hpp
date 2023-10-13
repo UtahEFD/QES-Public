@@ -46,7 +46,7 @@ class ParticleSmall : public Particle
 public:
   // initializer
   ParticleSmall()
-    : Particle(true, "ParticleSmall", ParticleType::small)
+    : Particle(true, "ParticleSmall", ParticleType::heavy)
   {
     //  ParseParticle(const bool &flag, std::string str, const ParticleType &type)
     //    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0),
@@ -55,7 +55,7 @@ public:
   }
 
   explicit ParticleSmall(const size_t &ID)
-    : Particle(true, "ParticleSmall", ParticleType::small)
+    : Particle(true, "ParticleSmall", ParticleType::heavy)
   {
     isActive = true;
     particleID = ID;
@@ -63,7 +63,7 @@ public:
 
   // initializer
   ParticleSmall(const double &d_part, const double &m_part, const double &rho_part)
-    : Particle(true, "ParticleSmall", ParticleType::small)
+    : Particle(true, "ParticleSmall", ParticleType::heavy)
   {
     // diameter of particle (micron and m)
     d = d_part;
@@ -117,7 +117,7 @@ class ParseParticleSmall : public ParseParticle
 protected:
 public:
   // default constructor
-  ParseParticleSmall() : ParseParticle(true, "ParticleSmall", ParticleType::small)
+  ParseParticleSmall() : ParseParticle(true, "ParticleSmall", ParticleType::heavy)
   {}
 
   // destructor

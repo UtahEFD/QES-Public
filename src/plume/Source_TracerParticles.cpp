@@ -31,7 +31,7 @@
 /** @file Source_Tracer.hpp
  * @brief  This class represents a generic source type
  */
-#include "Source_Tracers.h"
+#include "Source_TracerParticles.h"
 
 int Source_Tracers::getNewParticleNumber(const float &dt, const float &currTime)
 {
@@ -48,19 +48,19 @@ void Source_Tracers::emitParticles(const float &dt,
 {
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_releaseType->m_releaseStartTime && currTime <= m_releaseType->m_releaseEndTime) {
-    if (!particles->tracers->check_size(m_releaseType->m_parPerTimestep)) {
+    if (!particles->tracer->check_size(m_releaseType->m_parPerTimestep)) {
       std::cerr << "[ERROR] particle container hill formed (not enough space)" << std::endl;
       exit(1);
     }
     for (int pidx = 0; pidx < m_releaseType->m_parPerTimestep; ++pidx) {
       // Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
       // m_protoParticle->setParticleParameters(cPar);
-      particles->tracers->insert();
-      m_sourceGeometry->setInitialPosition(particles->tracers->last_added()->xPos_init,
-                                           particles->tracers->last_added()->yPos_init,
-                                           particles->tracers->last_added()->zPos_init);
-      particles->tracers->last_added()->tStrt = currTime;
-      particles->tracers->last_added()->sourceIdx = sourceIdx;
+      particles->tracer->insert();
+      m_sourceGeometry->setInitialPosition(particles->tracer->last_added()->xPos_init,
+                                           particles->tracer->last_added()->yPos_init,
+                                           particles->tracer->last_added()->zPos_init);
+      particles->tracer->last_added()->tStrt = currTime;
+      particles->tracer->last_added()->sourceIdx = sourceIdx;
     }
     // emitted = (int)m_particleList->nbr_added();
   }

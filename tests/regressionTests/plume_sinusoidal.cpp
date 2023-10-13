@@ -124,7 +124,7 @@ float calcEntropy(int nbrBins, Plume *plume)
     int k = floor(parItr->zPos / (1.0 / nbrBins + 1e-9));
     pBin[k]++;
   }*/
-  for (auto &par : plume->particles->tracers->elements) {
+  for (auto &par : plume->particles->tracer->elements) {
     int k = floor(par.zPos / (1.0 / nbrBins + 1e-9));
     pBin[k]++;
   }
@@ -159,7 +159,7 @@ void calcRMSE_wFluct(int nbrBins, Plume *plume, std::map<std::string, float> &rm
     pBin[k]++;
     pBin_mean[k] += parItr->wFluct;
   }*/
-  for (auto &par : plume->particles->tracers->elements) {
+  for (auto &par : plume->particles->tracer->elements) {
     int k = floor(par.zPos / (1.0 / nbrBins + 1e-9));
     pBin[k]++;
     pBin_mean[k] += par.wFluct;
@@ -181,7 +181,7 @@ void calcRMSE_wFluct(int nbrBins, Plume *plume, std::map<std::string, float> &rm
     int k = floor(parItr->zPos / (1.0 / nbrBins + 1e-9));
     pBin_var[k] += pow(parItr->wFluct - pBin_mean[k], 2) / pBin[k];
   }*/
-  for (auto &par : plume->particles->tracers->elements) {
+  for (auto &par : plume->particles->tracer->elements) {
     int k = floor(par.zPos / (1.0 / nbrBins + 1e-9));
     pBin_var[k] += pow(par.wFluct - pBin_mean[k], 2) / pBin[k];
   }
@@ -208,7 +208,7 @@ void calcRMSE_delta_wFluct(int nbrBins, Plume *plume, double delta_t, std::map<s
     pBin[k]++;
     pBin_mean[k] += parItr->delta_wFluct;
   }*/
-  for (auto &par : plume->particles->tracers->elements) {
+  for (auto &par : plume->particles->tracer->elements) {
     int k = floor(par.zPos / (1.0 / nbrBins + 1e-9));
     pBin[k]++;
     pBin_mean[k] += par.delta_wFluct;
@@ -225,7 +225,7 @@ void calcRMSE_delta_wFluct(int nbrBins, Plume *plume, double delta_t, std::map<s
     int k = floor(parItr->zPos / (1.0 / nbrBins + 1e-9));
     pBin_var[k] += pow(parItr->delta_wFluct - pBin_mean[k], 2) / pBin[k];
   }*/
-  for (auto &par : plume->particles->tracers->elements) {
+  for (auto &par : plume->particles->tracer->elements) {
     int k = floor(par.zPos / (1.0 / nbrBins + 1e-9));
     pBin_var[k] += pow(par.delta_wFluct - pBin_mean[k], 2) / pBin[k];
   }

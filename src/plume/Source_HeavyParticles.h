@@ -39,11 +39,7 @@
 
 #include "Source.hpp"
 
-#include "Particle.hpp"
-#include "ParticleTracer.hpp"
-#include "ParticleSmall.hpp"
-#include "ParticleLarge.hpp"
-#include "ParticleHeavyGas.hpp"
+#include "Particle_Heavy.hpp"
 
 #include "ParticleManager.h"
 #include "ParticleContainers.h"
@@ -63,12 +59,12 @@ class Source_HeavyParticles : public Source
 public:
   Source_HeavyParticles(const int &sidx, const ParseSource *in) : Source(sidx, in) {}
   // destructor
-  virtual ~Source_HeavyParticles() = default;
+  ~Source_HeavyParticles() override = default;
 
-  virtual int getNewParticleNumber(const float &dt,
-                                   const float &currTime) override;
+  int getNewParticleNumber(const float &dt,
+                           const float &currTime) override;
 
-  virtual void emitParticles(const float &dt,
-                             const float &currTime,
-                             ParticleContainers *particles) override;
+  void emitParticles(const float &dt,
+                     const float &currTime,
+                     ParticleContainers *particles) override;
 };

@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "plume/Particle.hpp"
-#include "plume/ParticleTracer.hpp"
-#include "plume/ParticleSmall.hpp"
+#include "plume/Particle_Tracer.hpp"
+#include "plume/Particle_Heavy.hpp"
 #include "plume/ParticleLarge.hpp"
 #include "plume/ParticleHeavyGas.hpp"
 #include "plume/ParticleFactories.hpp"
@@ -79,7 +79,7 @@ TEST_CASE("particle factory", "[Working]")
     REQUIRE(particleList[100]->d == 0.0001);
     REQUIRE(particleList[500]->rho == 0.0001);
     REQUIRE(particleList[1000]->tag == smallstr);
-    REQUIRE(particleList[10000]->particleType == ParticleType::small);
+    REQUIRE(particleList[10000]->particleType == ParticleType::heavy);
 
     endTime = std::chrono::high_resolution_clock::now();
     cpuElapsed = endTime - startTime;

@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "plume/Source.hpp"
-#include "plume/Source_Tracers.h"
+#include "plume/Source_TracerParticles.h"
 #include "plume/Source_HeavyParticles.h"
 
 #include "plume/SourceParameters.hpp"
@@ -66,7 +66,7 @@ TEST_CASE("sources", "[in progress]")
     case tracer:
       sources.push_back(new Source_Tracers((int)sources.size(), s));
       break;
-    case small:
+    case heavy:
       sources.push_back(new Source_HeavyParticles((int)sources.size(), s));
       break;
     case large:
@@ -92,19 +92,19 @@ TEST_CASE("sources", "[in progress]")
     particles->prepare(sources[0]->particleType(), sources[0]->getNewParticleNumber(0.1, 0));
     particles->sweep();
 
-    REQUIRE(particles->tracers->check_size(400) == true);
-    REQUIRE(particles->tracers->size() == 400);
+    REQUIRE(particles->tracer->check_size(400) == true);
+    REQUIRE(particles->tracer->size() == 400);
     REQUIRE(particles->get_nbr_active(sources[0]->particleType()) == 0);
     sources[0]->emitParticles(0.1, 0, particles);
-    REQUIRE(particles->tracers->check_size(100) == false);
-    REQUIRE(particles->tracers->size() == 400);
+    REQUIRE(particles->tracer->check_size(100) == false);
+    REQUIRE(particles->tracer->size() == 400);
     REQUIRE(particles->get_nbr_active(sources[0]->particleType()) == 400);
   }
 
   SECTION("SOURCE 1")
   {
     REQUIRE(sources[1]->sourceIdx == 1);
-    REQUIRE(sources[1]->particleType() == ParticleType::small);
+    REQUIRE(sources[1]->particleType() == ParticleType::heavy);
     REQUIRE(sources[1]->geometryType() == SourceShape::sphereShell);
     REQUIRE(sources[1]->releaseType() == ParticleReleaseType::duration);
 
@@ -115,16 +115,16 @@ TEST_CASE("sources", "[in progress]")
     particles->prepare(sources[1]->particleType(), sources[1]->getNewParticleNumber(0.1, 150));
     particles->sweep();
 
-    REQUIRE(particles->heavy_particles->check_size(400) == true);
-    REQUIRE(particles->heavy_particles->size() == 400);
+    REQUIRE(particles->heavy->check_size(400) == true);
+    REQUIRE(particles->heavy->size() == 400);
     REQUIRE(particles->get_nbr_active(sources[1]->particleType()) == 0);
     sources[1]->emitParticles(0.1, 0, particles);
-    REQUIRE(particles->heavy_particles->size() == 400);
+    REQUIRE(particles->heavy->size() == 400);
     REQUIRE(particles->get_nbr_active(sources[1]->particleType()) == 0);
 
-    REQUIRE(particles->heavy_particles->check_size(400) == true);
+    REQUIRE(particles->heavy->check_size(400) == true);
     sources[1]->emitParticles(0.1, 100, particles);
-    REQUIRE(particles->heavy_particles->size() == 400);
+    REQUIRE(particles->heavy->size() == 400);
     REQUIRE(particles->get_nbr_active(sources[1]->particleType()) == 400);
   }
   particles->container_info();
