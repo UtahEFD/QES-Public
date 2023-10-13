@@ -298,8 +298,8 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
 // advectParticle(timeRemainder, tmp[k], boxSizeZ, WGD, TGD);
 // call to the main particle adection function (in separate file: AdvectParticle.cpp)
 #pragma omp parallel for default(none) shared(WGD, TGD, timeRemainder)
-    for (auto k = 0u; k < particles->tracers->size(); ++k) {
-      advectParticle(timeRemainder, &particles->tracers->elements[k], boxSizeZ, WGD, TGD);
+    for (auto k = 0u; k < particles->tracer->size(); ++k) {
+      advectParticle(timeRemainder, &particles->tracer->elements[k], boxSizeZ, WGD, TGD);
     }//  END OF OPENMP WORK SHARE
 #else
     for (auto &parItr : particleList) {
@@ -320,7 +320,7 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
     }
   }*/
 
-    for (auto &parItr : particles->tracers->elements) {
+    for (auto &parItr : particles->tracer->elements) {
       if (parItr.dep_buffer_flag) {
         for (auto n = 0u; n < parItr.dep_buffer_cell.size(); ++n) {
           deposition->depcvol[parItr.dep_buffer_cell[n]] += parItr.dep_buffer_val[n];
@@ -487,16 +487,16 @@ void Plume::getInputSources(PlumeInputData *PID)
 
     // add source into the vector of sources
     switch (s->particleType()) {
-    case tracer:
+    case ParticleType::tracer:
       allSources.push_back(new Source_Tracers((int)allSources.size(), s));
       break;
-    case small:
+    case ParticleType::heavy:
       allSources.push_back(new Source_HeavyParticles((int)allSources.size(), s));
       break;
-    case large:
+    case ParticleType::large:
       exit(1);
       break;
-    case heavygas:
+    case ParticleType::heavygas:
       exit(1);
       break;
     default:
@@ -524,14 +524,14 @@ void Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBG
   }
 
 #pragma omp parallel for default(none) shared(WGD, TGD)
-  for (auto k = 0u; k < particles->tracers->added.size(); ++k) {
+  for (auto k = 0u; k < particles->tracer->added.size(); ++k) {
     // set particle ID (use global particle counter)
-    setParticle(WGD, TGD, &particles->tracers->elements[particles->tracers->added[k]]);
+    setParticle(WGD, TGD, &particles->tracer->elements[particles->tracer->added[k]]);
   }
 #pragma omp parallel for default(none) shared(WGD, TGD)
-  for (auto k = 0u; k < particles->heavy_particles->added.size(); ++k) {
+  for (auto k = 0u; k < particles->heavy->added.size(); ++k) {
     // set particle ID (use global particle counter)
-    setParticle(WGD, TGD, &particles->heavy_particles->elements[particles->heavy_particles->added[k]]);
+    setParticle(WGD, TGD, &particles->heavy->elements[particles->heavy->added[k]]);
   }
 }
 

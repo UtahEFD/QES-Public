@@ -41,7 +41,7 @@
 
 enum ParticleType {
   tracer,
-  small,
+  heavy,
   large,
   heavygas
 };

@@ -37,12 +37,12 @@ int ParticleContainers::get_nbr_rogue() const
 {
   // now update the isRogueCount
   int isRogueCount = 0;
-  for (const auto &parItr : tracers->elements) {
+  for (const auto &parItr : tracer->elements) {
     if (parItr.isRogue) {
       isRogueCount = isRogueCount + 1;
     }
   }
-  for (const auto &parItr : heavy_particles->elements) {
+  for (const auto &parItr : heavy->elements) {
     if (parItr.isRogue) {
       isRogueCount = isRogueCount + 1;
     }
@@ -52,21 +52,21 @@ int ParticleContainers::get_nbr_rogue() const
 
 int ParticleContainers::get_nbr_active() const
 {
-  return tracers->get_nbr_active()
-         + heavy_particles->get_nbr_active();
+  return tracer->get_nbr_active()
+         + heavy->get_nbr_active();
 }
 
 int ParticleContainers::get_nbr_active(const ParticleType &in) const
 {
   switch (in) {
-  case tracer:
-    return tracers->get_nbr_active();
-  case small:
-    return heavy_particles->get_nbr_active();
-  case large:
+  case ParticleType::tracer:
+    return tracer->get_nbr_active();
+  case ParticleType::heavy:
+    return heavy->get_nbr_active();
+  case ParticleType::large:
     exit(1);
     break;
-  case heavygas:
+  case ParticleType::heavygas:
     exit(1);
     break;
   default:
@@ -77,20 +77,20 @@ int ParticleContainers::get_nbr_active(const ParticleType &in) const
 
 int ParticleContainers::get_nbr_inserted() const
 {
-  return tracers->get_nbr_inserted()
-         + heavy_particles->get_nbr_inserted();
+  return tracer->get_nbr_inserted()
+         + heavy->get_nbr_inserted();
 }
 int ParticleContainers::get_nbr_inserted(const ParticleType &in) const
 {
   switch (in) {
-  case tracer:
-    return tracers->get_nbr_inserted();
-  case small:
-    return heavy_particles->get_nbr_inserted();
-  case large:
+  case ParticleType::tracer:
+    return tracer->get_nbr_inserted();
+  case ParticleType::heavy:
+    return heavy->get_nbr_inserted();
+  case ParticleType::large:
     exit(1);
     break;
-  case heavygas:
+  case ParticleType::heavygas:
     exit(1);
     break;
   default:
@@ -104,16 +104,16 @@ void ParticleContainers::prepare(const ParticleType &in, const int &nbr)
 }
 void ParticleContainers::sweep()
 {
-  tracers->sweep(nbr_particle_to_add[ParticleType::tracer]);
+  tracer->sweep(nbr_particle_to_add[ParticleType::tracer]);
   nbr_particle_to_add[ParticleType::tracer] = 0;
-  heavy_particles->sweep(nbr_particle_to_add[ParticleType::small]);
-  nbr_particle_to_add[ParticleType::small] = 0;
+  heavy->sweep(nbr_particle_to_add[ParticleType::heavy]);
+  nbr_particle_to_add[ParticleType::heavy] = 0;
 }
 
 
 void ParticleContainers::container_info() const
 {
   std::cout << "Particle Container info" << std::endl;
-  std::cout << "tracer:          " << tracers->size() << " " << tracers->get_nbr_active() << std::endl;
-  std::cout << "heavy particles: " << heavy_particles->size() << " " << heavy_particles->get_nbr_active() << std::endl;
+  std::cout << "tracer:          " << tracer->size() << " " << tracer->get_nbr_active() << std::endl;
+  std::cout << "heavy particles: " << heavy->size() << " " << heavy->get_nbr_active() << std::endl;
 }

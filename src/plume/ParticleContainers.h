@@ -36,8 +36,8 @@
 #include <unordered_map>
 
 #include "Particle.hpp"
-#include "ParticleTracer.hpp"
-#include "ParticleSmall.hpp"
+#include "Particle_Tracer.hpp"
+#include "Particle_Heavy.hpp"
 #include "ParticleLarge.hpp"
 #include "ParticleHeavyGas.hpp"
 
@@ -49,16 +49,16 @@ private:
   std::unordered_map<ParticleType, int, std::hash<int>> nbr_particle_to_add;
 
 public:
-  ManagedContainer<ParticleTracer> *tracers;
-  ManagedContainer<ParticleSmall> *heavy_particles;
+  ManagedContainer<ParticleTracer> *tracer;
+  ManagedContainer<ParticleSmall> *heavy;
 
   ParticleContainers()
   {
-    tracers = new ManagedContainer<ParticleTracer>();
+    tracer = new ManagedContainer<ParticleTracer>();
     nbr_particle_to_add[ParticleType::tracer] = 0;
 
-    heavy_particles = new ManagedContainer<ParticleSmall>();
-    nbr_particle_to_add[ParticleType::small] = 0;
+    heavy = new ManagedContainer<ParticleSmall>();
+    nbr_particle_to_add[ParticleType::heavy] = 0;
   }
 
   int get_nbr_rogue() const;

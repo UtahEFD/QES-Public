@@ -30,7 +30,8 @@ SET( qesPlumeCoreSources
 
     Particle.hpp
     ParticleFactories.hpp
-    ParticleSmall.hpp
+    Particle_Tracer.hpp
+    Particle_Heavy.hpp
     ParticleLarge.hpp
     ParticleHeavyGas.hpp
     ParticleFactories.cpp
@@ -48,7 +49,7 @@ SET( qesPlumeCoreSources
     SourceGeometry_SphereShell.cpp SourceGeometry_SphereShell.hpp
 
     Source.cpp
-    Source_Tracers.cpp
+    Source_TracerParticles.cpp
     Source_HeavyParticles.cpp
 
     WallReflection.cpp

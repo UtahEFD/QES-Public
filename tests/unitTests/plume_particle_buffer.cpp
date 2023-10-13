@@ -11,13 +11,10 @@
 #include <chrono>
 
 #include "util/ManagedContainer.h"
-
 #include "plume/ParticleManager.h"
+
 #include "plume/Particle.hpp"
-#include "plume/ParticleTracer.hpp"
-#include "plume/ParticleSmall.hpp"
-#include "plume/ParticleLarge.hpp"
-#include "plume/ParticleHeavyGas.hpp"
+#include "plume/Particle_Tracer.hpp"
 
 void scrubParticleList(std::list<Particle *> &particleList)
 {

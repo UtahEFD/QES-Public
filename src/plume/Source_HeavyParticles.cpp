@@ -48,19 +48,19 @@ void Source_HeavyParticles::emitParticles(const float &dt,
 {
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_releaseType->m_releaseStartTime && currTime <= m_releaseType->m_releaseEndTime) {
-    if (!particles->heavy_particles->check_size(m_releaseType->m_parPerTimestep)) {
+    if (!particles->heavy->check_size(m_releaseType->m_parPerTimestep)) {
       std::cerr << "[ERROR] particle container hill formed (not enough space)" << std::endl;
       exit(1);
     }
     for (int pidx = 0; pidx < m_releaseType->m_parPerTimestep; ++pidx) {
       // Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
       // m_protoParticle->setParticleParameters(cPar);
-      particles->heavy_particles->insert();
-      m_sourceGeometry->setInitialPosition(particles->heavy_particles->last_added()->xPos_init,
-                                           particles->heavy_particles->last_added()->yPos_init,
-                                           particles->heavy_particles->last_added()->zPos_init);
-      particles->heavy_particles->last_added()->tStrt = currTime;
-      particles->heavy_particles->last_added()->sourceIdx = sourceIdx;
+      particles->heavy->insert();
+      m_sourceGeometry->setInitialPosition(particles->heavy->last_added()->xPos_init,
+                                           particles->heavy->last_added()->yPos_init,
+                                           particles->heavy->last_added()->zPos_init);
+      particles->heavy->last_added()->tStrt = currTime;
+      particles->heavy->last_added()->sourceIdx = sourceIdx;
     }
     // emitted = (int)m_particleList->nbr_added();
   }

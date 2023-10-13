@@ -35,8 +35,8 @@
 #pragma once
 
 #include "Particle.hpp"
-#include "ParticleTracer.hpp"
-#include "ParticleSmall.hpp"
+#include "Particle_Tracer.hpp"
+#include "Particle_Heavy.hpp"
 #include "ParticleLarge.hpp"
 #include "ParticleHeavyGas.hpp"
 #include <unordered_map>
