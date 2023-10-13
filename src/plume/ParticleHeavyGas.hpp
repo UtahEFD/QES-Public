@@ -69,7 +69,7 @@ public:
     rho = rho_part;
 
     // tag
-    //tag = "ParticleHeavyGas";
+    // tag = "ParticleHeavyGas";
 
     // (1 - fraction) particle deposited
     depFlag = true;
@@ -83,6 +83,13 @@ public:
   {
   }
 
+  double d;// particle diameter diameter [microns]
+  double d_m;// particle diameter diameter [m]
+  double m;// particle mass [g]
+  double m_kg;// particle mass [kg]
+  double m_o;// initial particle mass [g]
+  double m_kg_o;// initial particle mass [kg]
+  double rho;// density of particle
 private:
 };
 

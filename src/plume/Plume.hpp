@@ -259,7 +259,7 @@ private:
                        double,
                        double,
                        double,
-                       Particle *,
+                       Particle_Heavy *,
                        WINDSGeneralData *,
                        TURBGeneralData *);
 
