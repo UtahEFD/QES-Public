@@ -50,24 +50,24 @@ public:
 };
 
 
-class ParticleTracerFactory : public ParticleFactory
+class Particle_TracerFactory : public ParticleFactory
 {
 public:
   Particle *create() override
   {
-    //    std::cout << "Creating new ParticleTracer" << std::endl;
-    return new ParticleTracer();
-    //    std::cout << "Done creating new ParticleTracer" << std::endl;
+    //    std::cout << "Creating new Particle_Tracer" << std::endl;
+    return new Particle_Tracer();
+    //    std::cout << "Done creating new Particle_Tracer" << std::endl;
   }
 };
 
-class ParticleSmallFactory : public ParticleFactory
+class Particle_HeavyFactory : public ParticleFactory
 {
 
 public:
   Particle *create() override
   {
-    return new ParticleSmall();
+    return new Particle_Heavy();
   }
 };
 
@@ -97,8 +97,8 @@ class ParticleTypeFactory
 private:
   std::unordered_map<std::string, ParticleFactory *> ParticleTypeContainer;
 
-  ParticleTracerFactory particleTracerFactory;
-  ParticleSmallFactory particleSmallFactory;
+  Particle_TracerFactory Particle_TracerFactory;
+  Particle_HeavyFactory Particle_HeavyFactory;
   ParticleLargeFactory particleLargeFactory;
   ParticleHeavyGasFactory particleHeavyGasFactory;
 

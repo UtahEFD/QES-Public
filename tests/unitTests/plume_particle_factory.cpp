@@ -21,8 +21,8 @@ TEST_CASE("particle factory", "[Working]")
   ParseParticle *protoParticle;
   ParticleTypeFactory *particleTypeFactory = new ParticleTypeFactory();
 
-  std::string tracerstr = "ParticleTracer";
-  std::string smallstr = "ParticleSmall";
+  std::string tracerstr = "Particle_Tracer";
+  std::string smallstr = "Particle_Heavy";
   std::string largestr = "ParticleLarge";
   std::string heavygasstr = "ParticleHeavyGas";
 
@@ -38,10 +38,10 @@ TEST_CASE("particle factory", "[Working]")
 
     startTime = std::chrono::high_resolution_clock::now();
 
-    ParseParticle *protoParticleTracer = new ParseParticleTracer();
+    ParseParticle *protoParticle_Tracer = new ParseParticle_Tracer();
     for (int k = 0; k < 100000; ++k) {
-      particleList[k] = particleTypeFactory->Create(protoParticleTracer);
-      protoParticleTracer->setParticleParameters(particleList[k]);
+      particleList[k] = particleTypeFactory->Create(protoParticle_Tracer);
+      protoParticle_Tracer->setParticleParameters(particleList[k]);
 
       particleList[k]->m = 0.001;
       particleList[k]->m_kg = particleList[k]->m * (1.0E-3);
@@ -64,12 +64,12 @@ TEST_CASE("particle factory", "[Working]")
 
     startTime = std::chrono::high_resolution_clock::now();
 
-    ParseParticle *protoParticleSmall = new ParseParticleSmall();
-    protoParticleSmall->d = 0.0001;
-    protoParticleSmall->rho = 0.0001;
+    ParseParticle *protoParticle_Heavy = new ParseParticle_Heavy();
+    protoParticle_Heavy->d = 0.0001;
+    protoParticle_Heavy->rho = 0.0001;
     for (int k = 0; k < 100000; ++k) {
-      particleList[k] = particleTypeFactory->Create(protoParticleSmall);
-      protoParticleSmall->setParticleParameters(particleList[k]);
+      particleList[k] = particleTypeFactory->Create(protoParticle_Heavy);
+      protoParticle_Heavy->setParticleParameters(particleList[k]);
 
       particleList[k]->m = 0.001;
       particleList[k]->m_kg = particleList[k]->m * (1.0E-3);

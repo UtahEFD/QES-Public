@@ -128,7 +128,7 @@ public:
   // the sources can set these values, then the other values are set using urb and turb info using these values
   std::list<Particle *> particleList;
 
-  // ManagedContainer<ParticleTracer> *tracerList;
+  // ManagedContainer<Particle_Tracer> *tracerList;
   ParticleContainers *particles;
 
 #ifdef _OPENMP

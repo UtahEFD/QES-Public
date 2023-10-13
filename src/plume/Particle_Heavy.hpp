@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file ParticleSmall.hpp
+/** @file Particle_Heavy.hpp
  * @brief Derived from Particle.hpp. Small particles have diameter, mass, density, settling, and deposition.
  * No drag effects.
  */
@@ -39,14 +39,14 @@
 #include "Particle.hpp"
 
 
-class ParticleSmall : public Particle
+class Particle_Heavy : public Particle
 {
-  friend class ParseParticleSmall;
+  friend class ParseParticle_Heavy;
 
 public:
   // initializer
-  ParticleSmall()
-    : Particle(true, "ParticleSmall", ParticleType::heavy)
+  Particle_Heavy()
+    : Particle(true, "Particle_Heavy", ParticleType::heavy)
   {
     //  ParseParticle(const bool &flag, std::string str, const ParticleType &type)
     //    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0),
@@ -54,16 +54,16 @@ public:
     //      tag(std::move(str)), particleType(type)
   }
 
-  explicit ParticleSmall(const size_t &ID)
-    : Particle(true, "ParticleSmall", ParticleType::heavy)
+  explicit Particle_Heavy(const size_t &ID)
+    : Particle(true, "Particle_Heavy", ParticleType::heavy)
   {
     isActive = true;
     particleID = ID;
   }
 
   // initializer
-  ParticleSmall(const double &d_part, const double &m_part, const double &rho_part)
-    : Particle(true, "ParticleSmall", ParticleType::heavy)
+  Particle_Heavy(const double &d_part, const double &m_part, const double &rho_part)
+    : Particle(true, "Particle_Heavy", ParticleType::heavy)
   {
     // diameter of particle (micron and m)
     d = d_part;
@@ -77,7 +77,7 @@ public:
     rho = rho_part;
 
     // tag
-    tag = "ParticleSmall";
+    tag = "Particle_Heavy";
 
     // (1 - fraction) particle deposited
     depFlag = true;
@@ -87,7 +87,7 @@ public:
   }
 
   // destructor
-  ~ParticleSmall() override = default;
+  ~Particle_Heavy() override = default;
 
   // void setSettlingVelocity(const double &, const double &);
   void setSettlingVelocity(const double &rhoAir, const double &nuAir) override
@@ -112,16 +112,16 @@ public:
 private:
 };
 
-class ParseParticleSmall : public ParseParticle
+class ParseParticle_Heavy : public ParseParticle
 {
 protected:
 public:
   // default constructor
-  ParseParticleSmall() : ParseParticle(true, "ParticleSmall", ParticleType::heavy)
+  ParseParticle_Heavy() : ParseParticle(true, "Particle_Heavy", ParticleType::heavy)
   {}
 
   // destructor
-  ~ParseParticleSmall() = default;
+  ~ParseParticle_Heavy() = default;
 
   void parseValues() override
   {
@@ -137,7 +137,7 @@ public:
 
   void setParticleParameters(Particle *ptr) override
   {
-    auto *tmp = dynamic_cast<ParticleSmall *>(ptr);
+    auto *tmp = dynamic_cast<Particle_Heavy *>(ptr);
     tmp->d = d;
     tmp->d_m = (1.0E-6) * d;
     tmp->rho = rho;

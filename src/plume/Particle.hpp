@@ -79,7 +79,7 @@ private:
   ParseParticle()
     : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0),
       depFlag(false), decayConst(0.0), c1(2.049), c2(1.19),
-      particleType(ParticleType::tracer), tag("ParticleTracer")
+      particleType(ParticleType::tracer), tag("Particle_Tracer")
   {}
 };
 
@@ -89,7 +89,7 @@ private:
   Particle()
     : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), m_o(0.0), m_kg_o(0.0), rho(0.0),
       decayConst(0.0), c1(2.049), c2(1.19), wdecay(1.0),
-      depFlag(false), particleType(ParticleType::tracer), tag("ParticleTracer")
+      depFlag(false), particleType(ParticleType::tracer), tag("Particle_Tracer")
   {
   }
 
@@ -118,7 +118,7 @@ public:
     rho = rho_part;
 
     // tag
-    tag = "ParticleTracer";// tagged as "tracer" so when particle type is unspecified in XML, it defaults to tracer
+    tag = "Particle_Tracer";// tagged as "tracer" so when particle type is unspecified in XML, it defaults to tracer
 
     // (1 - fraction) particle deposited
     depFlag = false;

@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file ParticleTracer.hpp
+/** @file Particle_Tracer.hpp
  * @brief Derived from Particle.hpp. Tracer particles are massless and do not settle, deposit,
  * or experience drag effects.
  */
@@ -39,14 +39,14 @@
 #include "Particle.hpp"
 
 
-class ParticleTracer : public Particle
+class Particle_Tracer : public Particle
 {
-  friend class ParseParticleTracer;
+  friend class ParseParticle_Tracer;
 
 public:
   // initializer
-  ParticleTracer()
-    : Particle(false, "ParticleTracer", ParticleType::tracer)
+  Particle_Tracer()
+    : Particle(false, "Particle_Tracer", ParticleType::tracer)
   {
     //  ParseParticle(const bool &flag, std::string str, const ParticleType &type)
     //    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0),
@@ -54,16 +54,16 @@ public:
     //      tag(std::move(str)), particleType(type)
   }
 
-  explicit ParticleTracer(const size_t &ID)
-    : Particle(false, "ParticleTracer", ParticleType::tracer)
+  explicit Particle_Tracer(const size_t &ID)
+    : Particle(false, "Particle_Tracer", ParticleType::tracer)
   {
     isActive = true;
     particleID = ID;
   }
 
   // initializer
-  ParticleTracer(const double &d_part, const double &m_part, const double &rho_part)
-    : Particle(false, "ParticleTracer", ParticleType::tracer)
+  Particle_Tracer(const double &d_part, const double &m_part, const double &rho_part)
+    : Particle(false, "Particle_Tracer", ParticleType::tracer)
   {
     // diameter of particle (micron and m)
     d = d_part;
@@ -77,7 +77,7 @@ public:
     rho = rho_part;
 
     // tag
-    tag = "ParticleTracer";
+    tag = "Particle_Tracer";
 
     // (1 - fraction) particle deposited
     depFlag = false;
@@ -87,7 +87,7 @@ public:
   }
 
   // destructor
-  ~ParticleTracer()
+  ~Particle_Tracer()
   {
   }
 
@@ -101,17 +101,17 @@ public:
 private:
 };
 
-class ParseParticleTracer : public ParseParticle
+class ParseParticle_Tracer : public ParseParticle
 {
 protected:
 public:
   // default constructor
-  ParseParticleTracer()
-    : ParseParticle(false, "ParticleTracer", ParticleType::tracer)
+  ParseParticle_Tracer()
+    : ParseParticle(false, "Particle_Tracer", ParticleType::tracer)
   {}
 
   // destructor
-  ~ParseParticleTracer()
+  ~ParseParticle_Tracer()
   {
   }
 

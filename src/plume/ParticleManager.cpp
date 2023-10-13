@@ -37,7 +37,7 @@ size_t ParticleBuffer::next()
 }
 void ParticleBuffer::add()
 {
-  buffer[available.front()] = ParticleTracer();
+  buffer[available.front()] = Particle_Tracer();
   buffer[available.front()].isActive = true;
   available.pop();
 }

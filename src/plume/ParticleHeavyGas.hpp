@@ -30,7 +30,7 @@
 
 /** @file ParticleHeavyGas.hpp
  * @brief Derived from Particle.hpp. Heavy gas attributes not defined yet,
- * but this script is identical to ParticleSmall and ParticleLarge.
+ * but this script is identical to Particle_Heavy and ParticleLarge.
  */
 
 #pragma once

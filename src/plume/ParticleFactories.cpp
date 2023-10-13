@@ -36,13 +36,13 @@
 
 ParticleTypeFactory::ParticleTypeFactory()
 {
-  std::string tracerstr = "ParticleTracer";
-  std::string smallstr = "ParticleSmall";
+  std::string tracerstr = "Particle_Tracer";
+  std::string smallstr = "Particle_Heavy";
   std::string largestr = "ParticleLarge";
   std::string heavygasstr = "ParticleHeavyGas";
 
-  RegisterParticles(tracerstr, &particleTracerFactory);
-  RegisterParticles(smallstr, &particleSmallFactory);
+  RegisterParticles(tracerstr, &Particle_TracerFactory);
+  RegisterParticles(smallstr, &Particle_HeavyFactory);
   RegisterParticles(largestr, &particleLargeFactory);
   RegisterParticles(heavygasstr, &particleHeavyGasFactory);
 }

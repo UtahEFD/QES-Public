@@ -33,7 +33,7 @@
  */
 #include "Source_TracerParticles.h"
 
-int Source_Tracers::getNewParticleNumber(const float &dt, const float &currTime)
+int Source_TracerParticles::getNewParticleNumber(const float &dt, const float &currTime)
 {
   if (currTime >= m_releaseType->m_releaseStartTime && currTime <= m_releaseType->m_releaseEndTime) {
     return m_releaseType->m_parPerTimestep;
@@ -42,9 +42,9 @@ int Source_Tracers::getNewParticleNumber(const float &dt, const float &currTime)
   }
 }
 
-void Source_Tracers::emitParticles(const float &dt,
-                                   const float &currTime,
-                                   ParticleContainers *particles)
+void Source_TracerParticles::emitParticles(const float &dt,
+                                           const float &currTime,
+                                           ParticleContainers *particles)
 {
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_releaseType->m_releaseStartTime && currTime <= m_releaseType->m_releaseEndTime) {
