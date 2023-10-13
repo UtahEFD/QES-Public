@@ -95,7 +95,7 @@ class ParticleTypeFactory
 {
 
 private:
-  std::unordered_map<std::string, ParticleFactory *> ParticleTypeContainer;
+  std::unordered_map<ParticleType, ParticleFactory *, std::hash<int>> ParticleTypeContainer;
 
   Particle_TracerFactory Particle_TracerFactory;
   Particle_HeavyFactory Particle_HeavyFactory;
@@ -110,7 +110,7 @@ public:
   }
 
   // Function to read in all possible particle types and create factories for them
-  void RegisterParticles(const std::string &particleType, ParticleFactory *particleFactory);
+  void RegisterParticles(const ParticleType &, ParticleFactory *);
 
   // Function to return the actual particle object
   // Particle *Create(const std::string &particleType);

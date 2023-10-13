@@ -54,17 +54,16 @@ protected:
 public:
   // particle type
   ParticleType particleType;
-  std::string tag;
 
   // Physical properties
   double d, d_m, m, m_kg, rho;
   bool depFlag;
   double decayConst, c1, c2;
 
-  ParseParticle(const bool &flag, std::string str, const ParticleType &type)
+  ParseParticle(const bool &flag, const ParticleType &type)
     : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0),
       depFlag(flag), decayConst(0.0), c1(2.049), c2(1.19),
-      tag(std::move(str)), particleType(type)
+      particleType(type)
   {}
 
   // destructor
@@ -79,7 +78,7 @@ private:
   ParseParticle()
     : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0),
       depFlag(false), decayConst(0.0), c1(2.049), c2(1.19),
-      particleType(ParticleType::tracer), tag("Particle_Tracer")
+      particleType(ParticleType::tracer)
   {}
 };
 
@@ -89,17 +88,17 @@ private:
   Particle()
     : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), m_o(0.0), m_kg_o(0.0), rho(0.0),
       decayConst(0.0), c1(2.049), c2(1.19), wdecay(1.0),
-      depFlag(false), particleType(ParticleType::tracer), tag("Particle_Tracer")
+      depFlag(false), particleType(ParticleType::tracer)
   {
   }
 
 protected:
 public:
   // initializer
-  Particle(const bool &flag, std::string str, const ParticleType &type)
+  Particle(const bool &flag, const ParticleType &type)
     : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), m_o(0.0), m_kg_o(0.0), rho(0.0),
       decayConst(0.0), c1(2.049), c2(1.19), wdecay(1.0),
-      tag(std::move(str)), depFlag(flag), particleType(type)
+      depFlag(flag), particleType(type)
   {
   }
 
@@ -118,7 +117,7 @@ public:
     rho = rho_part;
 
     // tag
-    tag = "Particle_Tracer";// tagged as "tracer" so when particle type is unspecified in XML, it defaults to tracer
+    // tag = "Particle_Tracer";// tagged as "tracer" so when particle type is unspecified in XML, it defaults to tracer
 
     // (1 - fraction) particle deposited
     depFlag = false;
@@ -133,7 +132,7 @@ public:
   virtual ~Particle() = default;
 
   ParticleType particleType;// particle type
-  std::string tag;// particle type tag
+  // std::string tag;// particle type tag
 
   // the initial position for the particle, to not be changed after the simulation starts
   double xPos_init{};// the initial x component of position for the particle
@@ -191,7 +190,7 @@ public:
   double delta_vFluct{};// this is the difference between the current and last iteration of the vFluct variable
   double delta_wFluct{};// this is the difference between the current and last iteration of the wFluct variable
 
-  bool isRogue{};// this is false until it becomes true. Should not go true.
+  bool isRogue = false;// this is false until it becomes true. Should not go true.
   bool isActive = false;// this is true until it becomes false.
 
   // particle physical property
@@ -204,27 +203,25 @@ public:
   double rho;// density of particle
 
   // deposition variables
-  double Sc{};// Schmidt number
-  double taud{};// characteristic relaxation time [s]
-  double vd{};// deposition velocity [m/s]
+  double c1;// Stk* fit param (exponent)
+  double c2;// Stk* fit param (exponent)
+  // double Sc{};// Schmidt number
+  // double taud{};// characteristic relaxation time [s]
+  // double vd{};// deposition velocity [m/s]
   bool depFlag;// whether a particle deposits
 
   // deposition container
   bool dep_buffer_flag{};
   std::vector<int> dep_buffer_cell;
   std::vector<float> dep_buffer_val;
-
   double decayConst;// mass decay constant
-  double c1;// Stk* fit param (exponent)
-  double c2;// Stk* fit param (exponent)
+
   // settling variables
-  double dstar = 0;// dimensionless grain diameter
-  double Cd = 0;// drag coefficient
-  double wstar = 0;// dimensionless settling velocity
-  double vs = 0;// settling velocity [m/s]
+  // double dstar = 0;// dimensionless grain diameter
+  // double Cd = 0;// drag coefficient
+  // double wstar = 0;// dimensionless settling velocity
+  // double vs = 0;// settling velocity [m/s]
 
   // decay variables
   double wdecay;// (1 - fraction) particle decayed [0,1]
-
-  virtual void setSettlingVelocity(const double &, const double &){};
 };

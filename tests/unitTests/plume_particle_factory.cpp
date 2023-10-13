@@ -50,7 +50,6 @@ TEST_CASE("particle factory", "[Working]")
     }
     REQUIRE(particleList[100]->d == 0.0);
     REQUIRE(particleList[500]->rho == 0.0);
-    REQUIRE(particleList[1000]->tag == tracerstr);
     REQUIRE(particleList[10000]->particleType == ParticleType::tracer);
 
     endTime = std::chrono::high_resolution_clock::now();
@@ -78,7 +77,6 @@ TEST_CASE("particle factory", "[Working]")
     }
     REQUIRE(particleList[100]->d == 0.0001);
     REQUIRE(particleList[500]->rho == 0.0001);
-    REQUIRE(particleList[1000]->tag == smallstr);
     REQUIRE(particleList[10000]->particleType == ParticleType::heavy);
 
     endTime = std::chrono::high_resolution_clock::now();
@@ -101,7 +99,6 @@ TEST_CASE("particle factory", "[Working]")
     }
     REQUIRE(particleList[100]->d == 0.001);
     REQUIRE(particleList[500]->rho == 0.01);
-    REQUIRE(particleList[1000]->tag == largestr);
     REQUIRE(particleList[10000]->particleType == ParticleType::large);
 
     endTime = std::chrono::high_resolution_clock::now();
@@ -123,7 +120,6 @@ TEST_CASE("particle factory", "[Working]")
     }
     REQUIRE(particleList[100]->d == 0.0);
     REQUIRE(particleList[500]->rho == 0.1);
-    REQUIRE(particleList[1000]->tag == heavygasstr);
     REQUIRE(particleList[10000]->particleType == ParticleType::heavygas);
 
     endTime = std::chrono::high_resolution_clock::now();
