@@ -55,7 +55,7 @@ public:
   }
 
   explicit Particle_Tracer(const size_t &ID)
-    : Particle(false,  ParticleType::tracer)
+    : Particle(false, ParticleType::tracer)
   {
     isActive = true;
     particleID = ID;
@@ -63,21 +63,21 @@ public:
 
   // initializer
   Particle_Tracer(const double &d_part, const double &m_part, const double &rho_part)
-    : Particle(false,  ParticleType::tracer)
+    : Particle(false, ParticleType::tracer)
   {
     // diameter of particle (micron and m)
-    d = d_part;
-    d_m = (1.0E-6) * d;
+    // d = d_part;
+    // d_m = (1.0E-6) * d;
 
     // mass of particle (g and kg)
-    m = m_part;
-    m_kg = (1.0E-3) * m;
+    // m = m_part;
+    // m_kg = (1.0E-3) * m;
 
     // density of particle
-    rho = rho_part;
+    // rho = rho_part;
 
     // tag
-    //tag = "Particle_Tracer";
+    // tag = "Particle_Tracer";
 
     // (1 - fraction) particle deposited
     depFlag = false;

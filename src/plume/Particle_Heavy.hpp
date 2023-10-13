@@ -46,7 +46,7 @@ class Particle_Heavy : public Particle
 public:
   // initializer
   Particle_Heavy()
-    : Particle(true,  ParticleType::heavy)
+    : Particle(true, ParticleType::heavy)
   {
     //  ParseParticle(const bool &flag, std::string str, const ParticleType &type)
     //    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0),
@@ -55,7 +55,7 @@ public:
   }
 
   explicit Particle_Heavy(const size_t &ID)
-    : Particle(true,  ParticleType::heavy)
+    : Particle(true, ParticleType::heavy)
   {
     isActive = true;
     particleID = ID;
@@ -63,7 +63,7 @@ public:
 
   // initializer
   Particle_Heavy(const double &d_part, const double &m_part, const double &rho_part)
-    : Particle(true,  ParticleType::heavy)
+    : Particle(true, ParticleType::heavy)
   {
     // diameter of particle (micron and m)
     d = d_part;
@@ -77,7 +77,7 @@ public:
     rho = rho_part;
 
     // tag
-    //tag = "Particle_Heavy";
+    // tag = "Particle_Heavy";
 
     // (1 - fraction) particle deposited
     depFlag = true;
@@ -88,6 +88,14 @@ public:
 
   // destructor
   ~Particle_Heavy() override = default;
+
+  double d;// particle diameter diameter [microns]
+  double d_m;// particle diameter diameter [m]
+  double m;// particle mass [g]
+  double m_kg;// particle mass [kg]
+  double m_o;// initial particle mass [g]
+  double m_kg_o;// initial particle mass [kg]
+  double rho;// density of particle
 
 private:
 };

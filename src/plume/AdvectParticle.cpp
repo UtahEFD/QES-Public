@@ -48,6 +48,7 @@ void Plume::advectParticle(double timeRemainder, Particle *par_ptr, double boxSi
   // settling velocity
   double vs = 0;
 
+  /*
   if (par_ptr->d > 0.0 && par_ptr->rho > rhoAir) {
     //  dimensionless grain diameter
     double dstar = par_ptr->d_m * pow(9.81 / pow(nuAir, 2.0) * (par_ptr->rho / rhoAir - 1.), 1.0 / 3.0);
@@ -59,6 +60,7 @@ void Plume::advectParticle(double timeRemainder, Particle *par_ptr, double boxSi
     // settling velocity
     vs = wstar * pow(9.81 * nuAir * (par_ptr->rho / rhoAir - 1.0), 1.0 / 3.0);
   }
+   */
 
   //  get the current isRogue and isActive information
   bool isRogue = par_ptr->isRogue;
@@ -312,7 +314,7 @@ void Plume::advectParticle(double timeRemainder, Particle *par_ptr, double boxSi
 
     // Deposit mass (vegetation only right now)
     if (par_ptr->depFlag && isActive) {
-      depositParticle(xPos, yPos, zPos, disX, disY, disZ, uTot, vTot, wTot, txx, tyy, tzz, txz, txy, tyz, vs, CoEps, boxSizeZ, nuT, par_ptr, WGD, TGD);
+      // depositParticle(xPos, yPos, zPos, disX, disY, disZ, uTot, vTot, wTot, txx, tyy, tzz, txz, txy, tyz, vs, CoEps, boxSizeZ, nuT, par_ptr, WGD, TGD);
     }
 
     // check and do wall (building and terrain) reflection (based in the method)

@@ -86,8 +86,7 @@ class Particle
 {
 private:
   Particle()
-    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), m_o(0.0), m_kg_o(0.0), rho(0.0),
-      decayConst(0.0), c1(2.049), c2(1.19), wdecay(1.0),
+    : decayConst(0.0), c1(2.049), c2(1.19), wdecay(1.0),
       depFlag(false), particleType(ParticleType::tracer)
   {
   }
@@ -96,8 +95,7 @@ protected:
 public:
   // initializer
   Particle(const bool &flag, const ParticleType &type)
-    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), m_o(0.0), m_kg_o(0.0), rho(0.0),
-      decayConst(0.0), c1(2.049), c2(1.19), wdecay(1.0),
+    : decayConst(0.0), c1(2.049), c2(1.19), wdecay(1.0),
       depFlag(flag), particleType(type)
   {
   }
@@ -106,15 +104,15 @@ public:
   Particle(const double &d_part, const double &m_part, const double &rho_part)
   {
     // diameter of particle (micron and m)
-    d = d_part;
-    d_m = (1.0E-6) * d;
+    // d = d_part;
+    // d_m = (1.0E-6) * d;
 
     // mass of particle (g and kg)
-    m = m_part;
-    m_kg = (1.0E-3) * m;
+    // m = m_part;
+    // m_kg = (1.0E-3) * m;
 
     // density of particle
-    rho = rho_part;
+    // rho = rho_part;
 
     // tag
     // tag = "Particle_Tracer";// tagged as "tracer" so when particle type is unspecified in XML, it defaults to tracer
@@ -193,7 +191,7 @@ public:
   bool isRogue = false;// this is false until it becomes true. Should not go true.
   bool isActive = false;// this is true until it becomes false.
 
-  // particle physical property
+  /*// particle physical property
   double d;// particle diameter diameter [microns]
   double d_m;// particle diameter diameter [m]
   double m;// particle mass [g]
@@ -201,7 +199,7 @@ public:
   double m_o;// initial particle mass [g]
   double m_kg_o;// initial particle mass [kg]
   double rho;// density of particle
-
+*/
   // deposition variables
   double c1;// Stk* fit param (exponent)
   double c2;// Stk* fit param (exponent)
