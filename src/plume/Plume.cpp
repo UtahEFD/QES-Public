@@ -515,8 +515,8 @@ void Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBG
 {
   // Add new particles now
   for (auto source : allSources) {
-    particles->prepare(source->getNewParticleNumber((float)sim_dt, currentTime),
-                       source->particleType());
+    particles->prepare(source->particleType(),
+                       source->getNewParticleNumber((float)sim_dt, currentTime));
   }
   particles->sweep();
   for (auto source : allSources) {

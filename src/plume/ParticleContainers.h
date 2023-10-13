@@ -61,12 +61,14 @@ public:
     nbr_particle_to_add[ParticleType::small] = 0;
   }
 
-  int get_nbr_rogue();
-  int get_nbr_active();
-  int get_nbr_inserted();
+  int get_nbr_rogue() const;
+  int get_nbr_active() const;
+  int get_nbr_active(const ParticleType &) const;
+  int get_nbr_inserted() const;
+  int get_nbr_inserted(const ParticleType &) const;
 
-  void prepare(const int &, const ParticleType &);
+  void prepare(const ParticleType &, const int &);
 
   void sweep();
-  void container_info();
+  void container_info() const;
 };

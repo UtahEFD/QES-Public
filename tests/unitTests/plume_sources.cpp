@@ -89,16 +89,16 @@ TEST_CASE("sources", "[in progress]")
     REQUIRE(sources[0]->getNewParticleNumber(0.1, 150) == 400);
     REQUIRE(sources[0]->getNewParticleNumber(0.1, 250) == 400);
 
-    particles->prepare(sources[0]->getNewParticleNumber(0.1, 0), sources[0]->particleType());
+    particles->prepare(sources[0]->particleType(), sources[0]->getNewParticleNumber(0.1, 0));
     particles->sweep();
 
     REQUIRE(particles->tracers->check_size(400) == true);
     REQUIRE(particles->tracers->size() == 400);
-    REQUIRE(particles->tracers->get_nbr_active() == 0);
+    REQUIRE(particles->get_nbr_active(sources[0]->particleType()) == 0);
     sources[0]->emitParticles(0.1, 0, particles);
     REQUIRE(particles->tracers->check_size(100) == false);
     REQUIRE(particles->tracers->size() == 400);
-    REQUIRE(particles->tracers->get_nbr_active() == 400);
+    REQUIRE(particles->get_nbr_active(sources[0]->particleType()) == 400);
   }
 
   SECTION("SOURCE 1")
@@ -112,20 +112,20 @@ TEST_CASE("sources", "[in progress]")
     REQUIRE(sources[1]->getNewParticleNumber(0.1, 150) == 400);
     REQUIRE(sources[1]->getNewParticleNumber(0.1, 250) == 0);
 
-    particles->prepare(sources[1]->getNewParticleNumber(0.1, 150), sources[1]->particleType());
+    particles->prepare(sources[1]->particleType(), sources[1]->getNewParticleNumber(0.1, 150));
     particles->sweep();
 
     REQUIRE(particles->heavy_particles->check_size(400) == true);
     REQUIRE(particles->heavy_particles->size() == 400);
-    REQUIRE(particles->heavy_particles->get_nbr_active() == 0);
+    REQUIRE(particles->get_nbr_active(sources[1]->particleType()) == 0);
     sources[1]->emitParticles(0.1, 0, particles);
     REQUIRE(particles->heavy_particles->size() == 400);
-    REQUIRE(particles->heavy_particles->get_nbr_active() == 0);
+    REQUIRE(particles->get_nbr_active(sources[1]->particleType()) == 0);
 
     REQUIRE(particles->heavy_particles->check_size(400) == true);
     sources[1]->emitParticles(0.1, 100, particles);
     REQUIRE(particles->heavy_particles->size() == 400);
-    REQUIRE(particles->heavy_particles->get_nbr_active() == 400);
+    REQUIRE(particles->get_nbr_active(sources[1]->particleType()) == 400);
   }
   particles->container_info();
 }
