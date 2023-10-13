@@ -41,16 +41,16 @@ ParticleTypeFactory::ParticleTypeFactory()
   std::string largestr = "ParticleLarge";
   std::string heavygasstr = "ParticleHeavyGas";
 
-  RegisterParticles(tracerstr, &Particle_TracerFactory);
-  RegisterParticles(smallstr, &Particle_HeavyFactory);
-  RegisterParticles(largestr, &particleLargeFactory);
-  RegisterParticles(heavygasstr, &particleHeavyGasFactory);
+  RegisterParticles(ParticleType::tracer, &Particle_TracerFactory);
+  RegisterParticles(ParticleType::heavy, &Particle_HeavyFactory);
+  RegisterParticles(ParticleType::large, &particleLargeFactory);
+  RegisterParticles(ParticleType::heavygas, &particleHeavyGasFactory);
 }
 
-void ParticleTypeFactory::RegisterParticles(const std::string &particleType, ParticleFactory *particleFactory)
+void ParticleTypeFactory::RegisterParticles(const ParticleType &type, ParticleFactory *particleFactory)
 {
   // std::cout <<
-  ParticleTypeContainer.insert(std::pair<std::string, ParticleFactory *>(particleType, particleFactory));
+  ParticleTypeContainer.insert(std::pair<ParticleType, ParticleFactory *>(type, particleFactory));
 }
 
 // Function to return the actual particle object
@@ -65,6 +65,6 @@ Particle *ParticleTypeFactory::Create(const ParseParticle *proptoParticle)
             << ParticleTypeContainer.at(proptoParticle->tag) << std::endl;
   */
   //      std::cout << "Calling create() from the " << proptoParticle->tag << " factory" << std::endl;
-  return ParticleTypeContainer.at(proptoParticle->tag)->create();
+  return ParticleTypeContainer.at(proptoParticle->particleType)->create();
   //      std::cout << "done calling create() from the " << proptoParticle->tag << " factory" << std::endl;
 }

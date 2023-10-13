@@ -45,7 +45,7 @@ class ParticleHeavyGas : public Particle
 public:
   // initializer
   ParticleHeavyGas()
-    : Particle(true, "ParticleHeavyGas", ParticleType::heavygas)
+    : Particle(true, ParticleType::heavygas)
   {
     //  ParseParticle(const bool &flag, std::string str, const ParticleType &type)
     //    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0),
@@ -55,7 +55,7 @@ public:
 
   // initializer
   ParticleHeavyGas(const double &d_part, const double &m_part, const double &rho_part)
-    : Particle(true, "ParticleHeavyGas", ParticleType::heavygas)
+    : Particle(true, ParticleType::heavygas)
   {
     // diameter of particle (micron and m)
     d = d_part;
@@ -69,7 +69,7 @@ public:
     rho = rho_part;
 
     // tag
-    tag = "ParticleHeavyGas";
+    //tag = "ParticleHeavyGas";
 
     // (1 - fraction) particle deposited
     depFlag = true;
@@ -83,24 +83,6 @@ public:
   {
   }
 
-  //  void setSettlingVelocity(const double &, const double &);
-  void setSettlingVelocity(const double &rhoAir, const double &nuAir) override
-  {
-    if (d > 0 && rho > rhoAir) {
-      // dimensionless grain diameter
-      dstar = d_m * pow(9.81 / pow(nuAir, 2.0) * (rho / rhoAir - 1.), 1.0 / 3.0);
-      // drag coefficent
-      Cd = (432.0 / pow(dstar, 3.0)) * pow(1.0 + 0.022 * pow(dstar, 3.0), 0.54)
-           + 0.47 * (1.0 - exp(-0.15 * pow(dstar, 0.45)));
-      // dimensionless settling velociy
-      wstar = pow((4.0 * dstar) / (3.0 * Cd), 0.5);
-      // settling velocity
-      vs = wstar * pow(9.81 * nuAir * (rho / rhoAir - 1.0), 1.0 / 3.0);
-    } else {
-      vs = 0.0;
-    }
-  }
-
 private:
 };
 
@@ -110,7 +92,7 @@ protected:
 public:
   // default constructor
   ParseParticleHeavyGas()
-    : ParseParticle(true, "ParticleHeavyGas", ParticleType::heavygas)
+    : ParseParticle(true, ParticleType::heavygas)
   {
   }
 

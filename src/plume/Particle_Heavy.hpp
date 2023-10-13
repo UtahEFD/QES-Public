@@ -46,7 +46,7 @@ class Particle_Heavy : public Particle
 public:
   // initializer
   Particle_Heavy()
-    : Particle(true, "Particle_Heavy", ParticleType::heavy)
+    : Particle(true,  ParticleType::heavy)
   {
     //  ParseParticle(const bool &flag, std::string str, const ParticleType &type)
     //    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0),
@@ -55,7 +55,7 @@ public:
   }
 
   explicit Particle_Heavy(const size_t &ID)
-    : Particle(true, "Particle_Heavy", ParticleType::heavy)
+    : Particle(true,  ParticleType::heavy)
   {
     isActive = true;
     particleID = ID;
@@ -63,7 +63,7 @@ public:
 
   // initializer
   Particle_Heavy(const double &d_part, const double &m_part, const double &rho_part)
-    : Particle(true, "Particle_Heavy", ParticleType::heavy)
+    : Particle(true,  ParticleType::heavy)
   {
     // diameter of particle (micron and m)
     d = d_part;
@@ -77,7 +77,7 @@ public:
     rho = rho_part;
 
     // tag
-    tag = "Particle_Heavy";
+    //tag = "Particle_Heavy";
 
     // (1 - fraction) particle deposited
     depFlag = true;
@@ -89,26 +89,6 @@ public:
   // destructor
   ~Particle_Heavy() override = default;
 
-  // void setSettlingVelocity(const double &, const double &);
-  void setSettlingVelocity(const double &rhoAir, const double &nuAir) override
-  {
-    // std::cout << "setting vs for small particle, ";
-    if (d > 0.0 && rho > rhoAir) {
-      //  dimensionless grain diameter
-      dstar = d_m * pow(9.81 / pow(nuAir, 2.0) * (rho / rhoAir - 1.), 1.0 / 3.0);
-      // drag coefficent
-      Cd = (432.0 / pow(dstar, 3.0)) * pow(1.0 + 0.022 * pow(dstar, 3.0), 0.54)
-           + 0.47 * (1.0 - exp(-0.15 * pow(dstar, 0.45)));
-      // dimensionless settling velociy
-      wstar = pow((4.0 * dstar) / (3.0 * Cd), 0.5);
-      // settling velocity
-      vs = wstar * pow(9.81 * nuAir * (rho / rhoAir - 1.0), 1.0 / 3.0);
-    } else {
-      // std::cout << " d<=0 in vs calc " << std::endl;
-      vs = 0.0;
-    }
-  }
-
 private:
 };
 
@@ -117,7 +97,7 @@ class ParseParticle_Heavy : public ParseParticle
 protected:
 public:
   // default constructor
-  ParseParticle_Heavy() : ParseParticle(true, "Particle_Heavy", ParticleType::heavy)
+  ParseParticle_Heavy() : ParseParticle(true, ParticleType::heavy)
   {}
 
   // destructor

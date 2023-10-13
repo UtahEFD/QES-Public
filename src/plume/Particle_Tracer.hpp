@@ -46,7 +46,7 @@ class Particle_Tracer : public Particle
 public:
   // initializer
   Particle_Tracer()
-    : Particle(false, "Particle_Tracer", ParticleType::tracer)
+    : Particle(false, ParticleType::tracer)
   {
     //  ParseParticle(const bool &flag, std::string str, const ParticleType &type)
     //    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0),
@@ -55,7 +55,7 @@ public:
   }
 
   explicit Particle_Tracer(const size_t &ID)
-    : Particle(false, "Particle_Tracer", ParticleType::tracer)
+    : Particle(false,  ParticleType::tracer)
   {
     isActive = true;
     particleID = ID;
@@ -63,7 +63,7 @@ public:
 
   // initializer
   Particle_Tracer(const double &d_part, const double &m_part, const double &rho_part)
-    : Particle(false, "Particle_Tracer", ParticleType::tracer)
+    : Particle(false,  ParticleType::tracer)
   {
     // diameter of particle (micron and m)
     d = d_part;
@@ -77,7 +77,7 @@ public:
     rho = rho_part;
 
     // tag
-    tag = "Particle_Tracer";
+    //tag = "Particle_Tracer";
 
     // (1 - fraction) particle deposited
     depFlag = false;
@@ -91,13 +91,6 @@ public:
   {
   }
 
-  //  void setSettlingVelocity(const double &, const double &){
-  //    vs = 0.0;
-  void setSettlingVelocity(const double &rhoAir, const double &nuAir) override
-  {
-    vs = 0.0;
-  }
-
 private:
 };
 
@@ -107,7 +100,7 @@ protected:
 public:
   // default constructor
   ParseParticle_Tracer()
-    : ParseParticle(false, "Particle_Tracer", ParticleType::tracer)
+    : ParseParticle(false, ParticleType::tracer)
   {}
 
   // destructor
