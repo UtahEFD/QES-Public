@@ -33,7 +33,7 @@
 
 #include "ParticleContainers.h"
 
-int ParticleContainers::get_nbr_rogue()
+int ParticleContainers::get_nbr_rogue() const
 {
   // now update the isRogueCount
   int isRogueCount = 0;
@@ -50,19 +50,55 @@ int ParticleContainers::get_nbr_rogue()
   return isRogueCount;
 }
 
-int ParticleContainers::get_nbr_active()
+int ParticleContainers::get_nbr_active() const
 {
   return tracers->get_nbr_active()
          + heavy_particles->get_nbr_active();
 }
 
-int ParticleContainers::get_nbr_inserted()
+int ParticleContainers::get_nbr_active(const ParticleType &in) const
+{
+  switch (in) {
+  case tracer:
+    return tracers->get_nbr_active();
+  case small:
+    return heavy_particles->get_nbr_active();
+  case large:
+    exit(1);
+    break;
+  case heavygas:
+    exit(1);
+    break;
+  default:
+    exit(1);
+  }
+}
+
+
+int ParticleContainers::get_nbr_inserted() const
 {
   return tracers->get_nbr_inserted()
          + heavy_particles->get_nbr_inserted();
 }
+int ParticleContainers::get_nbr_inserted(const ParticleType &in) const
+{
+  switch (in) {
+  case tracer:
+    return tracers->get_nbr_inserted();
+  case small:
+    return heavy_particles->get_nbr_inserted();
+  case large:
+    exit(1);
+    break;
+  case heavygas:
+    exit(1);
+    break;
+  default:
+    exit(1);
+  }
+}
 
-void ParticleContainers::prepare(const int &nbr, const ParticleType &in)
+void ParticleContainers::prepare(const ParticleType &in, const int &nbr)
 {
   nbr_particle_to_add[in] += nbr;
 }
@@ -75,7 +111,7 @@ void ParticleContainers::sweep()
 }
 
 
-void ParticleContainers::container_info()
+void ParticleContainers::container_info() const
 {
   std::cout << "Particle Container info" << std::endl;
   std::cout << "tracer:          " << tracers->size() << " " << tracers->get_nbr_active() << std::endl;
