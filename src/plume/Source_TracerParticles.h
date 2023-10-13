@@ -55,12 +55,12 @@
 #include "util/ParseInterface.h"
 #include "winds/WINDSGeneralData.h"
 
-class Source_Tracers : public Source
+class Source_TracerParticles : public Source
 {
 public:
-  Source_Tracers(const int &sidx, const ParseSource *in) : Source(sidx, in) {}
+  Source_TracerParticles(const int &sidx, const ParseSource *in) : Source(sidx, in) {}
   // destructor
-  ~Source_Tracers() override = default;
+  ~Source_TracerParticles() override = default;
 
   int getNewParticleNumber(const float &dt,
                            const float &currTime) override;

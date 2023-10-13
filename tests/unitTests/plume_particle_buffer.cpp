@@ -33,7 +33,7 @@ void advect(Particle *p)
   p->uMean = 10;
 }
 
-void advect(ParticleTracer *p)
+void advect(Particle_Tracer *p)
 {
   p->uMean = 10;
 }
@@ -50,7 +50,7 @@ TEST_CASE("buffer", "[in progress]")
     std::list<Particle *> nextSetOfParticles;
     for (int pidx = 0; pidx < 1000; ++pidx) {
 
-      Particle *cPar = new ParticleTracer();
+      Particle *cPar = new Particle_Tracer();
       cPar->isActive = true;
       nextSetOfParticles.push_front(cPar);
     }
@@ -78,7 +78,7 @@ TEST_CASE("buffer", "[in progress]")
 
     for (int pidx = 0; pidx < 1000; ++pidx) {
       // size_t tmp = particleBuffer.next();
-      // particleBuffer.buffer[tmp] = ParticleTracer();
+      // particleBuffer.buffer[tmp] = Particle_Tracer();
       // particleBuffer.buffer[tmp].isActive = true;
       particleBuffer.add();
     }
@@ -103,7 +103,7 @@ TEST_CASE("buffer", "[in progress]")
 
   start = std::chrono::high_resolution_clock::now();
 
-  ManagedContainer<ParticleTracer> tracers;
+  ManagedContainer<Particle_Tracer> tracers;
   for (int k = 0; k < 10000; ++k) {
     tracers.sweep(1000);
 
@@ -132,7 +132,7 @@ TEST_CASE("buffer large", "[in progress]")
 {
   auto start = std::chrono::high_resolution_clock::now();
 
-  ManagedContainer<ParticleTracer> tracers(10000);
+  ManagedContainer<Particle_Tracer> tracers(10000);
   for (int k = 0; k < 10000; ++k) {
     tracers.sweep(1000);
 

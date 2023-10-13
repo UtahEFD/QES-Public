@@ -17,7 +17,7 @@
 class ParticleBuffer
 {
 public:
-  std::vector<ParticleTracer> buffer;
+  std::vector<Particle_Tracer> buffer;
   std::queue<size_t> available;
 
   size_t buffer_size = 0;

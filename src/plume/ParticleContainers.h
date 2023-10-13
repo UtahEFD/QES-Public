@@ -49,15 +49,15 @@ private:
   std::unordered_map<ParticleType, int, std::hash<int>> nbr_particle_to_add;
 
 public:
-  ManagedContainer<ParticleTracer> *tracer;
-  ManagedContainer<ParticleSmall> *heavy;
+  ManagedContainer<Particle_Tracer> *tracer;
+  ManagedContainer<Particle_Heavy> *heavy;
 
   ParticleContainers()
   {
-    tracer = new ManagedContainer<ParticleTracer>();
+    tracer = new ManagedContainer<Particle_Tracer>();
     nbr_particle_to_add[ParticleType::tracer] = 0;
 
-    heavy = new ManagedContainer<ParticleSmall>();
+    heavy = new ManagedContainer<Particle_Heavy>();
     nbr_particle_to_add[ParticleType::heavy] = 0;
   }
 

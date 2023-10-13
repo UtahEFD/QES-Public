@@ -488,7 +488,7 @@ void Plume::getInputSources(PlumeInputData *PID)
     // add source into the vector of sources
     switch (s->particleType()) {
     case ParticleType::tracer:
-      allSources.push_back(new Source_Tracers((int)allSources.size(), s));
+      allSources.push_back(new Source_TracerParticles((int)allSources.size(), s));
       break;
     case ParticleType::heavy:
       allSources.push_back(new Source_HeavyParticles((int)allSources.size(), s));

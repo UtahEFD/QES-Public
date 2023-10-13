@@ -64,7 +64,7 @@ TEST_CASE("sources", "[in progress]")
 
     switch (s->particleType()) {
     case tracer:
-      sources.push_back(new Source_Tracers((int)sources.size(), s));
+      sources.push_back(new Source_TracerParticles((int)sources.size(), s));
       break;
     case heavy:
       sources.push_back(new Source_HeavyParticles((int)sources.size(), s));
