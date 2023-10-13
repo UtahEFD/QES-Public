@@ -148,7 +148,6 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   // set the particle counter to zero
   nParsReleased = 0;
 
-  // tracerList = new ManagedContainer<ParticleTracer>();
   particles = new ParticleContainers();
 
   // get sources from input data and add them to the allSources vector
@@ -332,19 +331,6 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
       }
     }
 
-    /*for (auto &parItr : particleList) {
-      // now update the isRogueCount and isNotActiveCount
-      if (parItr->isRogue) {
-        isRogueCount = isRogueCount + 1;
-      }
-      if (!parItr->isActive) {
-        isNotActiveCount = isNotActiveCount + 1;
-        needToScrub = true;
-      }
-    }*/
-    // end of loop for (parItr == particleList.begin(); parItr !=
-    // particleList.end() ; parItr++ )
-
     isRogueCount = particles->get_nbr_rogue();
 
     // incrementation of time and timestep
@@ -359,13 +345,6 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
     for (auto &id_out : outputVec) {
       id_out->save(simTimeCurr);
     }
-    // tracerList->scrub_buffer();
-    // For all particles that need to be removed from the particle
-    // advection, remove them now
-    // if (needToScrub) {
-    //  scrubParticleList();
-    // }
-
 
     // output the time, isRogueCount, and isNotActiveCount information for all
     // simulations, but only when the updateFrequency allows
@@ -512,7 +491,7 @@ void Plume::getInputSources(PlumeInputData *PID)
       allSources.push_back(new Source_Tracers((int)allSources.size(), s));
       break;
     case small:
-      exit(1);
+      allSources.push_back(new Source_HeavyParticles((int)allSources.size(), s));
       break;
     case large:
       exit(1);
@@ -534,39 +513,12 @@ void Plume::addSources(std::vector<Source *> &newSources)
 
 void Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
-
   // Add new particles now
-  // - walk over all sources and add the emitted particles from
-
-  /*std::list<Particle *> nextSetOfParticles;
-  int numNewParticles = 0;
-  for (auto source : allSources) {
-    numNewParticles += source->emitParticles((float)sim_dt, currentTime, nextSetOfParticles);
-  }
-  setParticleVals(WGD, TGD, nextSetOfParticles);
-  */
-
-  // std::unordered_map<ParticleType, int, std::hash<int>> test;
-
-  // int numNewParticles = 0;
-
-  /*
-  for (auto source : allSources) {
-    numNewParticles += source->getNewParticleNumber((float)sim_dt, currentTime);
-  }
-  particles->tracers->sweep(numNewParticles);
-  for (auto source : allSources) {
-    source->emitParticles((float)sim_dt, currentTime, particles);
-  }
-  setParticleVals(WGD, TGD);
-  */
-
   for (auto source : allSources) {
     particles->prepare(source->getNewParticleNumber((float)sim_dt, currentTime),
                        source->particleType());
   }
   particles->sweep();
-
   for (auto source : allSources) {
     source->emitParticles((float)sim_dt, currentTime, particles);
   }
@@ -581,14 +533,6 @@ void Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBG
     // set particle ID (use global particle counter)
     setParticle(WGD, TGD, &particles->heavy_particles->elements[particles->heavy_particles->added[k]]);
   }
-
-  // append all the new particles on to the big particle
-  // advection list
-  // particleList.insert(particleList.end(), nextSetOfParticles.begin(), nextSetOfParticles.end());
-  // nParsReleased += particles->tracers->get_nbr_added();
-
-  // now calculate the number of particles to release for this timestep
-  // return nParsReleased;
 }
 
 void Plume::scrubParticleList()
@@ -627,31 +571,6 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, std::li
     setParticle(WGD, TGD, tmp[k]);
   }
 }
-
-void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD)
-{
-  // at this time, should be a list of each and every particle that exists at
-  // the given time particles and sources can potentially be added to the list
-  // elsewhere
-  // for (auto parItr = newParticles.begin(); parItr != newParticles.end(); parItr++) {
-  /* for (auto k : tracerList->added) {
-    // set particle ID (use global particle counter)
-    tracerList->buffer[k].particleID = nParsReleased;
-    nParsReleased++;
-  }
-  */
-  // #pragma omp parallel for default(none) shared(WGD, TGD, tmp)
-  // for (auto parItr = tmp.begin(); parItr != tmp.end(); parItr++) {
-  //  set particle ID (use global particle counter)
-  //(*parItr)->particleID = nParsReleased;
-  //
-#pragma omp parallel for default(none) shared(WGD, TGD)
-  for (auto k = 0u; k < particles->tracers->added.size(); ++k) {
-    // set particle ID (use global particle counter)
-    setParticle(WGD, TGD, &particles->tracers->elements[particles->tracers->added[k]]);
-  }
-}
-
 
 void Plume::setParticle(WINDSGeneralData *WGD, TURBGeneralData *TGD, Particle *par_ptr)
 {

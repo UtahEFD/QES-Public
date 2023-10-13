@@ -78,6 +78,8 @@
 #include "ParticleContainers.h"
 #include "Source.hpp"
 #include "Source_Tracers.h"
+#include "Source_HeavyParticles.h"
+
 
 class Plume
 {
@@ -218,7 +220,6 @@ protected:
 
 private:
   void setParticleVals(WINDSGeneralData *, TURBGeneralData *, std::list<Particle *>);
-  void setParticleVals(WINDSGeneralData *, TURBGeneralData *);
   void setParticle(WINDSGeneralData *WGD, TURBGeneralData *TGD, Particle *par_ptr);
   // this function gets sources from input data and adds them to the allSources vector
   // this function also calls the many check and calc functions for all the input sources

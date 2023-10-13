@@ -10,6 +10,7 @@
 #include <list>
 #include <chrono>
 
+#include "util/ManagedContainer.h"
 
 #include "plume/ParticleManager.h"
 #include "plume/Particle.hpp"
@@ -102,16 +103,17 @@ TEST_CASE("buffer", "[in progress]")
 
   REQUIRE(particleBuffer.size() == 6000);
 
+
   start = std::chrono::high_resolution_clock::now();
 
-  ParticleManager<ParticleTracer> particleManager;
+  ManagedContainer<ParticleTracer> tracers;
   for (int k = 0; k < 10000; ++k) {
-    particleManager.check_size(1000);
+    tracers.sweep(1000);
 
     for (int pidx = 0; pidx < 1000; ++pidx) {
-      particleManager.add();
+      tracers.insert();
     }
-    for (auto &p : particleManager.buffer) {
+    for (auto &p : tracers.elements) {
       float t = drand48();
       advect(&p);
       if (t > 0.8)
@@ -119,28 +121,28 @@ TEST_CASE("buffer", "[in progress]")
     }
   }
 
-  std::cout << particleManager.size() << " " << particleManager.nbr_active() << std::endl;
+  std::cout << tracers.size() << " " << tracers.get_nbr_active() << std::endl;
 
   finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
   elapsed = finish - start;
   std::cout << "elapsed time: " << elapsed.count() << " s\n";
 
-  REQUIRE(particleManager.last_added()->particleID == 10000 * 1000 - 1);
-  REQUIRE(particleManager.size() == 6000);
+  REQUIRE(tracers.last_added()->particleID == 10000 * 1000 - 1);
+  REQUIRE(tracers.size() == 6000);
 }
 
 TEST_CASE("buffer large", "[in progress]")
 {
   auto start = std::chrono::high_resolution_clock::now();
 
-  ParticleManager<ParticleTracer> particleManager(10000);
+  ManagedContainer<ParticleTracer> tracers(10000);
   for (int k = 0; k < 10000; ++k) {
-    particleManager.check_size(1000);
+    tracers.sweep(1000);
 
     for (int pidx = 0; pidx < 1000; ++pidx) {
-      particleManager.add();
+      tracers.insert();
     }
-    for (auto &p : particleManager.buffer) {
+    for (auto &p : tracers.elements) {
       float t = drand48();
       advect(&p);
       if (t > 0.8)
@@ -148,7 +150,7 @@ TEST_CASE("buffer large", "[in progress]")
     }
   }
 
-  std::cout << particleManager.size() << " " << particleManager.nbr_active() << std::endl;
+  std::cout << tracers.size() << " " << tracers.get_nbr_active() << std::endl;
 
   auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
   std::chrono::duration<float> elapsed = finish - start;
