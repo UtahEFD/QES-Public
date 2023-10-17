@@ -138,7 +138,7 @@ public:
   double zPos_init{};// the initial z component of position for the particle
 
   double tStrt{};// the time of release for the particle
-  int particleID{};// id of particle (for tracking purposes)
+  unsigned long int particleID{};// id of particle (for tracking purposes)
   int sourceIdx{};// the index of the source the particle came from
 
   // once initial positions are known, can set these values using urb and turb info
@@ -191,15 +191,15 @@ public:
   bool isRogue = false;// this is false until it becomes true. Should not go true.
   bool isActive = false;// this is true until it becomes false.
 
-  /*// particle physical property
+  // particle physical property
   double d;// particle diameter diameter [microns]
-  double d_m;// particle diameter diameter [m]
+  // double d_m;// particle diameter diameter [m]
   double m;// particle mass [g]
-  double m_kg;// particle mass [kg]
+  // double m_kg;// particle mass [kg]
   double m_o;// initial particle mass [g]
-  double m_kg_o;// initial particle mass [kg]
+  // double m_kg_o;// initial particle mass [kg]
   double rho;// density of particle
-*/
+
   // deposition variables
   double c1;// Stk* fit param (exponent)
   double c2;// Stk* fit param (exponent)

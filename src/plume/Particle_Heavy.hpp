@@ -67,11 +67,13 @@ public:
   {
     // diameter of particle (micron and m)
     d = d_part;
-    d_m = (1.0E-6) * d;
+    // d_m = (1.0E-6) * d;
 
     // mass of particle (g and kg)
     m = m_part;
-    m_kg = (1.0E-3) * m;
+    m_o = m;
+    // m_kg = (1.0E-3) * m;
+    // m_kg_o = m_kg;
 
     // density of particle
     rho = rho_part;
@@ -80,7 +82,7 @@ public:
     // tag = "Particle_Heavy";
 
     // (1 - fraction) particle deposited
-    depFlag = true;
+    // depFlag = true;
 
     // (1 - fraction) particle deposited
     wdecay = 1.0;
@@ -88,14 +90,6 @@ public:
 
   // destructor
   ~Particle_Heavy() override = default;
-
-  double d;// particle diameter diameter [microns]
-  double d_m;// particle diameter diameter [m]
-  double m;// particle mass [g]
-  double m_kg;// particle mass [kg]
-  double m_o;// initial particle mass [g]
-  double m_kg_o;// initial particle mass [kg]
-  double rho;// density of particle
 
 private:
 };
@@ -127,7 +121,7 @@ public:
   {
     auto *tmp = dynamic_cast<Particle_Heavy *>(ptr);
     tmp->d = d;
-    tmp->d_m = (1.0E-6) * d;
+    // tmp->d_m = (1.0E-6) * d;
     tmp->rho = rho;
     tmp->depFlag = depFlag;
     tmp->decayConst = decayConst;

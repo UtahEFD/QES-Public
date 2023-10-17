@@ -280,8 +280,8 @@ void PlumeOutputParticleData::save(QEStime timeIn)
 
       tStrt[parID] = (float)parItr->tStrt;
       sourceIdx[parID] = parItr->sourceIdx;
-      // d[parID] = (float)parItr->d;
-      // m[parID] = (float)parItr->m;
+      d[parID] = (float)parItr->d;
+      m[parID] = (float)parItr->m;
       wdecay[parID] = (float)parItr->wdecay;
 
       xPos_init[parID] = (float)parItr->xPos_init;
