@@ -104,8 +104,8 @@ void ParseSource::setParticleType()
 {
   std::vector<ParseParticle *> protoParticle_tmp;
 
-  parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticle_Tracer>("Particle_Tracer"));
-  parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticle_Heavy>("Particle_Heavy"));
+  parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticle_Tracer>("particle_Tracer"));
+  parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticle_Heavy>("particle_Heavy"));
   parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticleLarge>("particleLarge"));
   parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticleHeavyGas>("particleHeavyGas"));
 

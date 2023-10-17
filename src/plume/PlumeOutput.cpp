@@ -395,7 +395,7 @@ void PlumeOutput::boxCount()
       if (idx >= 0 && idx <= nBoxesX - 1 && idy >= 0 && idy <= nBoxesY - 1 && idz >= 0 && idz <= nBoxesZ - 1) {
         int id = idz * nBoxesY * nBoxesX + idy * nBoxesX + idx;
         pBox[id]++;
-        // conc[id] = conc[id] + par.m * par.wdecay * timeStep;
+        conc[id] = conc[id] + par.m * par.wdecay * timeStep;
       }
 
     }// is active == true

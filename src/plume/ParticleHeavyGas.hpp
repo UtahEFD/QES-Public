@@ -59,11 +59,11 @@ public:
   {
     // diameter of particle (micron and m)
     d = d_part;
-    d_m = (1.0E-6) * d;
+    // d_m = (1.0E-6) * d;
 
     // mass of particle (g and kg)
     m = m_part;
-    m_kg = (1.0E-3) * m;
+    // m_kg = (1.0E-3) * m;
 
     // density of particle
     rho = rho_part;
@@ -83,13 +83,6 @@ public:
   {
   }
 
-  double d;// particle diameter diameter [microns]
-  double d_m;// particle diameter diameter [m]
-  double m;// particle mass [g]
-  double m_kg;// particle mass [kg]
-  double m_o;// initial particle mass [g]
-  double m_kg_o;// initial particle mass [kg]
-  double rho;// density of particle
 private:
 };
 
@@ -124,7 +117,7 @@ public:
   {
     auto *tmp = dynamic_cast<ParticleHeavyGas *>(ptr);
     tmp->d = 0.0;
-    tmp->d_m = (1.0E-6) * 0.0;
+    // tmp->d_m = (1.0E-6) * 0.0;
     tmp->rho = rho;
     tmp->depFlag = depFlag;
     tmp->decayConst = decayConst;

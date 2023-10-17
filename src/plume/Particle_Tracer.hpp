@@ -66,15 +66,15 @@ public:
     : Particle(false, ParticleType::tracer)
   {
     // diameter of particle (micron and m)
-    // d = d_part;
+    d = d_part;
     // d_m = (1.0E-6) * d;
 
     // mass of particle (g and kg)
-    // m = m_part;
+    m = m_part;
     // m_kg = (1.0E-3) * m;
 
     // density of particle
-    // rho = rho_part;
+    rho = rho_part;
 
     // tag
     // tag = "Particle_Tracer";

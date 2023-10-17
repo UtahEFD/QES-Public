@@ -44,9 +44,7 @@ TEST_CASE("particle factory", "[Working]")
       protoParticle_Tracer->setParticleParameters(particleList[k]);
 
       particleList[k]->m = 0.001;
-      particleList[k]->m_kg = particleList[k]->m * (1.0E-3);
       particleList[k]->m_o = particleList[k]->m;
-      particleList[k]->m_kg_o = particleList[k]->m * (1.0E-3);
     }
     REQUIRE(particleList[100]->d == 0.0);
     REQUIRE(particleList[500]->rho == 0.0);
@@ -64,18 +62,16 @@ TEST_CASE("particle factory", "[Working]")
     startTime = std::chrono::high_resolution_clock::now();
 
     ParseParticle *protoParticle_Heavy = new ParseParticle_Heavy();
-    protoParticle_Heavy->d = 0.0001;
+    protoParticle_Heavy->d = 0.0;
     protoParticle_Heavy->rho = 0.0001;
     for (int k = 0; k < 100000; ++k) {
       particleList[k] = particleTypeFactory->Create(protoParticle_Heavy);
       protoParticle_Heavy->setParticleParameters(particleList[k]);
 
       particleList[k]->m = 0.001;
-      particleList[k]->m_kg = particleList[k]->m * (1.0E-3);
       particleList[k]->m_o = particleList[k]->m;
-      particleList[k]->m_kg_o = particleList[k]->m * (1.0E-3);
     }
-    REQUIRE(particleList[100]->d == 0.0001);
+    REQUIRE(particleList[100]->d == 0.0);
     REQUIRE(particleList[500]->rho == 0.0001);
     REQUIRE(particleList[10000]->particleType == ParticleType::heavy);
 

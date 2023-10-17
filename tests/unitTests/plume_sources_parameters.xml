@@ -10,8 +10,8 @@
                 <posY> 50.0 </posY>
                 <posZ> 70.0 </posZ>
             </sourceGeometry_Point>
-            <particleTracer>
-            </particleTracer>
+            <particle_Tracer>
+            </particle_Tracer>
         </source>
 
         <source>
@@ -26,14 +26,14 @@
                 <posZ> 70.0 </posZ>
                 <radius> 2.0 </radius>
             </sourceGeometry_SphereShell>
-            <particleSmall>
+            <particle_Heavy>
                 <!-- particleDensity in g/m3-->
                 <particleDensity> 1.0 </particleDensity>
                 <!-- particleDiameter in mu-m -->
                 <particleDiameter> 0.001 </particleDiameter>
                 <depositionFlag>true</depositionFlag>
                 <decayConst> 0.1 </decayConst>
-            </particleSmall>
+            </particle_Heavy>
         </source>
 
     </sourceParameters>

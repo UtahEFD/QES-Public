@@ -34,7 +34,7 @@
 #include <math.h>
 #include "Plume.hpp"
 
-void Plume::depositParticle(double xPos, double yPos, double zPos, double disX, double disY, double disZ, double uTot, double vTot, double wTot, double txx, double tyy, double tzz, double txz, double txy, double tyz, double vs, double CoEps, double boxSizeZ, double nuT, Particle_Heavy *par_ptr, WINDSGeneralData *WGD, TURBGeneralData *TGD)
+void Plume::depositParticle(double xPos, double yPos, double zPos, double disX, double disY, double disZ, double uTot, double vTot, double wTot, double txx, double tyy, double tzz, double txz, double txy, double tyz, double vs, double CoEps, double boxSizeZ, double nuT, Particle *par_ptr, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
 
   double rhoAir = 1.225;// in kg m^-3
@@ -66,7 +66,7 @@ void Plume::depositParticle(double xPos, double yPos, double zPos, double disX, 
       // Take deposited mass away from particle
       double P_r = exp(-par_ptr->decayConst * distFromSource);// undeposited fraction of mass
       par_ptr->m = par_ptr->m_o * P_r;
-      par_ptr->m_kg = par_ptr->m_kg_o * P_r;
+      // par_ptr->m_kg = par_ptr->m_kg_o * P_r;
     }
 
 
@@ -79,7 +79,7 @@ void Plume::depositParticle(double xPos, double yPos, double zPos, double disX, 
       double Cc = 1.0;// Cunningham correction factor, temporarily hard-coded, only important for <10um particles
       double parRMS = 1.0 / sqrt(3.0) * sqrt(txx + tyy + tzz);// RMS of velocity fluctuations the particle is experiencing [m/s]
       double taylorMicroscale = sqrt((15.0 * nuAir * 5.0 * pow(parRMS, 2.0)) / CoEps);
-      double Stk = (par_ptr->rho * pow(par_ptr->d_m, 2.0) * MTot * Cc) / (18.0 * rhoAir * nuAir * elementDiameter);// classical Stokes number
+      double Stk = (par_ptr->rho * pow((1.0E-6) * par_ptr->d, 2.0) * MTot * Cc) / (18.0 * rhoAir * nuAir * elementDiameter);// classical Stokes number
       double ReLambda = parRMS * taylorMicroscale / nuAir;// Taylor microscale Reynolds number
       double depEff = 1.0 - 1.0 / (par_ptr->c1 * pow(pow(ReLambda, 0.3) * Stk, par_ptr->c2) + 1.0);// deposition efficiency (E in Bailey 2018 Eq. 13)
       double ReLeaf = elementDiameter * MTot / nuAir;// leaf Reynolds number
@@ -107,7 +107,7 @@ void Plume::depositParticle(double xPos, double yPos, double zPos, double disX, 
 
       // Take deposited mass away from particle
       par_ptr->m *= P_v;
-      par_ptr->m_kg *= P_v;
+      // par_ptr->m_kg *= P_v;
 
     } else if (WGD->isTerrain(cellId - (WGD->nx - 1) * (WGD->ny - 1))) {// Ground deposition
       double dt = partDist / MTot;
@@ -130,16 +130,16 @@ void Plume::depositParticle(double xPos, double yPos, double zPos, double disX, 
 
       // Take deposited mass away from particle
       par_ptr->m *= P_g;
-      par_ptr->m_kg *= P_g;
+      // par_ptr->m_kg *= P_g;
 
     } else {
       return;
     }
 
     // If particle mass drops below mass of a single particle, set it to zero and inactivate it
-    double oneParMass = par_ptr->rho * (1.0 / 6.0) * M_PI * pow(par_ptr->d_m, 3.0);
-    if (par_ptr->m_kg < oneParMass) {
-      par_ptr->m_kg = 0.0;
+    double oneParMass = par_ptr->rho * (1.0 / 6.0) * M_PI * pow((1.0E-6) * par_ptr->d, 3.0);
+    if (par_ptr->m / 1000.0 < oneParMass) {
+      // par_ptr->m_kg = 0.0;
       par_ptr->m = 0.0;
       par_ptr->isActive = false;
     }
