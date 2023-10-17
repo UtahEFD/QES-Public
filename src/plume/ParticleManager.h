@@ -11,8 +11,6 @@
 #include "Particle.hpp"
 #include "Particle_Tracer.hpp"
 #include "Particle_Heavy.hpp"
-#include "ParticleLarge.hpp"
-#include "ParticleHeavyGas.hpp"
 
 class ParticleBuffer
 {

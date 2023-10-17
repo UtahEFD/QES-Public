@@ -113,8 +113,8 @@ public:
     parsePrimitive<double>(false, decayConst, "decayConst");
     parsePrimitive<double>(false, c1, "c1");
     parsePrimitive<double>(false, c2, "c2");
-    d_m = d * (1.0E-6);
-    m_kg = m * (1.0E-3);
+    // d_m = d * (1.0E-6);
+    // m_kg = m * (1.0E-3);
   }
 
   void setParticleParameters(Particle *ptr) override

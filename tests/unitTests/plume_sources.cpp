@@ -69,10 +69,6 @@ TEST_CASE("sources", "[in progress]")
     case heavy:
       sources.push_back(new Source_HeavyParticles((int)sources.size(), s));
       break;
-    case large:
-      break;
-    case heavygas:
-      break;
     default:
       exit(1);
     }

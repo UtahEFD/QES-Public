@@ -32,8 +32,6 @@ SET( qesPlumeCoreSources
     ParticleFactories.hpp
     Particle_Tracer.hpp
     Particle_Heavy.hpp
-    ParticleLarge.hpp
-    ParticleHeavyGas.hpp
     ParticleFactories.cpp
 
     ReleaseType.hpp

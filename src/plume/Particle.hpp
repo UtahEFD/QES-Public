@@ -41,30 +41,42 @@
 
 enum ParticleType {
   tracer,
-  heavy,
-  large,
-  heavygas
+  heavy
 };
 
 class Particle;
 
 class ParseParticle : public ParseInterface
 {
+private:
+  // default constructor
+  ParseParticle()
+    : d(0.0), m(0.0), rho(0.0),
+      depFlag(false), decayConst(0.0), c1(2.049), c2(1.19),
+      particleType(ParticleType::tracer)
+  {}
+
 protected:
+  ParseParticle(const bool &flag, const ParticleType &type)
+    : d(0.0), m(0.0), rho(0.0),
+      depFlag(flag), decayConst(0.0), c1(2.049), c2(1.19),
+      particleType(type)
+  {}
+
 public:
   // particle type
   ParticleType particleType;
 
   // Physical properties
-  double d, d_m, m, m_kg, rho;
+  // diameter of particle (micron)
+  double d;
+  // mass of particle (g)
+  double m;
+  // density of particle (kg/m3)
+  double rho;
+
   bool depFlag;
   double decayConst, c1, c2;
-
-  ParseParticle(const bool &flag, const ParticleType &type)
-    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0),
-      depFlag(flag), decayConst(0.0), c1(2.049), c2(1.19),
-      particleType(type)
-  {}
 
   // destructor
   ~ParseParticle() = default;
@@ -72,60 +84,37 @@ public:
   virtual void parseValues() = 0;
 
   virtual void setParticleParameters(Particle *) = 0;
-
-private:
-  // default constructor
-  ParseParticle()
-    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0),
-      depFlag(false), decayConst(0.0), c1(2.049), c2(1.19),
-      particleType(ParticleType::tracer)
-  {}
 };
+
 
 class Particle
 {
 private:
   Particle()
-    : decayConst(0.0), c1(2.049), c2(1.19), wdecay(1.0),
-      depFlag(false), particleType(ParticleType::tracer)
+    : particleType(ParticleType::tracer),
+      d(0.0), m(0.0), m_o(0.0), rho(0.0),
+      c1(2.049), c2(1.19), depFlag(false), decayConst(0.0), wdecay(1.0)
   {
   }
 
 protected:
-public:
   // initializer
   Particle(const bool &flag, const ParticleType &type)
-    : decayConst(0.0), c1(2.049), c2(1.19), wdecay(1.0),
-      depFlag(flag), particleType(type)
+    : particleType(type),
+      d(0.0), m(0.0), m_o(0.0), rho(0.0),
+      c1(2.049), c2(1.19), depFlag(flag), decayConst(0.0), wdecay(1.0)
   {
   }
 
   // initializer
-  Particle(const double &d_part, const double &m_part, const double &rho_part)
+  Particle(const bool &flag, const ParticleType &type, const double &d_p, const double &m_p, const double &rho_p)
+    : particleType(type),
+      d(d_p), m(m_p), m_o(m_p), rho(rho_p),
+      c1(2.049), c2(1.19), depFlag(flag), decayConst(0.0), wdecay(1.0)
   {
-    // diameter of particle (micron and m)
-    // d = d_part;
-    // d_m = (1.0E-6) * d;
-
-    // mass of particle (g and kg)
-    // m = m_part;
-    // m_kg = (1.0E-3) * m;
-
-    // density of particle
-    // rho = rho_part;
-
-    // tag
-    // tag = "Particle_Tracer";// tagged as "tracer" so when particle type is unspecified in XML, it defaults to tracer
-
-    // (1 - fraction) particle deposited
-    depFlag = false;
-    decayConst = 0;
-    c1 = 2.049;
-    c2 = 1.19;
-    // (1 - fraction) particle deposited
-    wdecay = 1.0;
   }
 
+public:
   // destructor
   virtual ~Particle() = default;
 

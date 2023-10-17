@@ -11,8 +11,6 @@
 #include "plume/Particle.hpp"
 #include "plume/Particle_Tracer.hpp"
 #include "plume/Particle_Heavy.hpp"
-#include "plume/ParticleLarge.hpp"
-#include "plume/ParticleHeavyGas.hpp"
 #include "plume/ParticleFactories.hpp"
 
 TEST_CASE("particle factory", "[Working]")
@@ -21,10 +19,10 @@ TEST_CASE("particle factory", "[Working]")
   ParseParticle *protoParticle;
   ParticleTypeFactory *particleTypeFactory = new ParticleTypeFactory();
 
-  std::string tracerstr = "Particle_Tracer";
-  std::string smallstr = "Particle_Heavy";
-  std::string largestr = "ParticleLarge";
-  std::string heavygasstr = "ParticleHeavyGas";
+  // std::string tracerstr = "Particle_Tracer";
+  // std::string smallstr = "Particle_Heavy";
+  // std::string largestr = "ParticleLarge";
+  // std::string heavygasstr = "ParticleHeavyGas";
 
   auto startTime = std::chrono::high_resolution_clock::now();
   auto endTime = std::chrono::high_resolution_clock::now();
@@ -55,7 +53,7 @@ TEST_CASE("particle factory", "[Working]")
     std::cout << "CPU  elapsed time: " << cpuElapsed.count() << " s\n";
   }
 
-  SECTION("Small Particles")
+  SECTION("Heavy Particles")
   {
     particleList.resize(100000, nullptr);
 
@@ -79,47 +77,48 @@ TEST_CASE("particle factory", "[Working]")
     cpuElapsed = endTime - startTime;
     std::cout << "CPU  elapsed time: " << cpuElapsed.count() << " s\n";
   }
+  /*
+    SECTION("Large Particles")
+    {
+      particleList.resize(100000, nullptr);
 
-  SECTION("Large Particles")
-  {
-    particleList.resize(100000, nullptr);
+      startTime = std::chrono::high_resolution_clock::now();
 
-    startTime = std::chrono::high_resolution_clock::now();
+      ParseParticle *protoParticleLarge = new ParseParticleLarge();
+      protoParticleLarge->d = 0.001;
+      protoParticleLarge->rho = 0.01;
+      for (int k = 0; k < 100000; ++k) {
+        particleList[k] = particleTypeFactory->Create(protoParticleLarge);
+        protoParticleLarge->setParticleParameters(particleList[k]);
+      }
+      REQUIRE(particleList[100]->d == 0.001);
+      REQUIRE(particleList[500]->rho == 0.01);
+      REQUIRE(particleList[10000]->particleType == ParticleType::large);
 
-    ParseParticle *protoParticleLarge = new ParseParticleLarge();
-    protoParticleLarge->d = 0.001;
-    protoParticleLarge->rho = 0.01;
-    for (int k = 0; k < 100000; ++k) {
-      particleList[k] = particleTypeFactory->Create(protoParticleLarge);
-      protoParticleLarge->setParticleParameters(particleList[k]);
+      endTime = std::chrono::high_resolution_clock::now();
+      cpuElapsed = endTime - startTime;
+      std::cout << "CPU  elapsed time: " << cpuElapsed.count() << " s\n";
     }
-    REQUIRE(particleList[100]->d == 0.001);
-    REQUIRE(particleList[500]->rho == 0.01);
-    REQUIRE(particleList[10000]->particleType == ParticleType::large);
 
-    endTime = std::chrono::high_resolution_clock::now();
-    cpuElapsed = endTime - startTime;
-    std::cout << "CPU  elapsed time: " << cpuElapsed.count() << " s\n";
-  }
+    SECTION("Heavy Gas Particles")
+    {
+      particleList.resize(100000, nullptr);
 
-  SECTION("Heavy Gas Particles")
-  {
-    particleList.resize(100000, nullptr);
+      startTime = std::chrono::high_resolution_clock::now();
 
-    startTime = std::chrono::high_resolution_clock::now();
+      ParseParticle *protoParticleHeavyGas = new ParseParticleHeavyGas();
+      protoParticleHeavyGas->rho = 0.1;
+      for (int k = 0; k < 100000; ++k) {
+        particleList[k] = particleTypeFactory->Create(protoParticleHeavyGas);
+        protoParticleHeavyGas->setParticleParameters(particleList[k]);
+      }
+      REQUIRE(particleList[100]->d == 0.0);
+      REQUIRE(particleList[500]->rho == 0.1);
+      REQUIRE(particleList[10000]->particleType == ParticleType::heavygas);
 
-    ParseParticle *protoParticleHeavyGas = new ParseParticleHeavyGas();
-    protoParticleHeavyGas->rho = 0.1;
-    for (int k = 0; k < 100000; ++k) {
-      particleList[k] = particleTypeFactory->Create(protoParticleHeavyGas);
-      protoParticleHeavyGas->setParticleParameters(particleList[k]);
+      endTime = std::chrono::high_resolution_clock::now();
+      cpuElapsed = endTime - startTime;
+      std::cout << "CPU  elapsed time: " << cpuElapsed.count() << " s\n";
     }
-    REQUIRE(particleList[100]->d == 0.0);
-    REQUIRE(particleList[500]->rho == 0.1);
-    REQUIRE(particleList[10000]->particleType == ParticleType::heavygas);
-
-    endTime = std::chrono::high_resolution_clock::now();
-    cpuElapsed = endTime - startTime;
-    std::cout << "CPU  elapsed time: " << cpuElapsed.count() << " s\n";
-  }
+  */
 }
