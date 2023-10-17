@@ -63,12 +63,6 @@ int ParticleContainers::get_nbr_active(const ParticleType &in) const
     return tracer->get_nbr_active();
   case ParticleType::heavy:
     return heavy->get_nbr_active();
-  case ParticleType::large:
-    exit(1);
-    break;
-  case ParticleType::heavygas:
-    exit(1);
-    break;
   default:
     exit(1);
   }
@@ -87,12 +81,6 @@ int ParticleContainers::get_nbr_inserted(const ParticleType &in) const
     return tracer->get_nbr_inserted();
   case ParticleType::heavy:
     return heavy->get_nbr_inserted();
-  case ParticleType::large:
-    exit(1);
-    break;
-  case ParticleType::heavygas:
-    exit(1);
-    break;
   default:
     exit(1);
   }

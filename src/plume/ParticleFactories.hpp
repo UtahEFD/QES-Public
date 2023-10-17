@@ -37,8 +37,6 @@
 #include "Particle.hpp"
 #include "Particle_Tracer.hpp"
 #include "Particle_Heavy.hpp"
-#include "ParticleLarge.hpp"
-#include "ParticleHeavyGas.hpp"
 #include <unordered_map>
 
 class ParticleFactory
@@ -71,6 +69,7 @@ public:
   }
 };
 
+/*
 class ParticleLargeFactory : public ParticleFactory
 {
 
@@ -90,7 +89,7 @@ public:
     return new ParticleHeavyGas();
   }
 };
-
+*/
 class ParticleTypeFactory
 {
 
@@ -99,8 +98,8 @@ private:
 
   Particle_TracerFactory Particle_TracerFactory;
   Particle_HeavyFactory Particle_HeavyFactory;
-  ParticleLargeFactory particleLargeFactory;
-  ParticleHeavyGasFactory particleHeavyGasFactory;
+  // ParticleLargeFactory particleLargeFactory;
+  // ParticleHeavyGasFactory particleHeavyGasFactory;
 
 public:
   ParticleTypeFactory();

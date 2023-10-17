@@ -43,8 +43,8 @@ ParticleTypeFactory::ParticleTypeFactory()
 
   RegisterParticles(ParticleType::tracer, &Particle_TracerFactory);
   RegisterParticles(ParticleType::heavy, &Particle_HeavyFactory);
-  RegisterParticles(ParticleType::large, &particleLargeFactory);
-  RegisterParticles(ParticleType::heavygas, &particleHeavyGasFactory);
+  // RegisterParticles(ParticleType::large, &particleLargeFactory);
+  // RegisterParticles(ParticleType::heavygas, &particleHeavyGasFactory);
 }
 
 void ParticleTypeFactory::RegisterParticles(const ParticleType &type, ParticleFactory *particleFactory)

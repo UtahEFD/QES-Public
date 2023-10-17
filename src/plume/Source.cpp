@@ -106,8 +106,6 @@ void ParseSource::setParticleType()
 
   parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticle_Tracer>("particle_Tracer"));
   parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticle_Heavy>("particle_Heavy"));
-  parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticleLarge>("particleLarge"));
-  parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticleHeavyGas>("particleHeavyGas"));
 
   if (protoParticle_tmp.empty()) {
     // std::cerr << "ERROR (SourceType::setParticleType): there was no input particle type!" << std::endl;

@@ -493,12 +493,6 @@ void Plume::getInputSources(PlumeInputData *PID)
     case ParticleType::heavy:
       allSources.push_back(new Source_HeavyParticles((int)allSources.size(), s));
       break;
-    case ParticleType::large:
-      exit(1);
-      break;
-    case ParticleType::heavygas:
-      exit(1);
-      break;
     default:
       exit(1);
     }
