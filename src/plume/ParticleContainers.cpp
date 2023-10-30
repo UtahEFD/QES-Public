@@ -37,13 +37,13 @@ int ParticleContainers::get_nbr_rogue() const
 {
   // now update the isRogueCount
   int isRogueCount = 0;
-  for (const auto &parItr : tracer->elements) {
-    if (parItr.isRogue) {
+  for (auto parItr = tracer->begin(); parItr != tracer->end(); ++parItr) {
+    if (parItr->isRogue) {
       isRogueCount = isRogueCount + 1;
     }
   }
-  for (const auto &parItr : heavy->elements) {
-    if (parItr.isRogue) {
+  for (auto parItr = heavy->begin(); parItr != heavy->end(); ++parItr) {
+    if (parItr->isRogue) {
       isRogueCount = isRogueCount + 1;
     }
   }

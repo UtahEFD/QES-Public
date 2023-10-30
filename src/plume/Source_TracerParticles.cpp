@@ -61,6 +61,8 @@ void Source_TracerParticles::emitParticles(const float &dt,
                                            particles->tracer->last_added()->zPos_init);
       particles->tracer->last_added()->tStrt = currTime;
       particles->tracer->last_added()->sourceIdx = sourceIdx;
+      particles->tracer->last_added()->m = sourceStrength / m_releaseType->m_numPar;
+
     }
     // emitted = (int)m_particleList->nbr_added();
   }

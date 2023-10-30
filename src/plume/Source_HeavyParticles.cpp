@@ -59,8 +59,10 @@ void Source_HeavyParticles::emitParticles(const float &dt,
       m_sourceGeometry->setInitialPosition(particles->heavy->last_added()->xPos_init,
                                            particles->heavy->last_added()->yPos_init,
                                            particles->heavy->last_added()->zPos_init);
+      m_protoParticle->setParticleParameters(particles->heavy->last_added());
       particles->heavy->last_added()->tStrt = currTime;
       particles->heavy->last_added()->sourceIdx = sourceIdx;
+      particles->heavy->last_added()->m = sourceStrength / m_releaseType->m_numPar;
     }
     // emitted = (int)m_particleList->nbr_added();
   }

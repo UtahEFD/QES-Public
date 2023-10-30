@@ -366,9 +366,9 @@ void PlumeOutput::boxCount()
 
   }// particle loop */
 
-  for (auto &par : m_plume->particles->tracer->elements) {
+  for (auto par = m_plume->particles->tracer->begin(); par != m_plume->particles->tracer->end(); ++par) {
     // because particles all start out as active now, need to also check the release time
-    if (par.isActive) {
+    if (par->isActive) {
 
       // Calculate which collection box this particle is currently in.
       // The method is the same as the setInterp3Dindexing() function in the Eulerian class:
@@ -384,18 +384,18 @@ void PlumeOutput::boxCount()
       //  so particles go outside the box if their indices are at nx-2, not nx-1.
 
       // x-direction
-      int idx = floor((par.xPos - lBndx) / (boxSizeX + 1e-9));
+      int idx = floor((par->xPos - lBndx) / (boxSizeX + 1e-9));
       // y-direction
-      int idy = floor((par.yPos - lBndy) / (boxSizeY + 1e-9));
+      int idy = floor((par->yPos - lBndy) / (boxSizeY + 1e-9));
       // z-direction
-      int idz = floor((par.zPos - lBndz) / (boxSizeZ + 1e-9));
+      int idz = floor((par->zPos - lBndz) / (boxSizeZ + 1e-9));
 
       // now, does the particle land in one of the boxes?
       // if so, add one particle to that box count
       if (idx >= 0 && idx <= nBoxesX - 1 && idy >= 0 && idy <= nBoxesY - 1 && idz >= 0 && idz <= nBoxesZ - 1) {
         int id = idz * nBoxesY * nBoxesX + idy * nBoxesX + idx;
         pBox[id]++;
-        conc[id] = conc[id] + par.m * par.wdecay * timeStep;
+        conc[id] = conc[id] + par->m * par->wdecay * timeStep;
       }
 
     }// is active == true
