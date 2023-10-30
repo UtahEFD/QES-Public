@@ -40,11 +40,15 @@
 template<class T>
 class ManagedContainer
 {
-private:
+protected:
   // size_t nbr_used = 0;
   size_t nbr_inserted = 0;
+
+  std::vector<T> elements;
+  std::vector<size_t> added;
   std::queue<size_t> available;
 
+private:
   size_t scrub_elements()
   {
     size_t nbr_used = 0;
@@ -62,9 +66,6 @@ private:
   }
 
 public:
-  std::vector<T> elements;
-  std::vector<size_t> added;
-
   ManagedContainer() = default;
   explicit ManagedContainer(size_t n) : elements(n)
   {
@@ -91,6 +92,25 @@ public:
   {
     return &elements[added.back()];
   }
+  T *get_added(const size_t k)
+  {
+    return &elements[added[k]];
+  }
+
+  T *get(const size_t k)
+  {
+    return &elements[k];
+  }
+
+  typename std::vector<T>::iterator begin()
+  {
+    return elements.begin();
+  }
+
+  typename std::vector<T>::iterator end()
+  {
+    return elements.end();
+  }
 
   bool check_size(const int &needed)
   {
@@ -103,7 +123,6 @@ public:
     size_t elements_size = elements.size();
     if (elements_size < nbr_used + new_part) {
       elements.resize(elements_size + new_part);
-      // scrub_elements();
       for (size_t it = elements_size; it < elements.size(); ++it) {
         available.push(it);
       }

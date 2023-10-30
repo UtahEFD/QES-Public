@@ -7,14 +7,39 @@
 #include <iostream>
 #include <vector>
 #include <queue>
+#include <unordered_map>
 
 #include "Particle.hpp"
 #include "Particle_Tracer.hpp"
 #include "Particle_Heavy.hpp"
 
+#include "util/ManagedContainer.h"
+
+
+class ParticleManager
+{
+public:
+  virtual Particle *at(size_t) = 0;
+};
+
+class TracerManager : public ManagedContainer<Particle_Tracer>
+  , public ParticleManager
+{
+public:
+  Particle *at(size_t k)
+  {
+    return &elements[k];
+  }
+
+private:
+};
+
+
 class ParticleBuffer
 {
 public:
+  std::unordered_map<ParticleType, ParticleManager *, std::hash<int>> particles;
+
   std::vector<Particle_Tracer> buffer;
   std::queue<size_t> available;
 
@@ -24,6 +49,11 @@ public:
   ParticleBuffer() = default;
   ParticleBuffer(size_t n)
   {
+    particles[ParticleType::tracer] = new TracerManager();
+
+    for (auto pt : particles) {
+      pt.second->at(1);
+    }
     buffer.resize(n);
     buffer_size = n;
     for (size_t k = 0; k < n; ++k)

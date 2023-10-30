@@ -80,6 +80,7 @@
 #include "Source_TracerParticles.h"
 #include "Source_HeavyParticles.h"
 
+#include "ParticleManager.h"
 
 class Plume
 {

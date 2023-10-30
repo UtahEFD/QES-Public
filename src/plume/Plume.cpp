@@ -299,7 +299,7 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
 // call to the main particle adection function (in separate file: AdvectParticle.cpp)
 #pragma omp parallel for default(none) shared(WGD, TGD, timeRemainder)
     for (auto k = 0u; k < particles->tracer->size(); ++k) {
-      advectParticle(timeRemainder, &particles->tracer->elements[k], boxSizeZ, WGD, TGD);
+      advectParticle(timeRemainder, particles->tracer->get(k), boxSizeZ, WGD, TGD);
     }//  END OF OPENMP WORK SHARE
 #else
     for (auto &parItr : particleList) {
@@ -320,14 +320,14 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
     }
   }*/
 
-    for (auto &parItr : particles->tracer->elements) {
-      if (parItr.dep_buffer_flag) {
-        for (auto n = 0u; n < parItr.dep_buffer_cell.size(); ++n) {
-          deposition->depcvol[parItr.dep_buffer_cell[n]] += parItr.dep_buffer_val[n];
+    for (auto parItr = particles->tracer->begin(); parItr != particles->tracer->end(); ++parItr) {
+      if (parItr->dep_buffer_flag) {
+        for (auto n = 0u; n < parItr->dep_buffer_cell.size(); ++n) {
+          deposition->depcvol[parItr->dep_buffer_cell[n]] += parItr->dep_buffer_val[n];
         }
-        parItr.dep_buffer_flag = false;
-        parItr.dep_buffer_cell.clear();
-        parItr.dep_buffer_val.clear();
+        parItr->dep_buffer_flag = false;
+        parItr->dep_buffer_cell.clear();
+        parItr->dep_buffer_val.clear();
       }
     }
 
@@ -518,14 +518,14 @@ void Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBG
   }
 
 #pragma omp parallel for default(none) shared(WGD, TGD)
-  for (auto k = 0u; k < particles->tracer->added.size(); ++k) {
+  for (auto k = 0u; k < particles->tracer->get_nbr_added(); ++k) {
     // set particle ID (use global particle counter)
-    setParticle(WGD, TGD, &particles->tracer->elements[particles->tracer->added[k]]);
+    setParticle(WGD, TGD, particles->tracer->get_added(k));
   }
 #pragma omp parallel for default(none) shared(WGD, TGD)
-  for (auto k = 0u; k < particles->heavy->added.size(); ++k) {
+  for (auto k = 0u; k < particles->heavy->get_nbr_added(); ++k) {
     // set particle ID (use global particle counter)
-    setParticle(WGD, TGD, &particles->heavy->elements[particles->heavy->added[k]]);
+    setParticle(WGD, TGD, particles->heavy->get_added(k));
   }
 }
 
