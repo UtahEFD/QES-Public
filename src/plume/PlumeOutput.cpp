@@ -328,11 +328,10 @@ void PlumeOutput::save(QEStime timeIn)
 void PlumeOutput::boxCount()
 {
 
-  // for all particles see where they are relative to the
-  // concentration collection boxes
-  /*for (auto parItr = m_plume->particleList.begin(); parItr != m_plume->particleList.end(); parItr++) {
+  // for all particles see where they are relative to the concentration collection boxes
+  for (auto &par : *m_plume->particles->tracer) {
     // because particles all start out as active now, need to also check the release time
-    if ((*parItr)->isActive) {
+    if (par.isActive) {
 
       // Calculate which collection box this particle is currently in.
       // The method is the same as the setInterp3Dindexing() function in the Eulerian class:
@@ -348,57 +347,40 @@ void PlumeOutput::boxCount()
       //  so particles go outside the box if their indices are at nx-2, not nx-1.
 
       // x-direction
-      int idx = floor(((*parItr)->xPos - lBndx) / (boxSizeX + 1e-9));
+      int idx = floor((par.xPos - lBndx) / (boxSizeX + 1e-9));
       // y-direction
-      int idy = floor(((*parItr)->yPos - lBndy) / (boxSizeY + 1e-9));
+      int idy = floor((par.yPos - lBndy) / (boxSizeY + 1e-9));
       // z-direction
-      int idz = floor(((*parItr)->zPos - lBndz) / (boxSizeZ + 1e-9));
+      int idz = floor((par.zPos - lBndz) / (boxSizeZ + 1e-9));
 
       // now, does the particle land in one of the boxes?
       // if so, add one particle to that box count
       if (idx >= 0 && idx <= nBoxesX - 1 && idy >= 0 && idy <= nBoxesY - 1 && idz >= 0 && idz <= nBoxesZ - 1) {
         int id = idz * nBoxesY * nBoxesX + idy * nBoxesX + idx;
         pBox[id]++;
-        conc[id] = conc[id] + (*parItr)->m * (*parItr)->wdecay * timeStep;
+        conc[id] = conc[id] + par.m * par.wdecay * timeStep;
       }
 
     }// is active == true
 
-  }// particle loop */
+  }// particle loop
 
-  for (auto par = m_plume->particles->tracer->begin(); par != m_plume->particles->tracer->end(); ++par) {
+  for (auto &par : *m_plume->particles->heavy) {
     // because particles all start out as active now, need to also check the release time
-    if (par->isActive) {
-
-      // Calculate which collection box this particle is currently in.
-      // The method is the same as the setInterp3Dindexing() function in the Eulerian class:
-      //  Correct the particle position by the bounding box starting edge
-      //  then divide by the dx of the boxes plus a small number, running a floor function on the result
-      //  to get the index of the nearest concentration box node in the negative direction.
-      //  No need to calculate the fractional distance between nearest nodes since not interpolating.
-      // Because the particle position is offset by the bounding box starting edge,
-      //  particles in a spot to the left of the box will have a negative index
-      //  and particles in a spot to the right of the box will have an index greater than the number of boxes.
-      // Because dividing is not just the box size, but is the box size plus a really small number,
-      //  particles are considered in a box if they are on the left hand node to the right hand node
-      //  so particles go outside the box if their indices are at nx-2, not nx-1.
-
+    if (par.isActive) {
       // x-direction
-      int idx = floor((par->xPos - lBndx) / (boxSizeX + 1e-9));
+      int idx = floor((par.xPos - lBndx) / (boxSizeX + 1e-9));
       // y-direction
-      int idy = floor((par->yPos - lBndy) / (boxSizeY + 1e-9));
+      int idy = floor((par.yPos - lBndy) / (boxSizeY + 1e-9));
       // z-direction
-      int idz = floor((par->zPos - lBndz) / (boxSizeZ + 1e-9));
+      int idz = floor((par.zPos - lBndz) / (boxSizeZ + 1e-9));
 
       // now, does the particle land in one of the boxes?
-      // if so, add one particle to that box count
       if (idx >= 0 && idx <= nBoxesX - 1 && idy >= 0 && idy <= nBoxesY - 1 && idz >= 0 && idz <= nBoxesZ - 1) {
         int id = idz * nBoxesY * nBoxesX + idy * nBoxesX + idx;
         pBox[id]++;
-        conc[id] = conc[id] + par->m * par->wdecay * timeStep;
+        conc[id] = conc[id] + par.m * par.wdecay * timeStep;
       }
-
     }// is active == true
-
   }// particle loop
 }

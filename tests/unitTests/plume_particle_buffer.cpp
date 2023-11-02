@@ -110,11 +110,11 @@ TEST_CASE("buffer", "[in progress]")
     for (int pidx = 0; pidx < 1000; ++pidx) {
       tracers.insert();
     }
-    for (auto p = tracers.begin(); p != tracers.end(); ++p) {
+    for (auto &tracer : tracers) {
       float t = drand48();
-      advect(&*p);
+      advect(&tracer);
       if (t > 0.8)
-        p->isActive = false;
+        tracer.isActive = false;
     }
   }
 
@@ -139,11 +139,11 @@ TEST_CASE("buffer large", "[in progress]")
     for (int pidx = 0; pidx < 1000; ++pidx) {
       tracers.insert();
     }
-    for (auto p = tracers.begin(); p != tracers.end(); ++p) {
+    for (auto &tracer : tracers) {
       float t = drand48();
-      advect(&*p);
+      advect(&tracer);
       if (t > 0.8)
-        p->isActive = false;
+        tracer.isActive = false;
     }
   }
 

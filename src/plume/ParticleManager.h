@@ -16,22 +16,47 @@
 #include "util/ManagedContainer.h"
 
 
-class ParticleManager
+struct ParticleManager
 {
 public:
-  virtual Particle *at(size_t) = 0;
+  virtual int get_nbr_rogue() = 0;
+  virtual int get_nbr_active() = 0;
+  virtual int get_nbr_inserted() = 0;
+  // virtual void prepare(const int &) = 0;
+  virtual void sweep(const int &new_part) = 0;
 };
 
-class TracerManager : public ManagedContainer<Particle_Tracer>
-  , public ParticleManager
+class TracerManager : public ParticleManager
 {
 public:
-  Particle *at(size_t k)
+  TracerManager() = default;
+
+  int get_nbr_active()
   {
-    return &elements[k];
+    return tracers.get_nbr_active();
+  }
+  int get_nbr_inserted()
+  {
+    return tracers.get_nbr_inserted();
+  }
+  int get_nbr_rogue()
+  {
+    // now update the isRogueCount
+    int isRogueCount = 0;
+    for (auto parItr = tracers.begin(); parItr != tracers.end(); ++parItr) {
+      if (parItr->isRogue) {
+        isRogueCount = isRogueCount + 1;
+      }
+    }
+    return isRogueCount;
+  }
+  void sweep(const int &new_part)
+  {
+    tracers.sweep(new_part);
   }
 
 private:
+  ManagedContainer<Particle_Tracer> tracers;
 };
 
 
@@ -52,7 +77,7 @@ public:
     particles[ParticleType::tracer] = new TracerManager();
 
     for (auto pt : particles) {
-      pt.second->at(1);
+      // pt.second->at(1);
     }
     buffer.resize(n);
     buffer_size = n;
