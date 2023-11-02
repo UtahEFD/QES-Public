@@ -74,7 +74,6 @@ public:
   }
   ~ManagedContainer() = default;
 
-  size_t front() { return available.front(); }
   size_t size() { return elements.size(); }
   size_t get_nbr_added() { return added.size(); }
   size_t get_nbr_inserted() { return nbr_inserted; }
@@ -88,34 +87,14 @@ public:
     return nbr_used;
   }
 
-  T *last_added()
-  {
-    return &elements[added.back()];
-  }
-  T *get_added(const size_t k)
-  {
-    return &elements[added[k]];
-  }
+  T *last_added() { return &elements[added.back()]; }
+  T *get_added(const size_t k) { return &elements[added[k]]; }
+  T *get(const size_t k) { return &elements[k]; }
 
-  T *get(const size_t k)
-  {
-    return &elements[k];
-  }
+  typename std::vector<T>::iterator begin() { return elements.begin(); }
+  typename std::vector<T>::iterator end() { return elements.end(); }
 
-  typename std::vector<T>::iterator begin()
-  {
-    return elements.begin();
-  }
-
-  typename std::vector<T>::iterator end()
-  {
-    return elements.end();
-  }
-
-  bool check_size(const int &needed)
-  {
-    return needed <= available.size();
-  }
+  bool check_size(const int &needed) { return needed <= available.size(); }
 
   void sweep(const int &new_part)
   {

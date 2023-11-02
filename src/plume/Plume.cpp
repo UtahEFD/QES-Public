@@ -301,6 +301,11 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
     for (auto k = 0u; k < particles->tracer->size(); ++k) {
       advectParticle(timeRemainder, particles->tracer->get(k), boxSizeZ, WGD, TGD);
     }//  END OF OPENMP WORK SHARE
+
+#pragma omp parallel for default(none) shared(WGD, TGD, timeRemainder)
+    for (auto k = 0u; k < particles->heavy->size(); ++k) {
+      advectParticle(timeRemainder, particles->heavy->get(k), boxSizeZ, WGD, TGD);
+    }//  END OF OPENMP WORK SHARE
 #else
     for (auto &parItr : particleList) {
       //  call to the main particle adection function (in separate file: AdvectParticle.cpp)
@@ -320,14 +325,24 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
     }
   }*/
 
-    for (auto parItr = particles->tracer->begin(); parItr != particles->tracer->end(); ++parItr) {
-      if (parItr->dep_buffer_flag) {
-        for (auto n = 0u; n < parItr->dep_buffer_cell.size(); ++n) {
-          deposition->depcvol[parItr->dep_buffer_cell[n]] += parItr->dep_buffer_val[n];
+    for (auto & parItr : *particles->tracer) {
+      if (parItr.dep_buffer_flag) {
+        for (auto n = 0u; n < parItr.dep_buffer_cell.size(); ++n) {
+          deposition->depcvol[parItr.dep_buffer_cell[n]] += parItr.dep_buffer_val[n];
         }
-        parItr->dep_buffer_flag = false;
-        parItr->dep_buffer_cell.clear();
-        parItr->dep_buffer_val.clear();
+        parItr.dep_buffer_flag = false;
+        parItr.dep_buffer_cell.clear();
+        parItr.dep_buffer_val.clear();
+      }
+    }
+    for (auto & parItr : *particles->heavy) {
+      if (parItr.dep_buffer_flag) {
+        for (auto n = 0u; n < parItr.dep_buffer_cell.size(); ++n) {
+          deposition->depcvol[parItr.dep_buffer_cell[n]] += parItr.dep_buffer_val[n];
+        }
+        parItr.dep_buffer_flag = false;
+        parItr.dep_buffer_cell.clear();
+        parItr.dep_buffer_val.clear();
       }
     }
 

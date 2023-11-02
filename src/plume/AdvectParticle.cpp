@@ -48,10 +48,9 @@ void Plume::advectParticle(double timeRemainder, Particle *par_ptr, double boxSi
   // settling velocity
   double vs = 0;
 
-
   if (par_ptr->d > 0.0 && par_ptr->rho > rhoAir) {
     //  dimensionless grain diameter
-    double dstar = (1.0E-6)*par_ptr->d * pow(9.81 / pow(nuAir, 2.0) * (par_ptr->rho / rhoAir - 1.), 1.0 / 3.0);
+    double dstar = (1.0E-6) * par_ptr->d * pow(9.81 / pow(nuAir, 2.0) * (par_ptr->rho / rhoAir - 1.), 1.0 / 3.0);
     // drag coefficent
     double Cd = (432.0 / pow(dstar, 3.0)) * pow(1.0 + 0.022 * pow(dstar, 3.0), 0.54)
                 + 0.47 * (1.0 - exp(-0.15 * pow(dstar, 0.45)));
