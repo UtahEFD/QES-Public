@@ -28,7 +28,7 @@
   <sourceParameters>
     <source>
       <releaseType_continuous>
-        <parPerTimestep> 400 </parPerTimestep>
+        <particlePerTimestep> 400 </particlePerTimestep>
       </releaseType_continuous>
       <sourceGeometry_Point>
         <posX> 20.0 </posX>

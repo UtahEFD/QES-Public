@@ -60,10 +60,10 @@ protected:
 public:
   // Description variable for source release type.
   // set by the constructor of the derived classes.
-  ParticleReleaseType parReleaseType;
+  ParticleReleaseType parReleaseType{};
 
   // Number of particles to release each timestep
-  int m_parPerTimestep = -1;
+  int m_particlePerTimestep = -1;
   // Time the source starts releasing particles
   double m_releaseStartTime = -1.0;
   // Time the source ends releasing particles
@@ -71,6 +71,12 @@ public:
   // Total number of particles expected to be released by the source over
   // the entire simulation
   int m_numPar = -1;
+  // Total mass to be released [g]
+  double m_totalMass = 0.0;
+  // Mass [g/s] to be released
+  double m_massPerSec = 0.0;
+  // Mass per particle
+  double m_massPerParticle = 0.0;
 
   explicit ReleaseType(const ParticleReleaseType &type) : parReleaseType(type)
   {
@@ -90,7 +96,7 @@ public:
   virtual void parseValues() = 0;
 
 
-  // this function is for setting the required inherited variables int m_parPerTimestep, double m_releaseStartTime,
+  // this function is for setting the required inherited variables int m_particlePerTimestep, double m_releaseStartTime,
   //  double m_releaseEndTime, and m_numPar. The way this is done differs for each release type inheriting from this class.
   // Note that this is a pure virtual function - enforces that the derived class MUST define this function
   //  this is done by the = 0 at the end of the function.
@@ -124,9 +130,9 @@ public:
   //  !!! Care should be taken to use nReleaseTimes = std::ceil(releaseDur/dt) each instance to get the correct number of times particles should be released.
   virtual void checkReleaseInfo(const double &timestep, const double &simDur)
   {
-    if (m_parPerTimestep <= 0) {
-      std::cerr << "ERROR (ReleaseType::checkReleaseInfo): input m_parPerTimestep is <= 0!";
-      std::cerr << " m_parPerTimestep = \"" << m_parPerTimestep << "\"" << std::endl;
+    if (m_particlePerTimestep <= 0) {
+      std::cerr << "ERROR (ReleaseType::checkReleaseInfo): input m_particlePerTimestep is <= 0!";
+      std::cerr << " m_particlePerTimestep = \"" << m_particlePerTimestep << "\"" << std::endl;
       exit(1);
     }
     if (m_releaseStartTime < 0) {
@@ -154,9 +160,9 @@ public:
         std::cerr << " m_releaseStartTime = \"" << m_releaseStartTime << "\", m_releaseEndTime = \"" << m_releaseEndTime << "\"" << std::endl;
         exit(1);
       }
-      if (m_numPar != m_parPerTimestep) {
-        std::cerr << "ERROR (ReleaseType::checkReleaseInfo): input ParticleReleaseType is instantaneous but input m_numPar does not equal input m_parPerTimestep!";
-        std::cerr << " m_numPar = \"" << m_numPar << "\", m_parPerTimestep = \"" << m_parPerTimestep << "\"" << std::endl;
+      if (m_numPar != m_particlePerTimestep) {
+        std::cerr << "ERROR (ReleaseType::checkReleaseInfo): input ParticleReleaseType is instantaneous but input m_numPar does not equal input m_particlePerTimestep!";
+        std::cerr << " m_numPar = \"" << m_numPar << "\", m_particlePerTimestep = \"" << m_particlePerTimestep << "\"" << std::endl;
         exit(1);
       }
     } else {
@@ -169,9 +175,9 @@ public:
                   << "\", timestep = \"" << timestep << "\"" << std::endl;
         exit(1);
       }
-      if (m_parPerTimestep * nReleaseTimes != m_numPar) {
+      if (m_particlePerTimestep * nReleaseTimes != m_numPar) {
         std::cerr << "ERROR (ReleaseType::checkReleaseInfo): calculated particles for release does not match input m_numPar!";
-        std::cerr << " m_parPerTimestep = \"" << m_parPerTimestep << "\", nReleaseTimes = \"" << nReleaseTimes
+        std::cerr << " m_particlePerTimestep = \"" << m_particlePerTimestep << "\", nReleaseTimes = \"" << nReleaseTimes
                   << "\", m_numPar = \"" << m_numPar << "\"" << std::endl;
         exit(1);
       }

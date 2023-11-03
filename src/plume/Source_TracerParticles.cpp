@@ -36,7 +36,7 @@
 int Source_TracerParticles::getNewParticleNumber(const float &dt, const float &currTime)
 {
   if (currTime >= m_releaseType->m_releaseStartTime && currTime <= m_releaseType->m_releaseEndTime) {
-    return m_releaseType->m_parPerTimestep;
+    return m_releaseType->m_particlePerTimestep;
   } else {
     return 0;
   }
@@ -48,11 +48,11 @@ void Source_TracerParticles::emitParticles(const float &dt,
 {
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_releaseType->m_releaseStartTime && currTime <= m_releaseType->m_releaseEndTime) {
-    if (!particles->tracer->check_size(m_releaseType->m_parPerTimestep)) {
+    if (!particles->tracer->check_size(m_releaseType->m_particlePerTimestep)) {
       std::cerr << "[ERROR] particle container hill formed (not enough space)" << std::endl;
       exit(1);
     }
-    for (int pidx = 0; pidx < m_releaseType->m_parPerTimestep; ++pidx) {
+    for (int pidx = 0; pidx < m_releaseType->m_particlePerTimestep; ++pidx) {
       // Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
       // m_protoParticle->setParticleParameters(cPar);
       particles->tracer->insert();
@@ -61,8 +61,6 @@ void Source_TracerParticles::emitParticles(const float &dt,
                                            particles->tracer->last_added()->zPos_init);
       particles->tracer->last_added()->tStrt = currTime;
       particles->tracer->last_added()->sourceIdx = sourceIdx;
-      particles->tracer->last_added()->m = sourceStrength / m_releaseType->m_numPar;
-
     }
     // emitted = (int)m_particleList->nbr_added();
   }

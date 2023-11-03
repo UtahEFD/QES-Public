@@ -51,7 +51,6 @@ private:
   double m_maxX = -1.0;
   double m_maxY = -1.0;
   double m_maxZ = -1.0;
-  double sourceStrength = 0.0;// total mass released (g)
 
   std::random_device rd;// Will be used to obtain a seed for the random number engine
   std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
@@ -77,8 +76,6 @@ public:
     parsePrimitive<double>(true, m_maxX, "maxX");
     parsePrimitive<double>(true, m_maxY, "maxY");
     parsePrimitive<double>(true, m_maxZ, "maxZ");
-
-    parsePrimitive<double>(false, sourceStrength, "sourceStrength");
   }
 
 

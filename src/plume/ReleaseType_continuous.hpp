@@ -43,7 +43,7 @@ class ReleaseType_continuous : public ReleaseType
 {
 private:
   // note that this also inherits data members:
-  // ParticleReleaseType m_rType, int m_parPerTimestep, double m_releaseStartTime,
+  // ParticleReleaseType m_rType, int m_particlePerTimestep, double m_releaseStartTime,
   //  double m_releaseEndTime, and int m_numPar from ReleaseType.
   // guidelines for how to set these variables within an inherited ReleaseType are given in ReleaseType.hpp.
 
@@ -60,9 +60,8 @@ public:
 
   void parseValues() override
   {
-    int parPerTimestep;
-    parsePrimitive<int>(true, parPerTimestep, "parPerTimestep");
-    m_parPerTimestep = parPerTimestep;
+    parsePrimitive<int>(true, m_particlePerTimestep, "particlePerTimestep");
+    parsePrimitive<double>(false, m_massPerSec, "massPerSec");
   }
 
 
@@ -72,6 +71,7 @@ public:
     m_releaseStartTime = 0;
     m_releaseEndTime = simDur;
     int nReleaseTimes = std::ceil(simDur / timestep);
-    m_numPar = m_parPerTimestep * nReleaseTimes;
+    m_numPar = m_particlePerTimestep * nReleaseTimes;
+    m_massPerParticle = m_massPerSec / (m_particlePerTimestep / timestep);
   }
 };

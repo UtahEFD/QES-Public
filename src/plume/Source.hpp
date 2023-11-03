@@ -74,8 +74,6 @@ protected:
   SourceGeometry *m_sourceGeometry{};
   ReleaseType *m_releaseType{};
 
-  double sourceStrength = 0.0;// total mass released (g)
-
 public:
   // this is the index of the source in the dispersion class overall list of sources
   // this is used to set the source ID for a given particle, to know from which source each particle comes from
@@ -142,8 +140,6 @@ public:
   //  This is in addition to any other variables required for an individual source that inherits from this class.
   void parseValues() override
   {
-    parsePrimitive<double>(false, sourceStrength, "sourceStrength");
-
     setReleaseType();
     setParticleType();
     setSourceGeometry();
@@ -181,7 +177,6 @@ protected:
   SourceGeometry *m_sourceGeometry{};
   ReleaseType *m_releaseType{};
 
-  double sourceStrength = 0.0;// total mass released (g)
 public:
   // this is the index of the source in the dispersion class overall list of sources
   // this is used to set the source ID for a given particle, to know from which source each particle comes from
@@ -220,7 +215,6 @@ public:
   Source(const int &sidx, const ParseSource *in)
   {
     sourceIdx = sidx;
-    sourceStrength = in->sourceStrength;// total mass released (g)
 
     m_protoParticle = in->m_protoParticle;
     m_sourceGeometry = in->m_sourceGeometry;

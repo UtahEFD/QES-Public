@@ -42,7 +42,7 @@
 class ReleaseType_duration : public ReleaseType
 {
 private:
-  // note that this also inherits data members ParticleReleaseType m_rType, int m_parPerTimestep, double m_releaseStartTime,
+  // note that this also inherits data members ParticleReleaseType m_rType, int m_particlePerTimestep, double m_releaseStartTime,
   //  double m_releaseEndTime, and int m_numPar from ReleaseType.
   // guidelines for how to set these variables within an inherited ReleaseType are given in ReleaseType.hpp.
 
@@ -60,7 +60,9 @@ public:
   {
     parsePrimitive<double>(true, m_releaseStartTime, "releaseStartTime");
     parsePrimitive<double>(true, m_releaseEndTime, "releaseEndTime");
-    parsePrimitive<int>(true, m_parPerTimestep, "parPerTimestep");
+    parsePrimitive<int>(true, m_particlePerTimestep, "particlePerTimestep");
+    parsePrimitive<double>(false, m_totalMass, "totalMass");
+    parsePrimitive<double>(false, m_massPerSec, "massPerSec");
   }
 
 
@@ -73,6 +75,16 @@ public:
       exit(1);
     }
     int nReleaseTimes = std::ceil(releaseDur / timestep);
-    m_numPar = m_parPerTimestep * nReleaseTimes;
+    m_numPar = m_particlePerTimestep * nReleaseTimes;
+    if (m_totalMass != 0.0 && m_massPerSec != 0.0) {
+      std::cerr << "[ERROR]" << std::endl;
+      exit(1);
+    } else if (m_totalMass != 0.0) {
+      m_massPerParticle = m_totalMass / m_numPar;
+    } else if (m_massPerSec != 0.0) {
+      m_massPerParticle = m_massPerSec / (m_particlePerTimestep / timestep);
+    } else {
+      m_massPerParticle = 0.0;
+    }
   }
 };
