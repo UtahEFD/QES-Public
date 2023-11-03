@@ -27,15 +27,15 @@
   </collectionParameters>
   <sourceParameters>
     <source>
-      <souceStrength> 5 </souceStrength>
-      <particleSmall>
+      <particle_Heavy>
         <particleDensity> 2.0 </particleDensity>
         <particleDiameter> 5 </particleDiameter>
         <depositionFlag>false</depositionFlag>
         <decayConst> 0.0 </decayConst>
-      </particleSmall>
+      </particle_Heavy>
       <releaseType_continuous>
-        <parPerTimestep> 100 </parPerTimestep>
+        <massPerSec> 5 </massPerSec>
+        <particlePerTimestep> 100 </particlePerTimestep>
       </releaseType_continuous>
       <sourceGeometry_Line>
         <posX_0> 20.0 </posX_0>

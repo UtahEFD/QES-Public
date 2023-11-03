@@ -30,7 +30,7 @@
       <particleTraces>
       </particleTraces>
       <releaseType_continuous>
-        <parPerTimestep> 100 </parPerTimestep>
+        <particlePerTimestep> 100 </particlePerTimestep>
       </releaseType_continuous>
       <sourceGeometry_Point>
         <posX> 20.0 </posX>

@@ -52,7 +52,7 @@ private:
   double posX_1 = -1.0;
   double posY_1 = -1.0;
   double posZ_1 = -1.0;
-  double sourceStrength = 0.0;// total mass released (g)
+
 protected:
 public:
   // Default constructor
@@ -71,8 +71,6 @@ public:
     parsePrimitive<double>(true, posX_1, "posX_1");
     parsePrimitive<double>(true, posY_1, "posY_1");
     parsePrimitive<double>(true, posZ_1, "posZ_1");
-
-    parsePrimitive<double>(false, sourceStrength, "sourceStrength");
   }
 
 
