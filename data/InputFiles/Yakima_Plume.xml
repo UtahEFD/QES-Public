@@ -1,0 +1,54 @@
+<QESPlumeParameters>
+  <plumeParameters>
+    <CourantNumber> 0.25 </CourantNumber>
+    <simDur> 8100.0 </simDur><!-- this is the amount of time to run the simulation -->
+    <timeStep> 10.0 </timeStep><!-- this is the overall integration timestep -->
+    <invarianceTol> 1e-5 </invarianceTol>     <!-- tolerance in makeRealizeable on the stress tensor -->
+    <interpolationMethod>triLinear</interpolationMethod> 
+    <updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop> <!-- Only used in debug mode. -->
+    <updateFrequency_timeLoop> 60 </updateFrequency_timeLoop> <!-- frequency to print out information during the time integration loop of the solver -->
+  </plumeParameters>
+  <collectionParameters><!-- collecting output parameters -->
+    <timeAvgStart> 000.0 </timeAvgStart>   <!-- time to start concentration averaging -->
+    <timeAvgFreq> 60.0 </timeAvgFreq>   <!-- time averaging frequency and output frequency -->
+    <boxBoundsX1> 0 </boxBoundsX1>
+    <boxBoundsX2> 70000 </boxBoundsX2>
+    <boxBoundsY1> 0 </boxBoundsY1>
+    <boxBoundsY2> 80000 </boxBoundsY2>
+    <boxBoundsZ1> 0.0 </boxBoundsZ1>
+    <boxBoundsZ2> 1600 </boxBoundsZ2>
+    <nBoxesX> 700 </nBoxesX>
+    <nBoxesY> 800 </nBoxesY>
+    <nBoxesZ> 320 </nBoxesZ>
+  </collectionParameters>
+  <sources>
+    <numSources> 2 </numSources>
+    <SourcePoint>
+      <ReleaseType_duration>
+	<ReleaseEndTime> 0 </ReleaseEndTime>
+	<ReleaseEndTime> 8100 </ReleaseEndTime>
+	<parPerTimestep> 500 </parPerTimestep>
+      </ReleaseType_duration>
+      <posX> 20000 </posX>
+      <posY> 40000 </posY>
+      <posZ> 8. </posZ>
+    </SourcePoint>
+    <SourcePoint>
+      <ReleaseType_duration>
+	<ReleaseEndTime> 2000 </ReleaseEndTime>
+	<ReleaseEndTime> 8100 </ReleaseEndTime>
+	<parPerTimestep> 1000 </parPerTimestep>
+      </ReleaseType_duration>
+      <posX> 50000 </posX>
+      <posY> 40000 </posY>
+      <posZ> 8. </posZ>
+    </SourcePoint>
+  </sources>
+  <boundaryConditions>
+    <xBCtype>exiting</xBCtype>
+    <yBCtype>exiting</yBCtype>
+    <zBCtype>exiting</zBCtype>
+    <wallReflection>stairstepReflection</wallReflection>  <!-- type of wall reflection: doNothing; setInactive; stairstepReflection -->
+    <doDepositions>false</doDepositions>
+  </boundaryConditions>
+</QESPlumeParameters>

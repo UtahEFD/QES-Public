@@ -28,7 +28,7 @@
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Sensor.cu */
+/** @file  */
 
 #include <cstdio>
 #include <iostream>
@@ -94,7 +94,7 @@ __global__ void Calculatewm(float *d_wm, float *d_wms, float *d_sum_wm, float *d
 }
 
 
-__global__ void CalculateInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_wu, float *d_sum_wv, float *d_u0, float *d_v0, float *d_w0, float *d_u_prof, float *d_v_prof, int *d_site_id, int *d_terrain_face_id, int *d_k_mod, int num_sites, int nx, int ny, int nz, float asl_percent, float abl_height, float *d_z, float *d_surf_layer_height)
+__global__ void CalculateInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_wu, float *d_sum_wv, float *d_u0, float *d_v0, float *d_w0, float *d_u_prof, float *d_v_prof, int *d_site_id, int *d_terrain_face_id, int *d_k_mod, int num_sites, int nx, int ny, int nz, float asl_percent, int *d_abl_height, float *d_z, float *d_surf_layer_height)
 {
 
   int ii = blockDim.x * blockIdx.x + threadIdx.x;
@@ -103,7 +103,7 @@ __global__ void CalculateInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_
 
   if ((i < nx) && (j < ny) && (i >= 0) && (j >= 0)) {
     for (int k = 1; k < nz - 1; k++) {
-      if (k + d_terrain_face_id[ii] - 1 < nz) {
+      if (k + d_terrain_face_id[ii] < nz) {
         d_k_mod[ii] = k + d_terrain_face_id[ii] - 1;
       } else {
         continue;
@@ -115,13 +115,13 @@ __global__ void CalculateInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_
 
       for (int id = 0; id < num_sites; id++) {
         // If the height difference between the terrain at the curent cell and sensor location is less than ABL height
-        if (abs(d_z[d_terrain_face_id[ii]] - d_z[d_terrain_face_id[d_site_id[id]]]) > abl_height) {
-          d_surf_layer_height[ii] = asl_percent * abl_height;
+        if (abs(d_z[d_terrain_face_id[ii]] - d_z[d_terrain_face_id[d_site_id[id]]]) > d_abl_height[id]) {
+          d_surf_layer_height[ii] = asl_percent * d_abl_height[id];
         } else {
-          d_surf_layer_height[ii] = asl_percent * (2 * abl_height - (d_z[d_terrain_face_id[ii]] - d_z[d_terrain_face_id[d_site_id[id]]]));
+          d_surf_layer_height[ii] = asl_percent * (2 * d_abl_height[id] - (d_z[d_terrain_face_id[ii]] - d_z[d_terrain_face_id[d_site_id[id]]]));
         }
         // If sum of z index and the terrain index at the sensor location is outside the domain
-        if (k + d_terrain_face_id[d_site_id[id]] - 1 > nz - 2) {
+        if (k + d_terrain_face_id[d_site_id[id]] - 1> nz - 2) {
           d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_u_prof[nz - 2 + id * nz];
           d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_v_prof[nz - 2 + id * nz];
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
@@ -132,10 +132,16 @@ __global__ void CalculateInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
         }// If height (above ground) is greater than ASL height and modified index is inside the domain
         else if (d_z[k] > d_surf_layer_height[ii] && k + d_terrain_face_id[d_site_id[id]] - 1 < nz && d_k_mod[ii] > k + d_terrain_face_id[d_site_id[id]] - 1) {
+	  if (abs(d_z[d_terrain_face_id[ii]] - d_z[d_terrain_face_id[d_site_id[id]]]) > d_abl_height[id] || d_z[k] + d_z[d_terrain_face_id[ii]] > d_z[d_terrain_face_id[d_site_id[id]]] + d_abl_height[id] ) {
+	    continue;
+	  }
           d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_u_prof[d_k_mod[ii] + id * nz];
           d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_v_prof[d_k_mod[ii] + id * nz];
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
         } else {
+	  if (abs(d_z[d_terrain_face_id[ii]] - d_z[d_terrain_face_id[d_site_id[id]]]) > d_abl_height[id] || d_z[k] + d_z[d_terrain_face_id[ii]] > d_z[d_terrain_face_id[d_site_id[id]]] + d_abl_height[id] ) {
+	    continue;
+	  }
           d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_u_prof[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz];
           d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_v_prof[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz];
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
@@ -185,7 +191,6 @@ __global__ void CalculateInit(float *d_site_xcoord, float *d_site_ycoord, float 
         d_v34[idx] = (1 - (d_dxx[ii] / dx)) * d_v0[index_work] + (d_dxx[ii] / dx) * d_v0[index_work + 1];
         d_v0_int[idx] = (d_dyy[ii] / dy) * d_v12[idx] + (1 - (d_dyy[ii] / dy)) * d_v34[idx];
       }
-
     } else {
       int id;
       for (int k = 1; k < nz; k++) {
@@ -203,7 +208,7 @@ __global__ void CalculateInit(float *d_site_xcoord, float *d_site_ycoord, float 
   }
 }
 
-__global__ void CorrectInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_wu, float *d_sum_wv, float *d_u0, float *d_v0, float *d_w0, float *d_u_prof, float *d_v_prof, float *d_u0_int, float *d_v0_int, int *d_site_id, int *d_terrain_face_id, int *d_k_mod, int num_sites, int nx, int ny, int nz, float asl_percent, float abl_height, float *d_z, float *d_surf_layer_height)
+__global__ void CorrectInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_wu, float *d_sum_wv, float *d_u0, float *d_v0, float *d_w0, float *d_u_prof, float *d_v_prof, float *d_u0_int, float *d_v0_int, int *d_site_id, int *d_terrain_face_id, int *d_k_mod, int num_sites, int nx, int ny, int nz, float asl_percent, int *d_abl_height, float *d_z, float *d_surf_layer_height)
 {
 
   int ii = blockDim.x * blockIdx.x + threadIdx.x;
@@ -212,7 +217,7 @@ __global__ void CorrectInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_wu
 
   if ((i < nx) && (j < ny) && (i >= 0) && (j >= 0)) {
     for (int k = 1; k < nz - 1; k++) {
-      if (k + d_terrain_face_id[ii] - 1 < nz) {
+      if (k + d_terrain_face_id[ii] < nz) {
         d_k_mod[ii] = k + d_terrain_face_id[ii] - 1;
       } else {
         continue;
@@ -224,10 +229,10 @@ __global__ void CorrectInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_wu
 
       for (int id = 0; id < num_sites; id++) {
         // If the height difference between the terrain at the curent cell and sensor location is less than ABL height
-        if (abs(d_z[d_terrain_face_id[ii]] - d_z[d_terrain_face_id[d_site_id[id]]]) > abl_height) {
-          d_surf_layer_height[ii] = asl_percent * abl_height;
+        if (abs(d_z[d_terrain_face_id[ii]] - d_z[d_terrain_face_id[d_site_id[id]]]) > d_abl_height[id]) {
+          d_surf_layer_height[ii] = asl_percent * d_abl_height[id];
         } else {
-          d_surf_layer_height[ii] = asl_percent * (2 * abl_height - (d_z[d_terrain_face_id[ii]] - d_z[d_terrain_face_id[d_site_id[id]]]));
+          d_surf_layer_height[ii] = asl_percent * (2 * d_abl_height[id] - (d_z[d_terrain_face_id[ii]] - d_z[d_terrain_face_id[d_site_id[id]]]));
         }
         // If sum of z index and the terrain index at the sensor location is outside the domain
         if (k + d_terrain_face_id[d_site_id[id]] - 1 > nz - 2) {
@@ -241,10 +246,16 @@ __global__ void CorrectInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_wu
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
         }// If height (above ground) is greater than ASL height and modified index is inside the domain
         else if (d_z[k] > d_surf_layer_height[ii] && k + d_terrain_face_id[d_site_id[id]] - 1 < nz && d_k_mod[ii] > k + d_terrain_face_id[d_site_id[id]] - 1) {
-          d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_u_prof[d_k_mod[ii] + id * nz] - d_u0_int[d_k_mod[ii] + id * nz]);
+	  if (abs(d_z[d_terrain_face_id[ii]] - d_z[d_terrain_face_id[d_site_id[id]]]) > d_abl_height[id] || d_z[k] + d_z[d_terrain_face_id[ii]] > d_z[d_terrain_face_id[d_site_id[id]]] + d_abl_height[id] ) {
+	    continue;
+	  }
+          d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_u_prof[d_k_mod[ii] + id * nz] - d_u0_int[d_k_mod[ii] + id * nz] );
           d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_v_prof[d_k_mod[ii] + id * nz] - d_v0_int[d_k_mod[ii] + id * nz]);
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
         } else {
+	  if (abs(d_z[d_terrain_face_id[ii]] - d_z[d_terrain_face_id[d_site_id[id]]]) > d_abl_height[id] || d_z[k] + d_z[d_terrain_face_id[ii]] > d_z[d_terrain_face_id[d_site_id[id]]] + d_abl_height[id] ) {
+	    continue;
+	  }
           d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_u_prof[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz] - d_u0_int[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz]);
           d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_v_prof[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz] - d_v0_int[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz]);
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
@@ -262,7 +273,7 @@ __global__ void CorrectInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_wu
 }
 
 
-__global__ void BarnesScheme(float *d_u_prof, float *d_v_prof, float *d_wm, float *d_wms, float *d_u0_int, float *d_v0_int, float *d_x, float *d_y, float *d_z, float *d_site_xcoord, float *d_site_ycoord, float *d_sum_wm, float *d_sum_wu, float *d_sum_wv, float *d_u0, float *d_v0, float *d_w0, int *d_iwork, int *d_jwork, int *d_site_id, int *d_terrain_face_id, int *d_k_mod, float *d_dxx, float *d_dyy, float *d_u12, float *d_u34, float *d_v12, float *d_v34, int num_sites, int nx, int ny, int nz, float dx, float dy, float asl_percent, float abl_height, float *d_surf_layer_height)
+__global__ void BarnesScheme(float *d_u_prof, float *d_v_prof, float *d_wm, float *d_wms, float *d_u0_int, float *d_v0_int, float *d_x, float *d_y, float *d_z, float *d_site_xcoord, float *d_site_ycoord, float *d_sum_wm, float *d_sum_wu, float *d_sum_wv, float *d_u0, float *d_v0, float *d_w0, int *d_iwork, int *d_jwork, int *d_site_id, int *d_terrain_face_id, int *d_k_mod, float *d_dxx, float *d_dyy, float *d_u12, float *d_u34, float *d_v12, float *d_v34, int num_sites, int nx, int ny, int nz, float dx, float dy, float asl_percent, int *d_abl_height, float *d_surf_layer_height)
 {
   float rc_sum, rc_val, xc, yc, rc;
   float dn, lamda, s_gamma;
@@ -292,7 +303,7 @@ __global__ void BarnesScheme(float *d_u_prof, float *d_v_prof, float *d_wm, floa
   dim3 numberOfThreadsPerBlock1(BLOCKSIZE, 1, 1);
   dim3 numberOfBlocks1(ceil((nx * ny) / (float)(BLOCKSIZE)), 1, 1);
 
-  CalculateInitialWind<<<numberOfBlocks1, numberOfThreadsPerBlock1>>>(d_wm, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_u_prof, d_v_prof, d_site_id, d_terrain_face_id, d_k_mod, num_sites, nx, ny, nz, asl_percent, abl_height, d_z, d_surf_layer_height);
+  CalculateInitialWind<<<numberOfBlocks1, numberOfThreadsPerBlock1>>>(d_wm, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_u_prof, d_v_prof, d_site_id, d_terrain_face_id, d_k_mod, num_sites, nx, ny, nz, asl_percent, d_abl_height, d_z, d_surf_layer_height);
   cudaDeviceSynchronize();
 
   dim3 numberOfThreadsPerBlock2(BLOCKSIZE, 1, 1);
@@ -301,7 +312,7 @@ __global__ void BarnesScheme(float *d_u_prof, float *d_v_prof, float *d_wm, floa
   CalculateInit<<<numberOfBlocks2, numberOfThreadsPerBlock2>>>(d_site_xcoord, d_site_ycoord, d_x, d_y, d_dxx, d_dyy, d_iwork, d_jwork, d_u12, d_u34, d_v12, d_v34, d_u0_int, d_v0_int, d_u0, d_v0, d_u_prof, d_v_prof, d_site_id, d_terrain_face_id, num_sites, dx, dy, nx, ny, nz);
   cudaDeviceSynchronize();
 
-  CorrectInitialWind<<<numberOfBlocks1, numberOfThreadsPerBlock1>>>(d_wm, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_u_prof, d_v_prof, d_u0_int, d_v0_int, d_site_id, d_terrain_face_id, d_k_mod, num_sites, nx, ny, nz, asl_percent, abl_height, d_z, d_surf_layer_height);
+  CorrectInitialWind<<<numberOfBlocks1, numberOfThreadsPerBlock1>>>(d_wm, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_u_prof, d_v_prof, d_u0_int, d_v0_int, d_site_id, d_terrain_face_id, d_k_mod, num_sites, nx, ny, nz, asl_percent, d_abl_height, d_z, d_surf_layer_height);
   cudaDeviceSynchronize();
 }
 
@@ -373,6 +384,7 @@ void WindProfilerBarnGPU::BarnesInterpolationGPU(const WINDSInputData *WID, WIND
   int *d_iwork, *d_jwork, *d_site_id;
   int *d_terrain_face_id, *d_k_mod;
   float *d_z, *d_surf_layer_height;
+  int *d_abl_height;
 
   cudaMalloc((void **)&d_u_prof, num_sites * WGD->nz * sizeof(float));
   cudaMalloc((void **)&d_v_prof, num_sites * WGD->nz * sizeof(float));
@@ -403,6 +415,7 @@ void WindProfilerBarnGPU::BarnesInterpolationGPU(const WINDSInputData *WID, WIND
   cudaMalloc((void **)&d_terrain_face_id, WGD->nx * WGD->ny * sizeof(int));
   cudaMalloc((void **)&d_k_mod, WGD->nx * WGD->ny * sizeof(int));
   cudaMalloc((void **)&d_surf_layer_height, WGD->nx * WGD->ny * sizeof(float));
+  cudaMalloc((void **)&d_abl_height, num_sites * sizeof(int));
 
   cudaMemcpy(d_u_prof, u_prof.data(), num_sites * WGD->nz * sizeof(int), cudaMemcpyHostToDevice);
   cudaMemcpy(d_v_prof, v_prof.data(), num_sites * WGD->nz * sizeof(float), cudaMemcpyHostToDevice);
@@ -433,9 +446,10 @@ void WindProfilerBarnGPU::BarnesInterpolationGPU(const WINDSInputData *WID, WIND
   cudaMemcpy(d_terrain_face_id, WGD->terrain_face_id.data(), WGD->nx * WGD->ny * sizeof(int), cudaMemcpyHostToDevice);
   cudaMemcpy(d_k_mod, k_mod.data(), WGD->nx * WGD->ny * sizeof(int), cudaMemcpyHostToDevice);
   cudaMemcpy(d_surf_layer_height, surf_layer_height.data(), WGD->nx * WGD->ny * sizeof(float), cudaMemcpyHostToDevice);
-
-  BarnesScheme<<<1, 1>>>(d_u_prof, d_v_prof, d_wm, d_wms, d_u0_int, d_v0_int, d_x, d_y, d_z, d_site_xcoord, d_site_ycoord, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_iwork, d_jwork, d_site_id, d_terrain_face_id, d_k_mod, d_dxx, d_dyy, d_u12, d_u34, d_v12, d_v34, num_sites, WGD->nx, WGD->ny, WGD->nz, WGD->dx, WGD->dy, asl_percent, abl_height, d_surf_layer_height);
-  cudaCheck(cudaGetLastError());
+  cudaMemcpy(d_abl_height, abl_height.data(), num_sites * sizeof(int), cudaMemcpyHostToDevice);
+	   
+  BarnesScheme<<<1, 1>>>(d_u_prof, d_v_prof, d_wm, d_wms, d_u0_int, d_v0_int, d_x, d_y, d_z, d_site_xcoord, d_site_ycoord, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_iwork, d_jwork, d_site_id, d_terrain_face_id, d_k_mod, d_dxx, d_dyy, d_u12, d_u34, d_v12, d_v34, num_sites, WGD->nx, WGD->ny, WGD->nz, WGD->dx, WGD->dy, asl_percent, d_abl_height, d_surf_layer_height);
+  //cudaCheck(cudaGetLastError());
 
   cudaMemcpy(WGD->u0.data(), d_u0, WGD->numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
   cudaMemcpy(WGD->v0.data(), d_v0, WGD->numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
@@ -470,4 +484,5 @@ void WindProfilerBarnGPU::BarnesInterpolationGPU(const WINDSInputData *WID, WIND
   cudaFree(d_terrain_face_id);
   cudaFree(d_k_mod);
   cudaFree(d_surf_layer_height);
+  cudaFree(d_abl_height);
 }

@@ -28,44 +28,22 @@
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/**
- * @file Sensor.cpp
- * @brief Collection of variables containing information relevant to
- * sensors read from an xml.
- *
- * @sa ParseInterface
- * @sa TimeSeries
- */
+/** @file WindProfilerHRRR.h */
 
-#include <math.h>
-#include <iostream>
-#include <fstream>
-#include <cstdlib>
+#pragma once
+
 #include <vector>
-#include <chrono>
-#include <limits>
+#include <netcdf>
+#include <cmath>
 
-#include "winds/WINDSInputData.h"
-#include "winds/WINDSGeneralData.h"
-#include "WindProfilerBarnGPU.h"
+#include "WindProfilerSensorType.h"
 
-
-void WindProfilerBarnGPU::interpolateWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD)
+class WindProfilerHRRR : public WindProfilerSensorType
 {
+private:
+  void biLinearInterpolation(const WINDSInputData *WID, WINDSGeneralData *WGD, int i, int j, int k, int k_mod, int id, int idx,  int icell_face,std::vector<int> site_i, std::vector<int> site_j);
 
-  sensorsProfiles(WID, WGD);
-  int num_sites = available_sensor_id.size();
+public:
+  void interpolateWindProfile(const WINDSInputData *, WINDSGeneralData *);
+};
 
-  if (num_sites == 1) {
-    singleSensorInterpolation(WGD);
-  } else {
-    // If number of sites are more than one
-    // Apply 2D Barnes scheme to interpolate site velocity profiles to the whole domain
-    auto startBarnesGPU = std::chrono::high_resolution_clock::now();
-    BarnesInterpolationGPU(WID, WGD);
-    auto finishBarnesGPU = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<float> elapsedBarnesGPU = finishBarnesGPU - startBarnesGPU;
-    std::cout << "Elapsed time for Barnes interpolation on GPU: " << elapsedBarnesGPU.count() << " s\n";
-  }
-  return;
-}

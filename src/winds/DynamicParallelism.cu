@@ -413,7 +413,7 @@ void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD,
 
   // Invoke the main (mother) kernel
   SOR_iteration<<<1, 1>>>(d_lambda, d_lambda_old, WGD->nx, WGD->ny, WGD->nz, omega, A, B, WGD->dx, WGD->dy, WGD->dz, d_dz_array, d_e, d_f, d_g, d_h, d_m, d_n, d_R, itermax, tol, d_value, d_bvalue, alpha1, alpha2, d_u, d_v, d_w, d_icellflag);
-  cudaCheck(cudaGetLastError());
+  //cudaCheck(cudaGetLastError());
 
   cudaMemcpy(WGD->u.data(), d_u, WGD->numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
   cudaMemcpy(WGD->v.data(), d_v, WGD->numcell_face * sizeof(float), cudaMemcpyDeviceToHost);

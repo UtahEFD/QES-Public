@@ -28,44 +28,37 @@
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/**
- * @file Sensor.cpp
- * @brief Collection of variables containing information relevant to
- * sensors read from an xml.
- *
- * @sa ParseInterface
- * @sa TimeSeries
- */
+/** @file WINDSGeneralData.h */
 
-#include <math.h>
-#include <iostream>
-#include <fstream>
-#include <cstdlib>
+#pragma once
+
 #include <vector>
-#include <chrono>
-#include <limits>
+#include <netcdf>
+#include <cmath>
 
-#include "winds/WINDSInputData.h"
-#include "winds/WINDSGeneralData.h"
-#include "WindProfilerBarnGPU.h"
+#include "WindProfilerType.h"
 
-
-void WindProfilerBarnGPU::interpolateWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD)
+class WindProfilerSensorType : public WindProfilerType
 {
+protected:
+  std::vector<float> u_prof;
+  std::vector<float> v_prof;
+  std::vector<int> available_sensor_id;
+  std::vector<int> site_id;
 
-  sensorsProfiles(WID, WGD);
-  int num_sites = available_sensor_id.size();
+  float asl_percent = 0.05;
+  std::vector<float> abl_height;
+  float surf_layer_height;// Surface layer height of the atmospheric boundary layer (ABL)
 
-  if (num_sites == 1) {
-    singleSensorInterpolation(WGD);
-  } else {
-    // If number of sites are more than one
-    // Apply 2D Barnes scheme to interpolate site velocity profiles to the whole domain
-    auto startBarnesGPU = std::chrono::high_resolution_clock::now();
-    BarnesInterpolationGPU(WID, WGD);
-    auto finishBarnesGPU = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<float> elapsedBarnesGPU = finishBarnesGPU - startBarnesGPU;
-    std::cout << "Elapsed time for Barnes interpolation on GPU: " << elapsedBarnesGPU.count() << " s\n";
-  }
-  return;
-}
+  void sensorsProfiles(const WINDSInputData *WID, WINDSGeneralData *WGD);
+
+  void singleSensorInterpolation(WINDSGeneralData *WGD);
+
+public:
+  WindProfilerSensorType()
+  {}
+  virtual ~WindProfilerSensorType()
+  {}
+
+  virtual void interpolateWindProfile(const WINDSInputData *, WINDSGeneralData *) = 0;
+};

@@ -43,10 +43,11 @@
 
 #include "WINDSInputData.h"
 
-#include "WindProfilerType.h"
+#include "util/WindProfilerType.h"
 #include "WindProfilerWRF.h"
-#include "WindProfilerBarnCPU.h"
+#include "util/WindProfilerBarnCPU.h"
 #include "WindProfilerBarnGPU.h"
+#include "util/WindProfilerHRRR.h"
 
 #include "Building.h"
 #include "Canopy.h"
@@ -64,6 +65,7 @@
 //#include "util/Mesh.h"
 #include "util/NetCDFInput.h"
 #include "util/QEStime.h"
+#include "util/HRRRData.h"
 
 #ifdef HAS_OPTIX
 #include "OptixRayTrace.h"
@@ -244,6 +246,10 @@ public:
   LocalMixing *localMixing; /**< :document this: */
   std::vector<double> mixingLengths; /**< :document this: */
 
+  // HRRR Input class
+  HRRRData *hrrrInputData;
+  std::vector<int> nearest_site_id;
+  std::vector<std::vector<int>> closest_site_ids;
   // Sensor* sensor;      may not need this now
 
   // wind profiler class

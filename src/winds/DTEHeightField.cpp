@@ -433,13 +433,17 @@ void DTEHeightField::load()
 
   assert(stepX > 0 && stepY > 0);
 
-  for (float iYline = 0; iYline < m_nYSize - 1; iYline += stepY) {
-    for (float iXpixel = 0; iXpixel < m_nXSize - 1; iXpixel += stepX) {
+  adfMinMax[0] = 100000.0;
+
+  for (float iYline = 0; iYline < m_nYSize; iYline += stepY) {
+    for (float iXpixel = 0; iXpixel < m_nXSize; iXpixel += stepX) {
 
       int Yline = (int)iYline;
       int Xpixel = (int)iXpixel;
 
-
+      if (pafScanline[(m_nYSize - Yline - 1) * (m_nXSize) + Xpixel] < adfMinMax[0]){
+	adfMinMax[0] = pafScanline[(m_nYSize - Yline - 1) * (m_nXSize) + Xpixel];
+      }
       // For these purposes, pixel refers to the "X" coordinate, while
       // line refers to the "Z" coordinate
 
@@ -614,8 +618,8 @@ void DTEHeightField::setCells(WINDSGeneralData *WGD, const WINDSInputData *WID)
   int i_domain_end = ii + (m_nXSize * pixelSizeX) / WGD->dx;
   int j_domain_end = jj + (m_nYSize * pixelSizeY) / WGD->dy;
 
-  for (int i = 0; i < WGD->nx - 2; i++)
-    for (int j = 0; j < WGD->ny - 2; j++) {
+  for (int i = 0; i < WGD->nx - 1; i++)
+    for (int j = 0; j < WGD->ny - 1; j++) {
 
       // all work here is done for each column of cells in the z direction from the xy plane.
 

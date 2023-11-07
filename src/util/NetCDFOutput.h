@@ -47,35 +47,36 @@ using namespace netCDF::exceptions;
 class NetCDFOutput
 {
 protected:
-  NetCDFOutput() : outfile(nullptr) {}
+  NetCDFOutput() {}
 
   NcFile *outfile; /**< File to write. */
   std::map<std::string, NcVar> fields; /**< :document this: */
 
 public:
   // initializer
-  explicit NetCDFOutput(const std::string &);
-  virtual ~NetCDFOutput() = default;
+  NetCDFOutput(std::string);
+  virtual ~NetCDFOutput()
+  {}
 
   // setter
-  NcDim addDimension(const std::string &, int size = 0);
-  NcDim getDimension(const std::string &);
-  void addField(const std::string &, const std::string &, const std::string &, std::vector<NcDim>, NcType);
-  void addAtt(const std::string &, const std::string &, const std::string &);
+  NcDim addDimension(std::string, int size = 0);
+  NcDim getDimension(std::string);
+  void addField(std::string, std::string, std::string, std::vector<NcDim>, NcType);
+  void addAtt(std::string, std::string, std::string);
 
   // save functions for 1D array (save 1D time)
-  void saveField1D(const std::string &, const std::vector<size_t> &, int *);
-  void saveField1D(const std::string &, const std::vector<size_t> &, float *);
-  void saveField1D(const std::string &, const std::vector<size_t> &, double *);
+  void saveField1D(std::string, const std::vector<size_t>, int *);
+  void saveField1D(std::string, const std::vector<size_t>, float *);
+  void saveField1D(std::string, const std::vector<size_t>, double *);
 
   // save functions for 2D array (save 1D array, eg: x,y,z )
-  void saveField2D(const std::string &, std::vector<int> &);
-  void saveField2D(const std::string &, std::vector<float> &);
-  void saveField2D(const std::string &, std::vector<double> &);
+  void saveField2D(std::string, std::vector<int> &);
+  void saveField2D(std::string, std::vector<float> &);
+  void saveField2D(std::string, std::vector<double> &);
 
   // save functions for *D
-  void saveField2D(const std::string &, const std::vector<size_t> &, const std::vector<size_t> &, std::vector<int> &);
-  void saveField2D(const std::string &, const std::vector<size_t> &, const std::vector<size_t> &, std::vector<float> &);
-  void saveField2D(const std::string &, const std::vector<size_t> &, const std::vector<size_t> &, std::vector<double> &);
-  void saveField2D(const std::string &, const std::vector<size_t> &, const std::vector<size_t> &, std::vector<char> &);
+  void saveField2D(std::string, const std::vector<size_t>, std::vector<size_t>, std::vector<int> &);
+  void saveField2D(std::string, const std::vector<size_t>, std::vector<size_t>, std::vector<float> &);
+  void saveField2D(std::string, const std::vector<size_t>, std::vector<size_t>, std::vector<double> &);
+  void saveField2D(std::string, const std::vector<size_t>, std::vector<size_t>, std::vector<char> &);
 };
