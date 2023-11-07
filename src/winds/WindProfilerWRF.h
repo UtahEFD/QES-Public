@@ -36,7 +36,7 @@
 #include <netcdf>
 #include <cmath>
 
-#include "WindProfilerType.h"
+#include "util/WindProfilerType.h"
 
 class WindProfilerWRF : public WindProfilerType
 {

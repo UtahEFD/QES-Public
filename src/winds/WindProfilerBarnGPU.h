@@ -36,7 +36,7 @@
 #include <netcdf>
 #include <cmath>
 
-#include "WindProfilerSensorType.h"
+#include "util/WindProfilerSensorType.h"
 
 class WindProfilerBarnGPU : public WindProfilerSensorType
 {

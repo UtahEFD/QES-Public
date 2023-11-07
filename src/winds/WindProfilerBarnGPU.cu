@@ -28,7 +28,7 @@
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Sensor.cu */
+/** @file  */
 
 #include <cstdio>
 #include <iostream>

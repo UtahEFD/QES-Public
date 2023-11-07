@@ -45,8 +45,8 @@
 #include <chrono>
 #include <limits>
 
-#include "WINDSInputData.h"
-#include "WINDSGeneralData.h"
+#include "winds/WINDSInputData.h"
+#include "winds/WINDSGeneralData.h"
 #include "WindProfilerBarnGPU.h"
 
 

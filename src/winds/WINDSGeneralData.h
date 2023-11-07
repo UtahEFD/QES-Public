@@ -43,11 +43,11 @@
 
 #include "WINDSInputData.h"
 
-#include "WindProfilerType.h"
+#include "util/WindProfilerType.h"
 #include "WindProfilerWRF.h"
-#include "WindProfilerBarnCPU.h"
+#include "util/WindProfilerBarnCPU.h"
 #include "WindProfilerBarnGPU.h"
-#include "WindProfilerHRRR.h"
+#include "util/WindProfilerHRRR.h"
 
 #include "Building.h"
 #include "Canopy.h"

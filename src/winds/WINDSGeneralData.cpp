@@ -461,7 +461,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 		WID->metParams->sensors[i]->TS[t]->site_one_overL = 0.0;// Class D stability
 	      }
 	    }
-	    }
+	  }
 	}
       }
       std::cout << "[done]" << std::endl;
