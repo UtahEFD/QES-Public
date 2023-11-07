@@ -1,0 +1,58 @@
+<QESWindsParameters>
+<simulationParameters>
+  <DEM>../../scratch/Yakima_valley_mod.tif</DEM>		<!-- Address to DEM location-->
+  
+  <halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
+  <halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
+  
+  <domain>700 800 320</domain>					<!-- Number of cells in x,y and z directions-->
+  <cellSize> 100.0 100.0 5.0 </cellSize> 				<!-- Mesh resolution (meters)-->
+  <verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-costum grid)-->
+  
+  <totalTimeIncrements> 135 </totalTimeIncrements> 			<!-- Number of time steps-->
+  <rooftopFlag> 0 </rooftopFlag> 					<!-- Rooftop flag (0-none, 1-log profile (default), 2-vortex) -->
+  <upwindCavityFlag> 0 </upwindCavityFlag> 			<!-- Upwind cavity flag (0-none, 1-Rockle, 2-MVP (default), 3-HMVP) -->
+  <streetCanyonFlag> 0 </streetCanyonFlag> 			<!-- Street canyon flag (0-none, 1-Roeckle w/ Fackrel (default)) -->
+  <streetIntersectionFlag> 0 </streetIntersectionFlag> 		<!--Street intersection flag (0-off, 1-on) -->
+  <wakeFlag> 0 </wakeFlag> 					<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle (default), 3-Area Scaled) -->
+  <sidewallFlag> 0 </sidewallFlag> 				<!-- Sidewall flag (0-off, 1-on (default)) -->
+  <maxIterations> 500 </maxIterations> 				<!-- Maximum number of iterations (default = 500) -->
+  <tolerance> 1e-9 </tolerance> 					<!-- Convergence criteria, error threshold (default = 1e-9) -->
+  <meshTypeFlag> 1 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (original QES) (default), 1-Cut-cell method -->
+  <domainRotation> 0 </domainRotation>  				<!-- Rotation angle of domain relative to true north -->
+  <originFlag> 0 </originFlag>					<!-- Origin flag (0- DEM coordinates (default), 1- UTM coordinates) -->
+  <DEMDistancex> 0.0 </DEMDistancex> 				<!-- x component (m) of origin in DEM coordinates (if originFlag = 0) -->
+  <DEMDistancey> 0.0 </DEMDistancey> 				<!-- y component (m) of origin in DEM coordinates (if originFlag = 0) -->
+  <UTMx> 658000 </UTMx> 						<!-- x component (m) of origin in UTM DEM coordinates (if originFlag = 1)-->
+  <UTMy> 5110000 </UTMy> 						<!-- y component (m) of origin in UTM DEM coordinates (if originFlag = 1)-->
+  <UTMZone> 10 </UTMZone> 						<!-- UTM zone that domain located -->
+  <UTMZoneLetter> 20 </UTMZoneLetter>
+  <readCoefficientsFlag> 0 </readCoefficientsFlag> 		<!-- Reading solver coefficients flag (0-calculate coefficients (default), 1-read coefficients from the file) -->
+  <!--COEFF>test_windsWk.nc</COEFF-->					<!-- Address to coefficients file location --> 
+</simulationParameters>                     				<!-- End of simulation parameters -->
+
+<metParams>
+  <z0_domain_flag> 0 </z0_domain_flag>           			<!-- Distribution of sueface roughness for domain (0-uniform (default), 1-custom -->
+  
+</metParams>								<!-- End of meteorological parameters -->
+
+<turbParams>
+  <method>3</method> <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
+  <samples>1000</samples> <!-- Samples per air cell for ray-traced mixing length calculations -->
+  <save>false</save> <!-- Save 2 to file -->    
+</turbParams>
+
+<fileOptions>
+  <outputFlag>1</outputFlag>
+  <outputFields>all</outputFields> 
+</fileOptions>
+
+<hrrrInput>
+  <HRRRFile>../../scratch/Sep_2020_wind_smoke.nc</HRRRFile>
+  <inputFields>MASSDEN_8maboveground</imputFields>
+  <inputFields>UGRD_10maboveground</imputFields>
+  <inputFields>VGRD_10maboveground</imputFields>
+  <interpolationScheme>2</interpolationScheme>        <!-- Interpolation scheme for initial guess field (0-Barnes Scheme (default), 1-Nearest site, 2-Bilinear interpolation) -->
+</hrrrInput>
+
+</QESWindsParameters>
