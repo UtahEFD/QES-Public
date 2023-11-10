@@ -49,20 +49,20 @@ public:
     : Particle(false, ParticleType::tracer)
   {
   }
+  /*
+    explicit Particle_Tracer(const size_t &ID)
+      : Particle(false, ParticleType::tracer, 0.0, 0.0, 0.0)
+    {
+      isActive = true;
+      particleID = ID;
+    }
 
-  explicit Particle_Tracer(const size_t &ID)
-    : Particle(false, ParticleType::tracer, 0.0, 0.0, 0.0)
-  {
-    isActive = true;
-    particleID = ID;
-  }
-
-  // initializer
-  Particle_Tracer(const double &d_p, const double &m_p, const double &rho_p)
-    : Particle(false, ParticleType::tracer, d_p, m_p, rho_p)
-  {
-  }
-
+    // initializer
+    Particle_Tracer(const double &d_p, const double &m_p, const double &rho_p)
+      : Particle(false, ParticleType::tracer, d_p, m_p, rho_p)
+    {
+    }
+  */
   // destructor
   ~Particle_Tracer()
   {

@@ -168,11 +168,11 @@ private:
 protected:
   Source() = default;
 
-  ParticleType m_pType;
-  SourceShape m_sGeom;
-  ParticleReleaseType m_rType;
+  ParticleType m_pType{};
+  SourceShape m_sGeom{};
+  ParticleReleaseType m_rType{};
 
-  ParticleTypeFactory *m_particleTypeFactory{};
+  // ParticleTypeFactory *m_particleTypeFactory{};
   ParseParticle *m_protoParticle{};
   SourceGeometry *m_sourceGeometry{};
   ReleaseType *m_releaseType{};
