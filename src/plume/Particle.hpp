@@ -105,21 +105,24 @@ protected:
       c1(2.049), c2(1.19), depFlag(flag), decayConst(0.0), wdecay(1.0)
   {
   }
+  /*
+    // initializer
+    Particle(const bool &flag, const ParticleType &type, const double &d_p, const double &m_p, const double &rho_p)
+      : particleType(type),
+        d(d_p), m(m_p), m_o(m_p), rho(rho_p),
+        c1(2.049), c2(1.19), depFlag(flag), decayConst(0.0), wdecay(1.0)
+    {
+    }
+  */
 
-  // initializer
-  Particle(const bool &flag, const ParticleType &type, const double &d_p, const double &m_p, const double &rho_p)
-    : particleType(type),
-      d(d_p), m(m_p), m_o(m_p), rho(rho_p),
-      c1(2.049), c2(1.19), depFlag(flag), decayConst(0.0), wdecay(1.0)
-  {
-  }
+  ParticleType particleType;// particle type
 
 public:
   // destructor
   virtual ~Particle() = default;
 
-  ParticleType particleType;// particle type
-  // std::string tag;// particle type tag
+  // ParticleType particleType;// particle type
+  //  std::string tag;// particle type tag
 
   // the initial position for the particle, to not be changed after the simulation starts
   double xPos_init{};// the initial x component of position for the particle
@@ -148,15 +151,15 @@ public:
   double vFluct{};// v component
   double wFluct{};// w component
 
-  // Particle displacements for each time step
-  double disX{};
-  double disY{};
-  double disZ{};
+  // Particle displacements for each time step (not used)
+  // double disX{};
+  // double disY{};
+  // double disZ{};
 
-  // Total velocities (mean and fluctuation) for each time step
-  double uTot{};
-  double vTot{};
-  double wTot{};
+  // Total velocities (mean and fluctuation) for each time step (not used)
+  // double uTot{};
+  // double vTot{};
+  // double wTot{};
 
   double CoEps{};
 
@@ -203,7 +206,7 @@ public:
   std::vector<float> dep_buffer_val;
   double decayConst;// mass decay constant
 
-  // settling variables
+  // settling variables (only use as local variables)
   // double dstar = 0;// dimensionless grain diameter
   // double Cd = 0;// drag coefficient
   // double wstar = 0;// dimensionless settling velocity

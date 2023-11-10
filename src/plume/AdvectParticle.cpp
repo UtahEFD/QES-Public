@@ -366,9 +366,9 @@ void Plume::advectParticle(double timeRemainder, Particle *par_ptr, double boxSi
   par_ptr->yPos = yPos;
   par_ptr->zPos = zPos;
 
-  par_ptr->disX = disX;
-  par_ptr->disY = disY;
-  par_ptr->disZ = disZ;
+  // par_ptr->disX = disX;
+  // par_ptr->disY = disY;
+  // par_ptr->disZ = disZ;
 
   // par_ptr->uTot = uTot;
   // par_ptr->vTot = vTot;

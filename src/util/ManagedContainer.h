@@ -88,8 +88,8 @@ public:
   }
 
   T *last_added() { return &elements[added.back()]; }
-  T *get_added(const size_t k) { return &elements[added[k]]; }
-  T *get(const size_t k) { return &elements[k]; }
+  T *get_added(const size_t &k) { return &elements[added[k]]; }
+  T *get(const size_t &k) { return &elements[k]; }
 
   typename std::vector<T>::iterator begin() { return elements.begin(); }
   typename std::vector<T>::iterator end() { return elements.end(); }
@@ -110,9 +110,14 @@ public:
 
   void insert()
   {
-    elements[available.front()] = T(nbr_inserted);
+    // this requires an extra copy: elements[available.front()] = T(nbr_inserted);
+    // rest the particle:
+    // - changing the particle ID
+    elements[available.front()].particleID = nbr_inserted;
     nbr_inserted++;
-    // elements[available.front()].isActive = true;
+    // - turning the particle active:
+    elements[available.front()].isActive = true;
+    // adding index to added and remove from available:
     added.emplace_back(available.front());
     available.pop();
   }
