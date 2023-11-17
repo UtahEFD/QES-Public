@@ -28,8 +28,8 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file InterpTriLinear.h 
- * @brief 
+/** @file InterpTriLinear.h
+ * @brief
  */
 
 #pragma once
@@ -56,16 +56,20 @@ public:
   // then calculates the tau gradients which are then used to calculate the flux_div grid values.
   InterpNearestCell(WINDSGeneralData *, TURBGeneralData *, const bool &);
 
-  //double vel_threshold;
+  // double vel_threshold;
 
-  void interpValues(const double &xPos,
+  void interpValues(const WINDSGeneralData *WGD,
+                    const double &xPos,
                     const double &yPos,
                     const double &zPos,
-                    const WINDSGeneralData *WGD,
                     double &uMain_out,
                     double &vMean_out,
-                    double &wMean_out,
-                    const TURBGeneralData *TGD,
+                    double &wMean_out) override;
+
+  void interpValues(const TURBGeneralData *TGD,
+                    const double &xPos,
+                    const double &yPos,
+                    const double &zPos,
                     double &txx_out,
                     double &txy_out,
                     double &txz_out,
@@ -76,7 +80,7 @@ public:
                     double &flux_div_y_out,
                     double &flux_div_z_out,
                     double &nuT_out,
-                    double &CoEps_out);
+                    double &CoEps_out) override;
 
   void interpInitialValues(const double &xPos,
                            const double &yPos,
@@ -90,7 +94,7 @@ public:
                            double &txz_out,
                            double &tyy_out,
                            double &tyz_out,
-                           double &tzz_out);
+                           double &tzz_out) override;
 
 private:
   // timer class useful for debugging and timing different operations

@@ -77,17 +77,7 @@ void Plume::advectParticle(double timeRemainder, Particle *p, double boxSizeZ, W
       will need to use the interp3D function
     */
 
-    // need to avoid current tau values going out of scope now that I've added the particle timestep loop
-    // so initialize their values to the tau_old values. They will be overwritten with the Interperian grid value
-    // at each iteration in the particle timestep loop
-    double txx = 0.0, txy = 0.0, txz = 0.0, tyy = 0.0, tyz = 0.0, tzz = 0.0;
-    double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
-    double nuT = 0.0;
-
-    interp->interpValues(p->xPos, p->yPos, p->zPos, WGD, p->uMean, p->vMean, p->wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, p->CoEps);
-
-    // now need to call makeRealizable on tau
-    makeRealizable(txx, txy, txz, tyy, tyz, tzz);
+    interp->interpValues(WGD, p->xPos, p->yPos, p->zPos, p->uMean, p->vMean, p->wMean);
 
     // adjusting mean vertical velocity for settling velocity
     p->wMean -= vs;
@@ -106,6 +96,13 @@ void Plume::advectParticle(double timeRemainder, Particle *p, double boxSizeZ, W
     // std::cout << "par_dt = " << par_dt << std::endl;
     //  update the par_time, useful for debugging
     // par_time = par_time + par_dt;
+
+    double txx = 0.0, txy = 0.0, txz = 0.0, tyy = 0.0, tyz = 0.0, tzz = 0.0;
+    double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
+    interp->interpValues(TGD, p->xPos, p->yPos, p->zPos, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, p->nuT, p->CoEps);
+
+    // now need to call makeRealizable on tau
+    makeRealizable(txx, txy, txz, tyy, tyz, tzz);
 
     // now need to calculate the inverse values for tau
     // directly modifies the values of tau
@@ -225,7 +222,7 @@ void Plume::advectParticle(double timeRemainder, Particle *p, double boxSizeZ, W
 
     // Deposit mass (vegetation only right now)
     if (p->depFlag && p->isActive) {
-      depositParticle(p->xPos, p->yPos, p->zPos, disX, disY, disZ, uTot, vTot, wTot, txx, tyy, tzz, txz, txy, tyz, vs, p->CoEps, boxSizeZ, nuT, p, WGD, TGD);
+      depositParticle(p->xPos, p->yPos, p->zPos, disX, disY, disZ, uTot, vTot, wTot, txx, tyy, tzz, txz, txy, tyz, vs, p->CoEps, boxSizeZ, p->nuT, p, WGD, TGD);
     }
 
     // check and do wall (building and terrain) reflection (based in the method)

@@ -68,14 +68,18 @@ public:
 
   // double vel_threshold;
 
-  void interpValues(const double &xPos,
+  void interpValues(const WINDSGeneralData *WGD,
+                    const double &xPos,
                     const double &yPos,
                     const double &zPos,
-                    const WINDSGeneralData *WGD,
                     double &uMain_out,
                     double &vMean_out,
-                    double &wMean_out,
-                    const TURBGeneralData *TGD,
+                    double &wMean_out) override;
+
+  void interpValues(const TURBGeneralData *TGD,
+                    const double &xPos,
+                    const double &yPos,
+                    const double &zPos,
                     double &txx_out,
                     double &txy_out,
                     double &txz_out,
@@ -87,6 +91,7 @@ public:
                     double &flux_div_z_out,
                     double &nuT_out,
                     double &CoEps_out) override;
+
 
   void interpInitialValues(const double &xPos,
                            const double &yPos,

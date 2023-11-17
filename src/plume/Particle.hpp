@@ -162,6 +162,7 @@ public:
   // double wTot{};
 
   double CoEps{};
+  double nuT{};
 
   // The velocity fluctuation for a particle from the last iteration
   double uFluct_old{};// u component
