@@ -42,7 +42,8 @@ TEST_CASE("interpolation fine grid", "[Working]")
       double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
       double CoEps = 1e-6, nuT = 0.0;
 
-      PGD->interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
+      PGD->interp->interpValues(WGD, xPos, yPos, zPos, uMean, vMean, wMean);
+      PGD->interp->interpValues(TGD, xPos, yPos, zPos, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
       float err = 0.0;
 
       err = std::abs(tf->u_test_function->val(xPos, yPos, zPos) - uMean);
@@ -92,7 +93,8 @@ TEST_CASE("interpolation fine grid", "[Working]")
       double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
       double CoEps = 1e-6, nuT = 0.0;
 
-      PGD->interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
+      PGD->interp->interpValues(WGD, xPos, yPos, zPos, uMean, vMean, wMean);
+      PGD->interp->interpValues(TGD, xPos, yPos, zPos, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
 
       errU += std::abs(tf->u_test_function->val(xPos, yPos, zPos) - uMean);
       errV += std::abs(tf->v_test_function->val(xPos, yPos, zPos) - vMean);
@@ -143,7 +145,8 @@ TEST_CASE("interpolation coarse grid", "[Working]")
       double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
       double CoEps = 1e-6, nuT = 0.0;
 
-      PGD->interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
+      PGD->interp->interpValues(WGD, xPos, yPos, zPos, uMean, vMean, wMean);
+      PGD->interp->interpValues(TGD, xPos, yPos, zPos, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
       float err = 0.0;
 
       err = std::abs(tf->u_test_function->val(xPos, yPos, zPos) - uMean);
@@ -198,7 +201,9 @@ TEST_CASE("interpolation stretched grid", "[Working]")
       double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
       double CoEps = 1e-6, nuT = 0.0;
 
-      PGD->interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
+      PGD->interp->interpValues(WGD, xPos, yPos, zPos, uMean, vMean, wMean);
+      PGD->interp->interpValues(TGD, xPos, yPos, zPos, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
+
       float err = 0.0;
 
       err = std::abs(tf->u_test_function->val(xPos, yPos, zPos) - uMean);
@@ -248,7 +253,8 @@ TEST_CASE("interpolation stretched grid", "[Working]")
       double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
       double CoEps = 1e-6, nuT = 0.0;
 
-      PGD->interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
+      PGD->interp->interpValues(WGD, xPos, yPos, zPos, uMean, vMean, wMean);
+      PGD->interp->interpValues(TGD, xPos, yPos, zPos, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
 
       errU += std::abs(tf->u_test_function->val(xPos, yPos, zPos) - uMean);
       errV += std::abs(tf->v_test_function->val(xPos, yPos, zPos) - vMean);

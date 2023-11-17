@@ -91,25 +91,13 @@ void InterpTriLinear::interpInitialValues(const double &xPos,
     sig_z_out = 1e-8;
 }
 
-void InterpTriLinear::interpValues(const double &xPos,
+void InterpTriLinear::interpValues(const WINDSGeneralData *WGD,
+                                   const double &xPos,
                                    const double &yPos,
                                    const double &zPos,
-                                   const WINDSGeneralData *WGD,
                                    double &uMean_out,
                                    double &vMean_out,
-                                   double &wMean_out,
-                                   const TURBGeneralData *TGD,
-                                   double &txx_out,
-                                   double &txy_out,
-                                   double &txz_out,
-                                   double &tyy_out,
-                                   double &tyz_out,
-                                   double &tzz_out,
-                                   double &flux_div_x_out,
-                                   double &flux_div_y_out,
-                                   double &flux_div_z_out,
-                                   double &nuT_out,
-                                   double &CoEps_out)
+                                   double &wMean_out)
 {
   // these are the current interp3D variables, as they are used for multiple interpolations for each particle
   interpWeight wgt{ 0, 0, 0, 0.0, 0.0, 0.0 };
@@ -129,6 +117,26 @@ void InterpTriLinear::interpValues(const double &xPos,
   // interpolation of variables on wFace
   interp3D_faceVar(WGD->w, wgt, wMean_out);
 
+}
+void InterpTriLinear::interpValues(const TURBGeneralData *TGD,
+                                   const double &xPos,
+                                   const double &yPos,
+                                   const double &zPos,
+                                   double &txx_out,
+                                   double &txy_out,
+                                   double &txz_out,
+                                   double &tyy_out,
+                                   double &tyz_out,
+                                   double &tzz_out,
+                                   double &flux_div_x_out,
+                                   double &flux_div_y_out,
+                                   double &flux_div_z_out,
+                                   double &nuT_out,
+                                   double &CoEps_out)
+{
+  // these are the current interp3D variables, as they are used for multiple interpolations for each particle
+  interpWeight wgt{ 0, 0, 0, 0.0, 0.0, 0.0 };
+
   // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
   // then get interpolated values from the InterpTriLinear grid to the particle Lagrangian values for multiple datatype
   setInterp3Dindex_cellVar(xPos, yPos, zPos, wgt);
@@ -147,7 +155,6 @@ void InterpTriLinear::interpValues(const double &xPos,
   interp3D_cellVar(TGD->tyy, wgt, tyy_out);
   interp3D_cellVar(TGD->tyz, wgt, tyz_out);
   interp3D_cellVar(TGD->tzz, wgt, tzz_out);
-
 
   interp3D_cellVar(TGD->div_tau_x, wgt, flux_div_x_out);
   interp3D_cellVar(TGD->div_tau_y, wgt, flux_div_y_out);

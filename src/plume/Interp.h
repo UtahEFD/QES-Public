@@ -69,14 +69,18 @@ public:
   double zStart, zEnd;
 
 
-  virtual void interpValues(const double &xPos,
+  virtual void interpValues(const WINDSGeneralData *WGD,
+                            const double &xPos,
                             const double &yPos,
                             const double &zPos,
-                            const WINDSGeneralData *WGD,
                             double &uMain_out,
                             double &vMean_out,
-                            double &wMean_out,
-                            const TURBGeneralData *TGD,
+                            double &wMean_out) = 0;
+
+  virtual void interpValues(const TURBGeneralData *TGD,
+                            const double &xPos,
+                            const double &yPos,
+                            const double &zPos,
                             double &txx_out,
                             double &txy_out,
                             double &txz_out,

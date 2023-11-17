@@ -36,7 +36,7 @@
 InterpNearestCell::InterpNearestCell(WINDSGeneralData *WGD, TURBGeneralData *TGD, const bool &debug_val)
   : Interp(WGD)
 {
-  //std::cout << "[InterpNearestCell] \t Setting InterpNearestCell fields " << std::endl;
+  // std::cout << "[InterpNearestCell] \t Setting InterpNearestCell fields " << std::endl;
 
   // copy debug information
   debug = debug_val;
@@ -94,14 +94,29 @@ void InterpNearestCell::interpInitialValues(const double &xPos,
   return;
 }
 
-void InterpNearestCell::interpValues(const double &xPos,
+void InterpNearestCell::interpValues(const WINDSGeneralData *WGD,
+                                     const double &xPos,
                                      const double &yPos,
                                      const double &zPos,
-                                     const WINDSGeneralData *WGD,
                                      double &uMean_out,
                                      double &vMean_out,
-                                     double &wMean_out,
-                                     const TURBGeneralData *TGD,
+                                     double &wMean_out)
+{
+
+  Vector3Int cellIndex = getCellIndex(xPos, yPos, zPos);
+  int faceId = cellIndex[0]
+               + cellIndex[1] * WGD->nx
+               + cellIndex[2] * WGD->nx * WGD->ny;
+
+  uMean_out = 0.5 * (WGD->u[faceId] + WGD->u[faceId + 1]);
+  vMean_out = 0.5 * (WGD->v[faceId] + WGD->v[faceId + WGD->nx]);
+  vMean_out = 0.5 * (WGD->w[faceId] + WGD->w[faceId + WGD->nx * WGD->ny]);
+}
+
+void InterpNearestCell::interpValues(const TURBGeneralData *TGD,
+                                     const double &xPos,
+                                     const double &yPos,
+                                     const double &zPos,
                                      double &txx_out,
                                      double &txy_out,
                                      double &txz_out,
@@ -117,15 +132,8 @@ void InterpNearestCell::interpValues(const double &xPos,
 
   Vector3Int cellIndex = getCellIndex(xPos, yPos, zPos);
   int cellId = cellIndex[0]
-               + cellIndex[1] * (WGD->nx - 1)
-               + cellIndex[2] * (WGD->nx - 1) * (WGD->ny - 1);
-  int faceId = cellIndex[0]
-               + cellIndex[1] * WGD->nx
-               + cellIndex[2] * WGD->nx * WGD->ny;
-
-  uMean_out = 0.5 * (WGD->u[faceId] + WGD->u[faceId + 1]);
-  vMean_out = 0.5 * (WGD->v[faceId] + WGD->v[faceId + WGD->nx]);
-  vMean_out = 0.5 * (WGD->w[faceId] + WGD->w[faceId + WGD->nx * WGD->ny]);
+               + cellIndex[1] * (TGD->nx - 1)
+               + cellIndex[2] * (TGD->nx - 1) * (TGD->ny - 1);
 
   CoEps_out = TGD->CoEps[cellId];
   // make sure CoEps is always bigger than zero
@@ -145,5 +153,4 @@ void InterpNearestCell::interpValues(const double &xPos,
   flux_div_x_out = TGD->div_tau_x[cellId];
   flux_div_y_out = TGD->div_tau_y[cellId];
   flux_div_z_out = TGD->div_tau_z[cellId];
-  return;
 }
