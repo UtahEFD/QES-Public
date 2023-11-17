@@ -40,18 +40,10 @@
 #include <random>
 #include <list>
 
-#include "Particle.hpp"
-
-#include "ParticleFactories.hpp"
-
-#include "ReleaseType.hpp"
-#include "ReleaseType_instantaneous.hpp"
-#include "ReleaseType_continuous.hpp"
-#include "ReleaseType_duration.hpp"
-
 // #include "Interp.h"
+
 #include "util/ParseInterface.h"
-#include "winds/WINDSGeneralData.h"
+// #include "winds/WINDSGeneralData.h"
 
 enum SourceShape {
   point,
