@@ -240,6 +240,8 @@ private:
   // this function moves (advects) one particle
   void advectParticle(double, Particle *, double, WINDSGeneralData *, TURBGeneralData *);
 
+  void GLE_solver(Particle *p,
+                  double &txx, double &txy, double &txz, double &tyy, double &tyz, double &tzz, double &flux_div_x, double &flux_div_y, double &flux_div_z, double &par_dt);
 
   void depositParticle(double,
                        double,

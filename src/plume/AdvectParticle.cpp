@@ -99,105 +99,13 @@ void Plume::advectParticle(double timeRemainder, Particle *p, double boxSizeZ, W
 
     double txx = 0.0, txy = 0.0, txz = 0.0, tyy = 0.0, tyz = 0.0, tzz = 0.0;
     double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
+
     interp->interpValues(TGD, p->xPos, p->yPos, p->zPos, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, p->nuT, p->CoEps);
 
     // now need to call makeRealizable on tau
     makeRealizable(txx, txy, txz, tyy, tyz, tzz);
 
-    // now need to calculate the inverse values for tau
-    // directly modifies the values of tau
-    double lxx = txx;
-    double lxy = txy;
-    double lxz = txz;
-    double lyx = txy;
-    double lyy = tyy;
-    double lyz = tyz;
-    double lzx = txz;
-    double lzy = tyz;
-    double lzz = tzz;
-    p->isRogue = !invert3(lxx, lxy, lxz, lyx, lyy, lyz, lzx, lzy, lzz);
-    if (p->isRogue) {
-      // int cellIdNew = interp->getCellId(xPos,yPos,zPos);
-      std::cerr << "ERROR in Matrix inversion of stress tensor" << std::endl;
-      p->isActive = false;
-      break;
-    }
-
-    // these are the random numbers for each direction
-#ifdef _OPENMP
-    double xRandn = threadRNG[omp_get_thread_num()]->norRan();
-    double yRandn = threadRNG[omp_get_thread_num()]->norRan();
-    double zRandn = threadRNG[omp_get_thread_num()]->norRan();
-#else
-    double xRandn = RNG->norRan();
-    double yRandn = RNG->norRan();
-    double zRandn = RNG->norRan();
-#endif
-
-    // now calculate a bunch of values for the current particle
-    // calculate the time derivative of the stress tensor: (tau_current - tau_old)/dt
-    double dtxxdt = (txx - p->txx_old) / par_dt;
-    double dtxydt = (txy - p->txy_old) / par_dt;
-    double dtxzdt = (txz - p->txz_old) / par_dt;
-    double dtyydt = (tyy - p->tyy_old) / par_dt;
-    double dtyzdt = (tyz - p->tyz_old) / par_dt;
-    double dtzzdt = (tzz - p->tzz_old) / par_dt;
-
-    // now calculate and set the A and b matrices for an Ax = b
-    // A = -I + 0.5*(-CoEps*L + dTdt*L )*par_dt;
-    double A_11 = -1.0 + 0.50 * (-p->CoEps * lxx + lxx * dtxxdt + lxy * dtxydt + lxz * dtxzdt) * par_dt;
-    double A_12 = 0.50 * (-p->CoEps * lxy + lxy * dtxxdt + lyy * dtxydt + lyz * dtxzdt) * par_dt;
-    double A_13 = 0.50 * (-p->CoEps * lxz + lxz * dtxxdt + lyz * dtxydt + lzz * dtxzdt) * par_dt;
-
-    double A_21 = 0.50 * (-p->CoEps * lxy + lxx * dtxydt + lxy * dtyydt + lxz * dtyzdt) * par_dt;
-    double A_22 = -1.0 + 0.50 * (-p->CoEps * lyy + lxy * dtxydt + lyy * dtyydt + lyz * dtyzdt) * par_dt;
-    double A_23 = 0.50 * (-p->CoEps * lyz + lxz * dtxydt + lyz * dtyydt + lzz * dtyzdt) * par_dt;
-
-    double A_31 = 0.50 * (-p->CoEps * lxz + lxx * dtxzdt + lxy * dtyzdt + lxz * dtzzdt) * par_dt;
-    double A_32 = 0.50 * (-p->CoEps * lyz + lxy * dtxzdt + lyy * dtyzdt + lyz * dtzzdt) * par_dt;
-    double A_33 = -1.0 + 0.50 * (-p->CoEps * lzz + lxz * dtxzdt + lyz * dtyzdt + lzz * dtzzdt) * par_dt;
-
-    // b = -vectFluct - 0.5*vecFluxDiv*par_dt - sqrt(CoEps*par_dt)*vecRandn;
-    double b_11 = -p->uFluct_old - 0.50 * flux_div_x * par_dt - std::sqrt(p->CoEps * par_dt) * xRandn;
-    double b_21 = -p->vFluct_old - 0.50 * flux_div_y * par_dt - std::sqrt(p->CoEps * par_dt) * yRandn;
-    double b_31 = -p->wFluct_old - 0.50 * flux_div_z * par_dt - std::sqrt(p->CoEps * par_dt) * zRandn;
-
-    // now prepare for the Ax=b calculation by calculating the inverted A matrix
-    p->isRogue = !invert3(A_11, A_12, A_13, A_21, A_22, A_23, A_31, A_32, A_33);
-    if (p->isRogue) {
-      std::cerr << "ERROR in matrix inversion in Langevin equation" << std::endl;
-      p->isActive = false;
-      break;
-    }
-    // now do the Ax=b calculation using the inverted matrix (vecFluct = A*b)
-    matmult(A_11, A_12, A_13, A_21, A_22, A_23, A_31, A_32, A_33, b_11, b_21, b_31, p->uFluct, p->vFluct, p->wFluct);
-
-
-    // now check to see if the value is rogue or not
-    if (std::abs(p->uFluct) >= vel_threshold || isnan(p->uFluct)) {
-      std::cerr << "Particle # " << p->particleID << " is rogue, ";
-      std::cerr << "uFluct = " << p->uFluct << ", CoEps = " << p->CoEps << std::endl;
-      p->uFluct = 0.0;
-      p->isActive = false;
-      p->isRogue = true;
-      break;
-    }
-    if (std::abs(p->vFluct) >= vel_threshold || isnan(p->vFluct)) {
-      std::cerr << "Particle # " << p->particleID << " is rogue, ";
-      std::cerr << "vFluct = " << p->vFluct << ", CoEps = " << p->CoEps << std::endl;
-      p->vFluct = 0.0;
-      p->isActive = false;
-      p->isRogue = true;
-      break;
-    }
-    if (std::abs(p->wFluct) >= vel_threshold || isnan(p->wFluct)) {
-      std::cerr << "Particle # " << p->particleID << " is rogue, ";
-      std::cerr << "wFluct = " << p->wFluct << ", CoEps = " << p->CoEps << std::endl;
-      p->wFluct = 0.0;
-      p->isActive = false;
-      p->isRogue = true;
-      break;
-    }
+    GLE_solver(p, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, par_dt);
 
     if (p->isRogue) {
       p->isActive = false;
@@ -222,6 +130,7 @@ void Plume::advectParticle(double timeRemainder, Particle *p, double boxSizeZ, W
 
     // Deposit mass (vegetation only right now)
     if (p->depFlag && p->isActive) {
+
       depositParticle(p->xPos, p->yPos, p->zPos, disX, disY, disZ, uTot, vTot, wTot, txx, tyy, tzz, txz, txy, tyz, vs, p->CoEps, boxSizeZ, p->nuT, p, WGD, TGD);
     }
 
@@ -265,4 +174,96 @@ void Plume::advectParticle(double timeRemainder, Particle *p, double boxSizeZ, W
     timeRemainder = timeRemainder - par_dt;
 
   }// while( isActive == true && timeRemainder > 0.0 )
+}
+
+void Plume::GLE_solver(Particle *p, double &txx, double &txy, double &txz, double &tyy, double &tyz, double &tzz, double &flux_div_x, double &flux_div_y, double &flux_div_z, double &par_dt)
+{
+  // now need to calculate the inverse values for tau
+  // directly modifies the values of tau
+  double lxx = txx;
+  double lxy = txy;
+  double lxz = txz;
+  double lyx = txy;
+  double lyy = tyy;
+  double lyz = tyz;
+  double lzx = txz;
+  double lzy = tyz;
+  double lzz = tzz;
+  p->isRogue = !invert3(lxx, lxy, lxz, lyx, lyy, lyz, lzx, lzy, lzz);
+  if (p->isRogue) {
+    // int cellIdNew = interp->getCellId(xPos,yPos,zPos);
+    std::cerr << "ERROR in Matrix inversion of stress tensor" << std::endl;
+    p->isActive = false;
+  }
+
+// these are the random numbers for each direction
+#ifdef _OPENMP
+  double xRandn = threadRNG[omp_get_thread_num()]->norRan();
+  double yRandn = threadRNG[omp_get_thread_num()]->norRan();
+  double zRandn = threadRNG[omp_get_thread_num()]->norRan();
+#else
+  double xRandn = RNG->norRan();
+  double yRandn = RNG->norRan();
+  double zRandn = RNG->norRan();
+#endif
+
+  // now calculate a bunch of values for the current particle
+  // calculate the time derivative of the stress tensor: (tau_current - tau_old)/dt
+  double dtxxdt = (txx - p->txx_old) / par_dt;
+  double dtxydt = (txy - p->txy_old) / par_dt;
+  double dtxzdt = (txz - p->txz_old) / par_dt;
+  double dtyydt = (tyy - p->tyy_old) / par_dt;
+  double dtyzdt = (tyz - p->tyz_old) / par_dt;
+  double dtzzdt = (tzz - p->tzz_old) / par_dt;
+
+  // now calculate and set the A and b matrices for an Ax = b
+  // A = -I + 0.5*(-CoEps*L + dTdt*L )*par_dt;
+  double A_11 = -1.0 + 0.50 * (-p->CoEps * lxx + lxx * dtxxdt + lxy * dtxydt + lxz * dtxzdt) * par_dt;
+  double A_12 = 0.50 * (-p->CoEps * lxy + lxy * dtxxdt + lyy * dtxydt + lyz * dtxzdt) * par_dt;
+  double A_13 = 0.50 * (-p->CoEps * lxz + lxz * dtxxdt + lyz * dtxydt + lzz * dtxzdt) * par_dt;
+
+  double A_21 = 0.50 * (-p->CoEps * lxy + lxx * dtxydt + lxy * dtyydt + lxz * dtyzdt) * par_dt;
+  double A_22 = -1.0 + 0.50 * (-p->CoEps * lyy + lxy * dtxydt + lyy * dtyydt + lyz * dtyzdt) * par_dt;
+  double A_23 = 0.50 * (-p->CoEps * lyz + lxz * dtxydt + lyz * dtyydt + lzz * dtyzdt) * par_dt;
+
+  double A_31 = 0.50 * (-p->CoEps * lxz + lxx * dtxzdt + lxy * dtyzdt + lxz * dtzzdt) * par_dt;
+  double A_32 = 0.50 * (-p->CoEps * lyz + lxy * dtxzdt + lyy * dtyzdt + lyz * dtzzdt) * par_dt;
+  double A_33 = -1.0 + 0.50 * (-p->CoEps * lzz + lxz * dtxzdt + lyz * dtyzdt + lzz * dtzzdt) * par_dt;
+
+  // b = -vectFluct - 0.5*vecFluxDiv*par_dt - sqrt(CoEps*par_dt)*vecRandn;
+  double b_11 = -p->uFluct_old - 0.50 * flux_div_x * par_dt - std::sqrt(p->CoEps * par_dt) * xRandn;
+  double b_21 = -p->vFluct_old - 0.50 * flux_div_y * par_dt - std::sqrt(p->CoEps * par_dt) * yRandn;
+  double b_31 = -p->wFluct_old - 0.50 * flux_div_z * par_dt - std::sqrt(p->CoEps * par_dt) * zRandn;
+
+  // now prepare for the Ax=b calculation by calculating the inverted A matrix
+  p->isRogue = !invert3(A_11, A_12, A_13, A_21, A_22, A_23, A_31, A_32, A_33);
+  if (p->isRogue) {
+    std::cerr << "ERROR in matrix inversion in Langevin equation" << std::endl;
+    p->isActive = false;
+  }
+  // now do the Ax=b calculation using the inverted matrix (vecFluct = A*b)
+  matmult(A_11, A_12, A_13, A_21, A_22, A_23, A_31, A_32, A_33, b_11, b_21, b_31, p->uFluct, p->vFluct, p->wFluct);
+
+  // now check to see if the value is rogue or not
+  if (std::abs(p->uFluct) >= vel_threshold || isnan(p->uFluct)) {
+    std::cerr << "Particle # " << p->particleID << " is rogue, ";
+    std::cerr << "uFluct = " << p->uFluct << ", CoEps = " << p->CoEps << std::endl;
+    p->uFluct = 0.0;
+    p->isActive = false;
+    p->isRogue = true;
+  }
+  if (std::abs(p->vFluct) >= vel_threshold || isnan(p->vFluct)) {
+    std::cerr << "Particle # " << p->particleID << " is rogue, ";
+    std::cerr << "vFluct = " << p->vFluct << ", CoEps = " << p->CoEps << std::endl;
+    p->vFluct = 0.0;
+    p->isActive = false;
+    p->isRogue = true;
+  }
+  if (std::abs(p->wFluct) >= vel_threshold || isnan(p->wFluct)) {
+    std::cerr << "Particle # " << p->particleID << " is rogue, ";
+    std::cerr << "wFluct = " << p->wFluct << ", CoEps = " << p->CoEps << std::endl;
+    p->wFluct = 0.0;
+    p->isActive = false;
+    p->isRogue = true;
+  }
 }
