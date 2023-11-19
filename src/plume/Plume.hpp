@@ -241,38 +241,47 @@ private:
   void advectParticle(double, Particle *, double, WINDSGeneralData *, TURBGeneralData *);
 
   void GLE_solver(Particle *p,
-                  double &txx, double &txy, double &txz, double &tyy, double &tyz, double &tzz, double &flux_div_x, double &flux_div_y, double &flux_div_z, double &par_dt);
+                  double &txx,
+                  double &txy,
+                  double &txz,
+                  double &tyy,
+                  double &tyz,
+                  double &tzz,
+                  double &flux_div_x,
+                  double &flux_div_y,
+                  double &flux_div_z,
+                  double &par_dt);
 
-  void depositParticle(double,
-                       double,
-                       double,
-                       double,
-                       double,
-                       double,
-                       double,
-                       double,
-                       double,
-                       double,
-                       double,
-                       double,
-                       double,
-                       double,
-                       double,
-                       double,
-                       double,
-                       double,
-                       double,
-                       Particle *,
-                       WINDSGeneralData *,
-                       TURBGeneralData *);
+  void depositParticle(const double &xPos,
+                       const double &yPos,
+                       const double &zPos,
+                       const double &disX,
+                       const double &disY,
+                       const double &disZ,
+                       const double &uTot,
+                       const double &vTot,
+                       const double &wTot,
+                       const double &txx,
+                       const double &tyy,
+                       const double &tzz,
+                       const double &txz,
+                       const double &txy,
+                       const double &tyz,
+                       const double &vs,
+                       const double &CoEps,
+                       const double &boxSizeZ,
+                       const double &nuT,
+                       Particle *par_ptr,
+                       WINDSGeneralData *WGD,
+                       TURBGeneralData *TGD);
 
-  // function for calculating the individual particle timestep from the courant number, the current velocity fluctuations,
-  // and the grid size. Forces particles to always move only at one timestep at at time.
-  // Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
-  double calcCourantTimestep(const double &u,
-                             const double &v,
-                             const double &w,
-                             const double &timeRemainder);
+    // function for calculating the individual particle timestep from the courant number, the current velocity fluctuations,
+    // and the grid size. Forces particles to always move only at one timestep at at time.
+    // Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
+    double calcCourantTimestep(const double &u,
+                               const double &v,
+                               const double &w,
+                               const double &timeRemainder);
   double calcCourantTimestep(const double &d,
                              const double &u,
                              const double &v,

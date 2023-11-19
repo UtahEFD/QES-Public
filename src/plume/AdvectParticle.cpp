@@ -130,7 +130,6 @@ void Plume::advectParticle(double timeRemainder, Particle *p, double boxSizeZ, W
 
     // Deposit mass (vegetation only right now)
     if (p->depFlag && p->isActive) {
-
       depositParticle(p->xPos, p->yPos, p->zPos, disX, disY, disZ, uTot, vTot, wTot, txx, tyy, tzz, txz, txy, tyz, vs, p->CoEps, boxSizeZ, p->nuT, p, WGD, TGD);
     }
 
