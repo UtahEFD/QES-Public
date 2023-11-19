@@ -625,12 +625,12 @@ void Plume::setParticle(WINDSGeneralData *WGD, TURBGeneralData *TGD, Particle *p
   makeRealizable(txx, txy, txz, tyy, tyz, tzz);
 
   // set tau_old to the interpolated values for each position
-  par_ptr->txx_old = txx;
-  par_ptr->txy_old = txy;
-  par_ptr->txz_old = txz;
-  par_ptr->tyy_old = tyy;
-  par_ptr->tyz_old = tyz;
-  par_ptr->tzz_old = tzz;
+  par_ptr->txx = txx;
+  par_ptr->txy = txy;
+  par_ptr->txz = txz;
+  par_ptr->tyy = tyy;
+  par_ptr->tyz = tyz;
+  par_ptr->tzz = tzz;
 
   // set delta_velFluct values to zero for now
   par_ptr->delta_uFluct = 0.0;

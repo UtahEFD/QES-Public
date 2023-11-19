@@ -34,21 +34,22 @@
 #include <math.h>
 #include "Plume.hpp"
 
-void Plume::depositParticle(const double &xPos, const double &yPos, const double &zPos, const double &disX, const double &disY, const double &disZ, const double &uTot, const double &vTot, const double &wTot, const double &txx, const double &tyy, const double &tzz, const double &txz, const double &txy, const double &tyz, const double &vs, const double &CoEps, const double &boxSizeZ, const double &nuT, Particle *par_ptr, WINDSGeneralData *WGD, TURBGeneralData *TGD)
+// void Plume::depositParticle(const double &xPos, const double &yPos, const double &zPos, const double &disX, const double &disY, const double &disZ, const double &uTot, const double &vTot, const double &wTot, const double &txx, const double &tyy, const double &tzz, const double &txz, const double &txy, const double &tyz, const double &vs, const double &CoEps, const double &boxSizeZ, const double &nuT, Particle *p, WINDSGeneralData *WGD, TURBGeneralData *TGD)
+void Plume::depositParticle(Particle *p, const double &disX, const double &disY, const double &disZ, const double &uTot, const double &vTot, const double &wTot, const double &vs, const double &boxSizeZ, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
 
   double rhoAir = 1.225;// in kg m^-3
   double nuAir = 1.506E-5;// in m^2 s^-1
 
-  if (par_ptr->isActive == true) {
+  if (p->isActive) {
 
     // Particle position and attributes
-    double xPos_old = xPos - disX;
-    double yPos_old = yPos - disY;
-    double zPos_old = zPos - disZ;
+    double xPos_old = p->xPos - disX;
+    double yPos_old = p->yPos - disY;
+    double zPos_old = p->zPos - disZ;
 
     int cellId_old = interp->getCellId(xPos_old, yPos_old, zPos_old);
-    int cellId = interp->getCellId(xPos, yPos, zPos);
+    int cellId = interp->getCellId(p->xPos, p->yPos, p->zPos);
     Vector3Int cellIdx = interp->getCellIndex(cellId);
     int i = cellIdx[0], j = cellIdx[1], k = cellIdx[2];
 
@@ -60,13 +61,13 @@ void Plume::depositParticle(const double &xPos, const double &yPos, const double
     if (false) {
 
       // Calculate distance (in x-y plane) from source
-      double distFromSource = pow(pow(xPos - par_ptr->xPos_init, 2)
-                                    + pow(yPos - par_ptr->yPos_init, 2),
+      double distFromSource = pow(pow(p->xPos - p->xPos_init, 2)
+                                    + pow(p->yPos - p->yPos_init, 2),
                                   0.5);
       // Take deposited mass away from particle
-      double P_r = exp(-par_ptr->decayConst * distFromSource);// undeposited fraction of mass
-      par_ptr->m = par_ptr->m_o * P_r;
-      // par_ptr->m_kg = par_ptr->m_kg_o * P_r;
+      double P_r = exp(-p->decayConst * distFromSource);// undeposited fraction of mass
+      p->m = p->m_o * P_r;
+      // p->m_kg = p->m_kg_o * P_r;
     }
 
 
@@ -77,11 +78,11 @@ void Plume::depositParticle(const double &xPos, const double &yPos, const double
       double elementDiameter = 100.0e-3;// temporarily hard-coded [m]
       double leafAreaDensitydep = 5.57;// LAD, temporarily hard-coded [m^-1]
       double Cc = 1.0;// Cunningham correction factor, temporarily hard-coded, only important for <10um particles
-      double parRMS = 1.0 / sqrt(3.0) * sqrt(txx + tyy + tzz);// RMS of velocity fluctuations the particle is experiencing [m/s]
-      double taylorMicroscale = sqrt((15.0 * nuAir * 5.0 * pow(parRMS, 2.0)) / CoEps);
-      double Stk = (par_ptr->rho * pow((1.0E-6) * par_ptr->d, 2.0) * MTot * Cc) / (18.0 * rhoAir * nuAir * elementDiameter);// classical Stokes number
+      double parRMS = 1.0 / sqrt(3.0) * sqrt(p->txx + p->tyy + p->tzz);// RMS of velocity fluctuations the particle is experiencing [m/s]
+      double taylorMicroscale = sqrt((15.0 * nuAir * 5.0 * pow(parRMS, 2.0)) / p->CoEps);
+      double Stk = (p->rho * pow((1.0E-6) * p->d, 2.0) * MTot * Cc) / (18.0 * rhoAir * nuAir * elementDiameter);// classical Stokes number
       double ReLambda = parRMS * taylorMicroscale / nuAir;// Taylor microscale Reynolds number
-      double depEff = 1.0 - 1.0 / (par_ptr->c1 * pow(pow(ReLambda, 0.3) * Stk, par_ptr->c2) + 1.0);// deposition efficiency (E in Bailey 2018 Eq. 13)
+      double depEff = 1.0 - 1.0 / (p->c1 * pow(pow(ReLambda, 0.3) * Stk, p->c2) + 1.0);// deposition efficiency (E in Bailey 2018 Eq. 13)
       double ReLeaf = elementDiameter * MTot / nuAir;// leaf Reynolds number
 
       // Temporary fix to address limitations of Price 2017 model (their correlation is only valid for 400 < ReLeaf < 6000)
@@ -100,19 +101,19 @@ void Plume::depositParticle(const double &xPos, const double &yPos, const double
       double P_v = exp(-depEff * adjLAD * partDist * 0.7);// the undeposited mass fraction. The /2 comes from Ross' G function, assuming uniform leaf orientation distribution
 
       // add deposition amount to the buffer (for parallelization)
-      par_ptr->dep_buffer_flag = true;
-      par_ptr->dep_buffer_cell.push_back(cellId_old);
-      par_ptr->dep_buffer_val.push_back((1.0 - P_v) * par_ptr->m);
-      // deposition->depcvol[cellId_old] += (1.0 - P_v) * par_ptr->m;
+      p->dep_buffer_flag = true;
+      p->dep_buffer_cell.push_back(cellId_old);
+      p->dep_buffer_val.push_back((1.0 - P_v) * p->m);
+      // deposition->depcvol[cellId_old] += (1.0 - P_v) * p->m;
 
       // Take deposited mass away from particle
-      par_ptr->m *= P_v;
-      // par_ptr->m_kg *= P_v;
+      p->m *= P_v;
+      // p->m_kg *= P_v;
 
     } else if (WGD->isTerrain(cellId - (WGD->nx - 1) * (WGD->ny - 1))) {// Ground deposition
       double dt = partDist / MTot;
-      double ustarDep = pow(pow(txz, 2.0) + pow(tyz, 2.0), 0.25);
-      double Sc = nuAir / nuT;
+      double ustarDep = pow(pow(p->txz, 2.0) + pow(p->tyz, 2.0), 0.25);
+      double Sc = nuAir / p->nuT;
       double ra = 1.0 / (0.4 * ustarDep) * log(((10000.0 * ustarDep * boxSizeZ) / (2.0 * nuAir) + 1.0 / Sc) / ((100.0 * ustarDep / nuAir) + 1.0 / Sc));
       double Cc = 1.0;// Cunningham correction factor
       double Stk_ground = (vs * pow(ustarDep, 2.0)) / (9.81 * nuAir);
@@ -123,25 +124,25 @@ void Plume::depositParticle(const double &xPos, const double &yPos, const double
       double P_g = exp(-vd * dt / dz_g);
 
       // add deposition amount to the buffer (for parallelization)
-      par_ptr->dep_buffer_flag = true;
-      par_ptr->dep_buffer_cell.push_back(cellId_old);
-      par_ptr->dep_buffer_val.push_back((1.0 - P_g) * par_ptr->m);
-      // deposition->depcvol[cellId] += (1.0 - P_g) * par_ptr->m;
+      p->dep_buffer_flag = true;
+      p->dep_buffer_cell.push_back(cellId_old);
+      p->dep_buffer_val.push_back((1.0 - P_g) * p->m);
+      // deposition->depcvol[cellId] += (1.0 - P_g) * p->m;
 
       // Take deposited mass away from particle
-      par_ptr->m *= P_g;
-      // par_ptr->m_kg *= P_g;
+      p->m *= P_g;
+      // p->m_kg *= P_g;
 
     } else {
       return;
     }
 
     // If particle mass drops below mass of a single particle, set it to zero and inactivate it
-    double oneParMass = par_ptr->rho * (1.0 / 6.0) * M_PI * pow((1.0E-6) * par_ptr->d, 3.0);
-    if (par_ptr->m / 1000.0 < oneParMass) {
-      // par_ptr->m_kg = 0.0;
-      par_ptr->m = 0.0;
-      par_ptr->isActive = false;
+    double oneParMass = p->rho * (1.0 / 6.0) * M_PI * pow((1.0E-6) * p->d, 3.0);
+    if (p->m / 1000.0 < oneParMass) {
+      // p->m_kg = 0.0;
+      p->m = 0.0;
+      p->isActive = false;
     }
 
   }// if ( isActive == true )

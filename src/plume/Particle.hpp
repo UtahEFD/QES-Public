@@ -170,12 +170,12 @@ public:
   double wFluct_old{};// w component
 
   // stress tensor from the last iteration (6 component because stress tensor is symmetric)
-  double txx_old{};// this is the stress in the x direction on the x face from the last iteration
-  double txy_old{};// this is the stress in the y direction on the x face from the last iteration
-  double txz_old{};// this is the stress in the z direction on the x face from the last iteration
-  double tyy_old{};// this is the stress in the y direction on the y face from the last iteration
-  double tyz_old{};// this is the stress in the z direction on the y face from the last iteration
-  double tzz_old{};// this is the stress in the z direction on the z face from the last iteration
+  double txx{};// this is the stress in the x direction on the x face from the last iteration
+  double txy{};// this is the stress in the y direction on the x face from the last iteration
+  double txz{};// this is the stress in the z direction on the x face from the last iteration
+  double tyy{};// this is the stress in the y direction on the y face from the last iteration
+  double tyz{};// this is the stress in the z direction on the y face from the last iteration
+  double tzz{};// this is the stress in the z direction on the z face from the last iteration
 
   double delta_uFluct{};// this is the difference between the current and last iteration of the uFluct variable
   double delta_vFluct{};// this is the difference between the current and last iteration of the vFluct variable

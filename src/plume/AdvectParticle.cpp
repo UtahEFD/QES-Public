@@ -97,15 +97,7 @@ void Plume::advectParticle(double timeRemainder, Particle *p, double boxSizeZ, W
     //  update the par_time, useful for debugging
     // par_time = par_time + par_dt;
 
-    double txx = 0.0, txy = 0.0, txz = 0.0, tyy = 0.0, tyz = 0.0, tzz = 0.0;
-    double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
-
-    interp->interpValues(TGD, p->xPos, p->yPos, p->zPos, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, p->nuT, p->CoEps);
-
-    // now need to call makeRealizable on tau
-    makeRealizable(txx, txy, txz, tyy, tyz, tzz);
-
-    GLE_solver(p, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, par_dt);
+    GLE_solver(p, par_dt, TGD);
 
     if (p->isRogue) {
       p->isActive = false;
@@ -130,7 +122,7 @@ void Plume::advectParticle(double timeRemainder, Particle *p, double boxSizeZ, W
 
     // Deposit mass (vegetation only right now)
     if (p->depFlag && p->isActive) {
-      depositParticle(p->xPos, p->yPos, p->zPos, disX, disY, disZ, uTot, vTot, wTot, txx, tyy, tzz, txz, txy, tyz, vs, p->CoEps, boxSizeZ, p->nuT, p, WGD, TGD);
+      depositParticle(p, disX, disY, disZ, uTot, vTot, wTot, vs, boxSizeZ, WGD, TGD);
     }
 
     // check and do wall (building and terrain) reflection (based in the method)
@@ -145,26 +137,14 @@ void Plume::advectParticle(double timeRemainder, Particle *p, double boxSizeZ, W
 
     // now update the old values to be ready for the next particle time iteration
     // the current values are already set for the next iteration by the above calculations
-    // note: it may look strange to set the old values to the current values, then to use these
-    //  old values when setting the storage values, but that is what the old code was technically doing
-    //  we are already done using the old _old values by this point and need to use the current ones
-    // but we do need to set the delta velFluct values before setting the velFluct_old values to the current velFluct values
     // !!! this is extremely important for the next iteration to work accurately
     p->delta_uFluct = p->uFluct - p->uFluct_old;
     p->delta_vFluct = p->vFluct - p->vFluct_old;
     p->delta_wFluct = p->wFluct - p->wFluct_old;
+
     p->uFluct_old = p->uFluct;
     p->vFluct_old = p->vFluct;
     p->wFluct_old = p->wFluct;
-
-    p->txx_old = txx;
-    p->txy_old = txy;
-    p->txz_old = txz;
-    p->tyy_old = tyy;
-    p->tyz_old = tyz;
-    p->tzz_old = tzz;
-
-    // cellIdx_old=cellIdx;
 
     // now set the time remainder for the next loop
     // if the par_dt calculated from the Courant Number is greater than the timeRemainder,
@@ -175,8 +155,16 @@ void Plume::advectParticle(double timeRemainder, Particle *p, double boxSizeZ, W
   }// while( isActive == true && timeRemainder > 0.0 )
 }
 
-void Plume::GLE_solver(Particle *p, double &txx, double &txy, double &txz, double &tyy, double &tyz, double &tzz, double &flux_div_x, double &flux_div_y, double &flux_div_z, double &par_dt)
+void Plume::GLE_solver(Particle *p, double &par_dt, TURBGeneralData *TGD)
 {
+  double txx = 0.0, txy = 0.0, txz = 0.0, tyy = 0.0, tyz = 0.0, tzz = 0.0;
+  double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
+
+  interp->interpValues(TGD, p->xPos, p->yPos, p->zPos, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, p->nuT, p->CoEps);
+
+  // now need to call makeRealizable on tau
+  makeRealizable(txx, txy, txz, tyy, tyz, tzz);
+
   // now need to calculate the inverse values for tau
   // directly modifies the values of tau
   double lxx = txx;
@@ -208,12 +196,12 @@ void Plume::GLE_solver(Particle *p, double &txx, double &txy, double &txz, doubl
 
   // now calculate a bunch of values for the current particle
   // calculate the time derivative of the stress tensor: (tau_current - tau_old)/dt
-  double dtxxdt = (txx - p->txx_old) / par_dt;
-  double dtxydt = (txy - p->txy_old) / par_dt;
-  double dtxzdt = (txz - p->txz_old) / par_dt;
-  double dtyydt = (tyy - p->tyy_old) / par_dt;
-  double dtyzdt = (tyz - p->tyz_old) / par_dt;
-  double dtzzdt = (tzz - p->tzz_old) / par_dt;
+  double dtxxdt = (txx - p->txx) / par_dt;
+  double dtxydt = (txy - p->txy) / par_dt;
+  double dtxzdt = (txz - p->txz) / par_dt;
+  double dtyydt = (tyy - p->tyy) / par_dt;
+  double dtyzdt = (tyz - p->tyz) / par_dt;
+  double dtzzdt = (tzz - p->tzz) / par_dt;
 
   // now calculate and set the A and b matrices for an Ax = b
   // A = -I + 0.5*(-CoEps*L + dTdt*L )*par_dt;
@@ -265,4 +253,13 @@ void Plume::GLE_solver(Particle *p, double &txx, double &txy, double &txz, doubl
     p->isActive = false;
     p->isRogue = true;
   }
+
+  // now update the old values to be ready for the next particle time iteration
+  // the current values are already set for the next iteration by the above calculations
+  p->txx = txx;
+  p->txy = txy;
+  p->txz = txz;
+  p->tyy = tyy;
+  p->tyz = tyz;
+  p->tzz = tzz;
 }
