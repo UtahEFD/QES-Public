@@ -34,7 +34,7 @@
 #include <math.h>
 #include "Plume.hpp"
 
-void Plume::depositParticle(double xPos, double yPos, double zPos, double disX, double disY, double disZ, double uTot, double vTot, double wTot, double txx, double tyy, double tzz, double txz, double txy, double tyz, double vs, double CoEps, double boxSizeZ, double nuT, Particle *par_ptr, WINDSGeneralData *WGD, TURBGeneralData *TGD)
+void Plume::depositParticle(const double &xPos, const double &yPos, const double &zPos, const double &disX, const double &disY, const double &disZ, const double &uTot, const double &vTot, const double &wTot, const double &txx, const double &tyy, const double &tzz, const double &txz, const double &txy, const double &tyz, const double &vs, const double &CoEps, const double &boxSizeZ, const double &nuT, Particle *par_ptr, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
 
   double rhoAir = 1.225;// in kg m^-3
