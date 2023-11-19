@@ -145,6 +145,14 @@ public:
   {
   }
 
+  virtual void canopyTurbulenceWake(WINDSGeneralData *wgd, TURBGeneralData *TGD, int buildind_id)
+  {
+  }
+
+  virtual void canopyStress(WINDSGeneralData *wgd, TURBGeneralData *TGD, int buildind_id)
+  {
+  }
+
   virtual void streetCanyon(WINDSGeneralData *WGD)
   {
   }

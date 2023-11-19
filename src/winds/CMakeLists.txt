@@ -12,7 +12,6 @@ SET( qesWindCoreSources
   CPUSolver.cpp
   Cut_cell.cpp
   DTEHeightField.cpp
-  handleWINDSArgs.cpp
   LocalMixing.cpp
   LocalMixingDefault.cpp
   LocalMixingNetCDF.cpp

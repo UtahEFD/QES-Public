@@ -58,9 +58,9 @@ Plume::Plume(WINDSGeneralData *WGD, TURBGeneralData *TGD)
 Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   : particleList(0), allSources(0)
 {
-
-  std::cout << "[Plume] \t Setting up simulation details " << std::endl;
-
+  std::cout << "-------------------------------------------------------------------" << std::endl;
+  std::cout << "[QES-Plume]\t Initialization of plume model...\n";
+  
   // copy debug information
   doParticleDataOutput = false;// arguments->doParticleDataOutput;
   outputSimInfoFile = false;// arguments->doSimInfoFileOutput;
@@ -81,7 +81,7 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   dxy = WGD->dxy;
 
   // Create instance of Interpolation class
-  std::cout << "[Plume] \t Interpolation Method set to: "
+  std::cout << "[QES-Plume] \t Interpolation Method set to: "
             << PID->plumeParams->interpMethod << std::endl;
   if (PID->plumeParams->interpMethod == "analyticalPowerLaw") {
     interp = new InterpPowerLaw(WGD, TGD, debug);
@@ -119,6 +119,12 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   domainZstart = interp->zStart;
   domainZend = interp->zEnd;
 
+  // Need dz for ground deposition
+  double lBndz = PID->colParams->boxBoundsZ1;
+  double uBndz = PID->colParams->boxBoundsZ2;
+  int nBoxesZ = PID->colParams->nBoxesZ;
+  boxSizeZ = (uBndz - lBndz) / (nBoxesZ);
+
   // make copies of important dispersion time variables
   sim_dt = PID->plumeParams->timeStep;
 
@@ -148,7 +154,12 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   //  data
   // !!! totalParsToRelease needs calculated very carefully here using
   // information from each of the sources
-  getInputSources(PID);
+  if (PID->sourceParams) {
+    getInputSources(PID);
+  } else {
+    std::cout << "[WARNING]\t no source parameters" << std::endl;
+  }
+
 
   /* setup boundary condition functions */
 
@@ -187,6 +198,8 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
 {
   auto startTimeAdvec = std::chrono::high_resolution_clock::now();
 
+  std::cout << "-------------------------------------------------------------------" << std::endl;
+
   // get the threshold velocity fluctuation to define rogue particles
   vel_threshold = 10.0 * getMaxVariance(TGD);
 
@@ -208,13 +221,13 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
   }
 
   QEStime nextUpdate = simTimeCurr + updateFrequency_timeLoop;
-  double simTime = simTimeCurr - simTimeStart;
+  float simTime = simTimeCurr - simTimeStart;
 
-  std::cout << "[Plume] \t Advecting particles from " << simTimeCurr << " to " << loopTimeEnd << "\n";
-  std::cout << "\t\t total run time = " << loopTimeEnd - simTimeCurr << " s \n";
-  std::cout << "\t\t simulation time = " << simTime << " s (iteration = " << simTimeIdx << "). \n";
+  std::cout << "[QES-Plume] \t Advecting particles from " << simTimeCurr << " to " << loopTimeEnd << ".\n"
+            << "\t\t Total run time = " << loopTimeEnd - simTimeCurr << " s "
+            << "(sim time = " << simTime << " s, iteration = " << simTimeIdx << "). \n";
   std::cout << "\t\t Particles: Released = " << nParsReleased << " "
-            << "Active = " << particleList.size() << std::endl;
+            << "Active = " << particleList.size() << "." << std::endl;
 
   // LA note: that this loop goes from 0 to nTimes-2, not nTimes-1. This is
   // because
@@ -272,17 +285,19 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
 
     auto startTime = std::chrono::high_resolution_clock::now();
     // FM: openmp parallelization of the advection loop
+#ifdef _OPENMP
     std::vector<Particle *> tmp(particleList.begin(), particleList.end());
 #pragma omp parallel for default(none) shared(WGD, TGD, tmp, timeRemainder)
     for (auto k = 0u; k < tmp.size(); ++k) {
       // call to the main particle adection function (in separate file: AdvectParticle.cpp)
-      advectParticle(timeRemainder, tmp[k], WGD, TGD);
-    }
-    //for (auto parItr = tmp.begin(); parItr != tmp.end(); parItr++) {
-    // call to the main particle adection function (in separate file: AdvectParticle.cpp)
-    //  advectParticle(timeRemainder, *parItr, WGD, TGD);
-    //}// end of loop
-    // END OF OPENMP WORK SHARE
+      advectParticle(timeRemainder, tmp[k], boxSizeZ, WGD, TGD);
+    }//  END OF OPENMP WORK SHARE
+#else
+    for (auto &parItr : particleList) {
+      //  call to the main particle adection function (in separate file: AdvectParticle.cpp)
+      advectParticle(timeRemainder, parItr, boxSizeZ, WGD, TGD);
+    }// end of loop
+#endif
 
     //  flush deposition buffer
     for (auto &parItr : particleList) {
@@ -348,7 +363,7 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
 
   }// end of time loop
 
-  std::cout << "[Plume] \t End of particles advection at Time = " << simTimeCurr
+  std::cout << "[QES-Plume] \t End of particles advection at Time = " << simTimeCurr
             << " s (iteration = " << simTimeIdx << "). \n";
   std::cout << "\t\t Particles: Released = " << nParsReleased << " "
             << "Active = " << particleList.size() << "." << std::endl;
@@ -445,40 +460,34 @@ double Plume::calcCourantTimestep(const double &d,
 
 void Plume::getInputSources(PlumeInputData *PID)
 {
-  int numSources_Input = PID->sources->sources.size();
+  int numSources_Input = PID->sourceParams->sources.size();
 
   if (numSources_Input == 0) {
-    std::cerr << "[ERROR]\t(Dispersion::getInputSources): there are no sources in the input file!"
-              << std::endl;
+    std::cerr << "[ERROR]\t Plume::getInputSources: \n\t\t there are no sources in the input file!" << std::endl;
     exit(1);
   }
 
   // start at zero particles to release and increment as the number per source
-  // is found out
-  totalParsToRelease = 0;
+  // totalParsToRelease = 0;
 
-  for (auto sIdx = 0; sIdx < numSources_Input; sIdx++) {
-    // first create the pointer to the input source
-    SourceType *sPtr;
-
-    // now point the pointer at the source
-    sPtr = PID->sources->sources.at(sIdx);
-
+  for (auto s : PID->sourceParams->sources) {
     // now do anything that is needed to the source via the pointer
-    sPtr->setSourceIdx(sIdx);
-    sPtr->m_rType->calcReleaseInfo(PID->plumeParams->timeStep, PID->plumeParams->simDur);
-    sPtr->m_rType->checkReleaseInfo(PID->plumeParams->timeStep, PID->plumeParams->simDur);
-    sPtr->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
+    s->checkReleaseInfo(PID->plumeParams->timeStep, PID->plumeParams->simDur);
+    s->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
 
-    // now determine the number of particles to release for the source and
-    // update the overall count
-    totalParsToRelease = totalParsToRelease + sPtr->m_rType->m_numPar;
+    // now determine the number of particles to release for the source and update the overall count
+    totalParsToRelease += s->getNumParticles();
 
-    // now add the pointer that points to the source to the list of sources in
-    // dispersion
-    allSources.push_back(sPtr);
+    // add source into the vector of sources
+    allSources.push_back(new Source((int)allSources.size(), s));
   }
 }
+
+void Plume::addSources(std::vector<Source *> &newSources)
+{
+  allSources.insert(allSources.end(), newSources.begin(), newSources.end());
+}
+
 
 int Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
@@ -488,8 +497,8 @@ int Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBGe
 
   std::list<Particle *> nextSetOfParticles;
   int numNewParticles = 0;
-  for (auto sIdx = 0u; sIdx < allSources.size(); sIdx++) {
-    numNewParticles += allSources.at(sIdx)->emitParticles((float)sim_dt, currentTime, nextSetOfParticles);
+  for (auto source : allSources) {
+    numNewParticles += source->emitParticles((float)sim_dt, currentTime, nextSetOfParticles);
   }
 
   setParticleVals(WGD, TGD, nextSetOfParticles);
@@ -505,7 +514,7 @@ int Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBGe
 void Plume::scrubParticleList()
 {
   for (auto parItr = particleList.begin(); parItr != particleList.end();) {
-    if ((*parItr)->isActive) {
+    if (!(*parItr)->isActive) {
       delete *parItr;
       parItr = particleList.erase(parItr);
     } else {
@@ -527,9 +536,9 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, std::li
     nParsReleased++;
   }
 
-  //#pragma omp parallel for default(none) shared(WGD, TGD, tmp)
-  //for (auto parItr = tmp.begin(); parItr != tmp.end(); parItr++) {
-  // set particle ID (use global particle counter)
+  // #pragma omp parallel for default(none) shared(WGD, TGD, tmp)
+  // for (auto parItr = tmp.begin(); parItr != tmp.end(); parItr++) {
+  //  set particle ID (use global particle counter)
   //(*parItr)->particleID = nParsReleased;
   //
 #pragma omp parallel for default(none) shared(WGD, TGD, tmp)
@@ -688,7 +697,7 @@ void Plume::makeRealizable(double &txx,
   double c = txx * tyy + txx * tzz + tyy * tzz - txy * txy - txz * txz - tyz * tyz;// also invar_yy
   double ks = 1.01 * (-b + std::sqrt(b * b - 16.0 / 3.0 * c)) / (8.0 / 3.0);
 
-  // if the initial guess is bad, use the straight-up invar_xx value
+  // if the initial guess is bad, use the straight up invar_xx value
   if (ks < invarianceTol || isnan(ks)) {
     ks = 0.5 * std::abs(txx + tyy + tzz);// also 0.5*abs(invar_xx)
   }

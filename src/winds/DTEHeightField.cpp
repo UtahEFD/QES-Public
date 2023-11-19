@@ -65,9 +65,21 @@ DTEHeightField::DTEHeightField(const std::string &filename,
     m_cellSize(cellSize), m_dim(dim),
     domain_UTMx(UTMx), domain_UTMy(UTMy)
 {
+  std::cout << "-------------------------------------------------------------------" << std::endl;
+  std::cout << "[DTEHeightField] Initialization Height Field..." << std::endl;
+  std::cout << "Extracting Digital Elevation Data from" << filename << std::endl;
+
+  auto start = std::chrono::high_resolution_clock::now();
+
   GDALAllRegister();
 
   load();
+
+  std::cout << "[DTEHeightField] Loading completed." << std::endl;
+
+  auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
+  std::chrono::duration<float> elapsed_cut = finish - start;
+  std::cout << "\t\t elapsed time: " << elapsed_cut.count() << " s\n";
 }
 
 // Constructor for converting heightfield data to the internal
@@ -81,6 +93,11 @@ DTEHeightField::DTEHeightField(const std::vector<double> &heightField,
                                float halo_y)
   : m_cellSize(cellSize), m_dim(dim)
 {
+  std::cout << "-------------------------------------------------------------------" << std::endl;
+  std::cout << "[DTEHeightField]  Constructing the DTE from WRF input height-field..." << std::endl;
+
+  auto start = std::chrono::high_resolution_clock::now();
+
   Triangle *tPtr = 0;
   m_triList.clear();
 
@@ -109,7 +126,7 @@ DTEHeightField::DTEHeightField(const std::vector<double> &heightField,
   // correct dimensions
 
   int step = 1;// step size is interpretted incorrectly here for
-    // fire meshes...
+               // fire meshes...
 
   // previously, with regular DEMs we can use the cellSize to
   // determine how we step over the terrain to create the actual
@@ -186,10 +203,13 @@ DTEHeightField::DTEHeightField(const std::vector<double> &heightField,
     }
   }
 
-  std::cout << "... completed." << std::endl;
-
   // At end of loop above, all height field data will have been
   // converted to a triangle mesh, stored in m_triList.
+  std::cout << "[DTEHeightField]  Loading completed." << std::endl;
+
+  auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
+  std::chrono::duration<float> elapsed_cut = finish - start;
+  std::cout << "\t\t elapsed time: " << elapsed_cut.count() << " s\n";
 }
 
 #if 0
@@ -237,13 +257,13 @@ void DTEHeightField::loadImage()
 
 void DTEHeightField::load()
 {
-  std::cout << "DTEHeightField loading DTE..." << std::endl;
-
+  std::cout << "Summary of GIS Info:" << std::endl;
+  std::cout << "----------------------------" << std::endl;
   //
   // local variables to hold common variables related to the QES
   // domain
   //
-  //decomposition declarations are a C++17 extension
+  // decomposition declarations are a C++17 extension
   // auto [nx, ny, nz] = m_dim;
   int nx = std::get<0>(m_dim);
   int ny = std::get<1>(m_dim);
@@ -260,14 +280,9 @@ void DTEHeightField::load()
     exit(EXIT_FAILURE);
   }
 
-  printf("GDAL Driver: %s/%s\n",
+  printf("- GDAL Driver:\t %s/%s\n",
          m_poDataset->GetDriver()->GetDescription(),
          m_poDataset->GetDriver()->GetMetadataItem(GDAL_DMD_LONGNAME));
-
-  printf("\tRaster Size is %dx%dx%d\n",
-         m_poDataset->GetRasterXSize(),
-         m_poDataset->GetRasterYSize(),
-         m_poDataset->GetRasterCount());
 
   // Attempt to get the spatial reference from this dataset -
   // which will help us convert into lat/long
@@ -275,20 +290,25 @@ void DTEHeightField::load()
   // spatialRef = m_poDataset->GetSpatialRef, but in pre-3.0 versions,
   // this comes from GetProjectionRef
   if (m_poDataset->GetProjectionRef() != NULL)
-    printf("\tProjection is `%s'\n", m_poDataset->GetProjectionRef());
+    printf("- Projection:\t `%s'\n", m_poDataset->GetProjectionRef());
+
+  printf("- Raster Size:\t\t %dx%dx%d\n",
+         m_poDataset->GetRasterXSize(),
+         m_poDataset->GetRasterYSize(),
+         m_poDataset->GetRasterCount());
 
   if (m_poDataset->GetGeoTransform(m_geoTransform) == CE_None) {
-    printf("\tDEM Origin = (%.6f,%.6f)\n",
+    printf("- DEM Origin:\t\t (%.6f,%.6f)\n",
            m_geoTransform[0],
            m_geoTransform[3]);
 
-    printf("\tPixel Size = (%.6f,%.6f)\n",
+    printf("- Pixel Size:\t\t (%.6f,%.6f)\n",
            m_geoTransform[1],
            m_geoTransform[5]);
     pixelSizeX = abs(m_geoTransform[1]);
     pixelSizeY = abs(m_geoTransform[5]);
 
-    printf("These should be zero for north up: (%.6f, %.6f)\n",
+    printf("- These should be zero for north up: (%.6f, %.6f)\n",
            m_geoTransform[2],
            m_geoTransform[4]);
   }
@@ -300,7 +320,7 @@ void DTEHeightField::load()
 
   poBand = m_poDataset->GetRasterBand(1);
   poBand->GetBlockSize(&nBlockXSize, &nBlockYSize);
-  printf("\tRaster Block=%dx%d Type=%s, ColorInterp=%s\n",
+  printf("- Raster Block=%dx%d Type=%s, ColorInterp=%s\n",
          nBlockXSize,
          nBlockYSize,
          GDALGetDataTypeName(poBand->GetRasterDataType()),
@@ -311,23 +331,24 @@ void DTEHeightField::load()
   if (!(bGotMin && bGotMax))
     GDALComputeRasterMinMax((GDALRasterBandH)poBand, TRUE, adfMinMax);
 
-  printf("\tRaster Min=%.3fd and Max=%.3f\n", adfMinMax[0], adfMinMax[1]);
+  printf("- Raster Min:\t\t %.3f\n", adfMinMax[0]);
+  printf("- Raster Max:\t\t %.3f\n", adfMinMax[1]);
 
   if (poBand->GetOverviewCount() > 0)
-    printf("\tBand has %d overviews.\n", poBand->GetOverviewCount());
+    printf("- Band has %d overviews.\n", poBand->GetOverviewCount());
 
   if (poBand->GetColorTable() != NULL)
-    printf("\tBand has a color table with %d entries.\n",
+    printf("- Band has a color table with %d entries.\n",
            poBand->GetColorTable()->GetColorEntryCount());
 
   m_rbScale = poBand->GetScale();
-  printf("Band has scale: %.4f\n", m_rbScale);
+  printf("- Band scale:\t\t %.4f\n", m_rbScale);
 
   m_rbOffset = poBand->GetOffset();
-  printf("Band has offset: %.4f\n", m_rbOffset);
+  printf("- Band offset:\t\t %.4f\n", m_rbOffset);
 
   m_rbNoData = poBand->GetNoDataValue();
-  printf("Band has NoData value: %.4f\n", m_rbNoData);
+  printf("- Band 'NoData' value:\t %.4f\n", m_rbNoData);
 
   m_nXSize = poBand->GetXSize();
   m_nYSize = poBand->GetYSize();
@@ -335,10 +356,10 @@ void DTEHeightField::load()
   origin_x = m_geoTransform[0];
   origin_y = m_geoTransform[3] - pixelSizeY * m_nYSize;
 
-  printf("\tDEM size: %dx%d\n", m_nXSize, m_nYSize);
-  printf("\tDEM size: %.1fx%.1f\n", m_nXSize * pixelSizeX, m_nYSize * pixelSizeY);
+  printf("- DEM size:\t\t %dx%d\n", m_nXSize, m_nYSize);
+  printf("- DEM size:\t\t %.1fx%.1f\n", m_nXSize * pixelSizeX, m_nYSize * pixelSizeY);
 
-  printf("\tDomain Origin = (%.6f,%.6f)\n", origin_x, origin_y);
+  printf("- Domain Origin:\t (%.6f,%.6f)\n", origin_x, origin_y);
 
   // UTMx will be correct, but need to subtract halo
   //      demMinX == UTMx - halo_x
@@ -353,16 +374,16 @@ void DTEHeightField::load()
   std::cout << "Mapping between raster coordinates and geo-referenced coordinates" << std::endl;
   double xGeo(0.0), yGeo(0.0);
   convertRasterToGeo(0, 0, xGeo, yGeo);
-  printf("Raster Coordinate (0, 0):\t(%12.7f, %12.7f)\n", xGeo, yGeo);
+  printf("- Raster Coordinate (0, 0):\t(%12.7f, %12.7f)\n", xGeo, yGeo);
 
   convertRasterToGeo(m_nXSize, 0, xGeo, yGeo);
-  printf("Raster Coordinate (%d, 0):\t(%12.7f, %12.7f)\n", m_nXSize, xGeo, yGeo);
+  printf("- Raster Coordinate (%d, 0):\t(%12.7f, %12.7f)\n", m_nXSize, xGeo, yGeo);
 
   convertRasterToGeo(m_nXSize, m_nYSize, xGeo, yGeo);
-  printf("Raster Coordinate (%d, %d):\t(%12.7f, %12.7f)\n", m_nXSize, m_nYSize, xGeo, yGeo);
+  printf("- Raster Coordinate (%d, %d):\t(%12.7f, %12.7f)\n", m_nXSize, m_nYSize, xGeo, yGeo);
 
   convertRasterToGeo(0, m_nYSize, xGeo, yGeo);
-  printf("Raster Coordinate (0, %d):\t(%12.7f, %12.7f)\n", m_nYSize, xGeo, yGeo);
+  printf("- Raster Coordinate (0, %d):\t(%12.7f, %12.7f)\n", m_nYSize, xGeo, yGeo);
 
   if (originFlag == 0) {
     float domain_end_x = origin_x + DEMDistancex + nx * dx;
@@ -425,7 +446,7 @@ void DTEHeightField::load()
   // double xGeo, yGeo;
   Vector3 tc0, tc1, tc2;
 
-
+  std::cout << "----------------------------" << std::endl;
   std::cout << "DEM Loading\n";
 
   float stepX = dx / pixelSizeX;// tie back to dx, dy here.... with scaling of pixelsize
@@ -477,7 +498,7 @@ void DTEHeightField::load()
     printProgress((float)(iYline + 1) / (float)(m_nYSize - 1));
   }
   std::cout << std::endl;
-
+  std::cout << "----------------------------" << std::endl;
   // At end of loop above, all height field data will have been
   // converted to a triangle mesh, stored in m_triList.
 }
@@ -496,11 +517,11 @@ void DTEHeightField::setDomain(Vector3Int &domain, Vector3 &grid)
   }
 
   auto start = std::chrono::high_resolution_clock::now();// Start
-    // recording
-    // execution
-    // time
+                                                         // recording
+                                                         // execution
+                                                         // time
 
-  std::cout << "Setting Terrain Boundaries\n";
+  std::cout << "[DTEHeightField] Setting Terrain Boundaries\n";
   for (int q = 0; q < 3; q++) {
     int triListSize = m_triList.size();
 
@@ -532,9 +553,9 @@ void DTEHeightField::setDomain(Vector3Int &domain, Vector3 &grid)
   auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
 
   std::chrono::duration<double> elapsed = finish - start;
-  std::cout << "\telapsed time: " << elapsed.count() << " s\n";// Print out elapsed execution time
+  std::cout << "\t\t elapsed time: " << elapsed.count() << " s\n";// Print out elapsed execution time
 
-  printf("Newly calculated domain size: %d %d %d\n", domain[0], domain[1], domain[2]);
+  printf("[DTEHeightField] Newly calculated domain size: %d %d %d\n", domain[0], domain[1], domain[2]);
 }
 
 void DTEHeightField::outputOBJ(std::string s)
@@ -609,7 +630,7 @@ void DTEHeightField::printProgress(float percentage)
 void DTEHeightField::setCells(WINDSGeneralData *WGD, const WINDSInputData *WID)
 {
 
-  printf("Setting Cell Data...\n");
+  printf("[DTEHeightField] Setting Cell Data...\n");
 
   std::vector<int> cutCells;
 
@@ -825,9 +846,9 @@ void DTEHeightField::setCellPoints(int i, int j, int nx, int ny, int nz, std::ve
       // intermediate pair.---- != is essentially XOR
       else if ((intermed[0][2][0] != -1) != (intermed[0][2][1] != -1)) {
         int midP = (intermed[0][2][0] != -1 ? intermed[0][2][0] : intermed[0][2][1]);
-        //only need to check 1 and 3 corners
-        //since there is only one intermediate on the diagonal, either 0 or 2 exists in the cell
-        //because of this, if 1 or 3 exists in the cell the intermediate always connects to it
+        // only need to check 1 and 3 corners
+        // since there is only one intermediate on the diagonal, either 0 or 2 exists in the cell
+        // because of this, if 1 or 3 exists in the cell the intermediate always connects to it
         if ((cornerPos[1] == -1 && (intermed[0][1][0] == -1 || intermed[1][2][0] == -1))
             || (cornerPos[1] == 1 && (intermed[0][1][1] == -1 || intermed[1][2][1] == -1))
             || cornerPos[1] == 0)
@@ -851,8 +872,8 @@ void DTEHeightField::setCellPoints(int i, int j, int nx, int ny, int nz, std::ve
       // bot with all bots, then top to all bot intermediates
       else if (intermed[0][2][0] != -1 && intermed[0][2][1] != -1) {
         int midB = intermed[0][2][0], midT = intermed[0][2][1];
-        //for bot, check 0-3, 2-3, 0-1, 1-2  & Corner 1,3
-        //corners
+        // for bot, check 0-3, 2-3, 0-1, 1-2  & Corner 1,3
+        // corners
         if (cornerPos[1] >= 0)
           edgesInCell.push_back(Edge<int>(1, midT));
         if (cornerPos[1] < 0)
@@ -861,7 +882,7 @@ void DTEHeightField::setCellPoints(int i, int j, int nx, int ny, int nz, std::ve
           edgesInCell.push_back(Edge<int>(3, midT));
         if (cornerPos[3] < 0)
           edgesInCell.push_back(Edge<int>(3, midB));
-        //intermeds
+        // intermeds
         for (int first = 0; first < 3; first++)
           for (int second = first + 1; second < 4; second++)
             if ((first != 1 || second != 3) && (first != 0 || second != 2)) {
@@ -873,34 +894,34 @@ void DTEHeightField::setCellPoints(int i, int j, int nx, int ny, int nz, std::ve
                 edgesInCell.push_back(Edge<int>(intermed[first][second][1], midT));
             }
       }
-      //in this case 0 and 2 are either both above or below
-      //this breaks down into further cases
+      // in this case 0 and 2 are either both above or below
+      // this breaks down into further cases
       else {
-        //Note: there should be no case where all points are above or below
-        //this algorithm should not execute under that circumstance
+        // Note: there should be no case where all points are above or below
+        // this algorithm should not execute under that circumstance
 
-        int topBot = (cornerPos[0] > 0 ? 1 : 0);//if the diagonal is across the top, we make a mesh across the top
-        //else we make a mesh across the bottom
+        int topBot = (cornerPos[0] > 0 ? 1 : 0);// if the diagonal is across the top, we make a mesh across the top
+        // else we make a mesh across the bottom
 
-        if (cornerPos[1] != cornerPos[0] && cornerPos[3] != cornerPos[0])//if both corners are away from the diagonal
-        {//create a mesh on the top of the cell
+        if (cornerPos[1] != cornerPos[0] && cornerPos[3] != cornerPos[0])// if both corners are away from the diagonal
+        {// create a mesh on the top of the cell
           edgesInCell.push_back(Edge<int>(intermed[0][3][topBot], intermed[0][1][topBot]));
           edgesInCell.push_back(Edge<int>(intermed[0][3][topBot], intermed[1][2][topBot]));
           edgesInCell.push_back(Edge<int>(intermed[0][3][topBot], intermed[2][3][topBot]));
           edgesInCell.push_back(Edge<int>(intermed[0][1][topBot], intermed[1][2][topBot]));
           edgesInCell.push_back(Edge<int>(intermed[2][3][topBot], intermed[1][2][topBot]));
-          if (cornerPos[1] == (topBot == 1 ? -1 : 1))//if the diag is on the cell top, we check if the corner is out of the bottom vice versa.
-            edgesInCell.push_back(Edge<int>(intermed[0][1][1], intermed[1][2][0]));//make the intermediate face into triangles
-          if (cornerPos[3] == (topBot == 1 ? -1 : 1))//if the diag is on the cell top, we check if the corner is out of the bottom vice versa.
-            edgesInCell.push_back(Edge<int>(intermed[0][3][1], intermed[2][3][0]));//make the intermediate face into triangles
-        } else//at least one has to be
+          if (cornerPos[1] == (topBot == 1 ? -1 : 1))// if the diag is on the cell top, we check if the corner is out of the bottom vice versa.
+            edgesInCell.push_back(Edge<int>(intermed[0][1][1], intermed[1][2][0]));// make the intermediate face into triangles
+          if (cornerPos[3] == (topBot == 1 ? -1 : 1))// if the diag is on the cell top, we check if the corner is out of the bottom vice versa.
+            edgesInCell.push_back(Edge<int>(intermed[0][3][1], intermed[2][3][0]));// make the intermediate face into triangles
+        } else// at least one has to be
         {
-          //triangles from up corner to opposing intermediates
-          if (cornerPos[1] == cornerPos[0])//either c1 to c3 intermeds
+          // triangles from up corner to opposing intermediates
+          if (cornerPos[1] == cornerPos[0])// either c1 to c3 intermeds
           {
             edgesInCell.push_back(Edge<int>(1, intermed[0][3][topBot]));
             edgesInCell.push_back(Edge<int>(1, intermed[2][3][topBot]));
-          } else//or c3 to c1 intermeds
+          } else// or c3 to c1 intermeds
           {
             edgesInCell.push_back(Edge<int>(3, intermed[0][1][topBot]));
             edgesInCell.push_back(Edge<int>(3, intermed[1][2][topBot]));

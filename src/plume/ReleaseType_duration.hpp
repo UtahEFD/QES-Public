@@ -28,8 +28,8 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file ReleaseType_continuous.hpp 
- * @brief This class represents a specific release type. 
+/** @file ReleaseType_continuous.hpp
+ * @brief This class represents a specific release type.
  *
  * @note Child of ReleaseType
  * @sa ReleaseType
@@ -46,42 +46,29 @@ private:
   //  double m_releaseEndTime, and int m_numPar from ReleaseType.
   // guidelines for how to set these variables within an inherited ReleaseType are given in ReleaseType.hpp.
 
-  double releaseStartTime;
-  double releaseEndTime;
-  int parPerTimestep;
-
-
 protected:
 public:
   // Default constructor
-  ReleaseType_duration()
+  ReleaseType_duration() : ReleaseType(ParticleReleaseType::duration)
   {
   }
 
   // destructor
-  ~ReleaseType_duration()
+  ~ReleaseType_duration() = default;
+
+  void parseValues() override
   {
+    parsePrimitive<double>(true, m_releaseStartTime, "releaseStartTime");
+    parsePrimitive<double>(true, m_releaseEndTime, "releaseEndTime");
+    parsePrimitive<int>(true, m_parPerTimestep, "parPerTimestep");
   }
 
 
-  virtual void parseValues()
-  {
-    parReleaseType = ParticleReleaseType::duration;
-
-    parsePrimitive<double>(true, releaseStartTime, "releaseStartTime");
-    parsePrimitive<double>(true, releaseEndTime, "releaseEndTime");
-    parsePrimitive<int>(true, parPerTimestep, "parPerTimestep");
-  }
-
-
-  void calcReleaseInfo(const double &timestep, const double &simDur)
+  void calcReleaseInfo(const double &timestep, const double &simDur) override
   {
     // set the overall releaseType variables from the variables found in this class
-    m_parPerTimestep = parPerTimestep;
-    m_releaseStartTime = releaseStartTime;
-    m_releaseEndTime = releaseEndTime;
-    double releaseDur = releaseEndTime - releaseStartTime;
+    double releaseDur = m_releaseEndTime - m_releaseStartTime;
     int nReleaseTimes = std::ceil(releaseDur / timestep);
-    m_numPar = parPerTimestep * nReleaseTimes;
+    m_numPar = m_parPerTimestep * nReleaseTimes;
   }
 };

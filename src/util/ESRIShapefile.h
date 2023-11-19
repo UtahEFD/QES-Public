@@ -41,6 +41,7 @@
 #include "ogrsf_frmts.h"
 #include "ogr_spatialref.h"
 #include <limits>
+#include <chrono>
 
 #include "PolygonVertex.h"
 
@@ -55,7 +56,7 @@
 class ESRIShapefile
 {
 public:
-  ESRIShapefile();
+  #if 0
   ESRIShapefile(const std::string &filename,
                 const std::string &layerName,
                 std::vector<std::vector<polyVert>> &polygons,
@@ -65,9 +66,10 @@ public:
                 const std::string &layerName,
                 std::vector<std::vector<polyVert>> &polygons,
                 std::map<std::string, std::vector<float>> &features);
+  #endif
   ESRIShapefile(const std::string &filename,
                 const std::string &layerName);
-  ~ESRIShapefile();
+  ~ESRIShapefile() = default;
 
   /**
    * :document this:
@@ -104,6 +106,9 @@ public:
   std::map<std::string, std::vector<float>> m_features;
 
 private:
+  ESRIShapefile();
+
+  #if 0
   /**
    * :document this:
    *
@@ -111,8 +116,10 @@ private:
    * @param building_height :document this:
    * @param heightFactor :document this:
    */
-  void loadVectorData(std::vector<std::vector<polyVert>> &polygons, std::vector<float> &building_height, float heightFactor);
+  
+  // void loadVectorData(std::vector<std::vector<polyVert>> &polygons, std::vector<float> &building_height, float heightFactor);
 
+  #endif
   /**
    * :document this:
    *

@@ -8,8 +8,6 @@ SET( qesPlumeCoreSources
     Random.cpp
     RandomSingleton.cpp
 
-    handlePlumeArgs.cpp
-    
     Interp.cpp
     InterpNearestCell.cpp
     InterpPowerLaw.cpp
@@ -25,27 +23,28 @@ SET( qesPlumeCoreSources
     PlumeOutputParticleData.cpp
 
     BoundaryConditions.hpp
+    DomainBoundaryConditions.cpp
+
     Particle.hpp
-    ParseParticle.hpp
     ParticleFactories.hpp
     ParticleSmall.hpp
     ParticleLarge.hpp
     ParticleHeavyGas.hpp
-    
+    ParticleFactories.cpp
+
     ReleaseType.hpp
     ReleaseType_instantaneous.hpp
     ReleaseType_continuous.hpp
     ReleaseType_duration.hpp
     
-    Sources.hpp
-    SourceType.hpp
-    SourcePoint.cpp SourcePoint.hpp
-    SourceLine.cpp SourceLine.hpp
-    SourceCircle.cpp SourceCircle.hpp
-    SourceCube.cpp SourceCube.hpp
-    SourceFullDomain.cpp SourceFullDomain.hpp
+    SourceGeometry.hpp
+    SourceGeometry_Cube.cpp SourceGeometry_Cube.hpp
+    SourceGeometry_FullDomain.cpp SourceGeometry_FullDomain.hpp
+    SourceGeometry_Line.cpp SourceGeometry_Line.hpp
+    SourceGeometry_Point.cpp SourceGeometry_Point.hpp
+    SourceGeometry_SphereShell.cpp SourceGeometry_SphereShell.hpp
 
-    DomainBoundaryConditions.cpp
+    Source.cpp
     
     WallReflection.cpp
     WallReflection_StairStep.cpp

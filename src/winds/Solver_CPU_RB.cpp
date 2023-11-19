@@ -80,7 +80,7 @@ void Solver_CPU_RB::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool
   float max_error = 1.0;
   // int i_max, j_max, k_max;
 
-  std::cout << "[Solver] Running Red/Black CPU Solver ..." << std::endl;
+  std::cout << "[Solver]\t Running Red/Black CPU Solver ..." << std::endl;
 
   while (iter < itermax && max_error > tol) {
 
@@ -175,7 +175,7 @@ void Solver_CPU_RB::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool
   // std::cout << "Number of iterations:" << iter << "\n";// Print the number of iterations
   // std::cout << "Error:" << max_error << "\n";
   // std::cout << "tol:" << tol << "\n";
-  printf("[Solver] Residual after %d itertations: %2.9f\n", iter, max_error);
+  printf("[Solver]\t Residual after %d itertations: %2.9f\n", iter, max_error);
 
 #pragma omp parallel private(icell_cent, icell_face) default(none) shared(WGD, lambda)
   {
@@ -264,6 +264,6 @@ void Solver_CPU_RB::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool
   auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
   std::chrono::duration<float> elapsedTotal = finish - startOfSolveMethod;
   std::chrono::duration<float> elapsedSolve = finish - startSolveSection;
-  std::cout << "Elapsed time: " << elapsedTotal.count() << " s\n";// Print out elapsed execution time
+  std::cout << "\t\t Elapsed time: " << elapsedTotal.count() << " s\n";// Print out elapsed execution time
   // std::cout << "Elapsed solve time: " << elapsedSolve.count() << " s\n";// Print out elapsed execution time
 }

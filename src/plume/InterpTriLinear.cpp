@@ -40,6 +40,8 @@ InterpTriLinear::InterpTriLinear(WINDSGeneralData *WGD, TURBGeneralData *TGD, co
   // copy debug information
   debug = debug_val;
 
+  m_WGD = WGD;
+
   if (debug) {
     std::cout << "[InterpTriLinear] \t DEBUG - Domain boundary" << std::endl;
     std::cout << "\t\t xStart=" << xStart << " xEnd=" << xEnd << std::endl;
@@ -106,6 +108,7 @@ void InterpTriLinear::interpValues(const double &xPos,
                                    double &flux_div_x_out,
                                    double &flux_div_y_out,
                                    double &flux_div_z_out,
+                                   double &nuT_out,
                                    double &CoEps_out)
 {
   // these are the current interp3D variables, as they are used for multiple interpolations for each particle
@@ -149,6 +152,8 @@ void InterpTriLinear::interpValues(const double &xPos,
   interp3D_cellVar(TGD->div_tau_x, wgt, flux_div_x_out);
   interp3D_cellVar(TGD->div_tau_y, wgt, flux_div_y_out);
   interp3D_cellVar(TGD->div_tau_z, wgt, flux_div_z_out);
+
+  interp3D_cellVar(TGD->nuT, wgt, nuT_out);
 }
 
 void InterpTriLinear::setInterp3Dindex_uFace(const double &par_xPos,
@@ -163,16 +168,21 @@ void InterpTriLinear::setInterp3Dindex_uFace(const double &par_xPos,
   // double par_z = par_zPos - zStart + 0.5*dz;
   double par_x = par_xPos - 0.0 * dx;
   double par_y = par_yPos - 0.5 * dy;
-  double par_z = par_zPos + 0.5 * dz;
+  // double par_z = par_zPos + 0.5 * dz;
 
   wgt.ii = floor(par_x / (dx + 1e-7));
   wgt.jj = floor(par_y / (dy + 1e-7));
-  wgt.kk = floor(par_z / (dz + 1e-7));
+  // wgt.kk = floor(par_z / (dz + 1e-7));
 
   // fractional distance between the nearest nodes
   wgt.iw = (par_x / dx) - floor(par_x / (dx + 1e-7));
   wgt.jw = (par_y / dy) - floor(par_y / (dy + 1e-7));
-  wgt.kw = (par_z / dz) - floor(par_z / (dz + 1e-7));
+  // wgt.kw = (par_z / dz) - floor(par_z / (dz + 1e-7));
+
+  auto itr = std::lower_bound(m_WGD->z.begin(), m_WGD->z.end(), par_zPos);
+  wgt.kk = itr - m_WGD->z.begin() - 1;
+
+  wgt.kw = (par_zPos - m_WGD->z[wgt.kk]) / (m_WGD->z[wgt.kk + 1] - m_WGD->z[wgt.kk]);
 }
 
 
@@ -188,16 +198,21 @@ void InterpTriLinear::setInterp3Dindex_vFace(const double &par_xPos,
   // double par_z = par_zPos - zStart + 0.5*dz;
   double par_x = par_xPos - 0.5 * dx;
   double par_y = par_yPos - 0.0 * dy;
-  double par_z = par_zPos + 0.5 * dz;
+  // double par_z = par_zPos + 0.5 * dz;
 
   wgt.ii = floor(par_x / (dx + 1e-7));
   wgt.jj = floor(par_y / (dy + 1e-7));
-  wgt.kk = floor(par_z / (dz + 1e-7));
+  // wgt.kk = floor(par_z / (dz + 1e-7));
 
   // fractional distance between the nearest nodes
   wgt.iw = (par_x / dx) - floor(par_x / (dx + 1e-4));
   wgt.jw = (par_y / dy) - floor(par_y / (dy + 1e-4));
-  wgt.kw = (par_z / dz) - floor(par_z / (dz + 1e-4));
+  // wgt.kw = (par_z / dz) - floor(par_z / (dz + 1e-4));
+
+  auto itr = std::lower_bound(m_WGD->z.begin(), m_WGD->z.end(), par_zPos);
+  wgt.kk = itr - m_WGD->z.begin() - 1;
+
+  wgt.kw = (par_zPos - m_WGD->z[wgt.kk]) / (m_WGD->z[wgt.kk + 1] - m_WGD->z[wgt.kk]);
 }
 
 void InterpTriLinear::setInterp3Dindex_wFace(const double &par_xPos,
@@ -212,16 +227,21 @@ void InterpTriLinear::setInterp3Dindex_wFace(const double &par_xPos,
   // double par_z = par_zPos - zStart + 1.0*dz;
   double par_x = par_xPos - 0.5 * dx;
   double par_y = par_yPos - 0.5 * dy;
-  double par_z = par_zPos + 1.0 * dz;
+  // double par_z = par_zPos + 1.0 * dz;
 
   wgt.ii = floor(par_x / (dx + 1e-7));
   wgt.jj = floor(par_y / (dy + 1e-7));
-  wgt.kk = floor(par_z / (dz + 1e-7));
+  // wgt.kk = floor(par_z / (dz + 1e-7));
 
   // fractional distance between the nearest nodes
   wgt.iw = (par_x / dx) - floor(par_x / (dx + 1e-7));
   wgt.jw = (par_y / dy) - floor(par_y / (dy + 1e-7));
-  wgt.kw = (par_z / dz) - floor(par_z / (dz + 1e-7));
+  // wgt.kw = (par_z / dz) - floor(par_z / (dz + 1e-7));
+
+  auto itr = std::lower_bound(m_WGD->z_face.begin(), m_WGD->z_face.end(), par_zPos);
+  wgt.kk = itr - m_WGD->z_face.begin() - 1;
+
+  wgt.kw = (par_zPos - m_WGD->z_face[wgt.kk]) / (m_WGD->z_face[wgt.kk + 1] - m_WGD->z_face[wgt.kk]);
 }
 
 // always call this after setting the interpolation indices with the setInterp3Dindex_u/v/wFace() function!
@@ -313,7 +333,7 @@ void InterpTriLinear::setInterp3Dindex_cellVar(const double &par_xPos,
 
   double par_x = par_xPos - 0.5 * dx;
   double par_y = par_yPos - 0.5 * dy;
-  double par_z = par_zPos + 0.5 * dz;
+  // double par_z = par_zPos + 0.5 * dz;
 
   // double par_x = par_xPos - xStart + 0.5*dx;
   // double par_y = par_yPos - yStart + 0.5*dy;
@@ -331,12 +351,17 @@ void InterpTriLinear::setInterp3Dindex_cellVar(const double &par_xPos,
   // and only if a particle lands directly on the far boundary condition edge
   wgt.ii = floor(par_x / (dx + 1e-7));
   wgt.jj = floor(par_y / (dy + 1e-7));
-  wgt.kk = floor(par_z / (dz + 1e-7));
+  // wgt.kk = floor(par_z / (dz + 1e-7));
 
   // fractional distance between the nearest nodes
   wgt.iw = (par_x / dx) - floor(par_x / (dx + 1e-7));
   wgt.jw = (par_y / dy) - floor(par_y / (dy + 1e-7));
-  wgt.kw = (par_z / dz) - floor(par_z / (dz + 1e-7));
+  // wgt.kw = (par_z / dz) - floor(par_z / (dz + 1e-7));
+
+  auto itr = std::lower_bound(m_WGD->z.begin(), m_WGD->z.end(), par_zPos);
+  wgt.kk = itr - m_WGD->z.begin() - 1;
+
+  wgt.kw = (par_zPos - m_WGD->z[wgt.kk]) / (m_WGD->z[wgt.kk + 1] - m_WGD->z[wgt.kk]);
 }
 
 

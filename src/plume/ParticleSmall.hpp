@@ -28,8 +28,9 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file ParticleSmall.hpp 
- * @brief Derived from Particle.hpp. Small particles have diameter, mass, density, settling, and deposition. No drag effects.
+/** @file ParticleSmall.hpp
+ * @brief Derived from Particle.hpp. Small particles have diameter, mass, density, settling, and deposition.
+ * No drag effects.
  */
 
 #pragma once
@@ -37,37 +38,25 @@
 #include "util/Vector3.h"
 #include "Particle.hpp"
 
+
 class ParticleSmall : public Particle
 {
+  friend class ParseParticleSmall;
 
 public:
   // initializer
   ParticleSmall()
+    : Particle(true, "ParticleSmall", ParticleType::small)
   {
-    // diameter of particle (micron and m)
-    d = 0.0;
-    d_m = (1.0E-6) * d;
-
-    // mass of particle (g and kg)
-    m = 0.0;
-    m_kg = (1.0E-3) * m;
-
-    // density of particle
-    rho = 0.0;
-
-    // tag
-    tag = "ParticleSmall";
-
-    // (1 - fraction) particle deposited
-    wdepos = 1.0;
-    depFlag = true;
-
-    // (1 - fraction) particle decay
-    wdecay = 1.0;
+    //  ParseParticle(const bool &flag, std::string str, const ParticleType &type)
+    //    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0),
+    //      depFlag(flag), decayConst(0.0), c1(2.049), c2(1.19),
+    //      tag(std::move(str)), particleType(type)
   }
 
   // initializer
   ParticleSmall(const double &d_part, const double &m_part, const double &rho_part)
+    : Particle(true, "ParticleSmall", ParticleType::small)
   {
     // diameter of particle (micron and m)
     d = d_part;
@@ -84,7 +73,6 @@ public:
     tag = "ParticleSmall";
 
     // (1 - fraction) particle deposited
-    wdepos = 1.0;
     depFlag = true;
 
     // (1 - fraction) particle deposited
@@ -92,39 +80,63 @@ public:
   }
 
   // destructor
-  ~ParticleSmall()
+  ~ParticleSmall() override = default;
+
+  // void setSettlingVelocity(const double &, const double &);
+  void setSettlingVelocity(const double &rhoAir, const double &nuAir) override
   {
-  }
-
-  //  void parseValues()
-  //  {
-  //      parType = ParticleType::small;
-  //      parsePrimitive<double>(false, rho, "particleDensity");
-  //      parsePrimitive<double>(false, d, "particleDiameter");
-  //      parsePrimitive<bool>(false, depFlag, "depositionFlag");
-  //      d_m = (1.0E-6) * d;
-  //  }
-
-
-  //void setSettlingVelocity(const double &, const double &);
-  void setSettlingVelocity(const double &rhoAir, const double &nuAir)
-  {
-    //std::cout << "setting vs for small particle, ";
-    if (d > 0) {
-      //std::cout << " d>0 in vs calc " << " d_m = " << d_m << " rho = " << rho << std::endl;
-      // dimensionless grain diameter
+    // std::cout << "setting vs for small particle, ";
+    if (d > 0.0 && rho > rhoAir) {
+      //  dimensionless grain diameter
       dstar = d_m * pow(9.81 / pow(nuAir, 2.0) * (rho / rhoAir - 1.), 1.0 / 3.0);
       // drag coefficent
-      Cd = (432.0 / pow(dstar, 3.0)) * pow(1.0 + 0.022 * pow(dstar, 3.0), 0.54) + 0.47 * (1.0 - exp(-0.15 * pow(dstar, 0.45)));
+      Cd = (432.0 / pow(dstar, 3.0)) * pow(1.0 + 0.022 * pow(dstar, 3.0), 0.54)
+           + 0.47 * (1.0 - exp(-0.15 * pow(dstar, 0.45)));
       // dimensionless settling velociy
       wstar = pow((4.0 * dstar) / (3.0 * Cd), 0.5);
       // settling velocity
       vs = wstar * pow(9.81 * nuAir * (rho / rhoAir - 1.0), 1.0 / 3.0);
     } else {
-      //std::cout << " d<=0 in vs calc " << std::endl;
+      // std::cout << " d<=0 in vs calc " << std::endl;
       vs = 0.0;
     }
   }
 
 private:
+};
+
+class ParseParticleSmall : public ParseParticle
+{
+protected:
+public:
+  // default constructor
+  ParseParticleSmall() : ParseParticle(true, "ParticleSmall", ParticleType::small)
+  {}
+
+  // destructor
+  ~ParseParticleSmall() = default;
+
+  void parseValues() override
+  {
+    parsePrimitive<double>(true, rho, "particleDensity");
+    parsePrimitive<double>(true, d, "particleDiameter");
+    parsePrimitive<bool>(true, depFlag, "depositionFlag");
+    parsePrimitive<double>(false, decayConst, "decayConst");
+    parsePrimitive<double>(false, c1, "c1");
+    parsePrimitive<double>(false, c2, "c2");
+    d_m = d * (1.0E-6);
+    m_kg = m * (1.0E-3);
+  }
+
+  void setParticleParameters(Particle *ptr) override
+  {
+    auto *tmp = dynamic_cast<ParticleSmall *>(ptr);
+    tmp->d = d;
+    tmp->d_m = (1.0E-6) * d;
+    tmp->rho = rho;
+    tmp->depFlag = depFlag;
+    tmp->decayConst = decayConst;
+    tmp->c1 = c1;
+    tmp->c2 = c2;
+  }
 };

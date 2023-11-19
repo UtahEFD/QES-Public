@@ -28,8 +28,9 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file ParticleLarge.hpp 
- * @brief Derived from Particle.hpp. Large particles have diameter, mass, settling, density, deposition, and drag (though drag isn't implemented yet, LDU 11/16/21)
+/** @file ParticleLarge.hpp
+ * @brief Derived from Particle.hpp. Large particles have diameter, mass, settling, density, deposition, and drag
+ * (though drag isn't implemented yet, LDU 11/16/21)
  */
 
 #pragma once
@@ -39,35 +40,22 @@
 
 class ParticleLarge : public Particle
 {
+  friend class ParseParticleLarge;
 
 public:
   // initializer
   ParticleLarge()
+    : Particle(true, "ParticleLarge", ParticleType::large)
   {
-    // diameter of particle (micron and m)
-    d = 0.0;
-    d_m = (1.0E-6) * d;
-
-    // mass of particle (g and kg)
-    m = 0.0;
-    m_kg = (1.0E-3) * m;
-
-    // density of particle
-    rho = 0.0;
-
-    // tag
-    tag = "ParticleLarge";
-
-    // (1 - fraction) particle deposited
-    wdepos = 1.0;
-    depFlag = true;
-
-    // (1 - fraction) particle decay
-    wdecay = 1.0;
+    //  ParseParticle(const bool &flag, std::string str, const ParticleType &type)
+    //    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0),
+    //      depFlag(flag), decayConst(0.0), c1(2.049), c2(1.19),
+    //      tag(std::move(str)), particleType(type)
   }
 
   // initializer
   ParticleLarge(const double &d_part, const double &m_part, const double &rho_part)
+    : Particle(true, "ParticleLarge", ParticleType::large)
   {
     // diameter of particle (micron and m)
     d = d_part;
@@ -84,7 +72,6 @@ public:
     tag = "ParticleLarge";
 
     // (1 - fraction) particle deposited
-    wdepos = 1.0;
     depFlag = true;
 
     // (1 - fraction) particle deposited
@@ -92,27 +79,17 @@ public:
   }
 
   // destructor
-  ~ParticleLarge()
-  {
-  }
-
-  /*  void parseValues()
-  {
-      parType = ParticleType::large;
-      parsePrimitive<double>(false, rho, "particleDensity");
-      parsePrimitive<double>(false, d, "particleDiameter"); 
-      parsePrimitive<bool>(false, depFlag, "depositionFlag");
-  }
-*/
+  ~ParticleLarge() override = default;
 
   //  void setSettlingVelocity(const double &, const double &);
-  void setSettlingVelocity(const double &rhoAir, const double &nuAir)
+  void setSettlingVelocity(const double &rhoAir, const double &nuAir) override
   {
-    if (d > 0) {
+    if (d > 0 && rho > rhoAir) {
       // dimensionless grain diameter
       dstar = d_m * pow(9.81 / pow(nuAir, 2.0) * (rho / rhoAir - 1.), 1.0 / 3.0);
       // drag coefficent
-      Cd = (432.0 / pow(dstar, 3.0)) * pow(1.0 + 0.022 * pow(dstar, 3.0), 0.54) + 0.47 * (1.0 - exp(-0.15 * pow(dstar, 0.45)));
+      Cd = (432.0 / pow(dstar, 3.0)) * pow(1.0 + 0.022 * pow(dstar, 3.0), 0.54)
+           + 0.47 * (1.0 - exp(-0.15 * pow(dstar, 0.45)));
       // dimensionless settling velociy
       wstar = pow((4.0 * dstar) / (3.0 * Cd), 0.5);
       // settling velocity
@@ -123,4 +100,41 @@ public:
   }
 
 private:
+};
+
+class ParseParticleLarge : public ParseParticle
+{
+protected:
+public:
+  // default constructor
+  ParseParticleLarge() : ParseParticle(true, "ParticleLarge", ParticleType::large)
+  {
+  }
+
+  // destructor
+  ~ParseParticleLarge() = default;
+
+  void parseValues() override
+  {
+    parsePrimitive<double>(true, rho, "particleDensity");
+    parsePrimitive<double>(true, d, "particleDiameter");
+    parsePrimitive<bool>(true, depFlag, "depositionFlag");
+    parsePrimitive<double>(true, decayConst, "decayConst");
+    parsePrimitive<double>(false, c1, "c1");
+    parsePrimitive<double>(false, c2, "c2");
+    d_m = d * (1.0E-6);
+    m_kg = m * (1.0E-3);
+  }
+
+  void setParticleParameters(Particle *ptr) override
+  {
+    auto *tmp = dynamic_cast<ParticleLarge *>(ptr);
+    tmp->d = d;
+    tmp->d_m = (1.0E-6) * d;
+    tmp->rho = rho;
+    tmp->depFlag = depFlag;
+    tmp->decayConst = decayConst;
+    tmp->c1 = c1;
+    tmp->c2 = c2;
+  }
 };

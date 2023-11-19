@@ -75,12 +75,9 @@
 #include "WallReflection_TriMesh.h"
 
 #include "Particle.hpp"
+#include "Source.hpp"
 
-#include "SourcePoint.hpp"
-#include "SourceLine.hpp"
-#include "SourceCircle.hpp"
-#include "SourceCube.hpp"
-#include "SourceFullDomain.hpp"
+#include "SourceGeometry.hpp"
 
 class Plume
 {
@@ -109,6 +106,8 @@ public:
   //  that is used to do an additional time remainder time integration loop for each particle, forcing particles to only
   //  move one cell at a time.
   void run(QEStime, WINDSGeneralData *, TURBGeneralData *, std::vector<QESNetCDFOutput *>);
+
+  void addSources(std::vector<Source *> &newSources);
 
   int getTotalParsToRelease() const { return totalParsToRelease; }// accessor
 
@@ -175,6 +174,7 @@ protected:
 
   // time variables
   double sim_dt = 0.0;// the simulation timestep
+  double boxSizeZ;
   QEStime simTimeStart;
   QEStime simTimeCurr;
   int simTimeIdx = 0;
@@ -188,7 +188,7 @@ protected:
   double vel_threshold = 0.0;
 
   // ALL Sources that will be used
-  std::vector<SourceType *> allSources;
+  std::vector<Source *> allSources;
   // this is the global counter of particles released (used to set particleID)
   int nParsReleased = 0;
 
@@ -212,6 +212,7 @@ protected:
   bool debug = false;
   bool verbose = false;
 
+private:
   void setParticleVals(WINDSGeneralData *, TURBGeneralData *, std::list<Particle *>);
   // this function gets sources from input data and adds them to the allSources vector
   // this function also calls the many check and calc functions for all the input sources
@@ -229,10 +230,16 @@ protected:
   double getMaxVariance(const TURBGeneralData *);
 
   // this function moves (advects) one particle
-  void advectParticle(double, Particle *, WINDSGeneralData *, TURBGeneralData *);
+  void advectParticle(double, Particle *, double, WINDSGeneralData *, TURBGeneralData *);
 
 
   void depositParticle(double,
+                       double,
+                       double,
+                       double,
+                       double,
+                       double,
+                       double,
                        double,
                        double,
                        double,
@@ -312,7 +319,6 @@ protected:
                       const std::string &);
 
 
-private:
   Plume()
   {}
 };
@@ -320,6 +326,7 @@ private:
 inline void Plume::showCurrentStatus()
 {
   std::cout << "----------------------------------------------------------------- \n";
+  std::cout << "[QES-Plume] \t End run particle summary \n";
   std::cout << "Current simulation time: " << simTimeCurr << "\n";
   std::cout << "Simulation run time: " << simTimeCurr - simTimeStart << "\n";
   std::cout << "Total number of particles released: " << nParsReleased << "\n";

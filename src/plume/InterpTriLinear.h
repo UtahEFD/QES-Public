@@ -85,6 +85,7 @@ public:
                     double &flux_div_x_out,
                     double &flux_div_y_out,
                     double &flux_div_z_out,
+                    double &nuT_out,
                     double &CoEps_out) override;
 
   void interpInitialValues(const double &xPos,
@@ -116,4 +117,6 @@ private:
 
   // copies of debug related information from the input arguments
   bool debug{};
+
+  WINDSGeneralData *m_WGD;
 };
