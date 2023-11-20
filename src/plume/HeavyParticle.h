@@ -1,0 +1,126 @@
+/****************************************************************************
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
+ *
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
+ *
+ * This file is part of QES-Plume
+ *
+ * GPL-3.0 License
+ *
+ * QES-Plume is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Plume is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
+/** @file Sources.hpp
+ * @brief This class contains data and variables that set flags and
+ * settngs read from the xml.
+ *
+ * @note Child of ParseInterface
+ * @sa ParseInterface
+ */
+
+#pragma once
+
+#include "util/ParseInterface.h"
+
+#include "PI_Particle.h"
+#include "Particle.hpp"
+
+class PI_HeavyParticle : public PI_Particle
+{
+protected:
+public:
+  // default constructor
+  PI_HeavyParticle()
+    : PI_Particle(true)
+  {}
+
+  // destructor
+  ~PI_HeavyParticle() = default;
+
+  void parseValues() override
+  {
+    parsePrimitive<double>(true, rho, "particleDensity");
+    parsePrimitive<double>(true, d, "particleDiameter");
+
+    parsePrimitive<bool>(true, depFlag, "depositionFlag");
+    parsePrimitive<double>(false, c1, "c1");
+    parsePrimitive<double>(false, c2, "c2");
+
+    parsePrimitive<double>(false, decayConst, "decayConst");
+
+    parseMultiElements(false, sources, "source");
+  }
+  // void setParticleParameters(Particle *ptr) override {}
+};
+
+class HeavyParticle : public Particle
+{
+
+public:
+  // initializer
+  HeavyParticle()
+    : Particle(true, ParticleType::heavy)
+  {
+    //  ParseParticle(const bool &flag, std::string str, const ParticleType &type)
+    //    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0),
+    //      depFlag(flag), decayConst(0.0), c1(2.049), c2(1.19),
+    //      tag(std::move(str)), particleType(type)
+  }
+  /*
+    explicit Particle_Heavy(const size_t &ID)
+      : Particle(true, ParticleType::heavy)
+    {
+      isActive = true;
+      particleID = ID;
+    }
+
+    // initializer
+    Particle_Heavy(const double &d_part, const double &m_part, const double &rho_part)
+      : Particle(true, ParticleType::heavy)
+    {
+      // diameter of particle (micron and m)
+      d = d_part;
+      // d_m = (1.0E-6) * d;
+
+      // mass of particle (g and kg)
+      m = m_part;
+      m_o = m;
+      // m_kg = (1.0E-3) * m;
+      // m_kg_o = m_kg;
+
+      // density of particle
+      rho = rho_part;
+
+      // tag
+      // tag = "Particle_Heavy";
+
+      // (1 - fraction) particle deposited
+      // depFlag = true;
+
+      // (1 - fraction) particle deposited
+      wdecay = 1.0;
+    }
+  */
+  // destructor
+  ~HeavyParticle() override = default;
+
+private:
+};
