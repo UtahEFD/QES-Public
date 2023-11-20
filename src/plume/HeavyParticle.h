@@ -49,7 +49,7 @@ protected:
 public:
   // default constructor
   PI_HeavyParticle()
-    : PI_Particle(true)
+    : PI_Particle(ParticleType::heavy, true)
   {}
 
   // destructor
@@ -77,48 +77,8 @@ class HeavyParticle : public Particle
 public:
   // initializer
   HeavyParticle()
-    : Particle(true, ParticleType::heavy)
-  {
-    //  ParseParticle(const bool &flag, std::string str, const ParticleType &type)
-    //    : d(0.0), d_m(0.0), m(0.0), m_kg(0.0), rho(0.0),
-    //      depFlag(flag), decayConst(0.0), c1(2.049), c2(1.19),
-    //      tag(std::move(str)), particleType(type)
-  }
-  /*
-    explicit Particle_Heavy(const size_t &ID)
-      : Particle(true, ParticleType::heavy)
-    {
-      isActive = true;
-      particleID = ID;
-    }
-
-    // initializer
-    Particle_Heavy(const double &d_part, const double &m_part, const double &rho_part)
-      : Particle(true, ParticleType::heavy)
-    {
-      // diameter of particle (micron and m)
-      d = d_part;
-      // d_m = (1.0E-6) * d;
-
-      // mass of particle (g and kg)
-      m = m_part;
-      m_o = m;
-      // m_kg = (1.0E-3) * m;
-      // m_kg_o = m_kg;
-
-      // density of particle
-      rho = rho_part;
-
-      // tag
-      // tag = "Particle_Heavy";
-
-      // (1 - fraction) particle deposited
-      // depFlag = true;
-
-      // (1 - fraction) particle deposited
-      wdecay = 1.0;
-    }
-  */
+    : Particle(ParticleType::heavy)
+  {}
   // destructor
   ~HeavyParticle() override = default;
 

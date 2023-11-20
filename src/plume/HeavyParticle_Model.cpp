@@ -35,11 +35,18 @@
 #include "HeavyParticle_Model.h"
 #include "Plume.hpp"
 
-void HeavyParticle_Model::generateParticleList(const float &time, const float &dt, WINDSGeneralData *WGD, TURBGeneralData *TGD, Plume *plume)
+
+void HeavyParticle_Model::generateParticleList(const float &time,
+                                               const float &dt,
+                                               WINDSGeneralData *WGD,
+                                               TURBGeneralData *TGD,
+                                               Plume *plume)
 {
+  int nbr_new_particle = 0;
   for (auto source : sources) {
-    particles->sweep(source->getNewParticleNumber(dt, time));
+    nbr_new_particle += source->getNewParticleNumber(dt, time);
   }
+  particles->sweep(nbr_new_particle);
 
   for (auto source : sources) {
     source->emitParticles(dt, time, particles);

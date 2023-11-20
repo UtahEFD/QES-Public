@@ -49,7 +49,7 @@ protected:
 public:
   // default constructor
   PI_TracerParticle()
-    : PI_Particle(false)
+    : PI_Particle(ParticleType::tracer, false)
   {}
 
   // destructor
@@ -59,6 +59,7 @@ public:
 
   void parseValues() override
   {
+
     parseMultiElements(false, sources, "source");
   }
 
@@ -70,23 +71,9 @@ class TracerParticle : public Particle
 public:
   // initializer
   TracerParticle()
-    : Particle(false, ParticleType::tracer)
-  {
-  }
-  /*
-    explicit Particle_Tracer(const size_t &ID)
-      : Particle(false, ParticleType::tracer, 0.0, 0.0, 0.0)
-    {
-      isActive = true;
-      particleID = ID;
-    }
+    : Particle(ParticleType::tracer)
+  {}
 
-  // initializer
-  Particle_Tracer(const double &d_p, const double &m_p, const double &rho_p)
-    : Particle(false, ParticleType::tracer, d_p, m_p, rho_p)
-        {
-        }
-      */
   // destructor
   ~TracerParticle()
   {

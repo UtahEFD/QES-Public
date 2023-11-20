@@ -41,6 +41,7 @@
 #include "util/ParseInterface.h"
 
 #include "PI_Source.h"
+#include "Particle.hpp"
 
 class Source;
 class GroundDeposition;
@@ -56,13 +57,16 @@ private:
   {}
 
 protected:
-  PI_Particle(const bool &flag)
-    : d(0.0), m(0.0), rho(0.0),
+  PI_Particle(const ParticleType &type, const bool &flag)
+    : particleType(type),
+      d(0.0), m(0.0), rho(0.0),
       depFlag(flag), decayConst(0.0), c1(2.049), c2(1.19)
   {}
 
 public:
   // particle type
+  ParticleType particleType;
+
   std::vector<PI_Source *> sources;
 
   // Physical properties

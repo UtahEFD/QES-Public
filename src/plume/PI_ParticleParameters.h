@@ -48,11 +48,11 @@ class PI_ParticleParameters : public ParseInterface
 {
 private:
 public:
-  std::vector<PI_Particle *> protoParticles;
+  std::vector<PI_Particle *> particles;
 
   void parseValues() override
   {
-    parseMultiPolymorphs(false, protoParticles, Polymorph<PI_Particle, PI_TracerParticle>("tracerParticles"));
-    parseMultiPolymorphs(false, protoParticles, Polymorph<PI_Particle, PI_HeavyParticle>("heavyParticles"));
+    parseMultiPolymorphs(false, particles, Polymorph<PI_Particle, PI_TracerParticle>("tracerParticle"));
+    parseMultiPolymorphs(false, particles, Polymorph<PI_Particle, PI_HeavyParticle>("heavyParticle"));
   }
 };

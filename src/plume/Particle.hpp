@@ -103,8 +103,12 @@ protected:
     : particleType(type),
       d(0.0), m(0.0), m_o(0.0), rho(0.0),
       c1(2.049), c2(1.19), depFlag(flag), decayConst(0.0), wdecay(1.0)
-  {
-  }
+  {}
+  explicit Particle(const ParticleType &type)
+    : particleType(type),
+      d(0.0), m(0.0), m_o(0.0), rho(0.0),
+      c1(2.049), c2(1.19), depFlag(false), decayConst(0.0), wdecay(1.0)
+  {}
   /*
     // initializer
     Particle(const bool &flag, const ParticleType &type, const double &d_p, const double &m_p, const double &rho_p)
