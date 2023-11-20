@@ -82,6 +82,7 @@
 
 #include "ParticleManager.h"
 
+
 class Plume
 {
 
@@ -152,8 +153,8 @@ public:
   double domainZstart = 0.0;// the domain starting z value, a copy of the value found by dispersion
   double domainZend = 0.0;// the domain ending z value, a copy of the value found by dispersion
 
-protected:
-  // QES grid information
+  // protected:
+  //  QES grid information
   int nx;// a copy of the urb grid nx value
   int ny;// a copy of the urb grid ny value
   int nz;// a copy of the urb grid nz value
@@ -219,7 +220,10 @@ protected:
   bool debug = false;
   bool verbose = false;
 
-private:
+  // private:
+public:
+  void applyBC(Particle *);
+
   void setParticleVals(WINDSGeneralData *, TURBGeneralData *, std::list<Particle *>);
   void setParticle(WINDSGeneralData *WGD, TURBGeneralData *TGD, Particle *par_ptr);
   // this function gets sources from input data and adds them to the allSources vector

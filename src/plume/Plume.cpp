@@ -399,6 +399,16 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
   std::cout << "\t\t elapsed time: " << Elapsed.count() << " s" << std::endl;
 }
 
+
+void Plume::applyBC(Particle *p)
+{
+  // now apply boundary conditions
+  if (p->isActive) p->isActive = domainBC_x->enforce(p->xPos, p->uFluct);
+  if (p->isActive) p->isActive = domainBC_y->enforce(p->yPos, p->vFluct);
+  if (p->isActive) p->isActive = domainBC_z->enforce(p->zPos, p->wFluct);
+}
+
+
 double Plume::calcCourantTimestep(const double &u,
                                   const double &v,
                                   const double &w,
