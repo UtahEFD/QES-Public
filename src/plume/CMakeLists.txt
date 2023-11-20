@@ -28,6 +28,12 @@ SET( qesPlumeCoreSources
     ParticleManager.cpp
     ParticleContainers.cpp
 
+    TracerParticle_Model.cpp
+    TracerParticle_Source.cpp
+
+    HeavyParticle_Model.cpp
+    HeavyParticle_Source.cpp
+
     Particle.hpp
     ParticleFactories.hpp
     Particle_Tracer.hpp
@@ -38,7 +44,8 @@ SET( qesPlumeCoreSources
     ReleaseType_instantaneous.hpp
     ReleaseType_continuous.hpp
     ReleaseType_duration.hpp
-    
+
+    PI_Source.cpp
     SourceGeometry.hpp
     SourceGeometry_Cube.cpp SourceGeometry_Cube.hpp
     SourceGeometry_FullDomain.cpp SourceGeometry_FullDomain.hpp

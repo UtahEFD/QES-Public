@@ -160,6 +160,7 @@ public:
 
   void checkReleaseInfo(const double &timestep, const double &simDur);
   friend class Source;
+  friend class Source_v2;
 };
 
 class Source
@@ -231,6 +232,86 @@ public:
 
   virtual int getNewParticleNumber(const float &dt,
                                    const float &currTime) = 0;
+
+  virtual void emitParticles(const float &dt,
+                             const float &currTime,
+                             ParticleContainers *particles) = 0;
+};
+
+class Source_v2
+{
+private:
+protected:
+  Source_v2() = default;
+
+  ParticleType m_pType{};
+  SourceShape m_sGeom{};
+  ParticleReleaseType m_rType{};
+
+  // ParticleTypeFactory *m_particleTypeFactory{};
+  ParseParticle *m_protoParticle{};
+  SourceGeometry *m_sourceGeometry{};
+  ReleaseType *m_releaseType{};
+
+public:
+  // this is the index of the source in the dispersion class overall list of sources
+  // this is used to set the source ID for a given particle, to know from which source each particle comes from
+  // !!! this will only be set correctly if a call to setSourceIdx() is done by the class that sets up a vector of this class.
+  int sourceIdx = -1;
+
+  // accessor to particle type
+  // ParticleType particleType()
+  //{
+  //  return m_pType;
+  //}
+  // accessor to geometry type
+  SourceShape geometryType()
+  {
+    return m_sGeom;
+  }
+  // accessor to release type
+  ParticleReleaseType releaseType()
+  {
+    return m_rType;
+  }
+  int getNumParticles()
+  {
+    return m_releaseType->m_numPar;
+  }
+  // this is a pointer to the release type, which is expected to be chosen by parseValues() by each source via a call to setReleaseType().
+  // this data structure holds information like the total number of particles to be released by the source, the number of particles to release
+  // per time for each source, and the start and end times to be releasing from the source.
+  // !!! this needs set by parseValues() in each source generated from input files by a call to the setReleaseType() function
+
+  // LA-future work: need a class similar to ReleaseType that describes the input source mass.
+  //  This could be mass, mass per time, volume with a density, and volume per time with a density.
+
+
+  // constructor
+  Source_v2(const int &sidx, const ParseSource *in)
+  {
+    sourceIdx = sidx;
+
+    m_sourceGeometry = in->m_sourceGeometry;
+    m_releaseType = in->m_releaseType;
+
+    // set types
+    m_sGeom = m_sourceGeometry->m_sGeom;
+    m_rType = m_releaseType->parReleaseType;
+  }
+
+  // destructor
+  virtual ~Source_v2() = default;
+
+  virtual int getNewParticleNumber(const float &dt,
+                                   const float &currTime)
+  {
+    if (currTime >= m_releaseType->m_releaseStartTime && currTime <= m_releaseType->m_releaseEndTime) {
+      return m_releaseType->m_particlePerTimestep;
+    } else {
+      return 0;
+    }
+  }
 
   virtual void emitParticles(const float &dt,
                              const float &currTime,
