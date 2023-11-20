@@ -58,6 +58,7 @@ public:
   CollectionParameters *colParams = nullptr;
   ParticleOutputParameters *partOutParams = nullptr;
   SourceParameters *sourceParams = nullptr;
+  PI_ParticleParameters *particleParams = nullptr;
   BoundaryConditions *BCs = nullptr;
 
 
@@ -67,6 +68,7 @@ public:
     colParams = 0;
     partOutParams = 0;
     sourceParams = 0;
+    particleParams = 0;
   }
 
   PlumeInputData(const std::string fileName)
@@ -75,6 +77,7 @@ public:
     colParams = 0;
     partOutParams = 0;
     sourceParams = 0;
+    particleParams = 0;
 
     // read and parse the XML
     parseXML(fileName, "QESPlumeParameters");
@@ -86,6 +89,7 @@ public:
     parseElement<CollectionParameters>(true, colParams, "collectionParameters");
     parseElement<ParticleOutputParameters>(false, partOutParams, "particleOutputParameters");
     parseElement<SourceParameters>(false, sourceParams, "sourceParameters");
+    parseElement<PI_ParticleParameters>(false, particleParams, "particleParameters");
     parseElement<BoundaryConditions>(true, BCs, "boundaryConditions");
   }
 };

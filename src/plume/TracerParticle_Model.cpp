@@ -35,11 +35,22 @@
 #include "TracerParticle_Model.h"
 #include "Plume.hpp"
 
-void TracerParticle_Model::generateParticleList(const float &time, const float &dt, WINDSGeneralData *WGD, TURBGeneralData *TGD, Plume *plume)
+void TracerParticle_Model::generateParticleList(const float &time,
+                                                const float &dt,
+                                                WINDSGeneralData *WGD,
+                                                TURBGeneralData *TGD,
+                                                Plume *plume)
 {
+  int nbr_new_particle = 0;
   for (auto source : sources) {
-    particles->sweep(source->getNewParticleNumber(dt, time));
+    nbr_new_particle += source->getNewParticleNumber(dt, time);
   }
+  particles->sweep(nbr_new_particle);
+
+  for (auto source : sources) {
+    source->emitParticles(dt, time, particles);
+  }
+
 #pragma omp parallel for default(none) shared(WGD, TGD, plume)
   for (auto k = 0u; k < particles->get_nbr_added(); ++k) {
     // set particle ID (use global particle counter)
