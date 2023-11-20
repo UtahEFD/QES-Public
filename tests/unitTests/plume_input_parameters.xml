@@ -39,6 +39,7 @@
     </sourceParameters>
     <particleParameters>
         <tracerParticle>
+            <tag>tracer1</tag>
             <source>
                 <releaseType_continuous>
                     <particlePerTimestep> 400 </particlePerTimestep>
@@ -60,6 +61,22 @@
                 </sourceGeometry_Point>
             </source>
         </tracerParticle>
+        <heavyParticle>
+            <tag>pollen</tag>
+            <particleDensity> 0.001 </particleDensity>
+            <particleDiameter> 0.01 </particleDiameter>
+            <depositionFlag>true</depositionFlag>
+            <source>
+                <releaseType_continuous>
+                    <particlePerTimestep> 400 </particlePerTimestep>
+                </releaseType_continuous>
+                <sourceGeometry_Point>
+                    <posX> 20.0 </posX>
+                    <posY> 50.0 </posY>
+                    <posZ> 70.0 </posZ>
+                </sourceGeometry_Point>
+            </source>
+        </heavyParticle>
     </particleParameters>
     <boundaryConditions>
         <xBCtype>exiting</xBCtype>

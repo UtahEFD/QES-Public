@@ -56,10 +56,10 @@
 #include "util/ParseInterface.h"
 #include "winds/WINDSGeneralData.h"
 
-class HeavyParticle_Source : public Source
+class HeavyParticle_Source : public Source_v2
 {
 public:
-  HeavyParticle_Source(const int &sidx, const ParseSource *in) : Source(sidx, in) {}
+  HeavyParticle_Source(const int &sidx, const PI_Source *in) : Source_v2(sidx, in) {}
   // destructor
   ~HeavyParticle_Source() override = default;
 

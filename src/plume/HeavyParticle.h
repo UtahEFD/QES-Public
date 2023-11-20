@@ -57,6 +57,7 @@ public:
 
   void parseValues() override
   {
+    parsePrimitive<std::string>(true, tag, "tag");
     parsePrimitive<double>(true, rho, "particleDensity");
     parsePrimitive<double>(true, d, "particleDiameter");
 

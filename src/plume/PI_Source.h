@@ -100,4 +100,5 @@ public:
 
   void checkReleaseInfo(const double &timestep, const double &simDur);
   friend class Source;
+  friend class Source_v2;
 };
