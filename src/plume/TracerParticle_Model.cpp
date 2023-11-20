@@ -35,6 +35,24 @@
 #include "TracerParticle_Model.h"
 #include "Plume.hpp"
 
+TracerParticle_Model::TracerParticle_Model(const PlumeInputData *PID, PI_TracerParticle *in) : ParticleModel(ParticleType::tracer)
+{
+  for (auto s : in->sources) {
+    // now do anything that is needed to the source via the pointer
+    s->checkReleaseInfo(PID->plumeParams->timeStep, PID->plumeParams->simDur);
+    // s->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
+
+    // now determine the number of particles to release for the source and update the overall count
+    // totalParsToRelease += s->getNumParticles();
+
+    // add source into the vector of sources
+    sources.emplace_back(new TracerParticle_Source((int)sources.size(), s));
+  }
+  for (auto s : sources) {
+    std::cout << s->getNumParticles() << std::endl;
+  }
+}
+
 void TracerParticle_Model::generateParticleList(const float &time,
                                                 const float &dt,
                                                 WINDSGeneralData *WGD,

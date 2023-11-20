@@ -51,16 +51,26 @@ public:
   virtual void generateParticleList(const float &time, const float &dt, WINDSGeneralData *WGD, TURBGeneralData *TGD, Plume *plume) = 0;
   virtual void advect(const double &timeRemainder, WINDSGeneralData *WGD, TURBGeneralData *TGD, Plume *plume) = 0;
 
-  ~ParticleModel() {}
+  virtual ~ParticleModel() = default;
+
+  ParticleType getParticleType()
+  {
+    return particleType;
+  }
 
 protected:
-  ParticleModel(Deposition *dep)
-    : deposition(dep)
+  explicit ParticleModel(ParticleType type)
+    : particleType(type)
   {}
+
+  ParticleModel(ParticleType type, Deposition *dep)
+    : particleType(type), deposition(dep)
+  {}
+
+  ParticleType particleType{};
 
   Deposition *deposition = nullptr;
 
 private:
-  ParticleModel()
-  {}
+  ParticleModel() = default;
 };

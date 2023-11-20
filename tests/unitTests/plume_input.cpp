@@ -11,6 +11,9 @@
 
 #include "plume/PlumeInputData.hpp"
 
+#include "plume/TracerParticle_Model.h"
+#include "plume/HeavyParticle_Model.h"
+
 TEST_CASE("plume input test")
 {
   // set up timer information for the simulation runtime
@@ -29,4 +32,26 @@ TEST_CASE("plume input test")
   std::cout << PID->particleParams->particles.size() << std::endl;
   std::cout << PID->particleParams->particles[0]->particleType << std::endl;
   std::cout << PID->particleParams->particles[0]->sources.size() << std::endl;
+
+
+  std::vector<ParticleModel *> test;
+  for (auto p : PID->particleParams->particles) {
+    std::cout << p->tag << std::endl;
+    switch (p->particleType) {
+    case ParticleType::tracer: {
+      test.emplace_back(new TracerParticle_Model(PID, dynamic_cast<PI_TracerParticle *>(p)));
+      break;
+    }
+    case ParticleType::heavy: {
+      test.emplace_back(new HeavyParticle_Model(PID, dynamic_cast<PI_HeavyParticle *>(p)));
+      break;
+    }
+    default:
+      exit(1);
+    }
+  }
+
+  for (auto pm : test) {
+    std::cout << pm->getParticleType() << std::endl;
+  }
 }

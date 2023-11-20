@@ -48,6 +48,12 @@
 class HeavyParticle_Model : public ParticleModel
 {
 public:
+  explicit HeavyParticle_Model(Deposition *dep)
+    : ParticleModel(ParticleType::heavy, dep)
+  {}
+
+  HeavyParticle_Model(const PlumeInputData *, PI_HeavyParticle *);
+
   void generateParticleList(const float &time, const float &dt, WINDSGeneralData *WGD, TURBGeneralData *TGD, Plume *plume) override;
   void advect(const double &total_time_interval, WINDSGeneralData *WGD, TURBGeneralData *TGD, Plume *plume) override;
 
@@ -56,10 +62,6 @@ public:
 protected:
   ManagedContainer<HeavyParticle> *particles;
   std::vector<HeavyParticle_Source *> sources;
-
-  HeavyParticle_Model(Deposition *dep)
-    : ParticleModel(dep)
-  {}
 
 private:
 };

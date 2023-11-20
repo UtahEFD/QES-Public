@@ -48,19 +48,21 @@
 class TracerParticle_Model : public ParticleModel
 {
 public:
+  explicit TracerParticle_Model(Deposition *dep)
+    : ParticleModel(ParticleType::tracer, dep)
+  {}
+
+  TracerParticle_Model(const PlumeInputData *, PI_TracerParticle *);
+
   void generateParticleList(const float &time, const float &dt, WINDSGeneralData *WGD, TURBGeneralData *TGD, Plume *plume) override;
   void advect(const double &total_time_interval, WINDSGeneralData *WGD, TURBGeneralData *TGD, Plume *plume) override;
 
   ~TracerParticle_Model() = default;
 
 protected:
-  ManagedContainer<TracerParticle> *particles;
+  ManagedContainer<TracerParticle> *particles{};
   std::vector<TracerParticle_Source *> sources;
 
 
-  TracerParticle_Model(Deposition *dep)
-    : ParticleModel(dep)
-  {}
-  
 private:
 };

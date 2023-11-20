@@ -40,6 +40,7 @@
 #include <random>
 #include <list>
 
+#include "PI_Source.h"
 #include "SourceGeometry.hpp"
 #include "SourceGeometry_Cube.hpp"
 #include "SourceGeometry_FullDomain.hpp"
@@ -288,7 +289,7 @@ public:
 
 
   // constructor
-  Source_v2(const int &sidx, const ParseSource *in)
+  Source_v2(const int &sidx, const PI_Source *in)
   {
     sourceIdx = sidx;
 

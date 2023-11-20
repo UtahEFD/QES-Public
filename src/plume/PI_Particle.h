@@ -67,6 +67,8 @@ public:
   // particle type
   ParticleType particleType;
 
+  std::string tag;
+
   std::vector<PI_Source *> sources;
 
   // Physical properties

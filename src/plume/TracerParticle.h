@@ -59,7 +59,7 @@ public:
 
   void parseValues() override
   {
-
+    parsePrimitive<std::string>(true, tag, "tag");
     parseMultiElements(false, sources, "source");
   }
 

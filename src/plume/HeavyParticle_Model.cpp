@@ -35,6 +35,8 @@
 #include "HeavyParticle_Model.h"
 #include "Plume.hpp"
 
+HeavyParticle_Model::HeavyParticle_Model(const PlumeInputData *PID, PI_HeavyParticle *in) : ParticleModel(ParticleType::heavy)
+{}
 
 void HeavyParticle_Model::generateParticleList(const float &time,
                                                const float &dt,
