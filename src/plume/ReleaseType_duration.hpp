@@ -80,8 +80,10 @@ public:
       std::cerr << "[ERROR]" << std::endl;
       exit(1);
     } else if (m_totalMass != 0.0) {
+      m_massPerSec = m_totalMass / releaseDur;
       m_massPerParticle = m_totalMass / m_numPar;
     } else if (m_massPerSec != 0.0) {
+      m_totalMass = m_massPerSec * releaseDur;
       m_massPerParticle = m_massPerSec / (m_particlePerTimestep / timestep);
     } else {
       m_massPerParticle = 0.0;
