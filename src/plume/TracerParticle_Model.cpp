@@ -35,13 +35,10 @@
 #include "TracerParticle_Model.h"
 #include "Plume.hpp"
 
-TracerParticle_Model::TracerParticle_Model(const PlumeInputData *PID, PI_TracerParticle *in) : ParticleModel(ParticleType::tracer)
+TracerParticle_Model::TracerParticle_Model(const PlumeInputData *PID, PI_TracerParticle *in)
+  : ParticleModel(ParticleType::tracer, in->tag)
 {
   for (auto s : in->sources) {
-    // now do anything that is needed to the source via the pointer
-    s->checkReleaseInfo(PID->plumeParams->timeStep, PID->plumeParams->simDur);
-    // s->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
-
     // now determine the number of particles to release for the source and update the overall count
     // totalParsToRelease += s->getNumParticles();
 

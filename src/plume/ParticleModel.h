@@ -58,13 +58,11 @@ public:
     return particleType;
   }
 
-protected:
-  explicit ParticleModel(ParticleType type)
-    : particleType(type)
-  {}
+  std::string tag{};
 
-  ParticleModel(ParticleType type, Deposition *dep)
-    : particleType(type), deposition(dep)
+protected:
+  explicit ParticleModel(ParticleType type, const std::string &tag_in)
+    : particleType(type), tag(tag_in)
   {}
 
   ParticleType particleType{};

@@ -163,6 +163,13 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
     std::cout << "[WARNING]\t no source parameters" << std::endl;
   }
 
+  for (auto p : PID->particleParams->particles) {
+    for (auto s : p->sources) {
+      // now do anything that is needed to the source via the pointer
+      s->checkReleaseInfo(PID->plumeParams->timeStep, PID->plumeParams->simDur);
+      s->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
+    }
+  }
 
   /* setup boundary condition functions */
 
@@ -415,8 +422,7 @@ double Plume::calcCourantTimestep(const double &u,
                                   const double &timeRemainder)
 {
   // set the output dt_par val to the timeRemainder
-  // then if any of the Courant number values end up smaller, use that value
-  // instead
+  // then if any of the Courant number values end up smaller, use that value instead
   double dt_par = timeRemainder;
 
   // LA-note: what to do if the velocity fluctuation is zero?

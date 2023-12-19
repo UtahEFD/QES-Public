@@ -48,10 +48,6 @@
 class HeavyParticle_Model : public ParticleModel
 {
 public:
-  explicit HeavyParticle_Model(Deposition *dep)
-    : ParticleModel(ParticleType::heavy, dep)
-  {}
-
   HeavyParticle_Model(const PlumeInputData *, PI_HeavyParticle *);
 
   void generateParticleList(const float &time, const float &dt, WINDSGeneralData *WGD, TURBGeneralData *TGD, Plume *plume) override;
