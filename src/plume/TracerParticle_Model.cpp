@@ -34,8 +34,9 @@
 
 #include "TracerParticle_Model.h"
 #include "Plume.hpp"
+#include "PI_TracerParticle.h"
 
-TracerParticle_Model::TracerParticle_Model(const PlumeInputData *PID, PI_TracerParticle *in)
+TracerParticle_Model::TracerParticle_Model(const PI_TracerParticle *in)
   : ParticleModel(ParticleType::tracer, in->tag)
 {
   for (auto s : in->sources) {
@@ -44,9 +45,6 @@ TracerParticle_Model::TracerParticle_Model(const PlumeInputData *PID, PI_TracerP
 
     // add source into the vector of sources
     sources.emplace_back(new TracerParticle_Source((int)sources.size(), s));
-  }
-  for (auto s : sources) {
-    std::cout << s->getNumParticles() << std::endl;
   }
 }
 
@@ -73,7 +71,10 @@ void TracerParticle_Model::generateParticleList(const float &time,
   }
 }
 
-void TracerParticle_Model::advect(const double &total_time_interval, WINDSGeneralData *WGD, TURBGeneralData *TGD, Plume *plume)
+void TracerParticle_Model::advect(const double &total_time_interval,
+                                  WINDSGeneralData *WGD,
+                                  TURBGeneralData *TGD,
+                                  Plume *plume)
 {
 #pragma omp parallel for default(none) shared(WGD, TGD, plume, total_time_interval)
   for (auto k = 0u; k < particles->size(); ++k) {

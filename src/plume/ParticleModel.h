@@ -34,6 +34,8 @@
 
 #pragma once
 
+#include <utility>
+
 #include "util/ManagedContainer.h"
 
 #include "winds/WINDSGeneralData.h"
@@ -48,8 +50,15 @@ class Plume;
 class ParticleModel
 {
 public:
-  virtual void generateParticleList(const float &time, const float &dt, WINDSGeneralData *WGD, TURBGeneralData *TGD, Plume *plume) = 0;
-  virtual void advect(const double &timeRemainder, WINDSGeneralData *WGD, TURBGeneralData *TGD, Plume *plume) = 0;
+  virtual void generateParticleList(const float &time,
+                                    const float &dt,
+                                    WINDSGeneralData *WGD,
+                                    TURBGeneralData *TGD,
+                                    Plume *plume) = 0;
+  virtual void advect(const double &timeRemainder,
+                      WINDSGeneralData *WGD,
+                      TURBGeneralData *TGD,
+                      Plume *plume) = 0;
 
   virtual ~ParticleModel() = default;
 
@@ -61,8 +70,8 @@ public:
   std::string tag{};
 
 protected:
-  explicit ParticleModel(ParticleType type, const std::string &tag_in)
-    : particleType(type), tag(tag_in)
+  explicit ParticleModel(ParticleType type, std::string tag_in)
+    : particleType(type), tag(std::move(tag_in))
   {}
 
   ParticleType particleType{};

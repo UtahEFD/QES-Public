@@ -42,6 +42,7 @@
 
 #include "PI_Source.h"
 #include "Particle.hpp"
+#include "ParticleModel.h"
 
 class Source;
 class GroundDeposition;
@@ -64,6 +65,9 @@ protected:
   {}
 
 public:
+
+  virtual ParticleModel *create() = 0;
+
   // particle type
   ParticleType particleType;
 
@@ -86,6 +90,7 @@ public:
   ~PI_Particle() = default;
 
   virtual void parseValues() = 0;
+
 
   // virtual void setParticleParameters(Particle *) = 0;
 };

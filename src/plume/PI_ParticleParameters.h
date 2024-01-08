@@ -41,8 +41,8 @@
 #include "util/ParseInterface.h"
 
 #include "PI_Particle.h"
-#include "TracerParticle.h"
-#include "HeavyParticle.h"
+#include "PI_TracerParticle.h"
+#include "PI_HeavyParticle.h"
 
 class PI_ParticleParameters : public ParseInterface
 {

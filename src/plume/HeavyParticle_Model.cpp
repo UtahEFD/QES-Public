@@ -34,10 +34,19 @@
 
 #include "HeavyParticle_Model.h"
 #include "Plume.hpp"
+#include "PI_HeavyParticle.h"
 
-HeavyParticle_Model::HeavyParticle_Model(const PlumeInputData *PID, PI_HeavyParticle *in)
+HeavyParticle_Model::HeavyParticle_Model(const PI_HeavyParticle *in)
   : ParticleModel(ParticleType::heavy, in->tag)
-{}
+{
+  for (auto s : in->sources) {
+    // now determine the number of particles to release for the source and update the overall count
+    // totalParsToRelease += s->getNumParticles();
+
+    // add source into the vector of sources
+    sources.emplace_back(new HeavyParticle_Source((int)sources.size(), s));
+  }
+}
 
 void HeavyParticle_Model::generateParticleList(const float &time,
                                                const float &dt,

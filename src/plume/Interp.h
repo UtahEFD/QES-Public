@@ -47,7 +47,6 @@
 #include "util/Vector3.h"
 #include "util/Vector3Double.h"
 
-#include "PlumeInputData.hpp"
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
 
