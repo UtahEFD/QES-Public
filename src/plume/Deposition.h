@@ -44,14 +44,12 @@
 #include "util/QEStime.h"
 #include "util/calcTime.h"
 #include "util/Vector3.h"
-//#include "Matrix3.h"
+// #include "Matrix3.h"
 #include "Random.h"
 
 #include "util/QESNetCDFOutput.h"
-#include "PlumeOutput.h"
-#include "PlumeOutputParticleData.h"
-
-#include "PlumeInputData.hpp"
+// #include "PlumeOutput.h"
+// #include "PlumeOutputParticleData.h"
 
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"

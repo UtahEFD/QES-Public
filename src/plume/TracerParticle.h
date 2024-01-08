@@ -38,33 +38,8 @@
 
 #pragma once
 
-#include "util/ParseInterface.h"
-
-#include "PI_Particle.h"
 #include "Particle.hpp"
 
-class PI_TracerParticle : public PI_Particle
-{
-protected:
-public:
-  // default constructor
-  PI_TracerParticle()
-    : PI_Particle(ParticleType::tracer, false)
-  {}
-
-  // destructor
-  ~PI_TracerParticle()
-  {
-  }
-
-  void parseValues() override
-  {
-    parsePrimitive<std::string>(true, tag, "tag");
-    parseMultiElements(false, sources, "source");
-  }
-
-  // void setParticleParameters(Particle *ptr) override {}
-};
 
 class TracerParticle : public Particle
 {

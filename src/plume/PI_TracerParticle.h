@@ -28,46 +28,47 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Particle.h
- * @brief This class represents information stored for each particle
+/** @file Sources.hpp
+ * @brief This class contains data and variables that set flags and
+ * settngs read from the xml.
+ *
+ * @note Child of ParseInterface
+ * @sa ParseInterface
  */
 
 #pragma once
 
-#include "util/ManagedContainer.h"
+#include "util/ParseInterface.h"
 
-#include "winds/WINDSGeneralData.h"
-#include "winds/TURBGeneralData.h"
+#include "PI_Particle.h"
 
-#include "Deposition.h"
 #include "ParticleModel.h"
+#include "TracerParticle_Model.h"
 
-#include "TracerParticle.h"
-#include "TracerParticle_Source.h"
-
-class PI_TracerParticle;
-
-class TracerParticle_Model : public ParticleModel
+class PI_TracerParticle : public PI_Particle
 {
-public:
-  explicit TracerParticle_Model(const PI_TracerParticle *);
-
-  void generateParticleList(const float &time,
-                            const float &dt,
-                            WINDSGeneralData *WGD,
-                            TURBGeneralData *TGD,
-                            Plume *plume) override;
-
-  void advect(const double &total_time_interval,
-              WINDSGeneralData *WGD,
-              TURBGeneralData *TGD,
-              Plume *plume) override;
-
-  ~TracerParticle_Model() = default;
-
 protected:
-  ManagedContainer<TracerParticle> *particles{};
-  std::vector<TracerParticle_Source *> sources;
-  
-private:
+public:
+  // default constructor
+  PI_TracerParticle()
+    : PI_Particle(ParticleType::tracer, false)
+  {}
+
+  // destructor
+  ~PI_TracerParticle()
+  {
+  }
+
+  void parseValues() override
+  {
+    parsePrimitive<std::string>(true, tag, "tag");
+    parseMultiElements(false, sources, "source");
+  }
+
+  virtual ParticleModel *create() override
+  {
+    return new TracerParticle_Model(this);
+  }
+
+  // void setParticleParameters(Particle *ptr) override {}
 };

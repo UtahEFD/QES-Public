@@ -48,6 +48,7 @@
 #include "util/QEStime.h"
 
 class Plume;
+class PlumeInputData;
 
 class PlumeOutput : public QESNetCDFOutput
 {

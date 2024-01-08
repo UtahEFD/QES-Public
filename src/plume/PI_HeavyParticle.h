@@ -28,46 +28,51 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Particle.h
- * @brief This class represents information stored for each particle
+/** @file Sources.hpp
+ * @brief This class contains data and variables that set flags and
+ * settngs read from the xml.
+ *
+ * @note Child of ParseInterface
+ * @sa ParseInterface
  */
 
 #pragma once
 
-#include "util/ManagedContainer.h"
+#include "util/ParseInterface.h"
 
-#include "winds/WINDSGeneralData.h"
-#include "winds/TURBGeneralData.h"
+#include "PI_Particle.h"
+#include "HeavyParticle_Model.h"
 
-#include "Deposition.h"
-#include "ParticleModel.h"
-
-#include "TracerParticle.h"
-#include "TracerParticle_Source.h"
-
-class PI_TracerParticle;
-
-class TracerParticle_Model : public ParticleModel
+class PI_HeavyParticle : public PI_Particle
 {
-public:
-  explicit TracerParticle_Model(const PI_TracerParticle *);
-
-  void generateParticleList(const float &time,
-                            const float &dt,
-                            WINDSGeneralData *WGD,
-                            TURBGeneralData *TGD,
-                            Plume *plume) override;
-
-  void advect(const double &total_time_interval,
-              WINDSGeneralData *WGD,
-              TURBGeneralData *TGD,
-              Plume *plume) override;
-
-  ~TracerParticle_Model() = default;
-
 protected:
-  ManagedContainer<TracerParticle> *particles{};
-  std::vector<TracerParticle_Source *> sources;
-  
-private:
+public:
+  // default constructor
+  PI_HeavyParticle()
+    : PI_Particle(ParticleType::heavy, true)
+  {}
+
+  // destructor
+  ~PI_HeavyParticle() = default;
+
+  void parseValues() override
+  {
+    parsePrimitive<std::string>(true, tag, "tag");
+    parsePrimitive<double>(true, rho, "particleDensity");
+    parsePrimitive<double>(true, d, "particleDiameter");
+
+    parsePrimitive<bool>(true, depFlag, "depositionFlag");
+    parsePrimitive<double>(false, c1, "c1");
+    parsePrimitive<double>(false, c2, "c2");
+
+    parsePrimitive<double>(false, decayConst, "decayConst");
+
+    parseMultiElements(false, sources, "source");
+  }
+  // void setParticleParameters(Particle *ptr) override {}
+
+  virtual ParticleModel *create() override
+  {
+    return new HeavyParticle_Model(this);
+  }
 };

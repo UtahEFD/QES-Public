@@ -30,14 +30,17 @@ TEST_CASE("plume input test")
   // parse xml settings
   auto PID = new PlumeInputData(qesPlumeParamFile);
   std::cout << PID->particleParams->particles.size() << std::endl;
-  std::cout << PID->particleParams->particles[0]->particleType << std::endl;
-  std::cout << PID->particleParams->particles[0]->sources.size() << std::endl;
 
-
+  std::cout << "--------------------" << std::endl;
   std::vector<ParticleModel *> test;
   for (auto p : PID->particleParams->particles) {
+
     std::cout << p->tag << std::endl;
-    switch (p->particleType) {
+    std::cout << p->particleType << std::endl;
+    std::cout << p->sources.size() << std::endl;
+
+    test.emplace_back(p->create());
+    /*switch (p->particleType) {
     case ParticleType::tracer: {
       test.emplace_back(new TracerParticle_Model(PID, dynamic_cast<PI_TracerParticle *>(p)));
       break;
@@ -48,10 +51,18 @@ TEST_CASE("plume input test")
     }
     default:
       exit(1);
-    }
+    }*/
   }
 
+  std::cout << "--------------------" << std::endl;
+
   for (auto pm : test) {
+    std::cout << pm->tag << std::endl;
     std::cout << pm->getParticleType() << std::endl;
   }
+
+  /*for (auto pm : test) {
+    std::cout << pm->generateParticleList() << std::endl;
+    std::cout << pm->getParticleType() << std::endl;
+  }*/
 }
