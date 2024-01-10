@@ -61,6 +61,7 @@
 // #include "Args.hpp"
 #include "plume/PlumeInputData.hpp"
 #include "plume/Plume.hpp"
+#include "plume/PLUMEGeneralData.h"
 #include "plume/PlumeOutput.h"
 #include "plume/PlumeOutputParticleData.h"
 
@@ -136,19 +137,19 @@ int main(int argc, char *argv[])
     outputVec.push_back(new TURBOutput(TGD, arguments.netCDFFileTurb));
   }
 
-  Plume *plume = nullptr;
+  PLUMEGeneralData *PGD = nullptr;
   // create output instance
   std::vector<QESNetCDFOutput *> outputPlume;
 
   if (arguments.compPlume) {
     // Create instance of Plume model class
-    plume = new Plume(PID, WGD, TGD);
+    PGD = new PLUMEGeneralData(PID, WGD, TGD);
 
     // always supposed to output lagrToEulOutput data
-    outputPlume.push_back(new PlumeOutput(PID, plume, arguments.outputPlumeFile));
-    if (arguments.doParticleDataOutput) {
-      outputPlume.push_back(new PlumeOutputParticleData(PID, plume, arguments.outputParticleDataFile));
-    }
+    // outputPlume.push_back(new PlumeOutput(PID, plume, arguments.outputPlumeFile));
+    // if (arguments.doParticleDataOutput) {
+    //  outputPlume.push_back(new PlumeOutputParticleData(PID, plume, arguments.outputParticleDataFile));
+    //}
   }
 
   // //////////////////////////////////////////
@@ -188,7 +189,7 @@ int main(int argc, char *argv[])
     }
 
     // Run plume advection model
-    if (plume != nullptr) {
+    if (PGD != nullptr) {
       QEStime endtime;
       if (WGD->totalTimeIncrements == 1) {
         endtime = WGD->timestamp[index] + PID->plumeParams->simDur;
@@ -197,12 +198,12 @@ int main(int argc, char *argv[])
       } else {
         endtime = WGD->timestamp[index + 1];
       }
-      plume->run(endtime, WGD, TGD, outputPlume);
+      PGD->run(endtime, WGD, TGD, outputPlume);
     }
   }
 
-  if (plume != nullptr) {
-    plume->showCurrentStatus();
+  if (PGD != nullptr) {
+    PGD->showCurrentStatus();
   }
 
   exit(EXIT_SUCCESS);

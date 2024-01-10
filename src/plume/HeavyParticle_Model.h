@@ -56,12 +56,15 @@ public:
                             const float &dt,
                             WINDSGeneralData *WGD,
                             TURBGeneralData *TGD,
-                            Plume *plume) override;
+                            PLUMEGeneralData *PGD) override;
 
   void advect(const double &total_time_interval,
               WINDSGeneralData *WGD,
               TURBGeneralData *TGD,
-              Plume *plume) override;
+              PLUMEGeneralData *PGD) override;
+
+  int get_nbr_active() override { return (int)particles->get_nbr_active(); };
+  int get_nbr_inserted() override { return (int)particles->get_nbr_inserted(); };
 
   ~HeavyParticle_Model() = default;
 

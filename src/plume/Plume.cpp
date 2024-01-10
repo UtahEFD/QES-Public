@@ -201,7 +201,7 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
     exit(EXIT_FAILURE);
   }
 
-  deposition = new Deposition(WGD);
+  // deposition = new Deposition(WGD);
 }
 
 void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD, std::vector<QESNetCDFOutput *> outputVec)
@@ -314,13 +314,11 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
       advectParticle(timeRemainder, particles->heavy->get(k), boxSizeZ, WGD, TGD);
     }//  END OF OPENMP WORK SHARE
 #else
-    for (auto &parItr : *particles->tracer) {
-      //  call to the main particle adection function (in separate file: AdvectParticle.cpp)
-      advectParticle(timeRemainder, parItr, boxSizeZ, WGD, TGD);
+    for (auto k = 0u; k < particles->tracer->size(); ++k) {
+      advectParticle(timeRemainder, particles->tracer->get(k), boxSizeZ, WGD, TGD);
     }// end of loop
-    for (auto &parItr : *particles->heavy) {
-      //  call to the main particle adection function (in separate file: AdvectParticle.cpp)
-      advectParticle(timeRemainder, parItr, boxSizeZ, WGD, TGD);
+    for (auto k = 0u; k < particles->heavy->size(); ++k) {
+      advectParticle(timeRemainder, particles->heavy->get(k), boxSizeZ, WGD, TGD);
     }// end of loop
 #endif
 

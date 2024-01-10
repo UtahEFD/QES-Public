@@ -50,7 +50,7 @@ void TracerParticle_Source::emitParticles(const float &dt,
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_releaseType->m_releaseStartTime && currTime <= m_releaseType->m_releaseEndTime) {
     if (!particles->check_size(m_releaseType->m_particlePerTimestep)) {
-      std::cerr << "[ERROR] particle container hill formed (not enough space)" << std::endl;
+      std::cerr << "[ERROR] particle container ill formed (not enough space)" << std::endl;
       exit(1);
     }
     for (int pidx = 0; pidx < m_releaseType->m_particlePerTimestep; ++pidx) {
@@ -60,7 +60,7 @@ void TracerParticle_Source::emitParticles(const float &dt,
       m_sourceGeometry->setInitialPosition(particles->last_added()->xPos_init,
                                            particles->last_added()->yPos_init,
                                            particles->last_added()->zPos_init);
-      m_protoParticle->setParticleParameters(particles->last_added());
+      // m_protoParticle->setParticleParameters(particles->last_added());
       particles->last_added()->tStrt = currTime;
       particles->last_added()->sourceIdx = sourceIdx;
       particles->last_added()->m = m_releaseType->m_massPerParticle;
