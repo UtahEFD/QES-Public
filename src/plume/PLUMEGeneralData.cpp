@@ -108,16 +108,16 @@ PLUMEGeneralData::PLUMEGeneralData(PlumeInputData *PID, WINDSGeneralData *WGD, T
   std::cout << "[QES-Plume]\t Wall Reflection Method set to: "
             << PID->BCs->wallReflection << std::endl;
   if (PID->BCs->wallReflection == "doNothing") {
-    wallReflect = new WallReflection_DoNothing();
+    wallReflect = new WallReflection_DoNothing(interp);
   } else if (PID->BCs->wallReflection == "setInactive") {
-    wallReflect = new WallReflection_SetToInactive();
+    wallReflect = new WallReflection_SetToInactive(interp);
   } else if (PID->BCs->wallReflection == "stairstepReflection") {
-    wallReflect = new WallReflection_StairStep();
+    wallReflect = new WallReflection_StairStep(interp);
   } else if (PID->BCs->wallReflection == "meshReflection") {
     if (WGD->mesh) {
-      wallReflect = new WallReflection_TriMesh();
+      wallReflect = new WallReflection_TriMesh(interp);
     } else {
-      wallReflect = new WallReflection_StairStep();
+      wallReflect = new WallReflection_StairStep(interp);
     }
   } else {
     // this should not happend

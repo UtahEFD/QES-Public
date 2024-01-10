@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file WallReflection_StairStep.h 
+/** @file WallReflection_StairStep.h
  * @brief
  */
 
@@ -44,7 +44,7 @@
 #include "util/QEStime.h"
 #include "util/calcTime.h"
 #include "util/Vector3.h"
-//#include "Matrix3.h"
+// #include "Matrix3.h"
 #include "Random.h"
 
 #include "util/QESNetCDFOutput.h"
@@ -67,13 +67,13 @@
 class WallReflection_StairStep : public WallReflection
 {
 public:
-  WallReflection_StairStep()
+  WallReflection_StairStep(Interp *interp)
+    : WallReflection(interp)
   {}
   ~WallReflection_StairStep()
   {}
 
   virtual bool reflect(const WINDSGeneralData *WGD,
-                       const Plume *plume,
                        double &xPos,
                        double &yPos,
                        double &zPos,
@@ -86,7 +86,6 @@ public:
 
 private:
   void trajectorySplit_recursive(const WINDSGeneralData *,
-                                 const Plume *,
                                  Vector3Double &,
                                  Vector3Double &,
                                  const double &,
@@ -96,7 +95,6 @@ private:
                                  bool &);
 
   void oneReflection(const WINDSGeneralData *,
-                     const Plume *,
                      Vector3Double &,
                      Vector3Double &,
                      const double &,

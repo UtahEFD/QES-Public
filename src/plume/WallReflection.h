@@ -44,14 +44,8 @@
 #include "util/QEStime.h"
 #include "util/calcTime.h"
 #include "util/Vector3.h"
-//#include "Matrix3.h"
+// #include "Matrix3.h"
 #include "Random.h"
-
-#include "util/QESNetCDFOutput.h"
-#include "PlumeOutput.h"
-#include "PlumeOutputParticleData.h"
-
-#include "PlumeInputData.hpp"
 
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
@@ -66,12 +60,14 @@ class Plume;
 class WallReflection
 {
 public:
-  WallReflection()
-  {}
+  WallReflection(Interp *interp)
+  {
+    m_interp = interp;
+  }
+
   ~WallReflection()
   {}
   virtual bool reflect(const WINDSGeneralData *,
-                       const Plume *,
                        double &,
                        double &,
                        double &,
@@ -81,18 +77,25 @@ public:
                        double &,
                        double &,
                        double &) = 0;
+
+private:
+  WallReflection()
+  {}
+
+protected:
+  Interp *m_interp;
 };
 
 class WallReflection_DoNothing : public WallReflection
 {
 public:
-  WallReflection_DoNothing()
+  WallReflection_DoNothing(Interp *interp)
+    : WallReflection(interp)
   {}
   ~WallReflection_DoNothing()
   {}
 
   virtual bool reflect(const WINDSGeneralData *WGD,
-                       const Plume *plume,
                        double &xPos,
                        double &yPos,
                        double &zPos,
@@ -110,13 +113,13 @@ public:
 class WallReflection_SetToInactive : public WallReflection
 {
 public:
-  WallReflection_SetToInactive()
+  WallReflection_SetToInactive(Interp *interp)
+    : WallReflection(interp)
   {}
   ~WallReflection_SetToInactive()
   {}
 
   virtual bool reflect(const WINDSGeneralData *WGD,
-                       const Plume *plume,
                        double &xPos,
                        double &yPos,
                        double &zPos,

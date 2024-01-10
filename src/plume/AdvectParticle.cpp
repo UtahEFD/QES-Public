@@ -127,7 +127,7 @@ void Plume::advectParticle(double timeRemainder, Particle *p, double boxSizeZ, W
 
     // check and do wall (building and terrain) reflection (based in the method)
     if (p->isActive) {
-      p->isActive = wallReflect->reflect(WGD, this, p->xPos, p->yPos, p->zPos, disX, disY, disZ, p->uFluct, p->vFluct, p->wFluct);
+      p->isActive = wallReflect->reflect(WGD, p->xPos, p->yPos, p->zPos, disX, disY, disZ, p->uFluct, p->vFluct, p->wFluct);
     }
 
     // now apply boundary conditions
