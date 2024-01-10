@@ -37,6 +37,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <map>
 #include <list>
 #include <cmath>
 #include <cstring>
@@ -81,6 +82,9 @@
 #include "Source_HeavyParticles.h"
 
 #include "ParticleManager.h"
+#include "ParticleModel.h"
+#include "HeavyParticle_Model.h"
+#include "TracerParticle_Model.h"
 
 
 class PLUMEGeneralData
@@ -115,23 +119,27 @@ public:
 
   int getTotalParsToRelease() const { return totalParsToRelease; }// accessor
 
-  int getNumReleasedParticles() const { return nParsReleased; }// accessor
+  int getNumReleasedParticles() const { return isReleasedCount; }// accessor
   int getNumRogueParticles() const { return isRogueCount; }// accessor
-  int getNumNotActiveParticles() const { return isNotActiveCount; }// accessor
-  // int getNumCurrentParticles() const { return (int)particleList.size(); }// accessor
-  int getNumCurrentParticles() const { return particles->get_nbr_active(); }// accessor
+  int getNumCurrentParticles() const { return isActiveCount; }// accessor
+
+  // int getNumNotActiveParticles() const { return isNotActiveCount; }// accessor
+  // int getNumCurrentParticles() const { return particles->get_nbr_active(); }// accessor
 
   QEStime getSimTimeStart() const { return simTimeStart; }
   QEStime getSimTimeCurrent() const { return simTimeCurr; }
 
   void showCurrentStatus();
 
+  std::map<std::string, ParticleModel *> models;
+  std::map<std::string, ParticleModel *> particleModels;
+
   // This the storage for all particles
   // the sources can set these values, then the other values are set using urb and turb info using these values
   std::list<Particle *> particleList;
 
   // ManagedContainer<Particle_Tracer> *tracerList;
-  ParticleContainers *particles;
+  // ParticleContainers *particles;
 
 #ifdef _OPENMP
   // if using openmp the RNG is not thread safe, use an array of RNG (one per thread)
@@ -189,7 +197,9 @@ public:
 
   // some overall metadata for the set of particles
   int isRogueCount = 0;// just a total number of rogue particles per time iteration
-  int isNotActiveCount = 0;// just a total number of inactive active particles per time iteration
+  int isActiveCount = 0;
+  int isReleasedCount = 0;
+  // int isNotActiveCount = 0;// just a total number of inactive active particles per time iteration
 
   // important time variables not copied from dispersion
   double CourantNum = 0.0;// the Courant number, used to know how to divide up the simulation timestep into smaller per particle timesteps. Copied from input
@@ -198,7 +208,7 @@ public:
   // ALL Sources that will be used
   std::vector<Source *> allSources;
   // this is the global counter of particles released (used to set particleID)
-  int nParsReleased = 0;
+  // int nParsReleased = 0;
 
   // this is the total number of particles expected to be released during the simulation
   // !!! this has to be calculated carefully inside the getInputSources() function
@@ -222,29 +232,30 @@ public:
 
   // private:
 public:
+  void updateCounts();
   void applyBC(Particle *);
 
-  void setParticleVals(WINDSGeneralData *, TURBGeneralData *, std::list<Particle *>);
+  // void setParticleVals(WINDSGeneralData *, TURBGeneralData *, std::list<Particle *>);
   void setParticle(WINDSGeneralData *WGD, TURBGeneralData *TGD, Particle *par_ptr);
   // this function gets sources from input data and adds them to the allSources vector
   // this function also calls the many check and calc functions for all the input sources
   // !!! note that these check and calc functions have to be called here
   //  because each source requires extra data not found in the individual source data
   // !!! totalParsToRelease needs calculated very carefully here using information from each of the sources
-  void getInputSources(PlumeInputData *);
+  // void getInputSources(PlumeInputData *);
 
   // this function generates the list of particle to be released at a given time
-  void generateParticleList(float, WINDSGeneralData *, TURBGeneralData *);
+  //  void generateParticleList(float, WINDSGeneralData *, TURBGeneralData *);
 
   // this function scrubs the inactive particle for the particle list (particleList)
-  void scrubParticleList();
+  // void scrubParticleList();
 
   double getMaxVariance(const TURBGeneralData *);
 
   // this function moves (advects) one particle
   // void advectParticle(double, Particle *, double, WINDSGeneralData *, TURBGeneralData *);
 
-  void GLE_solver(Particle *p,
+  /* void GLE_solver(Particle *p,
                   double &txx,
                   double &txy,
                   double &txz,
@@ -255,6 +266,7 @@ public:
                   double &flux_div_y,
                   double &flux_div_z,
                   double &par_dt);
+ */
 
   void GLE_solver(Particle *p,
                   double &par_dt,
@@ -361,17 +373,3 @@ public:
   PLUMEGeneralData()
   {}
 };
-
-inline void PLUMEGeneralData::showCurrentStatus()
-{
-  std::cout << "----------------------------------------------------------------- \n";
-  std::cout << "[QES-Plume] \t End run particle summary \n";
-  std::cout << "Current simulation time: " << simTimeCurr << "\n";
-  std::cout << "Simulation run time: " << simTimeCurr - simTimeStart << "\n";
-  std::cout << "Total number of particles released: " << particles->get_nbr_inserted() << "\n";
-  std::cout << "Current number of particles in simulation: " << particles->get_nbr_active() << "\n";
-  std::cout << "Number of rogue particles: " << isRogueCount << "\n";
-  std::cout << "Number of deleted particles: " << isNotActiveCount << "\n";
-  std::cout << "----------------------------------------------------------------- \n"
-            << std::flush;
-}

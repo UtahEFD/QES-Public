@@ -82,7 +82,7 @@ PLUMEGeneralData::PLUMEGeneralData(PlumeInputData *PID, WINDSGeneralData *WGD, T
   dxy = WGD->dxy;
 
   // Create instance of Interpolation class
-  std::cout << "[QES-Plume] \t Interpolation Method set to: "
+  std::cout << "[QES-Plume]\t Interpolation Method set to: "
             << PID->plumeParams->interpMethod << std::endl;
   if (PID->plumeParams->interpMethod == "analyticalPowerLaw") {
     interp = new InterpPowerLaw(WGD, TGD, debug);
@@ -94,6 +94,46 @@ PLUMEGeneralData::PLUMEGeneralData(PlumeInputData *PID, WINDSGeneralData *WGD, T
     std::cerr << "[ERROR] unknown interpolation method" << std::endl;
     exit(EXIT_FAILURE);
   }
+
+  // get the domain start and end values, needed for wall boundary condition
+  // application
+  domainXstart = interp->xStart;
+  domainXend = interp->xEnd;
+  domainYstart = interp->yStart;
+  domainYend = interp->yEnd;
+  domainZstart = interp->zStart;
+  domainZend = interp->zEnd;
+
+  // now set the wall reflection function
+  std::cout << "[QES-Plume]\t Wall Reflection Method set to: "
+            << PID->BCs->wallReflection << std::endl;
+  if (PID->BCs->wallReflection == "doNothing") {
+    wallReflect = new WallReflection_DoNothing();
+  } else if (PID->BCs->wallReflection == "setInactive") {
+    wallReflect = new WallReflection_SetToInactive();
+  } else if (PID->BCs->wallReflection == "stairstepReflection") {
+    wallReflect = new WallReflection_StairStep();
+  } else if (PID->BCs->wallReflection == "meshReflection") {
+    if (WGD->mesh) {
+      wallReflect = new WallReflection_TriMesh();
+    } else {
+      wallReflect = new WallReflection_StairStep();
+    }
+  } else {
+    // this should not happend
+    std::cerr << "[ERROR] unknown wall reflection setting" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
+  /* setup boundary condition functions */
+  // now get the input boundary condition types from the inputs
+  std::string xBCtype = PID->BCs->xBCtype;
+  std::string yBCtype = PID->BCs->yBCtype;
+  std::string zBCtype = PID->BCs->zBCtype;
+
+  // now set the boundary condition function for the plume runs,
+  // and check to make sure the input BCtypes are legitimate
+  setBCfunctions(xBCtype, yBCtype, zBCtype);
 
 #ifdef _OPENMP
   // if using openmp the RNG is not thread safe, use an array of RNG (one per thread)
@@ -111,14 +151,6 @@ PLUMEGeneralData::PLUMEGeneralData(PlumeInputData *PID, WINDSGeneralData *WGD, T
   RNG = RandomSingleton::getInstance();
 #endif
 
-  // get the domain start and end values, needed for wall boundary condition
-  // application
-  domainXstart = interp->xStart;
-  domainXend = interp->xEnd;
-  domainYstart = interp->yStart;
-  domainYend = interp->yEnd;
-  domainZstart = interp->zStart;
-  domainZend = interp->zEnd;
 
   // Need dz for ground deposition
   double lBndz = PID->colParams->boxBoundsZ1;
@@ -144,11 +176,24 @@ PLUMEGeneralData::PLUMEGeneralData(PlumeInputData *PID, WINDSGeneralData *WGD, T
 
   // set the isRogueCount and isNotActiveCount to zero
   isRogueCount = 0;
-  isNotActiveCount = 0;
-  // set the particle counter to zero
-  nParsReleased = 0;
+  isReleasedCount = 0;
+  isActiveCount = 0;
+  // isNotActiveCount = 0;
 
-  particles = new ParticleContainers();
+  //  set the particle counter to zero
+  // nParsReleased = 0;
+
+  std::cout << "[QES-Plume]\t Initializing Particle Models: " << std::endl;
+  for (auto p : PID->particleParams->particles) {
+    for (auto s : p->sources) {
+      //  now do anything that is needed to the source via the pointer
+      s->checkReleaseInfo(PID->plumeParams->timeStep, PID->plumeParams->simDur);
+      s->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
+    }
+    models[p->tag] = p->create();
+  }
+
+  // particles = new ParticleContainers();
 
   // get sources from input data and add them to the allSources vector
   // this also calls the many check and calc functions for all the input sources
@@ -157,8 +202,8 @@ PLUMEGeneralData::PLUMEGeneralData(PlumeInputData *PID, WINDSGeneralData *WGD, T
   //  data
   // !!! totalParsToRelease needs calculated very carefully here using
   // information from each of the sources
-  if (PID->sourceParams) {
-    getInputSources(PID);
+  /*if (PID->sourceParams) {
+    // getInputSources(PID);
   } else {
     std::cout << "[WARNING]\t no source parameters" << std::endl;
   }
@@ -170,36 +215,7 @@ PLUMEGeneralData::PLUMEGeneralData(PlumeInputData *PID, WINDSGeneralData *WGD, T
       s->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
     }
   }
-
-  /* setup boundary condition functions */
-
-  // now get the input boundary condition types from the inputs
-  std::string xBCtype = PID->BCs->xBCtype;
-  std::string yBCtype = PID->BCs->yBCtype;
-  std::string zBCtype = PID->BCs->zBCtype;
-
-  // now set the boundary condition function for the plume runs,
-  // and check to make sure the input BCtypes are legitimate
-  setBCfunctions(xBCtype, yBCtype, zBCtype);
-
-  // now set the wall reflection function
-  if (PID->BCs->wallReflection == "doNothing") {
-    wallReflect = new WallReflection_DoNothing();
-  } else if (PID->BCs->wallReflection == "setInactive") {
-    wallReflect = new WallReflection_SetToInactive();
-  } else if (PID->BCs->wallReflection == "stairstepReflection") {
-    wallReflect = new WallReflection_StairStep();
-  } else if (PID->BCs->wallReflection == "meshReflection") {
-    if (WGD->mesh) {
-      wallReflect = new WallReflection_TriMesh();
-    } else {
-      wallReflect = new WallReflection_StairStep();
-    }
-  } else {
-    // this should not happend
-    std::cerr << "[ERROR] unknown wall reflection setting" << std::endl;
-    exit(EXIT_FAILURE);
-  }
+*/
 
   deposition = new Deposition(WGD);
 }
@@ -233,11 +249,13 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGener
   QEStime nextUpdate = simTimeCurr + updateFrequency_timeLoop;
   float simTime = simTimeCurr - simTimeStart;
 
-  std::cout << "[QES-Plume] \t Advecting particles from " << simTimeCurr << " to " << loopTimeEnd << ".\n"
+  updateCounts();
+
+  std::cout << "[QES-Plume]\t Advecting particles from " << simTimeCurr << " to " << loopTimeEnd << ".\n"
             << "\t\t Total run time = " << loopTimeEnd - simTimeCurr << " s "
             << "(sim time = " << simTime << " s, iteration = " << simTimeIdx << "). \n";
-  std::cout << "\t\t Particles: Released = " << particles->get_nbr_inserted() << " "
-            << "Active = " << particleList.size() << "." << std::endl;
+  std::cout << "\t\t Particles: Released = " << isReleasedCount << " "
+            << "Active = " << isActiveCount << "." << std::endl;
 
   // LA note: that this loop goes from 0 to nTimes-2, not nTimes-1. This is
   // because
@@ -257,15 +275,16 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGener
   while (simTimeCurr < loopTimeEnd) {
     // need to release new particles -> add new particles to the number to move
     // int nParsToRelease = generateParticleList(simTime, WGD, TGD);
-    generateParticleList(simTime, WGD, TGD);
+    // generateParticleList(simTime, WGD, TGD);
 
     if (debug) {
       int nParsToRelease = 0;
+      updateCounts();
       std::cout << "Time = " << simTime << " s (iteration = " << simTimeIdx
                 << "). Finished emitting particles "
                 << "from " << allSources.size() << " sources. "
                 << "Particles: New released = " << nParsToRelease << " "
-                << "Total released = " << particles->get_nbr_inserted() << "." << std::endl;
+                << "Total released = " << isReleasedCount << "." << std::endl;
     }
 
     // number of active particle at the current time step.
@@ -292,36 +311,44 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGener
       timeRemainder = sim_dt;
     }
 
+    auto startTime = std::chrono::high_resolution_clock::now();
+
+    for (const auto &pm : models) {
+      pm.second->generateParticleList(simTime, timeRemainder, WGD, TGD, this);
+      pm.second->advect(timeRemainder, WGD, TGD, this);
+    }
+
     // This the main loop over all active particles
     // All the particle here are active => no need to check
     //  for (auto parItr = particleList.begin(); parItr != particleList.end(); parItr++) {
 
-    auto startTime = std::chrono::high_resolution_clock::now();
+
     // FM: openmp parallelization of the advection loop
+
 #ifdef _OPENMP
     // std::vector<Particle *> tmp(particleList.begin(), particleList.end());
     // #pragma omp parallel for default(none) shared(WGD, TGD, tmp, timeRemainder)
 //    for (auto k = 0u; k < tmp.size(); ++k) {
 // advectParticle(timeRemainder, tmp[k], boxSizeZ, WGD, TGD);
 // call to the main particle adection function (in separate file: AdvectParticle.cpp)
-#pragma omp parallel for default(none) shared(WGD, TGD, timeRemainder)
-    for (auto k = 0u; k < particles->tracer->size(); ++k) {
-      // advectParticle(timeRemainder, particles->tracer->get(k), boxSizeZ, WGD, TGD);
-    }//  END OF OPENMP WORK SHARE
+// #pragma omp parallel for default(none) shared(WGD, TGD, timeRemainder)
+// for (auto k = 0u; k < particles->tracer->size(); ++k) {
+//  advectParticle(timeRemainder, particles->tracer->get(k), boxSizeZ, WGD, TGD);
+//}//  END OF OPENMP WORK SHARE
 
-#pragma omp parallel for default(none) shared(WGD, TGD, timeRemainder)
-    for (auto k = 0u; k < particles->heavy->size(); ++k) {
-      // advectParticle(timeRemainder, particles->heavy->get(k), boxSizeZ, WGD, TGD);
-    }//  END OF OPENMP WORK SHARE
+// #pragma omp parallel for default(none) shared(WGD, TGD, timeRemainder)
+//  for (auto k = 0u; k < particles->heavy->size(); ++k) {
+//   advectParticle(timeRemainder, particles->heavy->get(k), boxSizeZ, WGD, TGD);
+// }//  END OF OPENMP WORK SHARE
 #else
-    for (auto &parItr : *particles->tracer) {
-      //  call to the main particle adection function (in separate file: AdvectParticle.cpp)
-      advectParticle(timeRemainder, parItr, boxSizeZ, WGD, TGD);
-    }// end of loop
-    for (auto &parItr : *particles->heavy) {
-      //  call to the main particle adection function (in separate file: AdvectParticle.cpp)
-      advectParticle(timeRemainder, parItr, boxSizeZ, WGD, TGD);
-    }// end of loop
+    // for (auto &parItr : *particles->tracer) {
+    //   call to the main particle adection function (in separate file: AdvectParticle.cpp)
+    // advectParticle(timeRemainder, parItr, boxSizeZ, WGD, TGD);
+    //}// end of loop
+    // for (auto &parItr : *particles->heavy) {
+    //  call to the main particle adection function (in separate file: AdvectParticle.cpp)
+    // advectParticle(timeRemainder, parItr, boxSizeZ, WGD, TGD);
+    //}// end of loop
 #endif
 
     //  flush deposition buffer
@@ -336,6 +363,7 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGener
     }
   }*/
 
+    /*
     for (auto &parItr : *particles->heavy) {
       if (parItr.dep_buffer_flag) {
         for (auto n = 0u; n < parItr.dep_buffer_cell.size(); ++n) {
@@ -346,8 +374,9 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGener
         parItr.dep_buffer_val.clear();
       }
     }
+     */
 
-    isRogueCount = particles->get_nbr_rogue();
+    // isRogueCount = particles->get_nbr_rogue();
 
     // incrementation of time and timestep
     simTimeIdx++;
@@ -366,15 +395,16 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGener
     // simulations, but only when the updateFrequency allows
     if (simTimeCurr >= nextUpdate || (simTimeCurr == loopTimeEnd)) {
       if (verbose) {
-        std::cout << "Time = " << simTimeCurr << " (sim time = " << simTime << " s, iteration = " << simTimeIdx << "). "
-                  << "Particles: Released = " << particles->get_nbr_inserted() << " "
-                  << "Active = " << particleList.size() << " "
-                  << "Rogue = " << isRogueCount << "." << std::endl;
+        updateCounts();
+        std::cout << "[QES-Plume]\t Time = " << simTimeCurr << " (t = " << simTime << " s, iter = " << simTimeIdx << "). "
+                  << "Particles: released = " << isReleasedCount << " "
+                  << "active = " << isActiveCount << " "
+                  << "rogue = " << isRogueCount << "." << std::endl;
       } else {
-        std::cout << "Time = " << simTimeCurr << " (sim time = " << simTime << " s, iteration = " << simTimeIdx << "). "
-                  << "Particles: Released = " << particles->get_nbr_inserted() << " "
-                  << "Active = " << particles->get_nbr_active() << "." << std::endl;
-        //<< "Active = " << particleList.size() << "." << std::endl;
+        updateCounts();
+        std::cout << "[QES-Plume]\t Time = " << simTimeCurr << " (t = " << simTime << " s, iter = " << simTimeIdx << "). "
+                  << "Particles: released = " << isReleasedCount << " "
+                  << "active = " << isActiveCount << "." << std::endl;
       }
       nextUpdate += (float)updateFrequency_timeLoop;
       // output advection loop runtime if in debug mode
@@ -385,10 +415,12 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGener
 
   }// end of time loop
 
-  std::cout << "[QES-Plume] \t End of particles advection at Time = " << simTimeCurr
+  updateCounts();
+
+  std::cout << "[QES-Plume]\t End of particles advection at Time = " << simTimeCurr
             << " s (iteration = " << simTimeIdx << "). \n";
-  std::cout << "\t\t Particles: Released = " << particles->get_nbr_inserted() << " "
-            << "Active = " << particles->get_nbr_active() << "." << std::endl;
+  std::cout << "\t\t Particles: Released = " << isReleasedCount << " "
+            << "Active = " << isActiveCount << "." << std::endl;
   //<< "Active = " << particleList.size() << "." << std::endl;
 
   // DEBUG - get the amount of time it takes to perform the simulation time
@@ -405,7 +437,6 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGener
   std::cout << "[QES-Plume]\t Advection.\n";
   std::cout << "\t\t elapsed time: " << Elapsed.count() << " s" << std::endl;
 }
-
 
 void PLUMEGeneralData::applyBC(Particle *p)
 {
@@ -490,7 +521,7 @@ double PLUMEGeneralData::calcCourantTimestep(const double &d,
   return std::min(timeRemainder, CN * min_ds / max_u);
 }
 
-void PLUMEGeneralData::getInputSources(PlumeInputData *PID)
+/* void PLUMEGeneralData::getInputSources(PlumeInputData *PID)
 {
   int numSources_Input = PID->sourceParams->sources.size();
 
@@ -523,73 +554,13 @@ void PLUMEGeneralData::getInputSources(PlumeInputData *PID)
     }
   }
 }
+*/
 
 void PLUMEGeneralData::addSources(std::vector<Source *> &newSources)
 {
   allSources.insert(allSources.end(), newSources.begin(), newSources.end());
 }
 
-
-void PLUMEGeneralData::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBGeneralData *TGD)
-{
-  // Add new particles now
-  for (auto source : allSources) {
-    particles->prepare(source->particleType(),
-                       source->getNewParticleNumber((float)sim_dt, currentTime));
-  }
-  particles->sweep();
-  for (auto source : allSources) {
-    source->emitParticles((float)sim_dt, currentTime, particles);
-  }
-
-#pragma omp parallel for default(none) shared(WGD, TGD)
-  for (auto k = 0u; k < particles->tracer->get_nbr_added(); ++k) {
-    // set particle ID (use global particle counter)
-    setParticle(WGD, TGD, particles->tracer->get_added(k));
-  }
-#pragma omp parallel for default(none) shared(WGD, TGD)
-  for (auto k = 0u; k < particles->heavy->get_nbr_added(); ++k) {
-    // set particle ID (use global particle counter)
-    setParticle(WGD, TGD, particles->heavy->get_added(k));
-  }
-}
-
-void PLUMEGeneralData::scrubParticleList()
-{
-  for (auto parItr = particleList.begin(); parItr != particleList.end();) {
-    if (!(*parItr)->isActive) {
-      delete *parItr;
-      parItr = particleList.erase(parItr);
-    } else {
-      ++parItr;
-    }
-  }
-}
-
-void PLUMEGeneralData::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, std::list<Particle *> newParticles)
-{
-  // at this time, should be a list of each and every particle that exists at
-  // the given time particles and sources can potentially be added to the list
-  // elsewhere
-  // for (auto parItr = newParticles.begin(); parItr != newParticles.end(); parItr++) {
-  std::vector<Particle *> tmp(newParticles.begin(), newParticles.end());
-  for (auto &parItr : tmp) {
-    // set particle ID (use global particle counter)
-    parItr->particleID = nParsReleased;
-    nParsReleased++;
-  }
-
-  // #pragma omp parallel for default(none) shared(WGD, TGD, tmp)
-  // for (auto parItr = tmp.begin(); parItr != tmp.end(); parItr++) {
-  //  set particle ID (use global particle counter)
-  //(*parItr)->particleID = nParsReleased;
-  //
-#pragma omp parallel for default(none) shared(WGD, TGD, tmp)
-  for (auto k = 0u; k < tmp.size(); ++k) {
-    // set particle ID (use global particle counter)
-    setParticle(WGD, TGD, tmp[k]);
-  }
-}
 
 void PLUMEGeneralData::GLE_solver(Particle *p, double &par_dt, TURBGeneralData *TGD)
 {
@@ -1065,4 +1036,34 @@ void PLUMEGeneralData::setBCfunctions(const std::string &xBCtype,
               << "'exiting', 'periodic', 'reflection'" << std::endl;
     exit(EXIT_FAILURE);
   }
+}
+
+void PLUMEGeneralData::updateCounts()
+{
+  isRogueCount = 0;
+  isActiveCount = 0;
+  isReleasedCount = 0;
+  for (const auto &pm : models) {
+    isRogueCount += pm.second->get_nbr_rogue();
+    isActiveCount += pm.second->get_nbr_active();
+    isReleasedCount += pm.second->get_nbr_inserted();
+  }
+}
+
+void PLUMEGeneralData::showCurrentStatus()
+{
+  updateCounts();
+  std::cout << "----------------------------------------------------------------- \n";
+  std::cout << "[QES-Plume]\t End run particle summary \n";
+  std::cout << "Current simulation time: " << simTimeCurr << "\n";
+  std::cout << "Simulation run time: " << simTimeCurr - simTimeStart << "\n";
+  std::cout << "Total number of particles released: " << isReleasedCount << "\n";
+  std::cout << "Current number of particles in simulation: " << isActiveCount << "\n";
+  std::cout << "Number of rogue particles: " << isRogueCount << "\n";
+  for (const auto &pm : models) {
+    std::cout << "Name: " << pm.first << " with " << pm.second->get_nbr_active() << " particles \n";
+  }
+  // std::cout << "Number of deleted particles: " << isNotActiveCount << "\n";
+  std::cout << "----------------------------------------------------------------- \n"
+            << std::flush;
 }

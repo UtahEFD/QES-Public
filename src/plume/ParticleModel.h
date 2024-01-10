@@ -45,7 +45,7 @@
 #include "ParticleContainers.h"
 #include "Source.hpp"
 
-class Plume;
+class PLUMEGeneralData;
 
 class ParticleModel
 {
@@ -54,11 +54,15 @@ public:
                                     const float &dt,
                                     WINDSGeneralData *WGD,
                                     TURBGeneralData *TGD,
-                                    Plume *plume) = 0;
+                                    PLUMEGeneralData *PGD) = 0;
   virtual void advect(const double &timeRemainder,
                       WINDSGeneralData *WGD,
                       TURBGeneralData *TGD,
-                      Plume *plume) = 0;
+                      PLUMEGeneralData *PGD) = 0;
+
+  int get_nbr_rogue() { return nbr_rogue; };
+  virtual int get_nbr_active() = 0;
+  virtual int get_nbr_inserted() = 0;
 
   virtual ~ParticleModel() = default;
 
@@ -77,6 +81,8 @@ protected:
   ParticleType particleType{};
 
   Deposition *deposition = nullptr;
+
+  int nbr_rogue = 0;
 
 private:
   ParticleModel() = default;

@@ -18,7 +18,9 @@ SET( qesPlumeCoreSources
     Plume.cpp
     AdvectParticle.cpp
     DepositParticle.cpp
-    
+
+    PLUMEGeneralData.cpp
+
     PlumeOutput.cpp
     PlumeOutputParticleData.cpp
 

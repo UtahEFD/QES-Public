@@ -6,13 +6,20 @@
 #include <iostream>
 #include <cstdlib>
 #include <algorithm>
+#include <map>
 
 #include "util/calcTime.h"
 
+#include "test_WINDSGeneralData.h"
+#include "winds/WINDSGeneralData.h"
+
 #include "plume/PlumeInputData.hpp"
+#include "plume/PLUMEGeneralData.h"
+#include "plume/PlumeOutput.h"
 
 #include "plume/TracerParticle_Model.h"
 #include "plume/HeavyParticle_Model.h"
+
 
 TEST_CASE("plume input test")
 {
@@ -32,14 +39,16 @@ TEST_CASE("plume input test")
   std::cout << PID->particleParams->particles.size() << std::endl;
 
   std::cout << "--------------------" << std::endl;
-  std::vector<ParticleModel *> test;
+  // std::vector<ParticleModel *> test;
+  std::map<std::string, ParticleModel *> test;
+
   for (auto p : PID->particleParams->particles) {
 
     std::cout << p->tag << std::endl;
     std::cout << p->particleType << std::endl;
     std::cout << p->sources.size() << std::endl;
 
-    test.emplace_back(p->create());
+    test[p->tag] = p->create();
     /*switch (p->particleType) {
     case ParticleType::tracer: {
       test.emplace_back(new TracerParticle_Model(PID, dynamic_cast<PI_TracerParticle *>(p)));
@@ -56,8 +65,8 @@ TEST_CASE("plume input test")
 
   std::cout << "--------------------" << std::endl;
 
-  for (auto pm : test) {
-    std::cout << pm->tag << std::endl;
+  for (const auto &[key, pm] : test) {
+    std::cout << key << " " << pm->tag << std::endl;
     std::cout << pm->getParticleType() << std::endl;
   }
 
@@ -65,4 +74,81 @@ TEST_CASE("plume input test")
     std::cout << pm->generateParticleList() << std::endl;
     std::cout << pm->getParticleType() << std::endl;
   }*/
+}
+TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
+{
+  // set up timer information for the simulation runtime
+  calcTime timers;
+  timers.startNewTimer("QES-Plume total runtime");// start recording execution time
+
+  // parse command line arguments
+  // PlumeArgs arguments;
+  // arguments.processArguments(argc, argv);
+
+  std::string qesPlumeParamFile = QES_DIR;
+  // qesPlumeParamFile.append("/tests/regressionTests/plume_uniform_parameters.xml");
+  qesPlumeParamFile.append("/tests/unitTests/plume_input_parameters.xml");
+
+  // parse xml settings
+  auto PID = new PlumeInputData(qesPlumeParamFile);
+
+  float uMean = 2.0;
+  float uStar = 0.174;
+  float H = 70;
+  float C0 = 5.7;
+  float zi = 1000;
+
+  int gridSize[3] = { 102, 102, 141 };
+  float gridRes[3] = { 1.0, 1.0, 1.0 };
+
+  WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes);
+  TURBGeneralData *TGD = new TURBGeneralData(WGD);
+
+  for (int k = 0; k < WGD->nz; ++k) {
+    for (int j = 0; j < WGD->ny; ++j) {
+      for (int i = 0; i < WGD->nx; ++i) {
+        int faceID = i + j * (WGD->nx) + k * (WGD->nx) * (WGD->ny);
+        WGD->u[faceID] = uMean;
+      }
+    }
+  }
+
+  for (int k = 1; k < WGD->nz - 1; ++k) {
+    for (int j = 0; j < WGD->ny - 1; ++j) {
+      for (int i = 0; i < WGD->nx - 1; ++i) {
+        int cellID = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+        TGD->txx[cellID] = pow(2.50 * uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
+        TGD->tyy[cellID] = pow(1.78 * uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
+        TGD->tzz[cellID] = pow(1.27 * uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
+        TGD->txz[cellID] = -pow(uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
+
+        TGD->tke[cellID] = pow(uStar / 0.55, 2.0);
+        TGD->CoEps[cellID] = C0 * pow(uStar, 3) / (0.4 * WGD->z[k]) * pow(1 - 0.85 * WGD->z[k] / zi, 3.0 / 2.0);
+      }
+    }
+  }
+  TGD->divergenceStress();
+
+  // Create instance of Plume model class
+  auto *PGD = new PLUMEGeneralData(PID, WGD, TGD);
+
+  // create output instance
+  std::vector<QESNetCDFOutput *> outputVec;
+  std::string outFile = QES_DIR;
+  outFile.append("/scratch/UniformFlow_xDir_ContRelease_plumeOut.nc");
+
+  // auto *plumeOutput = new PlumeOutput(PID, plume, outFile);
+  // outputVec.push_back(plumeOutput);
+  //  outputVec.push_back(new PlumeOutputParticleData(PID, plume, "../testCases/Sinusoidal3D/QES-data/Sinusoidal3D_0.01_12_particleInfo.nc"));
+
+  // Run plume advection model
+  QEStime endtime = WGD->timestamp[0] + PID->plumeParams->simDur;
+  PGD->run(endtime, WGD, TGD, outputVec);
+
+  // compute run time information and print the elapsed execution time
+  std::cout << "[QES-Plume] \t Finished." << std::endl;
+  PGD->showCurrentStatus();
+  timers.printStoredTime("QES-Plume total runtime");
+  std::cout << "##############################################################" << std::endl
+            << std::endl;
 }

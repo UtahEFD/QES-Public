@@ -11,7 +11,7 @@
 #include <chrono>
 
 #include "util/ManagedContainer.h"
-#include "plume/ParticleManager.h"
+// #include "plume/ParticleManager.h"
 
 #include "plume/Particle.hpp"
 #include "plume/Particle_Tracer.hpp"
@@ -42,7 +42,6 @@ TEST_CASE("buffer", "[in progress]")
 {
 
   std::list<Particle *> particleList;
-  ParticleBuffer particleBuffer(1000);
 
   auto start = std::chrono::high_resolution_clock::now();
 
@@ -71,7 +70,9 @@ TEST_CASE("buffer", "[in progress]")
   std::chrono::duration<float> elapsed = finish - start;
   std::cout << "elapsed time: " << elapsed.count() << " s\n";
 
+  /* FM - OBSOLETE
   start = std::chrono::high_resolution_clock::now();
+  ParticleBuffer particleBuffer(1000);
 
   for (int k = 0; k < 10000; ++k) {
     particleBuffer.check_size(1000);
@@ -99,11 +100,11 @@ TEST_CASE("buffer", "[in progress]")
   std::cout << "elapsed time: " << elapsed.count() << " s\n";
 
   REQUIRE(particleBuffer.size() == 6000);
-
+  */
 
   start = std::chrono::high_resolution_clock::now();
-
   ManagedContainer<Particle_Tracer> tracers;
+
   for (int k = 0; k < 10000; ++k) {
     tracers.sweep(1000);
 

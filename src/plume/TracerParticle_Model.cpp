@@ -33,12 +33,16 @@
  */
 
 #include "TracerParticle_Model.h"
-#include "Plume.hpp"
+#include "PLUMEGeneralData.h"
 #include "PI_TracerParticle.h"
 
 TracerParticle_Model::TracerParticle_Model(const PI_TracerParticle *in)
   : ParticleModel(ParticleType::tracer, in->tag)
 {
+  std::cout << "[QES-Plume]\t Model: Tracer Particle - Tag: " << tag << std::endl;
+
+  particles = new ManagedContainer<TracerParticle>();
+
   for (auto s : in->sources) {
     // now determine the number of particles to release for the source and update the overall count
     // totalParsToRelease += s->getNumParticles();
@@ -52,31 +56,30 @@ void TracerParticle_Model::generateParticleList(const float &time,
                                                 const float &dt,
                                                 WINDSGeneralData *WGD,
                                                 TURBGeneralData *TGD,
-                                                Plume *plume)
+                                                PLUMEGeneralData *PGD)
 {
   int nbr_new_particle = 0;
   for (auto source : sources) {
     nbr_new_particle += source->getNewParticleNumber(dt, time);
   }
   particles->sweep(nbr_new_particle);
-
   for (auto source : sources) {
     source->emitParticles(dt, time, particles);
   }
 
-#pragma omp parallel for default(none) shared(WGD, TGD, plume)
+#pragma omp parallel for default(none) shared(WGD, TGD, PGD)
   for (auto k = 0u; k < particles->get_nbr_added(); ++k) {
     // set particle ID (use global particle counter)
-    plume->setParticle(WGD, TGD, particles->get_added(k));
+    PGD->setParticle(WGD, TGD, particles->get_added(k));
   }
 }
 
 void TracerParticle_Model::advect(const double &total_time_interval,
                                   WINDSGeneralData *WGD,
                                   TURBGeneralData *TGD,
-                                  Plume *plume)
+                                  PLUMEGeneralData *PGD)
 {
-#pragma omp parallel for default(none) shared(WGD, TGD, plume, total_time_interval)
+#pragma omp parallel for default(none) shared(WGD, TGD, PGD, total_time_interval)
   for (auto k = 0u; k < particles->size(); ++k) {
     Particle *p = particles->get(k);
     double rhoAir = 1.225;// in kg m^-3
@@ -93,30 +96,31 @@ void TracerParticle_Model::advect(const double &total_time_interval,
         will need to use the interp3D function
       */
 
-      plume->interp->interpValues(WGD, p->xPos, p->yPos, p->zPos, p->uMean, p->vMean, p->wMean);
+      PGD->interp->interpValues(WGD, p->xPos, p->yPos, p->zPos, p->uMean, p->vMean, p->wMean);
 
       // adjusting mean vertical velocity for settling velocity
       p->wMean -= vs;
 
       // now calculate the particle timestep using the courant number, the velocity fluctuation from the last time,
       // and the grid sizes. Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
-      int cellId = plume->interp->getCellId(p->xPos, p->yPos, p->zPos);
+      int cellId = PGD->interp->getCellId(p->xPos, p->yPos, p->zPos);
 
       double dWall = WGD->mixingLengths[cellId];
-      double par_dt = plume->calcCourantTimestep(dWall,
-                                                 std::abs(p->uMean) + std::abs(p->uFluct),
-                                                 std::abs(p->vMean) + std::abs(p->vFluct),
-                                                 std::abs(p->wMean) + std::abs(p->wFluct),
-                                                 timeRemainder);
+      double par_dt = PGD->calcCourantTimestep(dWall,
+                                               std::abs(p->uMean) + std::abs(p->uFluct),
+                                               std::abs(p->vMean) + std::abs(p->vFluct),
+                                               std::abs(p->wMean) + std::abs(p->wFluct),
+                                               timeRemainder);
 
       // std::cout << "par_dt = " << par_dt << std::endl;
       //  update the par_time, useful for debugging
       // par_time = par_time + par_dt;
 
-      plume->GLE_solver(p, par_dt, TGD);
+      PGD->GLE_solver(p, par_dt, TGD);
 
       if (p->isRogue) {
         p->isActive = false;
+        nbr_rogue++;
         break;
       }
       // Pete: Do you need this???
@@ -138,16 +142,16 @@ void TracerParticle_Model::advect(const double &total_time_interval,
 
       // Deposit mass (vegetation only right now)
       if (p->depFlag && p->isActive) {
-        plume->depositParticle(p, disX, disY, disZ, uTot, vTot, wTot, vs, plume->boxSizeZ, WGD, TGD);
+        // PGD->depositParticle(p, disX, disY, disZ, uTot, vTot, wTot, vs, PGD->boxSizeZ, WGD, TGD);
       }
 
       // check and do wall (building and terrain) reflection (based in the method)
       if (p->isActive) {
-        p->isActive = plume->wallReflect->reflect(WGD, plume, p->xPos, p->yPos, p->zPos, disX, disY, disZ, p->uFluct, p->vFluct, p->wFluct);
+        // p->isActive = PGD->wallReflect->reflect(WGD, PGD, p->xPos, p->yPos, p->zPos, disX, disY, disZ, p->uFluct, p->vFluct, p->wFluct);
       }
 
       // now apply boundary conditions
-      plume->applyBC(p);
+      PGD->applyBC(p);
 
       // now update the old values to be ready for the next particle time iteration
       // the current values are already set for the next iteration by the above calculations
