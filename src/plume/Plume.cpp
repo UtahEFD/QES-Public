@@ -184,16 +184,16 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 
   // now set the wall reflection function
   if (PID->BCs->wallReflection == "doNothing") {
-    wallReflect = new WallReflection_DoNothing();
+    wallReflect = new WallReflection_DoNothing(interp);
   } else if (PID->BCs->wallReflection == "setInactive") {
-    wallReflect = new WallReflection_SetToInactive();
+    wallReflect = new WallReflection_SetToInactive(interp);
   } else if (PID->BCs->wallReflection == "stairstepReflection") {
-    wallReflect = new WallReflection_StairStep();
+    wallReflect = new WallReflection_StairStep(interp);
   } else if (PID->BCs->wallReflection == "meshReflection") {
     if (WGD->mesh) {
-      wallReflect = new WallReflection_TriMesh();
+      wallReflect = new WallReflection_TriMesh(interp);
     } else {
-      wallReflect = new WallReflection_StairStep();
+      wallReflect = new WallReflection_StairStep(interp);
     }
   } else {
     // this should not happend

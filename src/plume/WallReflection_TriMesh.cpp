@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file WallReflection_StairStep.cpp 
+/** @file WallReflection_StairStep.cpp
  * @brief
  */
 
@@ -37,7 +37,6 @@
 
 
 bool WallReflection_TriMesh::reflect(const WINDSGeneralData *WGD,
-                                     const Plume *plume,
                                      double &xPos,
                                      double &yPos,
                                      double &zPos,
@@ -58,25 +57,25 @@ bool WallReflection_TriMesh::reflect(const WINDSGeneralData *WGD,
    *   => in this case, the particle will be place back ot the old position, new random move next step.
    *
    *
-   * This function will return false (leave xPos, yPos, zPos, uFluct, vFluct, wFluct unchanged) 
-   * - cell ID out of bound 
-   * - no valid surface for reflection 
+   * This function will return false (leave xPos, yPos, zPos, uFluct, vFluct, wFluct unchanged)
+   * - cell ID out of bound
+   * - no valid surface for reflection
    */
 
 
   // linearized cell ID for end of the trajectory of the particle
-  int cellIdNew = plume->interp->getCellId(xPos, yPos, zPos);
+  int cellIdNew = m_interp->getCellId(xPos, yPos, zPos);
   int cellFlag(0);
   try {
     cellFlag = WGD->icellflag.at(cellIdNew);
   } catch (const std::out_of_range &oor) {
     // cell ID out of bound (assuming particle outside of domain)
-    if (zPos < plume->domainZstart) {
+    if (zPos < m_interp->zStart) {
       // assume in terrain icellflag
       cellFlag = 2;
     } else {
       // otherwise, outside domain -> set to false
-      //std::cerr << "Reflection problem: particle out of range before reflection" << std::endl;
+      // std::cerr << "Reflection problem: particle out of range before reflection" << std::endl;
       return false;
     }
   }
@@ -113,10 +112,10 @@ void WallReflection_TriMesh::rayTraceReflect(Mesh *mesh, Vector3 &X, Vector3 &Xn
   if (mesh->triangleBVH->rayHit(test_ray, hit)) {
     if (hit.getHitDist() <= U.length()) {
 
-      //std::cout << "----\n";
-      //std::cout << "hit the mesh at " << hit.endpt << " " << X << " " << Xnew << "\n";
-      //std::cout << "A\thit dist " << hit.getHitDist() << "/" << U.length() << "=" << hit.getHitDist() / U.length() << std::endl;
-      //std::cout << "hit normal " << hit.n << std::endl;
+      // std::cout << "----\n";
+      // std::cout << "hit the mesh at " << hit.endpt << " " << X << " " << Xnew << "\n";
+      // std::cout << "A\thit dist " << hit.getHitDist() << "/" << U.length() << "=" << hit.getHitDist() / U.length() << std::endl;
+      // std::cout << "hit normal " << hit.n << std::endl;
 
       Vector3 P, S, V2;
       Vector3 R, N;
@@ -145,9 +144,9 @@ void WallReflection_TriMesh::rayTraceReflect(Mesh *mesh, Vector3 &X, Vector3 &Xn
       rayTraceReflect(mesh, X, Xnew, U, vecFluct);
     } else {
       // hit too far
-      //std::cout << "B\thit dist " << hit.getHitDist() << "/" << U.length() << "=" << hit.getHitDist() / U.length() << std::endl;
+      // std::cout << "B\thit dist " << hit.getHitDist() << "/" << U.length() << "=" << hit.getHitDist() / U.length() << std::endl;
     }
   } else {
-    //no hit
+    // no hit
   }
 }

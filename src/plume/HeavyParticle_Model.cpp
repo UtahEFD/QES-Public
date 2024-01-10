@@ -40,7 +40,7 @@ HeavyParticle_Model::HeavyParticle_Model(const PI_HeavyParticle *in)
   : ParticleModel(ParticleType::heavy, in->tag)
 {
   std::cout << "[QES-Plume]\t Model: Heavy Particle - Tag: " << tag << std::endl;
-  
+
   particles = new ManagedContainer<HeavyParticle>();
 
   for (auto s : in->sources) {
@@ -146,7 +146,7 @@ void HeavyParticle_Model::advect(const double &total_time_interval, WINDSGeneral
 
       // check and do wall (building and terrain) reflection (based in the method)
       if (p->isActive) {
-        // p->isActive = PGD->wallReflect->reflect(WGD, PGD, p->xPos, p->yPos, p->zPos, disX, disY, disZ, p->uFluct, p->vFluct, p->wFluct);
+        p->isActive = PGD->wallReflect->reflect(WGD, p->xPos, p->yPos, p->zPos, disX, disY, disZ, p->uFluct, p->vFluct, p->wFluct);
       }
 
       // now apply boundary conditions

@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file WallReflection_StairStep.h 
+/** @file WallReflection_StairStep.h
  * @brief
  */
 
@@ -50,7 +50,7 @@
 #include "util/Mesh.h"
 #include "util/BVH.h"
 
-//#include "Matrix3.h"
+// #include "Matrix3.h"
 #include "Random.h"
 
 #include "util/QESNetCDFOutput.h"
@@ -72,13 +72,13 @@
 class WallReflection_TriMesh : public WallReflection
 {
 public:
-  WallReflection_TriMesh()
+  WallReflection_TriMesh(Interp *interp)
+    : WallReflection(interp)
   {}
   ~WallReflection_TriMesh()
   {}
 
   virtual bool reflect(const WINDSGeneralData *WGD,
-                       const Plume *plume,
                        double &xPos,
                        double &yPos,
                        double &zPos,

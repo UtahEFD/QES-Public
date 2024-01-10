@@ -28,15 +28,13 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file WallReflection.cpp 
- * @brief 
+/** @file WallReflection.cpp
+ * @brief
  */
 
 #include "WallReflection.h"
-#include "Plume.hpp"
 
 bool WallReflection_SetToInactive::reflect(const WINDSGeneralData *WGD,
-                                           const Plume *plume,
                                            double &xPos,
                                            double &yPos,
                                            double &zPos,
@@ -49,7 +47,7 @@ bool WallReflection_SetToInactive::reflect(const WINDSGeneralData *WGD,
 
 {
   try {
-    int cellIdx = plume->interp->getCellId(xPos, yPos, zPos);
+    int cellIdx = m_interp->getCellId(xPos, yPos, zPos);
     int cellFlag(0);
     cellFlag = WGD->icellflag.at(cellIdx);
 
@@ -63,7 +61,7 @@ bool WallReflection_SetToInactive::reflect(const WINDSGeneralData *WGD,
 
   } catch (const std::out_of_range &oor) {
     // cell ID out of bound (assuming particle outside of domain)
-    //if (zPos < domainZstart) {
+    // if (zPos < domainZstart) {
     //  std::cerr << "Reflection problem: particle out of range before reflection" << std::endl;
     //  std::cerr << xPos << "," << yPos << "," << zPos << std::endl;
     //}
