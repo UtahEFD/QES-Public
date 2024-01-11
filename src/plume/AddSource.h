@@ -51,19 +51,16 @@ class AddSource : public ModelVisitor
 {
 public:
   AddSource(std::vector<TracerParticle_Source *> sources)
+    : m_tracerParticle_sources(sources), m_heavyParticle_sources(0)
   {
-    m_tracerParticle_sources = sources;
   }
 
   AddSource(std::vector<HeavyParticle_Source *> sources)
-  {
-    m_heavyParticle_sources = sources;
-  }
-
-  ~AddSource()
+    : m_tracerParticle_sources(0), m_heavyParticle_sources(sources)
   {
   }
 
+  ~AddSource() = default;
 
   void visitTracerParticle_Model(TracerParticle_Model *element) override
   {

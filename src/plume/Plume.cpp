@@ -324,15 +324,15 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
 
     //  flush deposition buffer
     /*for (auto &parItr : particleList) {
-    if (parItr->dep_buffer_flag) {
-      for (auto n = 0u; n < parItr->dep_buffer_cell.size(); ++n) {
-        deposition->depcvol[parItr->dep_buffer_cell[n]] += parItr->dep_buffer_val[n];
+      if (parItr->dep_buffer_flag) {
+        for (auto n = 0u; n < parItr->dep_buffer_cell.size(); ++n) {
+          deposition->depcvol[parItr->dep_buffer_cell[n]] += parItr->dep_buffer_val[n];
+        }
+        parItr->dep_buffer_flag = false;
+        parItr->dep_buffer_cell.clear();
+        parItr->dep_buffer_val.clear();
       }
-      parItr->dep_buffer_flag = false;
-      parItr->dep_buffer_cell.clear();
-      parItr->dep_buffer_val.clear();
-    }
-  }*/
+    }*/
 
     for (auto &parItr : *particles->heavy) {
       if (parItr.dep_buffer_flag) {
@@ -521,12 +521,6 @@ void Plume::getInputSources(PlumeInputData *PID)
     }
   }
 }
-
-void Plume::addSources(std::vector<Source *> &newSources)
-{
-  allSources.insert(allSources.end(), newSources.begin(), newSources.end());
-}
-
 
 void Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
