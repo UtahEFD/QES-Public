@@ -51,6 +51,12 @@ class HeavyParticle_Model : public ParticleModel
 {
 public:
   explicit HeavyParticle_Model(const PI_HeavyParticle *);
+  ~HeavyParticle_Model() = default;
+
+  virtual void visit(ModelVisitor *visitor) override
+  {
+    visitor->visitHeavyParticle_Model(this);
+  }
 
   void generateParticleList(const float &time,
                             const float &dt,
@@ -66,7 +72,7 @@ public:
   int get_nbr_active() override { return (int)particles->get_nbr_active(); };
   int get_nbr_inserted() override { return (int)particles->get_nbr_inserted(); };
 
-  ~HeavyParticle_Model() = default;
+  void addSources(std::vector<HeavyParticle_Source *>);
 
 protected:
   ManagedContainer<HeavyParticle> *particles;

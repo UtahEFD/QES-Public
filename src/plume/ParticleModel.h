@@ -47,9 +47,23 @@
 
 class PLUMEGeneralData;
 
+class TracerParticle_Model;
+class HeavyParticle_Model;
+
+class ModelVisitor
+{
+public:
+  virtual void visitTracerParticle_Model(TracerParticle_Model *) = 0;
+  virtual void visitHeavyParticle_Model(HeavyParticle_Model *) = 0;
+};
+
 class ParticleModel
 {
 public:
+  virtual ~ParticleModel() = default;
+
+  virtual void visit(ModelVisitor *visitor) = 0;
+
   virtual void generateParticleList(const float &time,
                                     const float &dt,
                                     WINDSGeneralData *WGD,
@@ -64,7 +78,6 @@ public:
   virtual int get_nbr_active() = 0;
   virtual int get_nbr_inserted() = 0;
 
-  virtual ~ParticleModel() = default;
 
   ParticleType getParticleType()
   {

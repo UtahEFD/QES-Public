@@ -76,6 +76,11 @@ void HeavyParticle_Model::generateParticleList(const float &time,
   }
 }
 
+void HeavyParticle_Model::addSources(std::vector<HeavyParticle_Source *> newSources)
+{
+  sources.insert(sources.end(), newSources.begin(), newSources.end());
+}
+
 void HeavyParticle_Model::advect(const double &total_time_interval, WINDSGeneralData *WGD, TURBGeneralData *TGD, PLUMEGeneralData *PGD)
 {
 #pragma omp parallel for default(none) shared(WGD, TGD, PGD, total_time_interval)

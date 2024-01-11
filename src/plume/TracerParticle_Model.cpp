@@ -74,6 +74,11 @@ void TracerParticle_Model::generateParticleList(const float &time,
   }
 }
 
+void TracerParticle_Model::addSources(std::vector<TracerParticle_Source *> newSources)
+{
+  sources.insert(sources.end(), newSources.begin(), newSources.end());
+}
+
 void TracerParticle_Model::advect(const double &total_time_interval,
                                   WINDSGeneralData *WGD,
                                   TURBGeneralData *TGD,
