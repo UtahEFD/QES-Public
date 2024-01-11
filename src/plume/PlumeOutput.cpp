@@ -264,7 +264,7 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, Plume *plume_ptr, std::strin
   dim_vectDep.push_back(NcDim_yDep);
   dim_vectDep.push_back(NcDim_xDep);
 
-  createAttVector("depcvol", "deposited mass", "g", dim_vectDep, &(m_plume->deposition->depcvol));
+  // createAttVector("depcvol", "deposited mass", "g", dim_vectDep, &(m_plume->deposition->depcvol));
 
   // create attributes space dimensions
   std::vector<NcDim> dim_vect_face;

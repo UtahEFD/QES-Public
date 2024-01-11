@@ -149,6 +149,7 @@ public:
   RandomSingleton *RNG = nullptr;
 #endif
 
+  // interpolation methods
   Interp *interp = nullptr;
 
   // Deposition *deposition = nullptr;
@@ -164,34 +165,25 @@ public:
 
   // protected:
   //  QES grid information
-  int nx{};// a copy of the urb grid nx value
-  int ny{};// a copy of the urb grid ny value
-  int nz{};// a copy of the urb grid nz value
-  double dx{};// a copy of the urb grid dx value, eventually could become an array
-  double dy{};// a copy of the urb grid dy value, eventually could become an array
-  double dz{};// a copy of the urb grid dz value, eventually could become an array
-  double dxy{};// a copy of the urb grid dz value, eventually could become an array
+  int nx{};// a copy of the wind grid nx value
+  int ny{};// a copy of the wind grid ny value
+  int nz{};// a copy of the wind grid nz value
+  double dx{};// a copy of the wind grid dx value, eventually could become an array
+  double dy{};// a copy of the wind grid dy value, eventually could become an array
+  double dz{};// a copy of the wind grid dz value, eventually could become an array
+  double dxy{};// a copy of the wind grid dz value, eventually could become an array
+  double boxSizeZ{};
 
-  /*
-  // these values are calculated from the urb and turb grids by dispersion
-  // they are used for applying boundary conditions at the walls of the domain
-  double domainXstart;// the domain starting x value, a copy of the value found by dispersion
-  double domainXend;// the domain ending x value, a copy of the value found by dispersion
-  double domainYstart;// the domain starting y value, a copy of the value found by dispersion
-  double domainYend;// the domain ending y value, a copy of the value found by dispersion
-  double domainZstart;// the domain starting z value, a copy of the value found by dispersion
-  double domainZend;// the domain ending z value, a copy of the value found by dispersion
-  */
-
+  // wall reflection method
   WallReflection *wallReflect = nullptr;
 
+  // domain boundary conditions method
   DomainBC *domainBC_x = nullptr;
   DomainBC *domainBC_y = nullptr;
   DomainBC *domainBC_z = nullptr;
 
   // time variables
   double sim_dt = 0.0;// the simulation timestep
-  double boxSizeZ{};
   QEStime simTimeStart;
   QEStime simTimeCurr;
   int simTimeIdx = 0;
@@ -200,15 +192,11 @@ public:
   int isRogueCount = 0;// just a total number of rogue particles per time iteration
   int isActiveCount = 0;
   int isReleasedCount = 0;
-  // int isNotActiveCount = 0;// just a total number of inactive active particles per time iteration
 
   // important time variables not copied from dispersion
   // the Courant number, used to know how to divide up the simulation timestep into smaller per particle timesteps.
   double CourantNum = 0.0;
   double vel_threshold = 0.0;
-
-  // this is the global counter of particles released (used to set particleID)
-  // int nParsReleased = 0;
 
   // this is the total number of particles expected to be released during the simulation
   // !!! this has to be calculated carefully inside the getInputSources() function

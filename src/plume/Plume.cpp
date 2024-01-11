@@ -337,7 +337,7 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
     for (auto &parItr : *particles->heavy) {
       if (parItr.dep_buffer_flag) {
         for (auto n = 0u; n < parItr.dep_buffer_cell.size(); ++n) {
-          deposition->depcvol[parItr.dep_buffer_cell[n]] += parItr.dep_buffer_val[n];
+          // deposition->depcvol[parItr.dep_buffer_cell[n]] += parItr.dep_buffer_val[n];
         }
         parItr.dep_buffer_flag = false;
         parItr.dep_buffer_cell.clear();

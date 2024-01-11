@@ -41,6 +41,10 @@
 #include <cmath>
 #include <cstring>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #include "util/QEStime.h"
 #include "util/calcTime.h"
 #include "util/Vector3.h"
@@ -59,21 +63,42 @@
 #include "InterpPowerLaw.h"
 #include "InterpTriLinear.h"
 
+#include "Particle.hpp"
+
 class Deposition
 {
 private:
-  Deposition()
-  {}
+  Deposition() = default;
+
+protected:
+  // !!!! need implement this !!!!
+  double boxSizeZ{};
+  double c1 = 2.049;
+  double c2 = 1.19;
 
 public:
-  Deposition(const WINDSGeneralData *);
-  ~Deposition()
-  {}
+  explicit Deposition(const WINDSGeneralData *);
+  ~Deposition() = default;
 
-  long numcell_cent; /**< Total number of cell-centered values in domain */
+  void deposit(Particle *p,
+               const double &disX,
+               const double &disY,
+               const double &disZ,
+               const double &uTot,
+               const double &vTot,
+               const double &wTot,
+               const double &vs,
+               WINDSGeneralData *,
+               TURBGeneralData *,
+               Interp *);
 
-  std::vector<float> x, y, z;
+  std::vector<float> x, y, z, z_face;
+
+#ifdef _OPENMP
+  std::vector<std::vector<float>> thread_depcvol;
+#else
   std::vector<float> depcvol;
+#endif
 
   int nbrFace;
 };
