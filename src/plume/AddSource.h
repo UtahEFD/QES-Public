@@ -39,45 +39,45 @@
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
 
-#include "Deposition.h"
 #include "ParticleModel.h"
 
-#include "TracerParticle.h"
+#include "TracerParticle_Model.h"
 #include "TracerParticle_Source.h"
 
-class PI_TracerParticle;
+#include "HeavyParticle_Model.h"
+#include "HeavyParticle_Source.h"
 
-class TracerParticle_Model : public ParticleModel
+class AddSource : public ModelVisitor
 {
 public:
-  explicit TracerParticle_Model(const PI_TracerParticle *);
-
-  ~TracerParticle_Model() = default;
-
-  virtual void visit(ModelVisitor *visitor) override
+  AddSource(std::vector<TracerParticle_Source *> sources)
   {
-    visitor->visitTracerParticle_Model(this);
+    m_tracerParticle_sources = sources;
   }
 
-  void generateParticleList(const float &time,
-                            const float &dt,
-                            WINDSGeneralData *WGD,
-                            TURBGeneralData *TGD,
-                            PLUMEGeneralData *PGD) override;
+  AddSource(std::vector<HeavyParticle_Source *> sources)
+  {
+    m_heavyParticle_sources = sources;
+  }
 
-  void advect(const double &total_time_interval,
-              WINDSGeneralData *WGD,
-              TURBGeneralData *TGD,
-              PLUMEGeneralData *PGD) override;
+  ~AddSource()
+  {
+  }
 
-  int get_nbr_active() override { return (int)particles->get_nbr_active(); };
-  int get_nbr_inserted() override { return (int)particles->get_nbr_inserted(); };
 
-  void addSources(std::vector<TracerParticle_Source *>);
-
-protected:
-  ManagedContainer<TracerParticle> *particles{};
-  std::vector<TracerParticle_Source *> sources;
+  void visitTracerParticle_Model(TracerParticle_Model *element) override
+  {
+    element->addSources(m_tracerParticle_sources);
+  }
+  void visitHeavyParticle_Model(HeavyParticle_Model *element) override
+  {
+    element->addSources(m_heavyParticle_sources);
+  }
 
 private:
+  AddSource()
+  {}
+
+  std::vector<TracerParticle_Source *> m_tracerParticle_sources;
+  std::vector<HeavyParticle_Source *> m_heavyParticle_sources;
 };

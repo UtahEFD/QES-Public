@@ -193,6 +193,10 @@ PLUMEGeneralData::PLUMEGeneralData(PlumeInputData *PID, WINDSGeneralData *WGD, T
     models[p->tag] = p->create();
   }
 
+  // can use the AddSource visitor to add sources to the model.
+  // std::vector<TracerParticle_Source *> new_sources;
+  // models[tag]->visit(new AddSource(new_sources));
+
   // particles = new ParticleContainers();
 
   // get sources from input data and add them to the allSources vector
@@ -313,17 +317,12 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGener
 
     auto startTime = std::chrono::high_resolution_clock::now();
 
+    // This the main loop over all active particles
     for (const auto &pm : models) {
       pm.second->generateParticleList(simTime, timeRemainder, WGD, TGD, this);
       pm.second->advect(timeRemainder, WGD, TGD, this);
     }
 
-    // This the main loop over all active particles
-    // All the particle here are active => no need to check
-    //  for (auto parItr = particleList.begin(); parItr != particleList.end(); parItr++) {
-
-
-    // FM: openmp parallelization of the advection loop
 
 #ifdef _OPENMP
     // std::vector<Particle *> tmp(particleList.begin(), particleList.end());
@@ -361,7 +360,8 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGener
       parItr->dep_buffer_cell.clear();
       parItr->dep_buffer_val.clear();
     }
-  }*/
+  }
+     */
 
     /*
     for (auto &parItr : *particles->heavy) {
@@ -385,8 +385,7 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGener
 
     // netcdf output for a given simulation timestep
     // note that the first time is already output, so this is the time the loop
-    // iteration
-    //  is calculating, not the input time to the loop iteration
+    // iteration is calculating, not the input time to the loop iteration
     for (auto &id_out : outputVec) {
       id_out->save(simTimeCurr);
     }
@@ -421,7 +420,6 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGener
             << " s (iteration = " << simTimeIdx << "). \n";
   std::cout << "\t\t Particles: Released = " << isReleasedCount << " "
             << "Active = " << isActiveCount << "." << std::endl;
-  //<< "Active = " << particleList.size() << "." << std::endl;
 
   // DEBUG - get the amount of time it takes to perform the simulation time
   // integration loop
@@ -456,9 +454,7 @@ double PLUMEGeneralData::calcCourantTimestep(const double &u,
   // then if any of the Courant number values end up smaller, use that value instead
   double dt_par = timeRemainder;
 
-  // LA-note: what to do if the velocity fluctuation is zero?
-  //  I forced them to zero to check dt_x, dt_y, and dt_z would get values of
-  //  "inf". It ends up keeping dt_par as the timeRemainder
+  // if a velocity fluctuation is zero, it returns dt_par
   double dt_x = CourantNum * dx / std::abs(u);
   double dt_y = CourantNum * dy / std::abs(v);
   double dt_z = CourantNum * dz / std::abs(w);
@@ -520,41 +516,6 @@ double PLUMEGeneralData::calcCourantTimestep(const double &d,
 
   return std::min(timeRemainder, CN * min_ds / max_u);
 }
-
-/* void PLUMEGeneralData::getInputSources(PlumeInputData *PID)
-{
-  int numSources_Input = PID->sourceParams->sources.size();
-
-  if (numSources_Input == 0) {
-    std::cerr << "[ERROR]\t Plume::getInputSources: \n\t\t there are no sources in the input file!" << std::endl;
-    exit(1);
-  }
-
-  // start at zero particles to release and increment as the number per source
-  // totalParsToRelease = 0;
-
-  for (auto s : PID->sourceParams->sources) {
-    // now do anything that is needed to the source via the pointer
-    s->checkReleaseInfo(PID->plumeParams->timeStep, PID->plumeParams->simDur);
-    s->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
-
-    // now determine the number of particles to release for the source and update the overall count
-    totalParsToRelease += s->getNumParticles();
-
-    // add source into the vector of sources
-    switch (s->particleType()) {
-    case ParticleType::tracer:
-      allSources.push_back(new Source_TracerParticles((int)allSources.size(), s));
-      break;
-    case ParticleType::heavy:
-      allSources.push_back(new Source_HeavyParticles((int)allSources.size(), s));
-      break;
-    default:
-      exit(1);
-    }
-  }
-}
-*/
 
 void PLUMEGeneralData::addSources(std::vector<Source *> &newSources)
 {
@@ -817,8 +778,6 @@ void PLUMEGeneralData::makeRealizable(double &txx,
 
   // since tau is not already realizable, need to make it realizeable
   // start by making a guess of ks, the subfilter scale tke
-  // I keep wondering if we can use the input Turb->tke for this or if we should
-  // leave it as is
   double b = 4.0 / 3.0 * (txx + tyy + tzz);// also 4.0/3.0*invar_xx
   double c = txx * tyy + txx * tzz + tyy * tzz - txy * txy - txz * txz - tyz * tyz;// also invar_yy
   double ks = 1.01 * (-b + std::sqrt(b * b - 16.0 / 3.0 * c)) / (8.0 / 3.0);
@@ -898,10 +857,6 @@ bool PLUMEGeneralData::invert3(double &A_11,
   double det = A_11 * (A_22 * A_33 - A_23 * A_32) - A_12 * (A_21 * A_33 - A_23 * A_31) + A_13 * (A_21 * A_32 - A_22 * A_31);
 
   // check for near zero value determinants
-  // LA future work: I'm still debating whether this warning needs to be limited
-  // by the updateFrequency information
-  //  if so, how would we go about limiting that info? Would probably need to
-  //  make the loop counter variables actual data members of the class
   if (std::abs(det) < 1e-10) {
     std::cerr << "WARNING (Plume::invert3): matrix nearly singular" << std::endl;
     std::cerr << "abs(det) = \"" << std::abs(det) << "\",  A_11 =  \"" << A_11 << "\", A_12 = \"" << A_12 << "\", A_13 = \""
@@ -983,10 +938,7 @@ void PLUMEGeneralData::setBCfunctions(const std::string &xBCtype,
                                       const std::string &zBCtype)
 {
   // the idea is to use the string input BCtype to determine which boundary
-  // condition function to use later in the program, and to have a function
-  // pointer point to the required function. I learned about pointer functions
-  // from this website:
-  // https://www.learncpp.com/cpp-tutorial/78-function-pointers/
+  // condition function to use later in the program
 
   // output some debug information
   if (debug) {

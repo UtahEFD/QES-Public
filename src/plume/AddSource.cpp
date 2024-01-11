@@ -31,53 +31,5 @@
 /** @file Particle.h
  * @brief This class represents information stored for each particle
  */
-
-#pragma once
-
-#include "util/ManagedContainer.h"
-
-#include "winds/WINDSGeneralData.h"
-#include "winds/TURBGeneralData.h"
-
-#include "Deposition.h"
-#include "ParticleModel.h"
-
-#include "TracerParticle.h"
-#include "TracerParticle_Source.h"
-
-class PI_TracerParticle;
-
-class TracerParticle_Model : public ParticleModel
-{
-public:
-  explicit TracerParticle_Model(const PI_TracerParticle *);
-
-  ~TracerParticle_Model() = default;
-
-  virtual void visit(ModelVisitor *visitor) override
-  {
-    visitor->visitTracerParticle_Model(this);
-  }
-
-  void generateParticleList(const float &time,
-                            const float &dt,
-                            WINDSGeneralData *WGD,
-                            TURBGeneralData *TGD,
-                            PLUMEGeneralData *PGD) override;
-
-  void advect(const double &total_time_interval,
-              WINDSGeneralData *WGD,
-              TURBGeneralData *TGD,
-              PLUMEGeneralData *PGD) override;
-
-  int get_nbr_active() override { return (int)particles->get_nbr_active(); };
-  int get_nbr_inserted() override { return (int)particles->get_nbr_inserted(); };
-
-  void addSources(std::vector<TracerParticle_Source *>);
-
-protected:
-  ManagedContainer<TracerParticle> *particles{};
-  std::vector<TracerParticle_Source *> sources;
-
-private:
-};
+ 
+#include "AddSource.h"
