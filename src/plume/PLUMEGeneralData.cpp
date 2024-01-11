@@ -34,7 +34,6 @@
 #include <queue>
 
 PLUMEGeneralData::PLUMEGeneralData(WINDSGeneralData *WGD, TURBGeneralData *TGD)
-  : particleList(0), allSources(0)
 {
   // copy debug information
   doParticleDataOutput = false;// arguments->doParticleDataOutput;
@@ -57,7 +56,6 @@ PLUMEGeneralData::PLUMEGeneralData(WINDSGeneralData *WGD, TURBGeneralData *TGD)
 }
 
 PLUMEGeneralData::PLUMEGeneralData(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
-  : particleList(0), allSources(0)
 {
   std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "[QES-Plume]\t Initialization of plume model...\n";
@@ -196,32 +194,6 @@ PLUMEGeneralData::PLUMEGeneralData(PlumeInputData *PID, WINDSGeneralData *WGD, T
   // can use the AddSource visitor to add sources to the model.
   // std::vector<TracerParticle_Source *> new_sources;
   // models[tag]->visit(new AddSource(new_sources));
-
-  // particles = new ParticleContainers();
-
-  // get sources from input data and add them to the allSources vector
-  // this also calls the many check and calc functions for all the input sources
-  // !!! note that these check and calc functions have to be called here
-  //  because each source requires extra data not found in the individual source
-  //  data
-  // !!! totalParsToRelease needs calculated very carefully here using
-  // information from each of the sources
-  /*if (PID->sourceParams) {
-    // getInputSources(PID);
-  } else {
-    std::cout << "[WARNING]\t no source parameters" << std::endl;
-  }
-
-  for (auto p : PID->particleParams->particles) {
-    for (auto s : p->sources) {
-      // now do anything that is needed to the source via the pointer
-      s->checkReleaseInfo(PID->plumeParams->timeStep, PID->plumeParams->simDur);
-      s->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
-    }
-  }
-*/
-
-  deposition = new Deposition(WGD);
 }
 
 void PLUMEGeneralData::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD, std::vector<QESNetCDFOutput *> outputVec)
@@ -281,7 +253,7 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGener
     // int nParsToRelease = generateParticleList(simTime, WGD, TGD);
     // generateParticleList(simTime, WGD, TGD);
 
-    if (debug) {
+    /*if (debug) {
       int nParsToRelease = 0;
       updateCounts();
       std::cout << "Time = " << simTime << " s (iteration = " << simTimeIdx
@@ -289,24 +261,10 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGener
                 << "from " << allSources.size() << " sources. "
                 << "Particles: New released = " << nParsToRelease << " "
                 << "Total released = " << isReleasedCount << "." << std::endl;
-    }
-
-    // number of active particle at the current time step.
-    // list is scrubbed at the end of each time step (if flag turned true)
-    bool needToScrub = false;
+    }*/
 
     // Move each particle for every simulation time step
     // Advection Loop
-
-    // start recording the amount of time it takes to advect each set of
-    // particles for a given simulation timestep,
-    //  but only output the result when updateFrequency allows
-    // LA future work: would love to put this into a debug if statement wrapper
-    /* if( debug == true ) {
-       if( (simTimeIdx+1) % updateFrequency_timeLoop == 0 || simTimeIdx == 0 ||
-       simTimeIdx == nSimTimes-2 ) { timers.resetStoredTimer("advection loop");
-       }
-       }*/
 
     // the current time, updated in this loop with each new par_dt.
     // Will end at simTimes.at(simTimeIdx+1) at the end of this particle loop
@@ -323,60 +281,6 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGener
       pm.second->advect(timeRemainder, WGD, TGD, this);
     }
 
-
-#ifdef _OPENMP
-    // std::vector<Particle *> tmp(particleList.begin(), particleList.end());
-    // #pragma omp parallel for default(none) shared(WGD, TGD, tmp, timeRemainder)
-//    for (auto k = 0u; k < tmp.size(); ++k) {
-// advectParticle(timeRemainder, tmp[k], boxSizeZ, WGD, TGD);
-// call to the main particle adection function (in separate file: AdvectParticle.cpp)
-// #pragma omp parallel for default(none) shared(WGD, TGD, timeRemainder)
-// for (auto k = 0u; k < particles->tracer->size(); ++k) {
-//  advectParticle(timeRemainder, particles->tracer->get(k), boxSizeZ, WGD, TGD);
-//}//  END OF OPENMP WORK SHARE
-
-// #pragma omp parallel for default(none) shared(WGD, TGD, timeRemainder)
-//  for (auto k = 0u; k < particles->heavy->size(); ++k) {
-//   advectParticle(timeRemainder, particles->heavy->get(k), boxSizeZ, WGD, TGD);
-// }//  END OF OPENMP WORK SHARE
-#else
-    // for (auto &parItr : *particles->tracer) {
-    //   call to the main particle adection function (in separate file: AdvectParticle.cpp)
-    // advectParticle(timeRemainder, parItr, boxSizeZ, WGD, TGD);
-    //}// end of loop
-    // for (auto &parItr : *particles->heavy) {
-    //  call to the main particle adection function (in separate file: AdvectParticle.cpp)
-    // advectParticle(timeRemainder, parItr, boxSizeZ, WGD, TGD);
-    //}// end of loop
-#endif
-
-    //  flush deposition buffer
-    /*for (auto &parItr : particleList) {
-    if (parItr->dep_buffer_flag) {
-      for (auto n = 0u; n < parItr->dep_buffer_cell.size(); ++n) {
-        deposition->depcvol[parItr->dep_buffer_cell[n]] += parItr->dep_buffer_val[n];
-      }
-      parItr->dep_buffer_flag = false;
-      parItr->dep_buffer_cell.clear();
-      parItr->dep_buffer_val.clear();
-    }
-  }
-     */
-
-    /*
-    for (auto &parItr : *particles->heavy) {
-      if (parItr.dep_buffer_flag) {
-        for (auto n = 0u; n < parItr.dep_buffer_cell.size(); ++n) {
-          deposition->depcvol[parItr.dep_buffer_cell[n]] += parItr.dep_buffer_val[n];
-        }
-        parItr.dep_buffer_flag = false;
-        parItr.dep_buffer_cell.clear();
-        parItr.dep_buffer_val.clear();
-      }
-    }
-     */
-
-    // isRogueCount = particles->get_nbr_rogue();
 
     // incrementation of time and timestep
     simTimeIdx++;
@@ -515,11 +419,6 @@ double PLUMEGeneralData::calcCourantTimestep(const double &d,
   }
 
   return std::min(timeRemainder, CN * min_ds / max_u);
-}
-
-void PLUMEGeneralData::addSources(std::vector<Source *> &newSources)
-{
-  allSources.insert(allSources.end(), newSources.begin(), newSources.end());
 }
 
 

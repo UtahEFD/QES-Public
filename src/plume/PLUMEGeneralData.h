@@ -101,8 +101,7 @@ public:
   // lastly sets up the boundary condition functions and checks to make sure input BC's are valid
   PLUMEGeneralData(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *);
 
-  virtual ~PLUMEGeneralData()
-  {}
+  virtual ~PLUMEGeneralData() = default;
 
   // this is the plume solver. It performs a time integration of the particle positions and particle velocity fluctuations
   // with calculations done on a per particle basis. During each iteration, temporary single value particle information
@@ -116,8 +115,6 @@ public:
   //  that is used to do an additional time remainder time integration loop for each particle, forcing particles to only
   //  move one cell at a time.
   void run(QEStime, WINDSGeneralData *, TURBGeneralData *, std::vector<QESNetCDFOutput *>);
-
-  void addSources(std::vector<Source *> &newSources);
 
   int getTotalParsToRelease() const { return totalParsToRelease; }// accessor
 
@@ -134,14 +131,16 @@ public:
   void showCurrentStatus();
 
   std::map<std::string, ParticleModel *> models;
-  std::map<std::string, ParticleModel *> particleModels;
 
   // This the storage for all particles
   // the sources can set these values, then the other values are set using urb and turb info using these values
-  std::list<Particle *> particleList;
+  // std::list<Particle *> particleList;
 
   // ManagedContainer<Particle_Tracer> *tracerList;
   // ParticleContainers *particles;
+
+  // ALL Sources that will be used
+  // std::vector<Source *> allSources;
 
 #ifdef _OPENMP
   // if using openmp the RNG is not thread safe, use an array of RNG (one per thread)
@@ -152,7 +151,7 @@ public:
 
   Interp *interp = nullptr;
 
-  Deposition *deposition = nullptr;
+  // Deposition *deposition = nullptr;
 
   // these values are calculated from the urb and turb grids by dispersion
   // they are used for applying boundary conditions at the walls of the domain
@@ -165,13 +164,13 @@ public:
 
   // protected:
   //  QES grid information
-  int nx;// a copy of the urb grid nx value
-  int ny;// a copy of the urb grid ny value
-  int nz;// a copy of the urb grid nz value
-  double dx;// a copy of the urb grid dx value, eventually could become an array
-  double dy;// a copy of the urb grid dy value, eventually could become an array
-  double dz;// a copy of the urb grid dz value, eventually could become an array
-  double dxy;// a copy of the urb grid dz value, eventually could become an array
+  int nx{};// a copy of the urb grid nx value
+  int ny{};// a copy of the urb grid ny value
+  int nz{};// a copy of the urb grid nz value
+  double dx{};// a copy of the urb grid dx value, eventually could become an array
+  double dy{};// a copy of the urb grid dy value, eventually could become an array
+  double dz{};// a copy of the urb grid dz value, eventually could become an array
+  double dxy{};// a copy of the urb grid dz value, eventually could become an array
 
   /*
   // these values are calculated from the urb and turb grids by dispersion
@@ -192,7 +191,7 @@ public:
 
   // time variables
   double sim_dt = 0.0;// the simulation timestep
-  double boxSizeZ;
+  double boxSizeZ{};
   QEStime simTimeStart;
   QEStime simTimeCurr;
   int simTimeIdx = 0;
@@ -204,11 +203,10 @@ public:
   // int isNotActiveCount = 0;// just a total number of inactive active particles per time iteration
 
   // important time variables not copied from dispersion
-  double CourantNum = 0.0;// the Courant number, used to know how to divide up the simulation timestep into smaller per particle timesteps. Copied from input
+  // the Courant number, used to know how to divide up the simulation timestep into smaller per particle timesteps.
+  double CourantNum = 0.0;
   double vel_threshold = 0.0;
 
-  // ALL Sources that will be used
-  std::vector<Source *> allSources;
   // this is the global counter of particles released (used to set particleID)
   // int nParsReleased = 0;
 
@@ -216,16 +214,20 @@ public:
   // !!! this has to be calculated carefully inside the getInputSources() function
   int totalParsToRelease = 0;
 
-  double invarianceTol = 1.0e-10;// this is the tolerance used to determine whether makeRealizeable should be run on the stress tensor for a particle
-  float updateFrequency_timeLoop = 0.0;// used to know how frequently to print out information during the time loop of the solver
-  int updateFrequency_particleLoop = 0;// used to know how frequently to print out information during the particle loop of the solver
+  // tolerance used to determine whether makeRealizeable should be run on the stress tensor for a particle
+  double invarianceTol = 1.0e-10;
+
+  // used to know how frequently to print out information during the time loop of the solver
+  float updateFrequency_timeLoop = 0.0;
+  // used to know how frequently to print out information during the particle loop of the solver
+  int updateFrequency_particleLoop = 0;
 
   // timer class useful for debugging and timing different operations
   calcTime timers;
 
   // copies of debug related information from the input arguments
-  bool doParticleDataOutput;
-  bool outputSimInfoFile;
+  bool doParticleDataOutput{};
+  bool outputSimInfoFile{};
   std::string outputFolder;
   std::string caseBaseName;
 
@@ -233,7 +235,7 @@ public:
   bool verbose = false;
 
   // private:
-public:
+
   void updateCounts();
   void applyBC(Particle *);
 
@@ -371,7 +373,6 @@ public:
                       const std::string &,
                       const std::string &);
 
-
-  PLUMEGeneralData()
-  {}
+private:
+  PLUMEGeneralData() = default;
 };

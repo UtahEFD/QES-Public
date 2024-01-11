@@ -65,9 +65,15 @@ TEST_CASE("plume input test")
 
   std::cout << "--------------------" << std::endl;
 
-  for (const auto &[key, pm] : test) {
+  /* Need C++17
+   * for (const auto &[key, pm] : test) {
     std::cout << key << " " << pm->tag << std::endl;
     std::cout << pm->getParticleType() << std::endl;
+  }*/
+
+  for (const auto &pm : test) {
+    std::cout << pm.first << " " << pm.second->tag << std::endl;
+    std::cout << pm.second->getParticleType() << std::endl;
   }
 
   /*for (auto pm : test) {
