@@ -50,6 +50,8 @@ TracerParticle_Model::TracerParticle_Model(const PI_TracerParticle *in)
     // add source into the vector of sources
     sources.emplace_back(new TracerParticle_Source((int)sources.size(), s));
   }
+
+  // deposition = new Deposition(WGD);
 }
 
 void TracerParticle_Model::generateParticleList(const float &time,
@@ -147,7 +149,7 @@ void TracerParticle_Model::advect(const double &total_time_interval,
 
       // Deposit mass (vegetation only right now)
       if (p->depFlag && p->isActive) {
-        // PGD->depositParticle(p, disX, disY, disZ, uTot, vTot, wTot, vs, PGD->boxSizeZ, WGD, TGD);
+        deposition->deposit(p, disX, disY, disZ, uTot, vTot, wTot, vs, WGD, TGD, PGD->interp);
       }
 
       // check and do wall (building and terrain) reflection (based in the method)
