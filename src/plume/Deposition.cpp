@@ -102,7 +102,9 @@ void Deposition::deposit(Particle *p,
     int cellId_old = interp->getCellId(xPos_old, yPos_old, zPos_old);
     int cellId = interp->getCellId(p->xPos, p->yPos, p->zPos);
     Vector3Int cellIdx = interp->getCellIndex(cellId);
-    int i = cellIdx[0], j = cellIdx[1], k = cellIdx[2];
+    // int i = cellIdx[0];
+    // int j = cellIdx[1];
+    int k = cellIdx[2];
 
     // distance travelled through veg
     double partDist = sqrt(pow(disX, 2)

@@ -191,6 +191,9 @@ PLUMEGeneralData::PLUMEGeneralData(PlumeInputData *PID, WINDSGeneralData *WGD, T
     models[p->tag] = p->create();
   }
 
+  // new model can also be added without XML interface with the correct constructor
+  // for example: models[tag] = new Particle_Model(...);
+
   // can use the AddSource visitor to add sources to the model.
   // std::vector<TracerParticle_Source *> new_sources;
   // models[tag]->visit(new AddSource(new_sources));
