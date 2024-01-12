@@ -62,7 +62,7 @@ class ParticleModel
 public:
   virtual ~ParticleModel() = default;
 
-  virtual void visit(ModelVisitor *visitor) = 0;
+  virtual void accept(ModelVisitor *visitor) = 0;
 
   virtual void generateParticleList(const float &time,
                                     const float &dt,
@@ -74,10 +74,10 @@ public:
                       TURBGeneralData *TGD,
                       PLUMEGeneralData *PGD) = 0;
   virtual void process(const float &time,
-                 const float &dt,
-                 WINDSGeneralData *WGD,
-                 TURBGeneralData *TGD,
-                 PLUMEGeneralData *PGD) = 0;
+                       const float &dt,
+                       WINDSGeneralData *WGD,
+                       TURBGeneralData *TGD,
+                       PLUMEGeneralData *PGD) = 0;
 
   int get_nbr_rogue() { return nbr_rogue; };
   virtual int get_nbr_active() = 0;

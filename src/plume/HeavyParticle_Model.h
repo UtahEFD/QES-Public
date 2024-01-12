@@ -53,7 +53,7 @@ public:
   explicit HeavyParticle_Model(const PI_HeavyParticle *);
   ~HeavyParticle_Model() = default;
 
-  virtual void visit(ModelVisitor *visitor) override
+  void accept(ModelVisitor *visitor) override
   {
     visitor->visitHeavyParticle_Model(this);
   }

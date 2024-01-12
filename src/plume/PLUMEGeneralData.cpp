@@ -196,7 +196,7 @@ PLUMEGeneralData::PLUMEGeneralData(PlumeInputData *PID, WINDSGeneralData *WGD, T
 
   // can use the AddSource visitor to add sources to the model.
   // std::vector<TracerParticle_Source *> new_sources;
-  // models[tag]->visit(new AddSource(new_sources));
+  // models[tag]->accept(new AddSource(new_sources));
 }
 
 void PLUMEGeneralData::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD, std::vector<QESNetCDFOutput *> outputVec)
