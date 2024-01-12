@@ -54,7 +54,7 @@ public:
 
   ~TracerParticle_Model() = default;
 
-  virtual void visit(ModelVisitor *visitor) override
+  void accept(ModelVisitor *visitor) override
   {
     visitor->visitTracerParticle_Model(this);
   }
