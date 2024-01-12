@@ -238,7 +238,7 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, Plume *plume_ptr, std::strin
   createAttVector("conc", "concentration", "g m-3", dim_vect_3d, &conc);
 
   // face dimensions
-  NcDim NcDim_nFace = addDimension("nFace", m_plume->deposition->nbrFace);
+  // NcDim NcDim_nFace = addDimension("nFace", m_plume->deposition->nbrFace);
   // NcDim NcDim_x = addDimension("x",nBoxesX);
   // NcDim NcDim_y = addDimension("y",nBoxesY);
   // NcDim NcDim_z = addDimension("z",nBoxesZ);
@@ -267,17 +267,17 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, Plume *plume_ptr, std::strin
   // createAttVector("depcvol", "deposited mass", "g", dim_vectDep, &(m_plume->deposition->depcvol));
 
   // create attributes space dimensions
-  std::vector<NcDim> dim_vect_face;
-  dim_vect_face.push_back(NcDim_nFace);
+  // std::vector<NcDim> dim_vect_face;
+  // dim_vect_face.push_back(NcDim_nFace);
   // createAttVector("xface","x-face","m",dim_vect_face,&xBoxCen);
   // createAttVector("yface","y-face","m",dim_vect_face,&xBoxCen);
   // createAttVector("zface","z-face","m",dim_vect_face,&xBoxCen);
 
   // !!! make sure the order is specificall nt,nz,ny,nx in this spot,
   //  the order doesn't seem to matter for other spots
-  dim_vect_face.clear();
-  dim_vect_face.push_back(NcDim_t);
-  dim_vect_face.push_back(NcDim_nFace);
+  // dim_vect_face.clear();
+  // dim_vect_face.push_back(NcDim_t);
+  // dim_vect_face.push_back(NcDim_nFace);
 
   // create output fields
   addOutputFields();
