@@ -45,6 +45,7 @@
 #include "ParticleContainers.h"
 #include "Source.hpp"
 
+class PlumeInputData;
 class PLUMEGeneralData;
 
 class TracerParticle_Model;
@@ -63,6 +64,11 @@ public:
   virtual ~ParticleModel() = default;
 
   virtual void accept(ModelVisitor *visitor) = 0;
+
+  virtual void initialize(const PlumeInputData *PID,
+                          WINDSGeneralData *WGD,
+                          TURBGeneralData *TGD,
+                          PLUMEGeneralData *PGD) = 0;
 
   virtual void generateParticleList(const float &time,
                                     const float &dt,
