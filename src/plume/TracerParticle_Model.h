@@ -46,6 +46,7 @@
 #include "TracerParticle_Source.h"
 
 class PI_TracerParticle;
+class TracerParticle_Statistics;
 
 class TracerParticle_Model : public ParticleModel
 {
@@ -58,6 +59,11 @@ public:
   {
     visitor->visitTracerParticle_Model(this);
   }
+
+  void initialize(const PlumeInputData *PID,
+                  WINDSGeneralData *WGD,
+                  TURBGeneralData *TGD,
+                  PLUMEGeneralData *PGD) override;
 
   void generateParticleList(const float &time,
                             const float &dt,
@@ -74,13 +80,16 @@ public:
                const float &dt,
                WINDSGeneralData *WGD,
                TURBGeneralData *TGD,
-               PLUMEGeneralData *PGD) override
-  {}
+               PLUMEGeneralData *PGD) override;
 
   int get_nbr_active() override { return (int)particles->get_nbr_active(); };
   int get_nbr_inserted() override { return (int)particles->get_nbr_inserted(); };
 
   void addSources(std::vector<TracerParticle_Source *>);
+
+  // friend class declaration
+  TracerParticle_Statistics *stats;
+  friend class TracerParticle_Statistics;
 
 protected:
   ManagedContainer<TracerParticle> *particles{};

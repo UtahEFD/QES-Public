@@ -57,6 +57,11 @@ public:
   {
     visitor->visitHeavyParticle_Model(this);
   }
+  void initialize(const PlumeInputData *PID,
+                  WINDSGeneralData *WGD,
+                  TURBGeneralData *TGD,
+                  PLUMEGeneralData *PGD) override
+  {}
 
   void generateParticleList(const float &time,
                             const float &dt,

@@ -70,10 +70,9 @@
 
 class Concentration
 {
-  Concentration(const PlumeInputData *PID);
-
-  virtual void calcConcentration() = 0;
-
+public:
+  explicit Concentration(const PlumeInputData *PID);
+  
   // averaging period in seconds
   float averagingPeriod;
   // need the simulation timeStep for use in concentration averaging

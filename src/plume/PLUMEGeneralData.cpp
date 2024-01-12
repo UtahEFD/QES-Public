@@ -189,6 +189,7 @@ PLUMEGeneralData::PLUMEGeneralData(PlumeInputData *PID, WINDSGeneralData *WGD, T
       s->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
     }
     models[p->tag] = p->create();
+    models[p->tag]->initialize(PID, WGD, TGD, this);
   }
 
   // new model can also be added without XML interface with the correct constructor
@@ -282,6 +283,7 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGener
     for (const auto &pm : models) {
       pm.second->generateParticleList(simTime, timeRemainder, WGD, TGD, this);
       pm.second->advect(timeRemainder, WGD, TGD, this);
+      pm.second->process(simTime, timeRemainder, WGD, TGD, this);
     }
 
 

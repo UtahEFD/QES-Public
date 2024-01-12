@@ -33,6 +33,9 @@
  */
 
 #include "TracerParticle_Model.h"
+#include "TracerParticle_Statistics.h"
+
+#include "PlumeInputData.hpp"
 #include "PLUMEGeneralData.h"
 #include "PI_TracerParticle.h"
 
@@ -50,8 +53,15 @@ TracerParticle_Model::TracerParticle_Model(const PI_TracerParticle *in)
     // add source into the vector of sources
     sources.emplace_back(new TracerParticle_Source((int)sources.size(), s));
   }
+}
 
-  // deposition = new Deposition(WGD);
+void TracerParticle_Model::initialize(const PlumeInputData *PID,
+                                      WINDSGeneralData *WGD,
+                                      TURBGeneralData *TGD,
+                                      PLUMEGeneralData *PGD)
+{
+  deposition = new Deposition(WGD);
+  stats = new TracerParticle_Statistics(PID);
 }
 
 void TracerParticle_Model::generateParticleList(const float &time,
@@ -180,4 +190,13 @@ void TracerParticle_Model::advect(const double &total_time_interval,
     }// while( isActive == true && timeRemainder > 0.0 )
 
   }//  END OF OPENMP WORK SHARE
+}
+
+void TracerParticle_Model::process(const float &time,
+                                   const float &dt,
+                                   WINDSGeneralData *WGD,
+                                   TURBGeneralData *TGD,
+                                   PLUMEGeneralData *PGD)
+{
+  stats->compute(this);
 }
