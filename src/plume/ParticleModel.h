@@ -79,7 +79,7 @@ public:
                       WINDSGeneralData *WGD,
                       TURBGeneralData *TGD,
                       PLUMEGeneralData *PGD) = 0;
-  virtual void process(const float &time,
+  virtual void process(QEStime &timeIn,
                        const float &dt,
                        WINDSGeneralData *WGD,
                        TURBGeneralData *TGD,

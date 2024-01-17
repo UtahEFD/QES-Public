@@ -34,9 +34,19 @@
 
 #include "TracerParticle_Statistics.h"
 
-void TracerParticle_Statistics::compute(const TracerParticle_Model *pm)
+void TracerParticle_Statistics::compute(QEStime &timeIn,
+                                        const float &timeStep,
+                                        WINDSGeneralData *WGD,
+                                        TURBGeneralData *TGD,
+                                        PLUMEGeneralData *PGD,
+                                        const TracerParticle_Model *pm)
 {
-  concentration->compute(pm->particles);
+  if (timeIn > averagingStartTime) {
+
+    // incrementation of the averaging time
+    ongoingAveragingTime += timeStep;
+    concentration->compute(pm->particles);
+  }
 }
 
 void TracerParticle_Concentration::compute(ManagedContainer<TracerParticle> *particles)

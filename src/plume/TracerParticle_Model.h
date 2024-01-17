@@ -76,7 +76,7 @@ public:
               TURBGeneralData *TGD,
               PLUMEGeneralData *PGD) override;
 
-  void process(const float &time,
+  void process(QEStime &timeIn,
                const float &dt,
                WINDSGeneralData *WGD,
                TURBGeneralData *TGD,
@@ -84,6 +84,7 @@ public:
 
   int get_nbr_active() override { return (int)particles->get_nbr_active(); };
   int get_nbr_inserted() override { return (int)particles->get_nbr_inserted(); };
+  ManagedContainer<TracerParticle> *get_particles() { return particles; }
 
   void addSources(std::vector<TracerParticle_Source *>);
 
