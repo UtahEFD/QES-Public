@@ -39,6 +39,7 @@
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
 
+#include "PLUMEGeneralData.h"
 #include "TracerParticle.h"
 #include "TracerParticle_Model.h"
 
@@ -50,22 +51,37 @@ class TracerParticle_Concentration : public Concentration
 public:
   explicit TracerParticle_Concentration(const PlumeInputData *PID)
     : Concentration(PID)
-  {}
+  {
+  }
   void compute(ManagedContainer<TracerParticle> *particles);
 };
 
 class TracerParticle_Statistics
 {
 public:
-  explicit TracerParticle_Statistics(const PlumeInputData *PID)
+  TracerParticle_Statistics(const PlumeInputData *PID, PLUMEGeneralData *PGD)
   {
+    averagingStartTime = PGD->getSimTimeStart() + PID->colParams->averagingStartTime;
+    averagingPeriod = PID->colParams->averagingPeriod;
+    nextOutputTime = averagingStartTime + averagingPeriod;
+
     concentration = new TracerParticle_Concentration(PID);
   }
 
-  void compute(const TracerParticle_Model *);
+  void compute(QEStime &time,
+               const float &dt,
+               WINDSGeneralData *WGD,
+               TURBGeneralData *TGD,
+               PLUMEGeneralData *PGD,
+               const TracerParticle_Model *);
+
+  TracerParticle_Concentration *concentration;
+
+  QEStime averagingStartTime;
+  QEStime nextOutputTime;
+  float averagingPeriod;
+  float ongoingAveragingTime;
 
 private:
   TracerParticle_Statistics() = default;
-
-  TracerParticle_Concentration *concentration;
 };

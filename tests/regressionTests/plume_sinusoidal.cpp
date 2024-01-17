@@ -16,14 +16,15 @@
 #include "test_WINDSGeneralData.h"
 
 #include "plume/Plume.hpp"
+#include "plume/PLUMEGeneralData.h"
 
 #include "util/QESNetCDFOutput.h"
 #include "plume/PlumeOutput.h"
 #include "plume/PlumeOutputParticleData.h"
 
-float calcEntropy(int nbrBins, Plume *plume);
-void calcRMSE_wFluct(int nbrBins, Plume *plume, std::map<std::string, float> &rmse);
-void calcRMSE_delta_wFluct(int nbrBins, Plume *plume, double delta_t, std::map<std::string, float> &rmse);
+float calcEntropy(int nbrBins, ManagedContainer<TracerParticle> *particles);
+void calcRMSE_wFluct(int nbrBins, ManagedContainer<TracerParticle> *particles, std::map<std::string, float> &rmse);
+void calcRMSE_delta_wFluct(int nbrBins, ManagedContainer<TracerParticle> *particles, double delta_t, std::map<std::string, float> &rmse);
 float calcRMSE(std::vector<float> &A, std::vector<float> &B);
 
 TEST_CASE("Regression test of QES-Plume: sinusoidal stress")
@@ -69,8 +70,9 @@ TEST_CASE("Regression test of QES-Plume: sinusoidal stress")
   TGD->divergenceStress();
 
   // Create instance of Plume model class
-  auto *plume = new Plume(PID, WGD, TGD);
+  // auto *plume = new Plume(PID, WGD, TGD);
 
+  auto *PGD = new PLUMEGeneralData(PID, WGD, TGD);
   // create output instance
   std::vector<QESNetCDFOutput *> outputVec;
   // always supposed to output lagrToEulOutput data
@@ -79,7 +81,7 @@ TEST_CASE("Regression test of QES-Plume: sinusoidal stress")
 
   // Run plume advection model
   QEStime endtime = WGD->timestamp[0] + PID->plumeParams->simDur;
-  plume->run(endtime, WGD, TGD, outputVec);
+  PGD->run(endtime, WGD, TGD, outputVec);
 
   // compute run time information and print the elapsed execution time
   std::cout << "[QES-Plume] \t Finished." << std::endl;
@@ -90,25 +92,27 @@ TEST_CASE("Regression test of QES-Plume: sinusoidal stress")
   std::cout << "##############################################################" << std::endl
             << std::endl;
 
+  TracerParticle_Model *test_model = dynamic_cast<TracerParticle_Model *>(PGD->models[PID->particleParams->particles.at(0)->tag]);
+
   // check the results
-  float entropy = calcEntropy(25, plume);
+  float entropy = calcEntropy(25, test_model->get_particles());
 
   std::map<std::string, float> rmse;
-  calcRMSE_wFluct(20, plume, rmse);
-  calcRMSE_delta_wFluct(20, plume, PID->plumeParams->timeStep, rmse);
+  calcRMSE_wFluct(20, test_model->get_particles(), rmse);
+  calcRMSE_delta_wFluct(20, test_model->get_particles(), PID->plumeParams->timeStep, rmse);
 
   std::cout << "--------------------------------------------------------------" << std::endl;
   std::cout << "TEST RESULTS" << std::endl;
   std::cout << "--------------------------------------------------------------" << std::endl;
   std::cout << "Entropy: S = " << entropy << std::endl;
-  std::cout << "Nbr Rogue Particle: " << plume->getNumRogueParticles() << std::endl;
+  std::cout << "Nbr Rogue Particle: " << PGD->getNumRogueParticles() << std::endl;
   std::cout << "RMSE on mean of wFluct: " << rmse["mean_wFluct"] << std::endl;
   std::cout << "RMSE on variance of wFluct: " << rmse["mean_wFluct"] << std::endl;
   std::cout << "RMSE on mean of wFluct/delta t: " << rmse["mean_delta_wFluct"] << std::endl;
   std::cout << "RMSE on var of wFluct/delta t: " << rmse["var_delta_wFluct"] << std::endl;
   std::cout << "--------------------------------------------------------------" << std::endl;
 
-  REQUIRE(plume->getNumRogueParticles() == 0);
+  REQUIRE(PGD->getNumRogueParticles() == 0);
   REQUIRE(entropy > -0.04);
   REQUIRE(rmse["mean_wFluct"] < 0.03);
   REQUIRE(rmse["var_wFluct"] < 0.03);
@@ -116,7 +120,7 @@ TEST_CASE("Regression test of QES-Plume: sinusoidal stress")
   REQUIRE(rmse["var_delta_wFluct"] < 0.3);
 }
 
-float calcEntropy(int nbrBins, Plume *plume)
+float calcEntropy(int nbrBins, ManagedContainer<TracerParticle> *particles)
 {
   std::vector<float> pBin;
   pBin.resize(nbrBins, 0.0);
@@ -124,12 +128,12 @@ float calcEntropy(int nbrBins, Plume *plume)
     int k = floor(parItr->zPos / (1.0 / nbrBins + 1e-9));
     pBin[k]++;
   }*/
-  for (auto &par : *plume->particles->tracer) {
+  for (auto &par : *particles) {
     int k = floor(par.zPos / (1.0 / nbrBins + 1e-9));
     pBin[k]++;
   }
 
-  float expectedParsPerBin = (float)plume->getNumCurrentParticles() / (float)nbrBins;
+  float expectedParsPerBin = particles->get_nbr_active() / (float)nbrBins;
   float entropy = 0.0;
 
   std::vector<float> proba;
@@ -146,7 +150,7 @@ float calcEntropy(int nbrBins, Plume *plume)
   return -entropy;
 }
 
-void calcRMSE_wFluct(int nbrBins, Plume *plume, std::map<std::string, float> &rmse)
+void calcRMSE_wFluct(int nbrBins, ManagedContainer<TracerParticle> *particles, std::map<std::string, float> &rmse)
 {
   std::vector<float> pBin;
   pBin.resize(nbrBins, 0.0);
@@ -159,7 +163,7 @@ void calcRMSE_wFluct(int nbrBins, Plume *plume, std::map<std::string, float> &rm
     pBin[k]++;
     pBin_mean[k] += parItr->wFluct;
   }*/
-  for (auto &par : *plume->particles->tracer) {
+  for (auto &par : *particles) {
     int k = floor(par.zPos / (1.0 / nbrBins + 1e-9));
     pBin[k]++;
     pBin_mean[k] += par.wFluct;
@@ -181,7 +185,7 @@ void calcRMSE_wFluct(int nbrBins, Plume *plume, std::map<std::string, float> &rm
     int k = floor(parItr->zPos / (1.0 / nbrBins + 1e-9));
     pBin_var[k] += pow(parItr->wFluct - pBin_mean[k], 2) / pBin[k];
   }*/
-  for (auto &par : *plume->particles->tracer) {
+  for (auto &par : *particles) {
     int k = floor(par.zPos / (1.0 / nbrBins + 1e-9));
     pBin_var[k] += pow(par.wFluct - pBin_mean[k], 2) / pBin[k];
   }
@@ -195,7 +199,7 @@ void calcRMSE_wFluct(int nbrBins, Plume *plume, std::map<std::string, float> &rm
   rmse["var_wFluct"] = calcRMSE(pBin_var, sig2);
 }
 
-void calcRMSE_delta_wFluct(int nbrBins, Plume *plume, double delta_t, std::map<std::string, float> &rmse)
+void calcRMSE_delta_wFluct(int nbrBins, ManagedContainer<TracerParticle> *particles, double delta_t, std::map<std::string, float> &rmse)
 {
   std::vector<float> pBin;
   pBin.resize(nbrBins, 0.0);
@@ -208,7 +212,7 @@ void calcRMSE_delta_wFluct(int nbrBins, Plume *plume, double delta_t, std::map<s
     pBin[k]++;
     pBin_mean[k] += parItr->delta_wFluct;
   }*/
-  for (auto &par : *plume->particles->tracer) {
+  for (auto &par : *particles) {
     int k = floor(par.zPos / (1.0 / nbrBins + 1e-9));
     pBin[k]++;
     pBin_mean[k] += par.delta_wFluct;
@@ -225,7 +229,7 @@ void calcRMSE_delta_wFluct(int nbrBins, Plume *plume, double delta_t, std::map<s
     int k = floor(parItr->zPos / (1.0 / nbrBins + 1e-9));
     pBin_var[k] += pow(parItr->delta_wFluct - pBin_mean[k], 2) / pBin[k];
   }*/
-  for (auto &par : *plume->particles->tracer) {
+  for (auto &par : *particles) {
     int k = floor(par.zPos / (1.0 / nbrBins + 1e-9));
     pBin_var[k] += pow(par.delta_wFluct - pBin_mean[k], 2) / pBin[k];
   }

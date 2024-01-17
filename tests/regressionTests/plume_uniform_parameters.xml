@@ -14,7 +14,7 @@
   </particleOutputParameters>
   <collectionParameters>
     <timeAvgStart> 300.0 </timeAvgStart>
-    <timeAvgFreq> 1800.1 </timeAvgFreq>
+    <timeAvgFreq> 1800 </timeAvgFreq>
     <boxBoundsX1> 0.0 </boxBoundsX1>
     <boxBoundsX2> 100.0 </boxBoundsX2>
     <boxBoundsY1> 1.0 </boxBoundsY1>
@@ -25,18 +25,21 @@
     <nBoxesY> 49 </nBoxesY>
     <nBoxesZ> 69 </nBoxesZ>
   </collectionParameters>
-  <sourceParameters>
-    <source>
-      <releaseType_continuous>
-        <particlePerTimestep> 400 </particlePerTimestep>
-      </releaseType_continuous>
-      <sourceGeometry_Point>
-        <posX> 20.0 </posX>
-        <posY> 50.0 </posY>
-        <posZ> 70.0 </posZ>
-      </sourceGeometry_Point>
-    </source>
-  </sourceParameters>
+  <particleParameters>
+    <tracerParticle>
+      <tag>tracer</tag>
+      <source>
+        <releaseType_continuous>
+          <particlePerTimestep> 400 </particlePerTimestep>
+        </releaseType_continuous>
+        <sourceGeometry_Point>
+          <posX> 20.0 </posX>
+          <posY> 50.0 </posY>
+          <posZ> 70.0 </posZ>
+        </sourceGeometry_Point>
+      </source>
+    </tracerParticle>
+  </particleParameters>
   <boundaryConditions>
     <xBCtype>exiting</xBCtype>
     <yBCtype>exiting</yBCtype>

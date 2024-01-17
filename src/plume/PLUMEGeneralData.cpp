@@ -283,7 +283,6 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGener
     for (const auto &pm : models) {
       pm.second->generateParticleList(simTime, timeRemainder, WGD, TGD, this);
       pm.second->advect(timeRemainder, WGD, TGD, this);
-      pm.second->process(simTime, timeRemainder, WGD, TGD, this);
     }
 
 
@@ -291,6 +290,10 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGener
     simTimeIdx++;
     simTimeCurr += timeRemainder;
     simTime = simTimeCurr - simTimeStart;
+
+    for (const auto &pm : models) {
+      pm.second->process(simTimeCurr, timeRemainder, WGD, TGD, this);
+    }
 
     // netcdf output for a given simulation timestep
     // note that the first time is already output, so this is the time the loop

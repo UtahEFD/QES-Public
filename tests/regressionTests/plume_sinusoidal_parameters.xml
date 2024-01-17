@@ -25,15 +25,18 @@
 	<nBoxesY> 5 </nBoxesY>
 	<nBoxesZ> 20 </nBoxesZ>
 </collectionParameters>
-<sourceParameters>
-  	<source>
+	<particleParameters>
+	<tracerParticle>
+		<tag>tracer</tag>
+		<source>
 		<releaseType_instantaneous>
 			<numPar>200000</numPar>
 		</releaseType_instantaneous>
 		<sourceGeometry_FullDomain>
   		</sourceGeometry_FullDomain>
 	</source>
-</sourceParameters>
+	</tracerParticle>
+	</particleParameters>
 <boundaryConditions>
   	<xBCtype>periodic</xBCtype>
   	<yBCtype>periodic</yBCtype>

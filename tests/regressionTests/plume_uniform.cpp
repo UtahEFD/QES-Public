@@ -17,6 +17,8 @@
 
 #include "winds/WINDSGeneralData.h"
 #include "plume/Plume.hpp"
+#include "plume/PLUMEGeneralData.h"
+#include "plume/TracerParticle_Statistics.h"
 
 #include "util/QESNetCDFOutput.h"
 #include "plume/PlumeOutput.h"
@@ -82,21 +84,23 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
   TGD->divergenceStress();
 
   // Create instance of Plume model class
-  auto *plume = new Plume(PID, WGD, TGD);
+  // auto *plume = new Plume(PID, WGD, TGD);
+  auto *PGD = new PLUMEGeneralData(PID, WGD, TGD);
 
   // create output instance
   std::vector<QESNetCDFOutput *> outputVec;
   std::string outFile = QES_DIR;
   outFile.append("/scratch/UniformFlow_xDir_ContRelease_plumeOut.nc");
 
-  auto *plumeOutput = new PlumeOutput(PID, plume, outFile);
+  // auto *plumeOutput = new PlumeOutput(PID, plume, outFile);
 
-  outputVec.push_back(plumeOutput);
-  // outputVec.push_back(new PlumeOutputParticleData(PID, plume, "../testCases/Sinusoidal3D/QES-data/Sinusoidal3D_0.01_12_particleInfo.nc"));
+  // outputVec.push_back(plumeOutput);
+  //  outputVec.push_back(new PlumeOutputParticleData(PID, plume, "../testCases/Sinusoidal3D/QES-data/Sinusoidal3D_0.01_12_particleInfo.nc"));
 
   // Run plume advection model
   QEStime endtime = WGD->timestamp[0] + PID->plumeParams->simDur;
-  plume->run(endtime, WGD, TGD, outputVec);
+  // plume->run(endtime, WGD, TGD, outputVec);
+  PGD->run(endtime, WGD, TGD, outputVec);
 
   // compute run time information and print the elapsed execution time
   std::cout << "[QES-Plume] \t Finished." << std::endl;
@@ -107,6 +111,8 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
   std::cout << "##############################################################" << std::endl
             << std::endl;
 
+  TracerParticle_Model *test_model = dynamic_cast<TracerParticle_Model *>(PGD->models[PID->particleParams->particles.at(0)->tag]);
+  TracerParticle_Concentration *test_conc = test_model->stats->concentration;
   // source info (hard coded because no way to access the source info here)
   float xS = 20;
   float yS = 50;
@@ -117,12 +123,11 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
 
   float CNorm = (uMean * H * H / Q);
 
-  // concentration info
-  float dt = plumeOutput->timeStep;
-  float tAvg = plumeOutput->averagingPeriod;
+  float dt = test_conc->timeStep;
+  float tAvg = test_conc->averagingPeriod;
 
   // normalization of particle count #particle -> time-averaged # particle/m3
-  float CC = dt / tAvg / plumeOutput->volume;
+  float CC = dt / tAvg / test_conc->volume;
 
   // model variances
   float sigV = 1.78f * uStar;
@@ -132,9 +137,9 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
   float SSres = 0.0, SStot = 0.0;
   std::vector<float> xoH, maxRelErr, relRMSE;
 
-  for (int i = 7; i < plumeOutput->nBoxesX; ++i) {
+  for (int i = 7; i < test_conc->nBoxesX; ++i) {
     // x-location of the profile
-    float x = plumeOutput->xBoxCen[i] - xS;
+    float x = test_conc->xBoxCen[i] - xS;
 
     // time of flight of the particle
     float t = x / uMean;
@@ -150,12 +155,12 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
 
     // calculate the normalize concentration from Gaussian plume model
     std::vector<float> CStarModel;
-    CStarModel.resize(plumeOutput->nBoxesY * plumeOutput->nBoxesZ, 0.0);
-    for (int k = 0; k < plumeOutput->nBoxesZ; ++k) {
-      for (int j = 0; j < plumeOutput->nBoxesY; ++j) {
-        float y = plumeOutput->yBoxCen[j] - yS;
-        float z = plumeOutput->zBoxCen[k] - zS;
-        CStarModel[j + k * plumeOutput->nBoxesY] = Q / (2 * M_PI * uMean * sigY * sigZ)
+    CStarModel.resize(test_conc->nBoxesY * test_conc->nBoxesZ, 0.0);
+    for (int k = 0; k <test_conc->nBoxesZ; ++k) {
+      for (int j = 0; j < test_conc->nBoxesY; ++j) {
+        float y = test_conc->yBoxCen[j] - yS;
+        float z = test_conc->zBoxCen[k] - zS;
+        CStarModel[j + k * test_conc->nBoxesY] = Q / (2 * M_PI * uMean * sigY * sigZ)
                                                    * expf(-0.5f * powf(y, 2) / powf(sigY, 2))
                                                    * expf(-0.5f * powf(z, 2) / powf(sigZ, 2))
                                                    * CNorm;
@@ -164,11 +169,11 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
 
     // calculate the normalize concentration from QES-plume
     std::vector<float> CStarQES;
-    CStarQES.resize(plumeOutput->nBoxesY * plumeOutput->nBoxesZ, 0.0);
-    for (int k = 0; k < plumeOutput->nBoxesZ; ++k) {
-      for (int j = 0; j < plumeOutput->nBoxesY; ++j) {
-        int id = i + j * plumeOutput->nBoxesX + k * plumeOutput->nBoxesX * plumeOutput->nBoxesY;
-        CStarQES[j + k * plumeOutput->nBoxesY] = (float)plumeOutput->pBox[id] * CC * CNorm;
+    CStarQES.resize(test_conc->nBoxesY * test_conc->nBoxesZ, 0.0);
+    for (int k = 0; k < test_conc->nBoxesZ; ++k) {
+      for (int j = 0; j < test_conc->nBoxesY; ++j) {
+        int id = i + j * test_conc->nBoxesX + k * test_conc->nBoxesX * test_conc->nBoxesY;
+        CStarQES[j + k * test_conc->nBoxesY] = (float)test_conc->pBox[id] * CC * CNorm;
       }
     }
 
@@ -212,8 +217,9 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
   std::cout << "QES-Plume r2 coeff: r2 = " << R2 << std::endl;
   std::cout << "--------------------------------------------------------------" << std::endl;
 
+
   // Catch2 requirements
-  REQUIRE(plume->getNumRogueParticles() == 0);
+  REQUIRE(PGD->getNumRogueParticles() == 0);
   for (auto k = 0u; k < xoH.size(); ++k) {
     REQUIRE(maxRelErr[k] < 0.1);
     REQUIRE(relRMSE[k] < 0.02);

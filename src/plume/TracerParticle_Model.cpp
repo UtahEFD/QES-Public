@@ -61,7 +61,7 @@ void TracerParticle_Model::initialize(const PlumeInputData *PID,
                                       PLUMEGeneralData *PGD)
 {
   deposition = new Deposition(WGD);
-  stats = new TracerParticle_Statistics(PID);
+  stats = new TracerParticle_Statistics(PID, PGD);
 }
 
 void TracerParticle_Model::generateParticleList(const float &time,
@@ -192,11 +192,11 @@ void TracerParticle_Model::advect(const double &total_time_interval,
   }//  END OF OPENMP WORK SHARE
 }
 
-void TracerParticle_Model::process(const float &time,
+void TracerParticle_Model::process(QEStime &timeIn,
                                    const float &dt,
                                    WINDSGeneralData *WGD,
                                    TURBGeneralData *TGD,
                                    PLUMEGeneralData *PGD)
 {
-  stats->compute(this);
+  stats->compute(timeIn, dt, WGD, TGD, PGD, this);
 }

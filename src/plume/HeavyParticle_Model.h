@@ -74,7 +74,7 @@ public:
               TURBGeneralData *TGD,
               PLUMEGeneralData *PGD) override;
 
-  void process(const float &time,
+  void process(QEStime &timeIn,
                const float &dt,
                WINDSGeneralData *WGD,
                TURBGeneralData *TGD,
