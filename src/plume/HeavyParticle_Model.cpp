@@ -54,13 +54,14 @@ HeavyParticle_Model::HeavyParticle_Model(const PI_HeavyParticle *in)
   // deposition = new Deposition(WGD);
 }
 
-void HeavyParticle_Model::generateParticleList(const float &time,
+void HeavyParticle_Model::generateParticleList(QEStime &timeCurrent,
                                                const float &dt,
                                                WINDSGeneralData *WGD,
                                                TURBGeneralData *TGD,
                                                PLUMEGeneralData *PGD)
 {
   int nbr_new_particle = 0;
+  float time = timeCurrent - PGD->getSimTimeStart();
   for (auto source : sources) {
     nbr_new_particle += source->getNewParticleNumber(dt, time);
   }

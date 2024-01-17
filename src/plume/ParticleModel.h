@@ -70,7 +70,7 @@ public:
                           TURBGeneralData *TGD,
                           PLUMEGeneralData *PGD) = 0;
 
-  virtual void generateParticleList(const float &time,
+  virtual void generateParticleList(QEStime &timeCurrent,
                                     const float &dt,
                                     WINDSGeneralData *WGD,
                                     TURBGeneralData *TGD,

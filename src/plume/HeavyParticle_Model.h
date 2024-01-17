@@ -63,7 +63,7 @@ public:
                   PLUMEGeneralData *PGD) override
   {}
 
-  void generateParticleList(const float &time,
+  void generateParticleList(QEStime &timeCurrent,
                             const float &dt,
                             WINDSGeneralData *WGD,
                             TURBGeneralData *TGD,
