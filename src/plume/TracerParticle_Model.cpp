@@ -64,13 +64,14 @@ void TracerParticle_Model::initialize(const PlumeInputData *PID,
   stats = new TracerParticle_Statistics(PID, PGD);
 }
 
-void TracerParticle_Model::generateParticleList(const float &time,
+void TracerParticle_Model::generateParticleList(QEStime &timeCurrent,
                                                 const float &dt,
                                                 WINDSGeneralData *WGD,
                                                 TURBGeneralData *TGD,
                                                 PLUMEGeneralData *PGD)
 {
   int nbr_new_particle = 0;
+  float time = timeCurrent - PGD->getSimTimeStart();
   for (auto source : sources) {
     nbr_new_particle += source->getNewParticleNumber(dt, time);
   }

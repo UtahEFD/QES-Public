@@ -42,7 +42,6 @@ void TracerParticle_Statistics::compute(QEStime &timeIn,
                                         const TracerParticle_Model *pm)
 {
   if (timeIn > averagingStartTime) {
-
     // incrementation of the averaging time
     ongoingAveragingTime += timeStep;
     concentration->compute(pm->particles);

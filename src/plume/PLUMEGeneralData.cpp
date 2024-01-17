@@ -281,7 +281,7 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGener
 
     // This the main loop over all active particles
     for (const auto &pm : models) {
-      pm.second->generateParticleList(simTime, timeRemainder, WGD, TGD, this);
+      pm.second->generateParticleList(simTimeCurr, timeRemainder, WGD, TGD, this);
       pm.second->advect(timeRemainder, WGD, TGD, this);
     }
 
