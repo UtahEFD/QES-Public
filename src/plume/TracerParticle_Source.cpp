@@ -65,6 +65,6 @@ void TracerParticle_Source::emitParticles(const float &dt,
       particles->last_added()->sourceIdx = sourceIdx;
       particles->last_added()->m = m_releaseType->m_massPerParticle;
     }
-    // emitted = (int)m_particleList->nbr_added();
+    // int emitted = (int)particles->get_nbr_added();
   }
 }

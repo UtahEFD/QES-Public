@@ -116,15 +116,13 @@ public:
   //  move one cell at a time.
   void run(QEStime, WINDSGeneralData *, TURBGeneralData *, std::vector<QESNetCDFOutput *>);
 
-  int getTotalParsToRelease() const { return totalParsToRelease; }// accessor
-
-  int getNumReleasedParticles() const { return isReleasedCount; }// accessor
-  int getNumRogueParticles() const { return isRogueCount; }// accessor
-  int getNumCurrentParticles() const { return isActiveCount; }// accessor
-
-  // int getNumNotActiveParticles() const { return isNotActiveCount; }// accessor
-  // int getNumCurrentParticles() const { return particles->get_nbr_active(); }// accessor
-
+  // accessors:
+  int getTotalParsToRelease() const { return totalParsToRelease; }
+  int getNumReleasedParticles() const { return isReleasedCount; }
+  int getNumRogueParticles() const { return isRogueCount; }
+  int getNumCurrentParticles() const { return isActiveCount; }
+  // int getNumNotActiveParticles() const { return isNotActiveCount; }
+  // int getNumCurrentParticles() const { return particles->get_nbr_active(); }
   QEStime getSimTimeStart() const { return simTimeStart; }
   QEStime getSimTimeCurrent() const { return simTimeCurr; }
 
@@ -165,13 +163,15 @@ public:
 
   // protected:
   //  QES grid information
-  int nx{};// a copy of the wind grid nx value
-  int ny{};// a copy of the wind grid ny value
+  // copies of the wind grid nx, ny, nz value
+  int nx{};
+  int ny{};
   int nz{};// a copy of the wind grid nz value
-  double dx{};// a copy of the wind grid dx value, eventually could become an array
-  double dy{};// a copy of the wind grid dy value, eventually could become an array
-  double dz{};// a copy of the wind grid dz value, eventually could become an array
-  double dxy{};// a copy of the wind grid dz value, eventually could become an array
+  // a copy of the wind grid dx, dy, dz value
+  double dx{};
+  double dy{};
+  double dz{};
+  double dxy{};
   double boxSizeZ{};
 
   // wall reflection method
