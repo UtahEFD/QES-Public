@@ -61,7 +61,7 @@ void TracerParticle_Model::initialize(const PlumeInputData *PID,
                                       PLUMEGeneralData *PGD)
 {
   deposition = new Deposition(WGD);
-  stats = new TracerParticle_Statistics(PID, PGD);
+  stats = new TracerParticle_Statistics(PID, PGD, this);
 }
 
 void TracerParticle_Model::generateParticleList(QEStime &timeCurrent,

@@ -44,23 +44,23 @@ void TracerParticle_Statistics::compute(QEStime &timeIn,
   if (timeIn > averagingStartTime) {
     // incrementation of the averaging time
     ongoingAveragingTime += timeStep;
-    concentration->compute(pm->particles);
+    concentration->compute(timeIn, timeStep);
   }
 }
 
-void TracerParticle_Concentration::compute(ManagedContainer<TracerParticle> *particles)
+void TracerParticle_Concentration::compute(QEStime &timeIn, const float &timeStep)
 {
   // for all particles see where they are relative to the concentration collection boxes
-  for (auto &par : *particles) {
+  for (auto &par : *m_particles) {
     // because particles all start out as active now, need to also check the release time
     if (par.isActive) {
       // Calculate which collection box this particle is currently in.
       // x-direction
-      int idx = floor((par.xPos - lBndx) / (boxSizeX + 1e-9));
+      int idx = get_x_index(par.xPos);
       // y-direction
-      int idy = floor((par.yPos - lBndy) / (boxSizeY + 1e-9));
+      int idy = get_y_index(par.yPos);
       // z-direction
-      int idz = floor((par.zPos - lBndz) / (boxSizeZ + 1e-9));
+      int idz = get_z_index(par.zPos);
 
       // now, does the particle land in one of the boxes?
       // if so, add one particle to that box count

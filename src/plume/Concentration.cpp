@@ -35,19 +35,18 @@
 
 #include "Concentration.h"
 
-Concentration::Concentration(const PlumeInputData *PID)
-  : averagingPeriod(PID->colParams->averagingPeriod),
-    timeStep(PID->plumeParams->timeStep),
-    nBoxesX(PID->colParams->nBoxesX), nBoxesY(PID->colParams->nBoxesY), nBoxesZ(PID->colParams->nBoxesZ),
-    lBndx(PID->colParams->boxBoundsX1), uBndx(PID->colParams->boxBoundsX2),
-    lBndy(PID->colParams->boxBoundsY1), uBndy(PID->colParams->boxBoundsY2),
-    lBndz(PID->colParams->boxBoundsZ1), uBndz(PID->colParams->boxBoundsZ2)
+Concentration::Concentration(const CollectionParameters *colParams)
+  : averagingPeriod(colParams->averagingPeriod),
+    nBoxesX(colParams->nBoxesX), nBoxesY(colParams->nBoxesY), nBoxesZ(colParams->nBoxesZ),
+    lBndx(colParams->boxBoundsX1), uBndx(colParams->boxBoundsX2),
+    lBndy(colParams->boxBoundsY1), uBndy(colParams->boxBoundsY2),
+    lBndz(colParams->boxBoundsZ1), uBndz(colParams->boxBoundsZ2)
 {
 
 
   // setup output frequency control information
   // averagingStartTime = m_plume->getSimTimeStart() + PID->colParams->averagingStartTime;
-  averagingPeriod = PID->colParams->averagingPeriod;
+  averagingPeriod = colParams->averagingPeriod;
 
   // set the initial next output time value
   // nextOutputTime = averagingStartTime + averagingPeriod;
