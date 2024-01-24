@@ -71,12 +71,12 @@
 class Concentration
 {
 public:
-  explicit Concentration(const PlumeInputData *PID);
-  
+  explicit Concentration(const CollectionParameters *colParams);
+
+  virtual void compute(QEStime &, const float &) = 0;
+
   // averaging period in seconds
   float averagingPeriod;
-  // need the simulation timeStep for use in concentration averaging
-  float timeStep;
   // Sampling box variables for calculating concentration data
   // Number of boxes to use for the sampling box
   int nBoxesX, nBoxesY, nBoxesZ;// Copies of the input: nBoxesX, Y, and Z.
@@ -90,6 +90,24 @@ public:
   std::vector<int> pBox;// sampling box particle counter (for average)
   std::vector<float> conc;// concentration values (for output)
 
+protected:
+  int get_x_index(const float &) const;
+  int get_y_index(const float &) const;
+  int get_z_index(const float &) const;
+
 private:
   Concentration() = default;
 };
+
+inline int Concentration::get_x_index(const float &x) const
+{
+  return floor((x - lBndx) / (boxSizeX + 1e-9));
+}
+inline int Concentration::get_y_index(const float &y) const
+{
+  return floor((y - lBndy) / (boxSizeY + 1e-9));
+}
+inline int Concentration::get_z_index(const float &z) const
+{
+  return floor((z - lBndz) / (boxSizeZ + 1e-9));
+}

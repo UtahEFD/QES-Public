@@ -49,23 +49,26 @@
 class TracerParticle_Concentration : public Concentration
 {
 public:
-  explicit TracerParticle_Concentration(const PlumeInputData *PID)
-    : Concentration(PID)
+  explicit TracerParticle_Concentration(const PlumeInputData *PID, TracerParticle_Model *pm)
+    : Concentration(PID->colParams)
   {
+    m_particles = pm->get_particles();
   }
-  void compute(ManagedContainer<TracerParticle> *particles);
+  void compute(QEStime &timeIn, const float &timeStep) override;
+
+protected:
+  ManagedContainer<TracerParticle> *m_particles;
 };
 
 class TracerParticle_Statistics
 {
 public:
-  TracerParticle_Statistics(const PlumeInputData *PID, PLUMEGeneralData *PGD)
+  TracerParticle_Statistics(const PlumeInputData *PID, PLUMEGeneralData *PGD, TracerParticle_Model *pm)
   {
     averagingStartTime = PGD->getSimTimeStart() + PID->colParams->averagingStartTime;
     averagingPeriod = PID->colParams->averagingPeriod;
     nextOutputTime = averagingStartTime + averagingPeriod;
-
-    concentration = new TracerParticle_Concentration(PID);
+    concentration = new TracerParticle_Concentration(PID, pm);
   }
 
   void compute(QEStime &time,

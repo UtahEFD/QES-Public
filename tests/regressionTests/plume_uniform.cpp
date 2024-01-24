@@ -123,7 +123,7 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
 
   float CNorm = (uMean * H * H / Q);
 
-  float dt = test_conc->timeStep;
+  float dt = PID->plumeParams->timeStep;
   float tAvg = test_conc->averagingPeriod;
 
   // normalization of particle count #particle -> time-averaged # particle/m3
@@ -156,14 +156,14 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
     // calculate the normalize concentration from Gaussian plume model
     std::vector<float> CStarModel;
     CStarModel.resize(test_conc->nBoxesY * test_conc->nBoxesZ, 0.0);
-    for (int k = 0; k <test_conc->nBoxesZ; ++k) {
+    for (int k = 0; k < test_conc->nBoxesZ; ++k) {
       for (int j = 0; j < test_conc->nBoxesY; ++j) {
         float y = test_conc->yBoxCen[j] - yS;
         float z = test_conc->zBoxCen[k] - zS;
         CStarModel[j + k * test_conc->nBoxesY] = Q / (2 * M_PI * uMean * sigY * sigZ)
-                                                   * expf(-0.5f * powf(y, 2) / powf(sigY, 2))
-                                                   * expf(-0.5f * powf(z, 2) / powf(sigZ, 2))
-                                                   * CNorm;
+                                                 * expf(-0.5f * powf(y, 2) / powf(sigY, 2))
+                                                 * expf(-0.5f * powf(z, 2) / powf(sigZ, 2))
+                                                 * CNorm;
       }
     }
 
