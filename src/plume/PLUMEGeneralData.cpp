@@ -200,7 +200,10 @@ PLUMEGeneralData::PLUMEGeneralData(PlumeInputData *PID, WINDSGeneralData *WGD, T
   // models[tag]->accept(new AddSource(new_sources));
 }
 
-void PLUMEGeneralData::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD, std::vector<QESNetCDFOutput *> outputVec)
+void PLUMEGeneralData::run(QEStime loopTimeEnd,
+                           WINDSGeneralData *WGD,
+                           TURBGeneralData *TGD,
+                           std::vector<QESNetCDFOutput *> outputVec)
 {
   auto startTimeAdvec = std::chrono::high_resolution_clock::now();
 
@@ -307,13 +310,15 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGener
     if (simTimeCurr >= nextUpdate || (simTimeCurr == loopTimeEnd)) {
       if (verbose) {
         updateCounts();
-        std::cout << "[QES-Plume]\t Time = " << simTimeCurr << " (t = " << simTime << " s, iter = " << simTimeIdx << "). "
+        std::cout << "[QES-Plume]\t Time = " << simTimeCurr
+                  << " (t = " << simTime << " s, iter = " << simTimeIdx << "). "
                   << "Particles: released = " << isReleasedCount << " "
                   << "active = " << isActiveCount << " "
                   << "rogue = " << isRogueCount << "." << std::endl;
       } else {
         updateCounts();
-        std::cout << "[QES-Plume]\t Time = " << simTimeCurr << " (t = " << simTime << " s, iter = " << simTimeIdx << "). "
+        std::cout << "[QES-Plume]\t Time = " << simTimeCurr
+                  << " (t = " << simTime << " s, iter = " << simTimeIdx << "). "
                   << "Particles: released = " << isReleasedCount << " "
                   << "active = " << isActiveCount << "." << std::endl;
       }
@@ -435,7 +440,21 @@ void PLUMEGeneralData::GLE_solver(Particle *p, double &par_dt, TURBGeneralData *
   double txx = 0.0, txy = 0.0, txz = 0.0, tyy = 0.0, tyz = 0.0, tzz = 0.0;
   double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
 
-  interp->interpValues(TGD, p->xPos, p->yPos, p->zPos, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, p->nuT, p->CoEps);
+  interp->interpValues(TGD,
+                       p->xPos,
+                       p->yPos,
+                       p->zPos,
+                       txx,
+                       txy,
+                       txz,
+                       tyy,
+                       tyz,
+                       tzz,
+                       flux_div_x,
+                       flux_div_y,
+                       flux_div_z,
+                       p->nuT,
+                       p->CoEps);
 
   // now need to call makeRealizable on tau
   makeRealizable(txx, txy, txz, tyy, tyz, tzz);
@@ -504,7 +523,21 @@ void PLUMEGeneralData::GLE_solver(Particle *p, double &par_dt, TURBGeneralData *
     p->isActive = false;
   }
   // now do the Ax=b calculation using the inverted matrix (vecFluct = A*b)
-  matmult(A_11, A_12, A_13, A_21, A_22, A_23, A_31, A_32, A_33, b_11, b_21, b_31, p->uFluct, p->vFluct, p->wFluct);
+  matmult(A_11,
+          A_12,
+          A_13,
+          A_21,
+          A_22,
+          A_23,
+          A_31,
+          A_32,
+          A_33,
+          b_11,
+          b_21,
+          b_31,
+          p->uFluct,
+          p->vFluct,
+          p->wFluct);
 
   // now check to see if the value is rogue or not
   if (std::abs(p->uFluct) >= vel_threshold || isnan(p->uFluct)) {
@@ -707,7 +740,14 @@ void PLUMEGeneralData::makeRealizable(double &txx,
   double tyz_new = tyz;
   double tzz_new = tzz + 2.0 / 3.0 * ks;
 
-  calcInvariants(txx_new, txy_new, txz_new, tyy_new, tyz_new, tzz_new, invar_xx, invar_yy, invar_zz);
+  calcInvariants(txx_new,
+                 txy_new,
+                 txz_new,
+                 tyy_new,
+                 tyz_new,
+                 tzz_new,
+                 invar_xx,
+                 invar_yy, invar_zz);
 
   // now adjust the diagonals by 0.05% of the subfilter tke, which is ks, till
   // tau is realizable or if too many iterations go on, give a warning. I've had
@@ -727,7 +767,15 @@ void PLUMEGeneralData::makeRealizable(double &txx,
     tyy_new = tyy + 2.0 / 3.0 * ks;
     tzz_new = tzz + 2.0 / 3.0 * ks;
 
-    calcInvariants(txx_new, txy_new, txz_new, tyy_new, tyz_new, tzz_new, invar_xx, invar_yy, invar_zz);
+    calcInvariants(txx_new,
+                   txy_new,
+                   txz_new,
+                   tyy_new,
+                   tyz_new,
+                   tzz_new,
+                   invar_xx,
+                   invar_yy,
+                   invar_zz);
   }
 
   if (iter == 999) {
@@ -761,14 +809,18 @@ bool PLUMEGeneralData::invert3(double &A_11,
   // matrix for the Ax=b calculation
 
   // now calculate the determinant
-  double det = A_11 * (A_22 * A_33 - A_23 * A_32) - A_12 * (A_21 * A_33 - A_23 * A_31) + A_13 * (A_21 * A_32 - A_22 * A_31);
+  double det = A_11 * (A_22 * A_33 - A_23 * A_32)
+               - A_12 * (A_21 * A_33 - A_23 * A_31)
+               + A_13 * (A_21 * A_32 - A_22 * A_31);
 
   // check for near zero value determinants
   if (std::abs(det) < 1e-10) {
     std::cerr << "WARNING (Plume::invert3): matrix nearly singular" << std::endl;
-    std::cerr << "abs(det) = \"" << std::abs(det) << "\",  A_11 =  \"" << A_11 << "\", A_12 = \"" << A_12 << "\", A_13 = \""
-              << A_13 << "\", A_21 = \"" << A_21 << "\", A_22 = \"" << A_22 << "\", A_23 = \"" << A_23 << "\", A_31 = \""
-              << A_31 << "\" A_32 = \"" << A_32 << "\", A_33 = \"" << A_33 << "\"" << std::endl;
+    std::cerr << "abs(det) = \"" << std::abs(det)
+              << "\",  A_11 =  \"" << A_11 << "\", A_12 = \"" << A_12 << "\", A_13 = \"" << A_13
+              << "\", A_21 = \"" << A_21 << "\", A_22 = \"" << A_22 << "\", A_23 = \"" << A_23
+              << "\", A_31 = \"" << A_31 << "\" A_32 = \"" << A_32 << "\", A_33 = \"" << A_33 << "\""
+              << std::endl;
 
     det = 10e10;
     A_11 = 0.0;
