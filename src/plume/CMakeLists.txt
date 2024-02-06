@@ -13,7 +13,6 @@ SET( qesPlumeCoreSources
     InterpPowerLaw.cpp
     InterpTriLinear.cpp    
 
-    Concentration.cpp
     Deposition.cpp
 
     Plume.cpp

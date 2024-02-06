@@ -295,7 +295,7 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd,
     simTime = simTimeCurr - simTimeStart;
 
     for (const auto &pm : models) {
-      pm.second->process(simTimeCurr, timeRemainder, WGD, TGD, this);
+      pm.second->computeStatistics(simTimeCurr, timeRemainder, WGD, TGD, this);
     }
 
     // netcdf output for a given simulation timestep
@@ -747,7 +747,8 @@ void PLUMEGeneralData::makeRealizable(double &txx,
                  tyz_new,
                  tzz_new,
                  invar_xx,
-                 invar_yy, invar_zz);
+                 invar_yy,
+                 invar_zz);
 
   // now adjust the diagonals by 0.05% of the subfilter tke, which is ks, till
   // tau is realizable or if too many iterations go on, give a warning. I've had

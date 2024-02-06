@@ -77,7 +77,8 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
         TGD->txz[cellID] = -pow(uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
 
         TGD->tke[cellID] = pow(uStar / 0.55, 2.0);
-        TGD->CoEps[cellID] = C0 * pow(uStar, 3) / (0.4 * WGD->z[k]) * pow(1 - 0.85 * WGD->z[k] / zi, 3.0 / 2.0);
+        TGD->CoEps[cellID] = C0 * pow(uStar, 3)
+                             / (0.4 * WGD->z[k]) * pow(1 - 0.85 * WGD->z[k] / zi, 3.0 / 2.0);
       }
     }
   }
@@ -95,7 +96,8 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
   // auto *plumeOutput = new PlumeOutput(PID, plume, outFile);
 
   // outputVec.push_back(plumeOutput);
-  //  outputVec.push_back(new PlumeOutputParticleData(PID, plume, "../testCases/Sinusoidal3D/QES-data/Sinusoidal3D_0.01_12_particleInfo.nc"));
+  //  outputVec.push_back(new PlumeOutputParticleData(PID, plume,
+  //  "../testCases/Sinusoidal3D/QES-data/Sinusoidal3D_0.01_12_particleInfo.nc"));
 
   // Run plume advection model
   QEStime endtime = WGD->timestamp[0] + PID->plumeParams->simDur;
@@ -106,12 +108,12 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
   std::cout << "[QES-Plume] \t Finished." << std::endl;
 
   std::cout << "End run particle summary \n";
-  // plume->showCurrentStatus();
+  PGD->showCurrentStatus();
   timers.printStoredTime("QES-Plume total runtime");
   std::cout << "##############################################################" << std::endl
             << std::endl;
 
-  TracerParticle_Model *test_model = dynamic_cast<TracerParticle_Model *>(PGD->models[PID->particleParams->particles.at(0)->tag]);
+  auto *test_model = dynamic_cast<TracerParticle_Model *>(PGD->models[PID->particleParams->particles.at(0)->tag]);
   TracerParticle_Concentration *test_conc = test_model->stats->concentration;
   // source info (hard coded because no way to access the source info here)
   float xS = 20;

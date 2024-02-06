@@ -110,7 +110,7 @@ void TracerParticle_Model::advect(const double &total_time_interval,
     while (p->isActive && timeRemainder > 0.0) {
 
       /*
-        now get the Lagrangian values for the current iteration from the Interperian grid
+        now get the Lagrangian values for the current iteration from the wind/turbulence grid
         will need to use the interp3D function
       */
 
@@ -193,11 +193,11 @@ void TracerParticle_Model::advect(const double &total_time_interval,
   }//  END OF OPENMP WORK SHARE
 }
 
-void TracerParticle_Model::process(QEStime &timeIn,
-                                   const float &dt,
-                                   WINDSGeneralData *WGD,
-                                   TURBGeneralData *TGD,
-                                   PLUMEGeneralData *PGD)
+void TracerParticle_Model::computeStatistics(QEStime &timeIn,
+                                             const float &dt,
+                                             WINDSGeneralData *WGD,
+                                             TURBGeneralData *TGD,
+                                             PLUMEGeneralData *PGD)
 {
   stats->compute(timeIn, dt, WGD, TGD, PGD, this);
 }
