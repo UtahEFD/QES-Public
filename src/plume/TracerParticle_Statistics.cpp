@@ -41,14 +41,28 @@ void TracerParticle_Statistics::compute(QEStime &timeIn,
                                         PLUMEGeneralData *PGD,
                                         const TracerParticle_Model *pm)
 {
+  // nextOutputTime = averagingStartTime + averagingPeriod;
+
   if (timeIn > averagingStartTime) {
     // incrementation of the averaging time
     ongoingAveragingTime += timeStep;
-    concentration->compute(timeIn, timeStep);
+    concentration->collect(timeIn, timeStep);
+
+    if (timeIn >= nextOutputTime) {
+      // compute the stats
+      concentration->compute(timeIn);
+
+      // notify output
+
+      // reset variables
+      concentration->reset();
+
+      nextOutputTime = nextOutputTime + averagingPeriod;
+    }
   }
 }
 
-void TracerParticle_Concentration::compute(QEStime &timeIn, const float &timeStep)
+void TracerParticle_Concentration::collect(QEStime &timeIn, const float &timeStep)
 {
   // for all particles see where they are relative to the concentration collection boxes
   for (auto &par : *m_particles) {
@@ -64,7 +78,9 @@ void TracerParticle_Concentration::compute(QEStime &timeIn, const float &timeSte
 
       // now, does the particle land in one of the boxes?
       // if so, add one particle to that box count
-      if (idx >= 0 && idx <= nBoxesX - 1 && idy >= 0 && idy <= nBoxesY - 1 && idz >= 0 && idz <= nBoxesZ - 1) {
+      if (idx >= 0 && idx <= nBoxesX - 1
+          && idy >= 0 && idy <= nBoxesY - 1
+          && idz >= 0 && idz <= nBoxesZ - 1) {
         int id = idz * nBoxesY * nBoxesX + idy * nBoxesX + idx;
         pBox[id]++;
         conc[id] = conc[id] + par.m * par.wdecay * timeStep;
@@ -73,4 +89,11 @@ void TracerParticle_Concentration::compute(QEStime &timeIn, const float &timeSte
     }// is active == true
 
   }// particle loop
+}
+
+void TracerParticle_Concentration::compute(QEStime &timeIn)
+{
+  for (auto c : conc) {
+    c = c / (ongoingAveragingTime * volume);
+  }
 }

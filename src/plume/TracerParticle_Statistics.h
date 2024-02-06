@@ -43,7 +43,7 @@
 #include "TracerParticle.h"
 #include "TracerParticle_Model.h"
 
-#include "Concentration.h"
+#include "Concentration.hpp"
 
 
 class TracerParticle_Concentration : public Concentration
@@ -54,7 +54,8 @@ public:
   {
     m_particles = pm->get_particles();
   }
-  void compute(QEStime &timeIn, const float &timeStep) override;
+  void collect(QEStime &timeIn, const float &timeStep) override;
+  void compute(QEStime &timeIn) override;
 
 protected:
   ManagedContainer<TracerParticle> *m_particles;

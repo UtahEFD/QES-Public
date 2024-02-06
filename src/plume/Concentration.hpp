@@ -55,6 +55,8 @@
 // #include "PlumeOutput.h"
 // #include "PlumeOutputParticleData.h"
 
+#include "Statistics.h"
+
 #include "CollectionParameters.hpp"
 
 #include "winds/WINDSGeneralData.h"
@@ -68,15 +70,80 @@
 #include "Particle.hpp"
 #include "PlumeInputData.hpp"
 
-class Concentration
+class Concentration : public Statistics
 {
 public:
-  explicit Concentration(const CollectionParameters *colParams);
+  explicit Concentration(const CollectionParameters *colParams)
+    : averagingPeriod(colParams->averagingPeriod), ongoingAveragingTime(0.0),
+      nBoxesX(colParams->nBoxesX), nBoxesY(colParams->nBoxesY), nBoxesZ(colParams->nBoxesZ),
+      lBndx(colParams->boxBoundsX1), uBndx(colParams->boxBoundsX2),
+      lBndy(colParams->boxBoundsY1), uBndy(colParams->boxBoundsY2),
+      lBndz(colParams->boxBoundsZ1), uBndz(colParams->boxBoundsZ2)
+  {
+    // setup output frequency control information
+    // averagingStartTime = m_plume->getSimTimeStart() + PID->colParams->averagingStartTime;
+    averagingPeriod = colParams->averagingPeriod;
 
-  virtual void compute(QEStime &, const float &) = 0;
+    // set the initial next output time value
+    // nextOutputTime = averagingStartTime + averagingPeriod;
+
+    // --------------------------------------------------------
+    // setup information: sampling box/concentration
+    // --------------------------------------------------------
+
+    // Sampling box variables for calculating concentration data
+    boxSizeX = (uBndx - lBndx) / (nBoxesX);
+    boxSizeY = (uBndy - lBndy) / (nBoxesY);
+    boxSizeZ = (uBndz - lBndz) / (nBoxesZ);
+
+    volume = boxSizeX * boxSizeY * boxSizeZ;
+
+    // output concentration storage variables
+    xBoxCen.resize(nBoxesX);
+    yBoxCen.resize(nBoxesY);
+    zBoxCen.resize(nBoxesZ);
+
+    int zR = 0, yR = 0, xR = 0;
+    for (int k = 0; k < nBoxesZ; ++k) {
+      zBoxCen.at(k) = lBndz + (zR * boxSizeZ) + (boxSizeZ / 2.0);
+      zR++;
+    }
+    for (int j = 0; j < nBoxesY; ++j) {
+      yBoxCen.at(j) = lBndy + (yR * boxSizeY) + (boxSizeY / 2.0);
+      yR++;
+    }
+    for (int i = 0; i < nBoxesX; ++i) {
+      xBoxCen.at(i) = lBndx + (xR * boxSizeX) + (boxSizeX / 2.0);
+      xR++;
+    }
+
+    // initialization of the container
+    pBox.resize(nBoxesX * nBoxesY * nBoxesZ, 0);
+    conc.resize(nBoxesX * nBoxesY * nBoxesZ, 0.0);
+  }
+
+  ~Concentration() = default;
+
+  // virtual void collect(QEStime &, const float &) = 0;
+  // virtual void compute(QEStime &) = 0;
+
+  // virtual void computeForOutput() = 0;
+  //  reset buffer
+  virtual void reset()
+  {
+    // reset container for the next averaging period
+    ongoingAveragingTime = 0.0;
+    for (auto p : pBox) {
+      p = 0.0;
+    }
+    for (auto c : conc) {
+      c = 0.0;
+    }
+  }
 
   // averaging period in seconds
   float averagingPeriod;
+  float ongoingAveragingTime;
   // Sampling box variables for calculating concentration data
   // Number of boxes to use for the sampling box
   int nBoxesX, nBoxesY, nBoxesZ;// Copies of the input: nBoxesX, Y, and Z.
