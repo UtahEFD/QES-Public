@@ -46,6 +46,7 @@ TracerParticle_Model::TracerParticle_Model(const PI_TracerParticle *in)
 
   particles = new ManagedContainer<TracerParticle>();
 
+
   for (auto s : in->sources) {
     // now determine the number of particles to release for the source and update the overall count
     // totalParsToRelease += s->getNumParticles();
@@ -61,7 +62,12 @@ void TracerParticle_Model::initialize(const PlumeInputData *PID,
                                       PLUMEGeneralData *PGD)
 {
   deposition = new Deposition(WGD);
-  stats = new TracerParticle_Statistics(PID, PGD, this);
+
+  // stats = new TracerParticle_Statistics(PID, PGD, this);
+  // concentration = new TracerParticle_Concentration(PID, pm);
+
+  stats = new StatisticsDirector(PID, PGD);
+  stats->enroll("concentration", new TracerParticle_Concentration(PID, this));
 }
 
 void TracerParticle_Model::generateParticleList(QEStime &timeCurrent,
@@ -199,5 +205,5 @@ void TracerParticle_Model::computeStatistics(QEStime &timeIn,
                                              TURBGeneralData *TGD,
                                              PLUMEGeneralData *PGD)
 {
-  stats->compute(timeIn, dt, WGD, TGD, PGD, this);
+  stats->process(timeIn, dt);
 }

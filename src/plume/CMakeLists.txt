@@ -14,6 +14,8 @@ SET( qesPlumeCoreSources
     InterpTriLinear.cpp    
 
     Deposition.cpp
+    Concentration.cpp
+    StatisticsDirector.cpp
 
     Plume.cpp
     AdvectParticle.cpp

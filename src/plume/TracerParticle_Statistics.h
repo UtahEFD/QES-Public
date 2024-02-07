@@ -43,7 +43,7 @@
 #include "TracerParticle.h"
 #include "TracerParticle_Model.h"
 
-#include "Concentration.hpp"
+#include "Concentration.h"
 
 
 class TracerParticle_Concentration : public Concentration
