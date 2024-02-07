@@ -18,7 +18,8 @@
 #include "winds/WINDSGeneralData.h"
 #include "plume/Plume.hpp"
 #include "plume/PLUMEGeneralData.h"
-#include "plume/TracerParticle_Statistics.h"
+
+#include "plume/TracerParticle_Concentration.h"
 
 #include "util/QESNetCDFOutput.h"
 #include "plume/PlumeOutput.h"
