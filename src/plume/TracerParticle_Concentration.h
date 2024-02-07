@@ -55,7 +55,7 @@ public:
     m_particles = pm->get_particles();
   }
   void collect(QEStime &timeIn, const float &timeStep) override;
-  void compute(QEStime &timeIn) override;
+  void finalize(QEStime &timeIn) override;
 
 protected:
   ManagedContainer<TracerParticle> *m_particles;

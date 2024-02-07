@@ -199,11 +199,11 @@ void TracerParticle_Model::advect(const double &total_time_interval,
   }//  END OF OPENMP WORK SHARE
 }
 
-void TracerParticle_Model::computeStatistics(QEStime &timeIn,
-                                             const float &dt,
-                                             WINDSGeneralData *WGD,
-                                             TURBGeneralData *TGD,
-                                             PLUMEGeneralData *PGD)
+void TracerParticle_Model::process(QEStime &timeIn,
+                                   const float &dt,
+                                   WINDSGeneralData *WGD,
+                                   TURBGeneralData *TGD,
+                                   PLUMEGeneralData *PGD)
 {
-  stats->process(timeIn, dt);
+  stats->compute(timeIn, dt);
 }

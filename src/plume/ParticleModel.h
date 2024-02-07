@@ -82,11 +82,11 @@ public:
                       TURBGeneralData *TGD,
                       PLUMEGeneralData *PGD) = 0;
 
-  virtual void computeStatistics(QEStime &timeIn,
-                                 const float &dt,
-                                 WINDSGeneralData *WGD,
-                                 TURBGeneralData *TGD,
-                                 PLUMEGeneralData *PGD) = 0;
+  virtual void process(QEStime &timeIn,
+                       const float &dt,
+                       WINDSGeneralData *WGD,
+                       TURBGeneralData *TGD,
+                       PLUMEGeneralData *PGD) = 0;
 
   int get_nbr_rogue() { return nbr_rogue; };
   virtual int get_nbr_active() = 0;

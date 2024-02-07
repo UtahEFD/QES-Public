@@ -63,7 +63,7 @@ void TracerParticle_Concentration::collect(QEStime &timeIn, const float &timeSte
   }// particle loop
 }
 
-void TracerParticle_Concentration::compute(QEStime &timeIn)
+void TracerParticle_Concentration::finalize(QEStime &timeIn)
 {
   for (auto c : conc) {
     c = c / (ongoingAveragingTime * volume);

@@ -53,6 +53,6 @@ public:
   ~Statistics() = default;
 
   virtual void collect(QEStime &, const float &) = 0;
-  virtual void compute(QEStime &) = 0;
+  virtual void finalize(QEStime &) = 0;
   virtual void reset() = 0;
 };

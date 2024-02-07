@@ -53,7 +53,7 @@ void StatisticsDirector::enroll(const std::string &key, Statistics *s)
   }
 }
 
-void StatisticsDirector::process(QEStime &timeIn, const float &timeStep)
+void StatisticsDirector::compute(QEStime &timeIn, const float &timeStep)
 {
   if (timeIn > averagingStartTime) {
     // incrementation of the averaging time
@@ -66,7 +66,7 @@ void StatisticsDirector::process(QEStime &timeIn, const float &timeStep)
     if (timeIn >= nextOutputTime) {
       // compute the stats
       for (const auto &e : elements) {
-        e.second->collect(timeIn, timeStep);
+        e.second->finalize(timeIn);
       }
 
       // notify output
