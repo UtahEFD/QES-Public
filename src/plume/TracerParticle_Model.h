@@ -46,7 +46,7 @@
 #include "TracerParticle_Source.h"
 
 class PI_TracerParticle;
-class TracerParticle_Statistics;
+class TracerParticle_Concentration;
 
 class TracerParticle_Model : public ParticleModel
 {
@@ -89,8 +89,9 @@ public:
   void addSources(std::vector<TracerParticle_Source *>);
 
   // friend class declaration
-  TracerParticle_Statistics *stats = nullptr;
-  friend class TracerParticle_Statistics;
+  // TracerParticle_Statistics *stats = nullptr;
+  // friend class TracerParticle_Statistics;
+  friend class TracerParticle_Concentration;
 
 protected:
   ManagedContainer<TracerParticle> *particles{};

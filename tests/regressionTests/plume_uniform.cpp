@@ -113,8 +113,10 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
   std::cout << "##############################################################" << std::endl
             << std::endl;
 
-  auto *test_model = dynamic_cast<TracerParticle_Model *>(PGD->models[PID->particleParams->particles.at(0)->tag]);
-  TracerParticle_Concentration *test_conc = test_model->stats->concentration;
+  // auto *test_model = dynamic_cast<TracerParticle_Model *>(PGD->models[PID->particleParams->particles.at(0)->tag]);
+
+  auto *test_conc = dynamic_cast<TracerParticle_Concentration *>(PGD->models[PID->particleParams->particles.at(0)->tag]->stats->get("concentration"));
+
   // source info (hard coded because no way to access the source info here)
   float xS = 20;
   float yS = 50;

@@ -41,7 +41,7 @@
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
 
-#include
+#include "StatisticsDirector.h"
 #include "Deposition.h"
 #include "ParticleContainers.h"
 #include "Source.hpp"
@@ -93,12 +93,10 @@ public:
   virtual int get_nbr_inserted() = 0;
 
 
-  ParticleType getParticleType()
-  {
-    return particleType;
-  }
+  ParticleType getParticleType() { return particleType; }
 
   std::string tag{};
+  StatisticsDirector *stats = nullptr;
 
 protected:
   explicit ParticleModel(ParticleType type, std::string tag_in)
@@ -107,9 +105,8 @@ protected:
 
   ParticleType particleType{};
 
-  Deposition *deposition = nullptr;
 
-  Stati
+  Deposition *deposition = nullptr;
 
   int nbr_rogue = 0;
 
