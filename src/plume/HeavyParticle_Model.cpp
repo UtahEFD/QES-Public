@@ -32,9 +32,12 @@
  * @brief This class represents information stored for each particle
  */
 
-#include "HeavyParticle_Model.h"
 #include "PLUMEGeneralData.h"
+
 #include "PI_HeavyParticle.h"
+#include "HeavyParticle_Concentration.h"
+
+#include "HeavyParticle_Model.h"
 
 HeavyParticle_Model::HeavyParticle_Model(const PI_HeavyParticle *in)
   : ParticleModel(ParticleType::heavy, in->tag)
@@ -52,6 +55,20 @@ HeavyParticle_Model::HeavyParticle_Model(const PI_HeavyParticle *in)
   }
 
   // deposition = new Deposition(WGD);
+}
+
+void HeavyParticle_Model::initialize(const PlumeInputData *PID,
+                                     WINDSGeneralData *WGD,
+                                     TURBGeneralData *TGD,
+                                     PLUMEGeneralData *PGD)
+{
+  // deposition = new Deposition(WGD);
+
+  // stats = new TracerParticle_Statistics(PID, PGD, this);
+  // concentration = new TracerParticle_Concentration(PID, pm);
+
+  stats = new StatisticsDirector(PID, PGD);
+  stats->enroll("concentration", new HeavyParticle_Concentration(PID, this));
 }
 
 void HeavyParticle_Model::generateParticleList(QEStime &timeCurrent,
@@ -180,4 +197,13 @@ void HeavyParticle_Model::advect(const double &total_time_interval, WINDSGeneral
     }// while( isActive == true && timeRemainder > 0.0 )
 
   }//  END OF OPENMP WORK SHARE
+}
+
+void HeavyParticle_Model::process(QEStime &timeIn,
+                                  const float &dt,
+                                  WINDSGeneralData *WGD,
+                                  TURBGeneralData *TGD,
+                                  PLUMEGeneralData *PGD)
+{
+  stats->compute(timeIn, dt);
 }

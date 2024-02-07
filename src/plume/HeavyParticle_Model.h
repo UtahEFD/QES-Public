@@ -46,6 +46,7 @@
 #include "HeavyParticle_Source.h"
 
 class PI_HeavyParticle;
+class HeavyParticle_Concentration;
 
 class HeavyParticle_Model : public ParticleModel
 {
@@ -60,8 +61,7 @@ public:
   void initialize(const PlumeInputData *PID,
                   WINDSGeneralData *WGD,
                   TURBGeneralData *TGD,
-                  PLUMEGeneralData *PGD) override
-  {}
+                  PLUMEGeneralData *PGD) override;
 
   void generateParticleList(QEStime &timeCurrent,
                             const float &dt,
@@ -78,18 +78,21 @@ public:
                const float &dt,
                WINDSGeneralData *WGD,
                TURBGeneralData *TGD,
-               PLUMEGeneralData *PGD) override
-  {}
+               PLUMEGeneralData *PGD) override;
 
 
   int get_nbr_active() override { return (int)particles->get_nbr_active(); };
   int get_nbr_inserted() override { return (int)particles->get_nbr_inserted(); };
+  ManagedContainer<HeavyParticle> *get_particles() { return particles; }
 
   void addSources(std::vector<HeavyParticle_Source *>);
 
 protected:
   ManagedContainer<HeavyParticle> *particles;
   std::vector<HeavyParticle_Source *> sources;
+
+  // friend class declaration
+  friend class HeavyParticle_Concentration;
 
 private:
 };

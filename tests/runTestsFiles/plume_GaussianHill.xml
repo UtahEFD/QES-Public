@@ -25,28 +25,29 @@
     <nBoxesY> 40 </nBoxesY>
     <nBoxesZ> 40 </nBoxesZ>
   </collectionParameters>
-  <sourceParameters>
-    <source>
-      <particle_Heavy>
-        <particleDensity> 2.0 </particleDensity>
-        <particleDiameter> 5 </particleDiameter>
-        <depositionFlag>false</depositionFlag>
-        <decayConst> 0.0 </decayConst>
-      </particle_Heavy>
-      <releaseType_continuous>
-        <massPerSec> 5 </massPerSec>
-        <particlePerTimestep> 100 </particlePerTimestep>
-      </releaseType_continuous>
-      <sourceGeometry_Line>
-        <posX_0> 20.0 </posX_0>
-        <posY_0> 50.0 </posY_0>
-        <posZ_0> 20.0 </posZ_0>
-        <posX_1> 20.0 </posX_1>
-        <posY_1> 150.0 </posY_1>
-        <posZ_1> 20.0 </posZ_1>
-      </sourceGeometry_Line>
-    </source>
-  </sourceParameters>
+  <particleParameters>
+    <heavyParticle>
+      <tag>test</tag>
+      <particleDensity> 2.0 </particleDensity>
+      <particleDiameter> 5 </particleDiameter>
+      <depositionFlag>false</depositionFlag>
+      <decayConst> 0.0 </decayConst>
+      <source>
+        <releaseType_continuous>
+          <massPerSec> 5 </massPerSec>
+          <particlePerTimestep> 100 </particlePerTimestep>
+        </releaseType_continuous>
+        <sourceGeometry_Line>
+          <posX_0> 20.0 </posX_0>
+          <posY_0> 50.0 </posY_0>
+          <posZ_0> 20.0 </posZ_0>
+          <posX_1> 20.0 </posX_1>
+          <posY_1> 150.0 </posY_1>
+          <posZ_1> 20.0 </posZ_1>
+        </sourceGeometry_Line>
+      </source>
+    </heavyParticle>
+  </particleParameters>
   <boundaryConditions>
     <xBCtype>exiting</xBCtype>
     <yBCtype>exiting</yBCtype>
