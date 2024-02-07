@@ -132,6 +132,26 @@ public:
 protected:
   QESNetCDFOutput() {}
 
+  void createDimension(const std::string &, const std::string &, const std::string &, std::vector<int> *);
+  void createDimension(const std::string &, const std::string &, const std::string &, std::vector<float> *);
+  void createDimension(const std::string &, const std::string &, const std::string &, std::vector<double> *);
+
+  std::map<std::string, NcDim> output_dimensions;
+
+  void createDimensionSet(const std::string &, const std::vector<std::string> &);
+
+  std::map<std::string, std::vector<NcDim>> output_dimension_sets;
+
+  // create attribute scalar based on type of data
+  void createAttScalar(const std::string &, const std::string &, const std::string &, const std::string &, int *);
+  void createAttScalar(const std::string &, const std::string &, const std::string &, const std::string &, float *);
+  void createAttScalar(const std::string &, const std::string &, const std::string &, const std::string &, double *);
+
+  // create attribute vector based on type of data
+  void createAttVector(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<int> *);
+  void createAttVector(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<float> *);
+  void createAttVector(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<double> *);
+
   // create attribute scalar based on type of data
   void createAttScalar(const std::string &, const std::string &, const std::string &, const std::vector<NcDim> &, int *);
   void createAttScalar(const std::string &, const std::string &, const std::string &, const std::vector<NcDim> &, float *);

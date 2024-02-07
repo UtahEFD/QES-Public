@@ -38,21 +38,21 @@
  */
 
 #include "PlumeOutput.h"
-#include "Plume.hpp"
+#include "PLUMEGeneralData.h"
 
 // note that this sets the output file and the bool for whether to do output, in the netcdf inherited classes
 // in this case, output should always be done, so the bool for whether to do output is set to true
-PlumeOutput::PlumeOutput(const PlumeInputData *PID, Plume *plume_ptr, std::string output_file)
+PlumeOutput::PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, std::string output_file)
   : QESNetCDFOutput(output_file)
 {
 
   std::cout << "[PlumeOutput]\t Setting NetCDF file: " << output_file << std::endl;
 
   // setup copy of plume pointer so output data can be grabbed directly
-  m_plume = plume_ptr;
+  m_PGD = PGD;
 
   // setup output frequency control information
-  averagingStartTime = m_plume->getSimTimeStart() + PID->colParams->averagingStartTime;
+  averagingStartTime = m_PGD->getSimTimeStart() + PID->colParams->averagingStartTime;
   averagingPeriod = PID->colParams->averagingPeriod;
 
 #if 0 
@@ -195,23 +195,35 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, Plume *plume_ptr, std::strin
   // setup the netcdf output information storage
   // --------------------------------------------------------
 
-  setStartTime(m_plume->getSimTimeStart());
+  setStartTime(m_PGD->getSimTimeStart());
 
   // setup desired output fields string
-  // LA future work: can be added in fileOptions at some point
-  output_fields = { "x", "y", "z", "pBox", "conc", "tAvg", "xDep", "yDep", "zDep", "depcvol" };
+  output_fields = { "x", "y", "z", "pBox", "conc", "tAvg" };
+  // output_fields = { "x", "y", "z", "pBox", "conc", "tAvg", "xDep", "yDep", "zDep", "depcvol" };
 
   // set data dimensions, which in this case are cell-centered dimensions
   // space dimensions
-  NcDim NcDim_x = addDimension("x", nBoxesX);
-  NcDim NcDim_y = addDimension("y", nBoxesY);
-  NcDim NcDim_z = addDimension("z", nBoxesZ);
+  // NcDim NcDim_x = addDimension("x", nBoxesX);
+  // NcDim NcDim_y = addDimension("y", nBoxesY);
+  // NcDim NcDim_z = addDimension("z", nBoxesZ);
+
 
   // create attributes for time dimension
-  std::vector<NcDim> dim_vect_t;
-  dim_vect_t.push_back(NcDim_t);
-  createAttScalar("tAvg", "Averaging time", "s", dim_vect_t, &ongoingAveragingTime);
+  // std::vector<NcDim> dim_vect_t;
+  // dim_vect_t.push_back(NcDim_t);
+  // createAttScalar("tAvg", "Averaging time", "s", dim_vect_t, &ongoingAveragingTime);
+  createAttScalar("tAvg", "Averaging time", "s", "t", &ongoingAveragingTime);
 
+  createDimension("x", "x-center collection box", "m", &xBoxCen);
+  createDimension("y", "y-center collection box", "m", &yBoxCen);
+  createDimension("z", "z-center collection box", "m", &zBoxCen);
+
+  createDimensionSet("concentration", { "t", "z", "y", "x" });
+
+  createAttVector("pBox", "number of particle per box", "#ofPar", "concentration", &pBox);
+  createAttVector("conc", "concentration", "g m-3", "concentration", &conc);
+
+  /*
   // create attributes space dimensions
   std::vector<NcDim> dim_vect_x;
   dim_vect_x.push_back(NcDim_x);
@@ -236,34 +248,34 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, Plume *plume_ptr, std::strin
   // create attributes for all output information
   createAttVector("pBox", "number of particle per box", "#ofPar", dim_vect_3d, &pBox);
   createAttVector("conc", "concentration", "g m-3", dim_vect_3d, &conc);
-
+*/
   // face dimensions
   // NcDim NcDim_nFace = addDimension("nFace", m_plume->deposition->nbrFace);
   // NcDim NcDim_x = addDimension("x",nBoxesX);
   // NcDim NcDim_y = addDimension("y",nBoxesY);
   // NcDim NcDim_z = addDimension("z",nBoxesZ);
 
-  NcDim NcDim_xDep = addDimension("xDep", m_plume->deposition->x.size());
-  NcDim NcDim_yDep = addDimension("yDep", m_plume->deposition->y.size());
-  NcDim NcDim_zDep = addDimension("zDep", m_plume->deposition->z.size());
+  // NcDim NcDim_xDep = addDimension("xDep", m_PGD->deposition->x.size());
+  // NcDim NcDim_yDep = addDimension("yDep", m_PGD->deposition->y.size());
+  // NcDim NcDim_zDep = addDimension("zDep", m_PGD->deposition->z.size());
 
+  /*
+    std::vector<NcDim> dim_vect_xDep;
+    dim_vect_xDep.push_back(NcDim_xDep);
+    createAttVector("xDep", "x-distance, deposition grid", "m", dim_vect_xDep, &(m_plume->deposition->x));
+    std::vector<NcDim> dim_vect_yDep;
+    dim_vect_yDep.push_back(NcDim_yDep);
+    createAttVector("yDep", "y-distance, deposition grid", "m", dim_vect_yDep, &(m_plume->deposition->y));
+    std::vector<NcDim> dim_vect_zDep;
+    dim_vect_zDep.push_back(NcDim_zDep);
+    createAttVector("zDep", "z-distance, deposition grid", "m", dim_vect_zDep, &(m_plume->deposition->z));
 
-  std::vector<NcDim> dim_vect_xDep;
-  dim_vect_xDep.push_back(NcDim_xDep);
-  createAttVector("xDep", "x-distance, deposition grid", "m", dim_vect_xDep, &(m_plume->deposition->x));
-  std::vector<NcDim> dim_vect_yDep;
-  dim_vect_yDep.push_back(NcDim_yDep);
-  createAttVector("yDep", "y-distance, deposition grid", "m", dim_vect_yDep, &(m_plume->deposition->y));
-  std::vector<NcDim> dim_vect_zDep;
-  dim_vect_zDep.push_back(NcDim_zDep);
-  createAttVector("zDep", "z-distance, deposition grid", "m", dim_vect_zDep, &(m_plume->deposition->z));
-
-  std::vector<NcDim> dim_vectDep;
-  dim_vectDep.push_back(NcDim_t);
-  dim_vectDep.push_back(NcDim_zDep);
-  dim_vectDep.push_back(NcDim_yDep);
-  dim_vectDep.push_back(NcDim_xDep);
-
+    std::vector<NcDim> dim_vectDep;
+    dim_vectDep.push_back(NcDim_t);
+    dim_vectDep.push_back(NcDim_zDep);
+    dim_vectDep.push_back(NcDim_yDep);
+    dim_vectDep.push_back(NcDim_xDep);
+  */
   // createAttVector("depcvol", "deposited mass", "g", dim_vectDep, &(m_plume->deposition->depcvol));
 
   // create attributes space dimensions
@@ -327,60 +339,61 @@ void PlumeOutput::save(QEStime timeIn)
 
 void PlumeOutput::boxCount()
 {
+  /*
+    // for all particles see where they are relative to the concentration collection boxes
+    for (auto &par : *m_PGD->particles->tracer) {
+      // because particles all start out as active now, need to also check the release time
+      if (par.isActive) {
 
-  // for all particles see where they are relative to the concentration collection boxes
-  for (auto &par : *m_plume->particles->tracer) {
-    // because particles all start out as active now, need to also check the release time
-    if (par.isActive) {
+        // Calculate which collection box this particle is currently in.
+        // The method is the same as the setInterp3Dindexing() function in the Eulerian class:
+        //  Correct the particle position by the bounding box starting edge
+        //  then divide by the dx of the boxes plus a small number, running a floor function on the result
+        //  to get the index of the nearest concentration box node in the negative direction.
+        //  No need to calculate the fractional distance between nearest nodes since not interpolating.
+        // Because the particle position is offset by the bounding box starting edge,
+        //  particles in a spot to the left of the box will have a negative index
+        //  and particles in a spot to the right of the box will have an index greater than the number of boxes.
+        // Because dividing is not just the box size, but is the box size plus a really small number,
+        //  particles are considered in a box if they are on the left hand node to the right hand node
+        //  so particles go outside the box if their indices are at nx-2, not nx-1.
 
-      // Calculate which collection box this particle is currently in.
-      // The method is the same as the setInterp3Dindexing() function in the Eulerian class:
-      //  Correct the particle position by the bounding box starting edge
-      //  then divide by the dx of the boxes plus a small number, running a floor function on the result
-      //  to get the index of the nearest concentration box node in the negative direction.
-      //  No need to calculate the fractional distance between nearest nodes since not interpolating.
-      // Because the particle position is offset by the bounding box starting edge,
-      //  particles in a spot to the left of the box will have a negative index
-      //  and particles in a spot to the right of the box will have an index greater than the number of boxes.
-      // Because dividing is not just the box size, but is the box size plus a really small number,
-      //  particles are considered in a box if they are on the left hand node to the right hand node
-      //  so particles go outside the box if their indices are at nx-2, not nx-1.
+        // x-direction
+        int idx = floor((par.xPos - lBndx) / (boxSizeX + 1e-9));
+        // y-direction
+        int idy = floor((par.yPos - lBndy) / (boxSizeY + 1e-9));
+        // z-direction
+        int idz = floor((par.zPos - lBndz) / (boxSizeZ + 1e-9));
 
-      // x-direction
-      int idx = floor((par.xPos - lBndx) / (boxSizeX + 1e-9));
-      // y-direction
-      int idy = floor((par.yPos - lBndy) / (boxSizeY + 1e-9));
-      // z-direction
-      int idz = floor((par.zPos - lBndz) / (boxSizeZ + 1e-9));
+        // now, does the particle land in one of the boxes?
+        // if so, add one particle to that box count
+        if (idx >= 0 && idx <= nBoxesX - 1 && idy >= 0 && idy <= nBoxesY - 1 && idz >= 0 && idz <= nBoxesZ - 1) {
+          int id = idz * nBoxesY * nBoxesX + idy * nBoxesX + idx;
+          pBox[id]++;
+          conc[id] = conc[id] + par.m * par.wdecay * timeStep;
+        }
 
-      // now, does the particle land in one of the boxes?
-      // if so, add one particle to that box count
-      if (idx >= 0 && idx <= nBoxesX - 1 && idy >= 0 && idy <= nBoxesY - 1 && idz >= 0 && idz <= nBoxesZ - 1) {
-        int id = idz * nBoxesY * nBoxesX + idy * nBoxesX + idx;
-        pBox[id]++;
-        conc[id] = conc[id] + par.m * par.wdecay * timeStep;
-      }
+      }// is active == true
 
-    }// is active == true
+    }// particle loop
 
-  }// particle loop
+    for (auto &par : *m_PGD->particles->heavy) {
+      // because particles all start out as active now, need to also check the release time
+      if (par.isActive) {
+        // x-direction
+        int idx = floor((par.xPos - lBndx) / (boxSizeX + 1e-9));
+        // y-direction
+        int idy = floor((par.yPos - lBndy) / (boxSizeY + 1e-9));
+        // z-direction
+        int idz = floor((par.zPos - lBndz) / (boxSizeZ + 1e-9));
 
-  for (auto &par : *m_plume->particles->heavy) {
-    // because particles all start out as active now, need to also check the release time
-    if (par.isActive) {
-      // x-direction
-      int idx = floor((par.xPos - lBndx) / (boxSizeX + 1e-9));
-      // y-direction
-      int idy = floor((par.yPos - lBndy) / (boxSizeY + 1e-9));
-      // z-direction
-      int idz = floor((par.zPos - lBndz) / (boxSizeZ + 1e-9));
-
-      // now, does the particle land in one of the boxes?
-      if (idx >= 0 && idx <= nBoxesX - 1 && idy >= 0 && idy <= nBoxesY - 1 && idz >= 0 && idz <= nBoxesZ - 1) {
-        int id = idz * nBoxesY * nBoxesX + idy * nBoxesX + idx;
-        pBox[id]++;
-        conc[id] = conc[id] + par.m * par.wdecay * timeStep;
-      }
-    }// is active == true
-  }// particle loop
+        // now, does the particle land in one of the boxes?
+        if (idx >= 0 && idx <= nBoxesX - 1 && idy >= 0 && idy <= nBoxesY - 1 && idz >= 0 && idz <= nBoxesZ - 1) {
+          int id = idz * nBoxesY * nBoxesX + idy * nBoxesX + idx;
+          pBox[id]++;
+          conc[id] = conc[id] + par.m * par.wdecay * timeStep;
+        }
+      }// is active == true
+    }// particle loop
+    */
 }

@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
     PGD = new PLUMEGeneralData(PID, WGD, TGD);
 
     // always supposed to output lagrToEulOutput data
-    // outputPlume.push_back(new PlumeOutput(PID, plume, arguments.outputPlumeFile));
+    outputPlume.push_back(new PlumeOutput(PID, PGD, arguments.outputPlumeFile));
     // if (arguments.doParticleDataOutput) {
     //  outputPlume.push_back(new PlumeOutputParticleData(PID, plume, arguments.outputParticleDataFile));
     //}

@@ -93,7 +93,7 @@ int main(int argc, char **argv)
   // create output instance
   std::vector<QESNetCDFOutput *> outputVec;
   // always supposed to output lagrToEulOutput data
-  outputVec.push_back(new PlumeOutput(PID, plume, arguments.outputFile));
+  // outputVec.push_back(new PlumeOutput(PID, plume, arguments.outputFile));
   if (arguments.doParticleDataOutput) {
     outputVec.push_back(new PlumeOutputParticleData(PID, plume, arguments.outputParticleDataFile));
   }

@@ -44,17 +44,16 @@ QESNetCDFOutput::QESNetCDFOutput(const std::string &output_file)
   : NetCDFOutput(output_file)
 {
   NcDim_t = addDimension("t");
-  NcDim_tstr = addDimension("dateStrLen", dateStrLen);
-
   std::vector<NcDim> dim_vect_t;
   dim_vect_t.push_back(NcDim_t);
   addField("t", "s", "time since start of simulation", dim_vect_t, ncDouble);
+  output_dimensions.insert({ "t", NcDim_t });
 
+  NcDim_tstr = addDimension("dateStrLen", dateStrLen);
   std::vector<NcDim> dim_vect_tstr;
   dim_vect_tstr.push_back(NcDim_t);
   dim_vect_tstr.push_back(NcDim_tstr);
   addField("timestamp", "--", "date time using format: YYYY-MM-DDThh:mm:ss", dim_vect_tstr, ncChar);
-
   timestamp_out.resize(dateStrLen, '0');
 }
 
@@ -83,6 +82,152 @@ bool QESNetCDFOutput::validateFileOptions()
   }
 
   return doContains;
+}
+
+//----------------------------------------
+// create dimension
+// -> int
+void QESNetCDFOutput::createDimension(const std::string &name,
+                                      const std::string &long_name,
+                                      const std::string &units,
+                                      std::vector<int> *data)
+{
+  NcDim ncDim = addDimension(name, data->size());
+  std::vector<NcDim> dim_vect;
+  dim_vect.push_back(ncDim);
+  createAttVector(name, long_name, units, dim_vect, data);
+  if (output_dimensions.find(name) == output_dimensions.end()) {
+    output_dimensions.insert({ name, ncDim });
+  } else {
+    std::cerr << "[ERROR] Dimension already exits" << std::endl;
+    exit(1);
+  }
+}
+// -> float
+void QESNetCDFOutput::createDimension(const std::string &name,
+                                      const std::string &long_name,
+                                      const std::string &units,
+                                      std::vector<float> *data)
+{
+  NcDim ncDim = addDimension(name, data->size());
+  std::vector<NcDim> dim_vect;
+  dim_vect.push_back(ncDim);
+  createAttVector(name, long_name, units, dim_vect, data);
+  if (output_dimensions.find(name) == output_dimensions.end()) {
+    output_dimensions.insert({ name, ncDim });
+  } else {
+    std::cerr << "[ERROR] Dimension already exits" << std::endl;
+    exit(1);
+  }
+}
+// -> double
+void QESNetCDFOutput::createDimension(const std::string &name,
+                                      const std::string &long_name,
+                                      const std::string &units,
+                                      std::vector<double> *data)
+{
+  NcDim ncDim = addDimension(name, data->size());
+  std::vector<NcDim> dim_vect;
+  dim_vect.push_back(ncDim);
+  createAttVector(name, long_name, units, dim_vect, data);
+  if (output_dimensions.find(name) == output_dimensions.end()) {
+    output_dimensions.insert({ name, ncDim });
+  } else {
+    std::cerr << "[ERROR] Dimension already exits" << std::endl;
+    exit(1);
+  }
+}
+// sets of dimension
+void QESNetCDFOutput::createDimensionSet(const std::string &name,
+                                         const std::vector<std::string> &dims)
+{
+  if (output_dimension_sets.find(name) == output_dimension_sets.end()) {
+    std::vector<NcDim> dim_vect;
+    for (auto s : dims) {
+      if (output_dimensions.find(s) != output_dimensions.end()) {
+        dim_vect.push_back(output_dimensions[s]);
+      } else {
+        std::cerr << "[ERROR] Dimension does not exits" << std::endl;
+        exit(1);
+      }
+    }
+    output_dimension_sets.insert({ name, dim_vect });
+  } else {
+    std::cerr << "[ERROR] Set of dimensions already exits" << std::endl;
+    exit(1);
+  }
+}
+
+//----------------------------------------
+// create attribute scalar
+// -> int
+void QESNetCDFOutput::createAttScalar(const std::string &name,
+                                      const std::string &long_name,
+                                      const std::string &units,
+                                      const std::string &dims,
+                                      int *data)
+{
+  // FM -> here I do not know what is the best way to add the ref to data.
+  AttScalarInt att = { data, name, long_name, units, { output_dimensions[dims] } };
+  map_att_scalar_int.emplace(name, att);
+}
+// -> float
+void QESNetCDFOutput::createAttScalar(const std::string &name,
+                                      const std::string &long_name,
+                                      const std::string &units,
+                                      const std::string &dims,
+                                      float *data)
+{
+  // FM -> here I do not know what is the best way to add the ref to data.
+  AttScalarFlt att = { data, name, long_name, units, { output_dimensions[dims] } };
+  map_att_scalar_flt.emplace(name, att);
+}
+// -> double
+void QESNetCDFOutput::createAttScalar(const std::string &name,
+                                      const std::string &long_name,
+                                      const std::string &units,
+                                      const std::string &dims,
+                                      double *data)
+{
+  // FM -> here I do not know what is the best way to add the ref to data.
+  AttScalarDbl att = { data, name, long_name, units, { output_dimensions[dims] } };
+  map_att_scalar_dbl.emplace(name, att);
+}
+
+//----------------------------------------
+// create attribute Vector
+// -> int
+void QESNetCDFOutput::createAttVector(const std::string &name,
+                                      const std::string &long_name,
+                                      const std::string &units,
+                                      const std::string &dims,
+                                      std::vector<int> *data)
+{
+  // FM -> here I do not know what is the best way to add the ref to data.
+  AttVectorInt att = { data, name, long_name, units, output_dimension_sets[dims] };
+  map_att_vector_int.emplace(name, att);
+}
+// -> float
+void QESNetCDFOutput::createAttVector(const std::string &name,
+                                      const std::string &long_name,
+                                      const std::string &units,
+                                      const std::string &dims,
+                                      std::vector<float> *data)
+{
+  // FM -> here I do not know what is the best way to add the ref to data.
+  AttVectorFlt att = { data, name, long_name, units, output_dimension_sets[dims] };
+  map_att_vector_flt.emplace(name, att);
+}
+// -> double
+void QESNetCDFOutput::createAttVector(const std::string &name,
+                                      const std::string &long_name,
+                                      const std::string &units,
+                                      const std::string &dims,
+                                      std::vector<double> *data)
+{
+  // FM -> here I do not know what is the best way to add the ref to data.
+  AttVectorDbl att = { data, name, long_name, units, output_dimension_sets[dims] };
+  map_att_vector_dbl.emplace(name, att);
 }
 
 //----------------------------------------
@@ -183,9 +328,7 @@ void QESNetCDFOutput::addOutputFields()
   */
 
   // create list of fields to save base on output_fields
-  for (size_t i = 0; i < output_fields.size(); i++) {
-    std::string key = output_fields[i];
-
+  for (const auto &key : output_fields) {
     if (map_att_scalar_int.count(key)) {
       // scalar int
       output_scalar_int.push_back(map_att_scalar_int[key]);
