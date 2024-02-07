@@ -38,6 +38,7 @@ SET( qesPlumeCoreSources
 
     HeavyParticle_Model.cpp
     HeavyParticle_Source.cpp
+    HeavyParticle_Concentration.cpp
 
     Particle.hpp
     ParticleFactories.hpp
