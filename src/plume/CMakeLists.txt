@@ -34,7 +34,7 @@ SET( qesPlumeCoreSources
 
     TracerParticle_Model.cpp
     TracerParticle_Source.cpp
-    TracerParticle_Statistics.cpp
+    TracerParticle_Concentration.cpp
 
     HeavyParticle_Model.cpp
     HeavyParticle_Source.cpp

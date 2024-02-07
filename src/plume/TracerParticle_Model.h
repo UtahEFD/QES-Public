@@ -89,8 +89,6 @@ public:
   void addSources(std::vector<TracerParticle_Source *>);
 
   // friend class declaration
-  // TracerParticle_Statistics *stats = nullptr;
-  // friend class TracerParticle_Statistics;
   friend class TracerParticle_Concentration;
 
 protected:

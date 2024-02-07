@@ -60,32 +60,3 @@ public:
 protected:
   ManagedContainer<TracerParticle> *m_particles;
 };
-
-class TracerParticle_Statistics
-{
-public:
-  TracerParticle_Statistics(const PlumeInputData *PID, PLUMEGeneralData *PGD, TracerParticle_Model *pm)
-  {
-    averagingStartTime = PGD->getSimTimeStart() + PID->colParams->averagingStartTime;
-    averagingPeriod = PID->colParams->averagingPeriod;
-    nextOutputTime = averagingStartTime + averagingPeriod;
-    concentration = new TracerParticle_Concentration(PID, pm);
-  }
-
-  void compute(QEStime &time,
-               const float &dt,
-               WINDSGeneralData *WGD,
-               TURBGeneralData *TGD,
-               PLUMEGeneralData *PGD,
-               const TracerParticle_Model *);
-
-  TracerParticle_Concentration *concentration;
-
-  QEStime averagingStartTime;
-  QEStime nextOutputTime;
-  float averagingPeriod;
-  float ongoingAveragingTime;
-
-private:
-  TracerParticle_Statistics() = default;
-};

@@ -32,35 +32,7 @@
  * @brief This class represents information stored for each particle
  */
 
-#include "TracerParticle_Statistics.h"
-
-void TracerParticle_Statistics::compute(QEStime &timeIn,
-                                        const float &timeStep,
-                                        WINDSGeneralData *WGD,
-                                        TURBGeneralData *TGD,
-                                        PLUMEGeneralData *PGD,
-                                        const TracerParticle_Model *pm)
-{
-  // nextOutputTime = averagingStartTime + averagingPeriod;
-
-  if (timeIn > averagingStartTime) {
-    // incrementation of the averaging time
-    ongoingAveragingTime += timeStep;
-    concentration->collect(timeIn, timeStep);
-
-    if (timeIn >= nextOutputTime) {
-      // compute the stats
-      concentration->compute(timeIn);
-
-      // notify output
-
-      // reset variables
-      concentration->reset();
-
-      nextOutputTime = nextOutputTime + averagingPeriod;
-    }
-  }
-}
+#include "TracerParticle_Concentration.h"
 
 void TracerParticle_Concentration::collect(QEStime &timeIn, const float &timeStep)
 {

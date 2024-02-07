@@ -33,7 +33,7 @@
  */
 
 #include "TracerParticle_Model.h"
-#include "TracerParticle_Statistics.h"
+#include "TracerParticle_Concentration.h"
 
 #include "PlumeInputData.hpp"
 #include "PLUMEGeneralData.h"
