@@ -47,14 +47,15 @@
 #include "util/QESNetCDFOutput.h"
 #include "util/QEStime.h"
 
-class Plume;
+
 class PlumeInputData;
+class PLUMEGeneralData;
 
 class PlumeOutput : public QESNetCDFOutput
 {
 public:
   // specialized constructor
-  PlumeOutput(const PlumeInputData *PID, Plume *plume_ptr, std::string output_file);
+  PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, std::string output_file);
 
   // deconstructor
   ~PlumeOutput()
@@ -100,7 +101,7 @@ private:
   QEStime nextOutputTime;
 
   // pointer to the class that save needs to use to get the data for the concentration calculation
-  Plume *m_plume;
+  PLUMEGeneralData *m_PGD;
 
 
   // function for counting the number of particles in the sampling boxes
