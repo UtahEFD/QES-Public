@@ -64,7 +64,7 @@ public:
 
   void enroll(const std::string &key, Statistics *s);
 
-  void process(QEStime &, const float &);
+  void compute(QEStime &, const float &);
 
 protected:
   std::unordered_map<std::string, Statistics *> elements;

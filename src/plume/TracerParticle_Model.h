@@ -76,11 +76,11 @@ public:
               TURBGeneralData *TGD,
               PLUMEGeneralData *PGD) override;
 
-  void computeStatistics(QEStime &timeIn,
-                         const float &dt,
-                         WINDSGeneralData *WGD,
-                         TURBGeneralData *TGD,
-                         PLUMEGeneralData *PGD) override;
+  void process(QEStime &timeIn,
+               const float &dt,
+               WINDSGeneralData *WGD,
+               TURBGeneralData *TGD,
+               PLUMEGeneralData *PGD) override;
 
   int get_nbr_active() override { return (int)particles->get_nbr_active(); };
   int get_nbr_inserted() override { return (int)particles->get_nbr_inserted(); };

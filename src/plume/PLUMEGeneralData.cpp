@@ -295,7 +295,7 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd,
     simTime = simTimeCurr - simTimeStart;
 
     for (const auto &pm : models) {
-      pm.second->computeStatistics(simTimeCurr, timeRemainder, WGD, TGD, this);
+      pm.second->process(simTimeCurr, timeRemainder, WGD, TGD, this);
     }
 
     // netcdf output for a given simulation timestep
