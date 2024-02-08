@@ -224,5 +224,5 @@ protected:
 private:
   std::string timestamp;
   std::vector<char> timestamp_out; /**< :document this: */
-  int output_counter = 0; /**< :document this: */
+  // int output_counter = 0; /**< :document this: */
 };
