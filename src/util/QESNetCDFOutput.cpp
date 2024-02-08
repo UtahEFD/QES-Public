@@ -92,12 +92,15 @@ void QESNetCDFOutput::createDimension(const std::string &name,
                                       const std::string &units,
                                       std::vector<int> *data)
 {
-  NcDim ncDim = addDimension(name, data->size());
-  std::vector<NcDim> dim_vect;
-  dim_vect.push_back(ncDim);
-  createAttVector(name, long_name, units, dim_vect, data);
   if (output_dimensions.find(name) == output_dimensions.end()) {
+    NcDim ncDim = addDimension(name, data->size());
+    std::vector<NcDim> dim_vect;
+    dim_vect.push_back(ncDim);
+    AttVectorInt att = { data, name, long_name, units, dim_vect };
+    addField(att.name, att.units, att.long_name, att.dimensions, ncInt);
+    // map_att_vector_int.emplace(name, att);
     output_dimensions.insert({ name, ncDim });
+    // set_all_output_fields.insert(name);
   } else {
     std::cerr << "[ERROR] Dimension already exits" << std::endl;
     exit(1);
@@ -109,12 +112,15 @@ void QESNetCDFOutput::createDimension(const std::string &name,
                                       const std::string &units,
                                       std::vector<float> *data)
 {
-  NcDim ncDim = addDimension(name, data->size());
-  std::vector<NcDim> dim_vect;
-  dim_vect.push_back(ncDim);
-  createAttVector(name, long_name, units, dim_vect, data);
   if (output_dimensions.find(name) == output_dimensions.end()) {
+    NcDim ncDim = addDimension(name, data->size());
+    std::vector<NcDim> dim_vect;
+    dim_vect.push_back(ncDim);
+    AttVectorFlt att = { data, name, long_name, units, dim_vect };
+    addField(att.name, att.units, att.long_name, att.dimensions, ncFloat);
+    // map_att_vector_flt.emplace(name, att);
     output_dimensions.insert({ name, ncDim });
+    // set_all_output_fields.insert(name);
   } else {
     std::cerr << "[ERROR] Dimension already exits" << std::endl;
     exit(1);
@@ -126,12 +132,15 @@ void QESNetCDFOutput::createDimension(const std::string &name,
                                       const std::string &units,
                                       std::vector<double> *data)
 {
-  NcDim ncDim = addDimension(name, data->size());
-  std::vector<NcDim> dim_vect;
-  dim_vect.push_back(ncDim);
-  createAttVector(name, long_name, units, dim_vect, data);
   if (output_dimensions.find(name) == output_dimensions.end()) {
+    NcDim ncDim = addDimension(name, data->size());
+    std::vector<NcDim> dim_vect;
+    dim_vect.push_back(ncDim);
+    AttVectorDbl att = { data, name, long_name, units, dim_vect };
+    // map_att_vector_dbl.emplace(name, att);
+    addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
     output_dimensions.insert({ name, ncDim });
+    // set_all_output_fields.insert(name);
   } else {
     std::cerr << "[ERROR] Dimension already exits" << std::endl;
     exit(1);
@@ -170,6 +179,7 @@ void QESNetCDFOutput::createAttScalar(const std::string &name,
   // FM -> here I do not know what is the best way to add the ref to data.
   AttScalarInt att = { data, name, long_name, units, { output_dimensions[dims] } };
   map_att_scalar_int.emplace(name, att);
+  set_all_output_fields.insert(name);
 }
 // -> float
 void QESNetCDFOutput::createAttScalar(const std::string &name,
@@ -181,6 +191,7 @@ void QESNetCDFOutput::createAttScalar(const std::string &name,
   // FM -> here I do not know what is the best way to add the ref to data.
   AttScalarFlt att = { data, name, long_name, units, { output_dimensions[dims] } };
   map_att_scalar_flt.emplace(name, att);
+  set_all_output_fields.insert(name);
 }
 // -> double
 void QESNetCDFOutput::createAttScalar(const std::string &name,
@@ -192,6 +203,7 @@ void QESNetCDFOutput::createAttScalar(const std::string &name,
   // FM -> here I do not know what is the best way to add the ref to data.
   AttScalarDbl att = { data, name, long_name, units, { output_dimensions[dims] } };
   map_att_scalar_dbl.emplace(name, att);
+  set_all_output_fields.insert(name);
 }
 
 //----------------------------------------
@@ -206,6 +218,7 @@ void QESNetCDFOutput::createAttVector(const std::string &name,
   // FM -> here I do not know what is the best way to add the ref to data.
   AttVectorInt att = { data, name, long_name, units, output_dimension_sets[dims] };
   map_att_vector_int.emplace(name, att);
+  set_all_output_fields.insert(name);
 }
 // -> float
 void QESNetCDFOutput::createAttVector(const std::string &name,
@@ -217,6 +230,7 @@ void QESNetCDFOutput::createAttVector(const std::string &name,
   // FM -> here I do not know what is the best way to add the ref to data.
   AttVectorFlt att = { data, name, long_name, units, output_dimension_sets[dims] };
   map_att_vector_flt.emplace(name, att);
+  set_all_output_fields.insert(name);
 }
 // -> double
 void QESNetCDFOutput::createAttVector(const std::string &name,
@@ -228,6 +242,7 @@ void QESNetCDFOutput::createAttVector(const std::string &name,
   // FM -> here I do not know what is the best way to add the ref to data.
   AttVectorDbl att = { data, name, long_name, units, output_dimension_sets[dims] };
   map_att_vector_dbl.emplace(name, att);
+  set_all_output_fields.insert(name);
 }
 
 //----------------------------------------
@@ -382,6 +397,95 @@ void QESNetCDFOutput::addOutputFields()
   // -> char
   for (const AttVectorChar &att : output_vector_char) {
     addField(att.name, att.units, att.long_name, att.dimensions, ncChar);
+  }
+}
+//----------------------------------------
+void QESNetCDFOutput::addOutputFields(const std::set<std::string> &new_fields)
+{
+  /*
+   * This function add the  fields to the output vectors
+   * and link them to the NetCDF.
+   *
+   * Since the type is not know, one needs to loop through
+   * the 6 output vector to find it.
+   *  - FMargairaz
+   */
+
+
+  // checking that all the fields are defined.
+  std::set<std::string> result;
+  std::set_difference(new_fields.begin(),
+                      new_fields.end(),
+                      set_all_output_fields.begin(),
+                      set_all_output_fields.end(),
+                      std::inserter(result, result.end()));
+
+  if (!result.empty()) {
+    std::cerr << "[ERROR] Fields ";
+    for (const std::string &r : result) { std::cerr << r << " "; }
+    std::cerr << "not defined" << std::endl;
+    exit(1);
+  }
+
+  // create list of fields to save base on output_fields
+  for (const auto &key : new_fields) {
+    if (map_att_scalar_int.count(key)) {
+      // scalar int
+      output_scalar_int.push_back(map_att_scalar_int[key]);
+      addField(map_att_scalar_int[key].name,
+               map_att_scalar_int[key].units,
+               map_att_scalar_int[key].long_name,
+               map_att_scalar_int[key].dimensions,
+               ncInt);
+    } else if (map_att_scalar_flt.count(key)) {
+      // scalar flt
+      output_scalar_flt.push_back(map_att_scalar_flt[key]);
+      addField(map_att_scalar_flt[key].name,
+               map_att_scalar_flt[key].units,
+               map_att_scalar_flt[key].long_name,
+               map_att_scalar_flt[key].dimensions,
+               ncFloat);
+    } else if (map_att_scalar_dbl.count(key)) {
+      // scalar dbl
+      output_scalar_dbl.push_back(map_att_scalar_dbl[key]);
+      addField(map_att_scalar_dbl[key].name,
+               map_att_scalar_dbl[key].units,
+               map_att_scalar_dbl[key].long_name,
+               map_att_scalar_dbl[key].dimensions,
+               ncDouble);
+    } else if (map_att_vector_int.count(key)) {
+      // vector int
+      output_vector_int.push_back(map_att_vector_int[key]);
+      addField(map_att_vector_int[key].name,
+               map_att_vector_int[key].units,
+               map_att_vector_int[key].long_name,
+               map_att_vector_int[key].dimensions,
+               ncInt);
+    } else if (map_att_vector_flt.count(key)) {
+      // vector flt
+      output_vector_flt.push_back(map_att_vector_flt[key]);
+      addField(map_att_vector_flt[key].name,
+               map_att_vector_flt[key].units,
+               map_att_vector_flt[key].long_name,
+               map_att_vector_flt[key].dimensions,
+               ncFloat);
+    } else if (map_att_vector_dbl.count(key)) {
+      // vector dbl
+      output_vector_dbl.push_back(map_att_vector_dbl[key]);
+      addField(map_att_vector_dbl[key].name,
+               map_att_vector_dbl[key].units,
+               map_att_vector_dbl[key].long_name,
+               map_att_vector_dbl[key].dimensions,
+               ncDouble);
+    } else if (map_att_vector_char.count(key)) {
+      // vector char
+      output_vector_char.push_back(map_att_vector_char[key]);
+      addField(map_att_vector_char[key].name,
+               map_att_vector_char[key].units,
+               map_att_vector_char[key].long_name,
+               map_att_vector_char[key].dimensions,
+               ncChar);
+    }
   }
 }
 

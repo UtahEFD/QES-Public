@@ -167,6 +167,7 @@ protected:
 
   // add fields based on output_fields
   void addOutputFields();
+  void addOutputFields(const std::set<std::string> &);
   // removed field
   void rmOutputField(const std::string &);
   void rmTimeIndepFields();
@@ -184,6 +185,8 @@ protected:
   QEStime timeCurrent;
   bool flagStartTimeSet = false;
   double time = 0; /**< :document this: */
+
+  std::set<std::string> set_all_output_fields;
 
   std::vector<std::string> all_output_fields;
   std::vector<std::string> output_fields;
