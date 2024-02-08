@@ -49,7 +49,7 @@ private:
   WINDSOutputWorkspace() {}
 
 public:
-  WINDSOutputWorkspace(WINDSGeneralData *, std::string);
+  WINDSOutputWorkspace(WINDSGeneralData *, const std::string &);
   ~WINDSOutputWorkspace()
   {}
 
