@@ -517,7 +517,8 @@ void QESNetCDFOutput::saveOutputFields()
     FMargairaz
   */
 
-  // std::cout << fields["t"].getDim(0).getSize() << std::endl;
+  size_t output_counter = fields["t"].getDim(0).getSize();
+  //  std::cout << "[TEST OUTPUT] " << fields["t"].getDim(0).getSize() << std::endl;
 
   if (output_counter == 0 && !flagStartTimeSet) {
     setStartTime(timeCurrent);
