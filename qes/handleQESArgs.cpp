@@ -68,6 +68,9 @@ void QESArgs::processArguments(int argc, char *argv[])
       compTurb = true;
       turbOutput = false;
     }
+  } else {
+    compTurb = true;
+    turbOutput = true;
   }
 
   verbose = isSet("verbose");

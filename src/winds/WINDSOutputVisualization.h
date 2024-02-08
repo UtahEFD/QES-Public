@@ -52,7 +52,7 @@ private:
   WINDSOutputVisualization() {}
 
 public:
-  WINDSOutputVisualization(WINDSGeneralData *, WINDSInputData *, std::string);
+  WINDSOutputVisualization(WINDSGeneralData *, WINDSInputData *, const std::string &);
   ~WINDSOutputVisualization()
   {}
 

@@ -36,10 +36,12 @@
 
 #include "WINDSOutputVisualization.h"
 
-WINDSOutputVisualization::WINDSOutputVisualization(WINDSGeneralData *WGD, WINDSInputData *WID, std::string output_file)
+WINDSOutputVisualization::WINDSOutputVisualization(WINDSGeneralData *WGD,
+                                                   WINDSInputData *WID,
+                                                   const std::string &output_file)
   : QESNetCDFOutput(output_file)
 {
-  std::cout << "[Output] \t Getting output fields for Vizualization file" << std::endl;
+  std::cout << "[Output] \t Getting output fields for visualisation file" << std::endl;
 
   setAllOutputFields();
 
@@ -56,13 +58,12 @@ WINDSOutputVisualization::WINDSOutputVisualization(WINDSGeneralData *WGD, WINDSI
   }
 
   if (!valid_output) {
-    std::cerr << "Error: invalid output fields for visulization fields output\n";
+    std::cerr << "Error: invalid output fields for visualization fields output\n";
     exit(EXIT_FAILURE);
   }
 
   // copy of WGD pointer
   m_WGD = WGD;
-
 
   int nx = m_WGD->nx;
   int ny = m_WGD->ny;
@@ -96,42 +97,24 @@ WINDSOutputVisualization::WINDSOutputVisualization(WINDSGeneralData *WGD, WINDSI
 
   // set cell-centered data dimensions
   // space dimensions
-  NcDim NcDim_x = addDimension("x", m_WGD->nx - 1);
-  NcDim NcDim_y = addDimension("y", m_WGD->ny - 1);
-  NcDim NcDim_z = addDimension("z", m_WGD->nz - 2);
-
-  // create attributes space dimensions
-  std::vector<NcDim> dim_vect_x;
-  dim_vect_x.push_back(NcDim_x);
-  createAttVector("x", "x-distance", "m", dim_vect_x, &x_out);
-  std::vector<NcDim> dim_vect_y;
-  dim_vect_y.push_back(NcDim_y);
-  createAttVector("y", "y-distance", "m", dim_vect_y, &y_out);
-  std::vector<NcDim> dim_vect_z;
-  dim_vect_z.push_back(NcDim_z);
-  createAttVector("z", "z-distance", "m", dim_vect_z, &z_out);
+  createDimension("x", "x-distance", "m", &x_out);
+  createDimension("y", "y-distance", "m", &y_out);
+  createDimension("z", "z-distance", "m", &z_out);
 
   // create 2D vector (time indep)
-  std::vector<NcDim> dim_vect_2d;
-  dim_vect_2d.push_back(NcDim_y);
-  dim_vect_2d.push_back(NcDim_x);
+  createDimensionSet("terrain-grid", { "y", "x" });
   // create attributes
-  createAttVector("terrain", "terrain height", "m", dim_vect_2d, &(m_WGD->terrain));
+  createAttVector("terrain", "terrain height", "m", "terrain-grid", &(m_WGD->terrain));
 
-  // create 3D vector (time dep)
-  std::vector<NcDim> dim_vect_3d;
-  dim_vect_3d.push_back(NcDim_t);
-  dim_vect_3d.push_back(NcDim_z);
-  dim_vect_3d.push_back(NcDim_y);
-  dim_vect_3d.push_back(NcDim_x);
+  createDimensionSet("wind-grid", { "t", "z", "y", "x" });
   // create attributes
-  createAttVector("u", "x-component velocity", "m s-1", dim_vect_3d, &u_out);
-  createAttVector("v", "y-component velocity", "m s-1", dim_vect_3d, &v_out);
-  createAttVector("w", "z-component velocity", "m s-1", dim_vect_3d, &w_out);
-  createAttVector("mag", "velocity magnitude", "m s-1", dim_vect_3d, &mag_out);
+  createAttVector("u", "x-component velocity", "m s-1", "wind-grid", &u_out);
+  createAttVector("v", "y-component velocity", "m s-1", "wind-grid", &v_out);
+  createAttVector("w", "z-component velocity", "m s-1", "wind-grid", &w_out);
+  createAttVector("mag", "velocity magnitude", "m s-1", "wind-grid", &mag_out);
 
-  createAttVector("icell", "icell flag value", "--", dim_vect_3d, &icellflag_out);
-  createAttVector("icellInitial", "icell flag value", "--", dim_vect_3d, &icellflag2_out);
+  createAttVector("icell", "icell flag value", "--", "wind-grid", &icellflag_out);
+  createAttVector("icellInitial", "icell flag value", "--", "wind-grid", &icellflag2_out);
 
   // create output fields
   addOutputFields();
@@ -140,7 +123,7 @@ WINDSOutputVisualization::WINDSOutputVisualization(WINDSGeneralData *WGD, WINDSI
 void WINDSOutputVisualization::setAllOutputFields()
 {
   all_output_fields.clear();
-  // all possible output fields need to be add to this list
+  // all possible output fields need to be added to this list
   all_output_fields = { "x",
                         "y",
                         "z",

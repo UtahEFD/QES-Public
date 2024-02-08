@@ -36,7 +36,7 @@
 
 #include "WINDSOutputWorkspace.h"
 
-WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, std::string output_file)
+WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, const std::string &output_file)
   : QESNetCDFOutput(output_file)
 {
   std::cout << "[Output] \t Setting fields of workspace file" << std::endl;
@@ -56,13 +56,13 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, std::string ou
   // Location of cell centers in x-dir
   m_x.resize(nx - 1);
   for (auto i = 0; i < nx - 1; i++) {
-    //x_cc[i] = (i + 0.5) * m_WGD->dx;
+    // x_cc[i] = (i + 0.5) * m_WGD->dx;
     m_x[i] = m_WGD->x[i];
   }
   // Location of cell centers in y-dir
   m_y.resize(ny - 1);
   for (auto j = 0; j < ny - 1; j++) {
-    //y_cc[j] = (j + 0.5) * m_WGD->dy;
+    // y_cc[j] = (j + 0.5) * m_WGD->dy;
     m_y[j] = m_WGD->y[j];
   }
   // Location of cell centers in z-dir
@@ -93,87 +93,58 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, std::string ou
 
   // set face-centered data dimensions
   // space dimensions
-  NcDim NcDim_x_fc = addDimension("x_face", m_WGD->nx);
-  NcDim NcDim_y_fc = addDimension("y_face", m_WGD->ny);
-  NcDim NcDim_z_fc = addDimension("z_face", m_WGD->nz);
-
-  // create attributes space dimensions
-  std::vector<NcDim> dim_vect_x_fc;
-  dim_vect_x_fc.push_back(NcDim_x_fc);
-  createAttVector("x_face", "x-face", "m", dim_vect_x_fc, &m_x_face);
-  std::vector<NcDim> dim_vect_y_fc;
-  dim_vect_y_fc.push_back(NcDim_y_fc);
-  createAttVector("y_face", "y-face", "m", dim_vect_y_fc, &m_y_face);
-  std::vector<NcDim> dim_vect_z_fc;
-  dim_vect_z_fc.push_back(NcDim_z_fc);
-  createAttVector("z_face", "z-face", "m", dim_vect_z_fc, &m_z_face);
+  createDimension("x_face", "x-face", "m", &m_x_face);
+  createDimension("y_face", "y-face", "m", &m_y_face);
+  createDimension("z_face", "z-face", "m", &m_z_face);
 
   // 3D vector dimension (time dep)
-  std::vector<NcDim> dim_vect_fc;
-  dim_vect_fc.push_back(NcDim_t);
-  dim_vect_fc.push_back(NcDim_z_fc);
-  dim_vect_fc.push_back(NcDim_y_fc);
-  dim_vect_fc.push_back(NcDim_x_fc);
+  createDimensionSet("face-grid", { "t", "z_face", "y_face", "x_face" });
   // create attributes
+  createAttVector("u", "x-component velocity", "m s-1", "face-grid", &(m_WGD->u));
+  createAttVector("v", "y-component velocity", "m s-1", "face-grid", &(m_WGD->v));
+  createAttVector("w", "z-component velocity", "m s-1", "face-grid", &(m_WGD->w));
 
-  createAttVector("u", "x-component velocity", "m s-1", dim_vect_fc, &(m_WGD->u));
-  createAttVector("v", "y-component velocity", "m s-1", dim_vect_fc, &(m_WGD->v));
-  createAttVector("w", "z-component velocity", "m s-1", dim_vect_fc, &(m_WGD->w));
-
-  createAttVector("u0", "x-component initial velocity", "m s-1", dim_vect_fc, &(m_WGD->u0));
-  createAttVector("v0", "y-component initial velocity", "m s-1", dim_vect_fc, &(m_WGD->v0));
-  createAttVector("w0", "z-component initial velocity", "m s-1", dim_vect_fc, &(m_WGD->w0));
+  createAttVector("u0", "x-component initial velocity", "m s-1", "face-grid", &(m_WGD->u0));
+  createAttVector("v0", "y-component initial velocity", "m s-1", "face-grid", &(m_WGD->v0));
+  createAttVector("w0", "z-component initial velocity", "m s-1", "face-grid", &(m_WGD->w0));
 
   // set cell-centered data dimensions
   // space dimensions
-  NcDim NcDim_x_cc = addDimension("x", m_WGD->nx - 1);
-  NcDim NcDim_y_cc = addDimension("y", m_WGD->ny - 1);
-  NcDim NcDim_z_cc = addDimension("z", m_WGD->nz - 1);
+  createDimension("x", "x-distance", "m", &m_x);
+  createDimension("y", "y-distance", "m", &m_y);
+  createDimension("z", "z-distance", "m", &m_z);
 
-  // create attributes space dimensions
-  std::vector<NcDim> dim_vect_x_cc;
-  dim_vect_x_cc.push_back(NcDim_x_cc);
-  createAttVector("x", "x-distance", "m", dim_vect_x_cc, &m_x);
-  std::vector<NcDim> dim_vect_y_cc;
-  dim_vect_y_cc.push_back(NcDim_y_cc);
-  createAttVector("y", "y-distance", "m", dim_vect_y_cc, &m_y);
-  std::vector<NcDim> dim_vect_z_cc;
-  dim_vect_z_cc.push_back(NcDim_z_cc);
-  createAttVector("z", "z-distance", "m", dim_vect_z_cc, &m_z);
-  createAttVector("dz_array", "dz size of the cells", "m", dim_vect_z_cc, &m_dz_array);
+  createDimensionSet("z-grid", { "z" });
+  createAttVector("dz_array", "dz size of the cells", "m", "z-grid", &m_dz_array);
 
   // create 2D vector (surface, indep of time)
-  std::vector<NcDim> dim_vect_2d;
-  dim_vect_2d.push_back(NcDim_y_cc);
-  dim_vect_2d.push_back(NcDim_x_cc);
+  createDimensionSet("terrain-grid", { "y", "x" });
   // create attributes
-  createAttVector("terrain", "terrain height", "m", dim_vect_2d, &(m_WGD->terrain));
-  createAttVector("z0_u", "terrain areo roughness, u", "m", dim_vect_2d, &(m_WGD->z0_domain_u));
-  createAttVector("z0_v", "terrain areo roughness, v", "m", dim_vect_2d, &(m_WGD->z0_domain_v));
+  createAttVector("terrain", "terrain height", "m", "terrain-grid", &(m_WGD->terrain));
+  createAttVector("z0_u", "terrain aerodynamic roughness, u", "m", "terrain-grid", &(m_WGD->z0_domain_u));
+  createAttVector("z0_v", "terrain aerodynamic roughness, v", "m", "terrain-grid", &(m_WGD->z0_domain_v));
 
-  createAttVector("mixlength", "distance to nearest object", "m", { NcDim_z_cc, NcDim_y_cc, NcDim_x_cc }, &(m_WGD->mixingLengths));
+  // 3D vector dimension
+  createDimensionSet("cell-grid-no-time", { "z", "y", "x" });
+  // create attributes
+  createAttVector("mixlength", "distance to nearest object", "m", "cell-grid-no-time", &(m_WGD->mixingLengths));
 
   // 3D vector dimension (time dep)
-  std::vector<NcDim> dim_vect_cc;
-  dim_vect_cc.push_back(NcDim_t);
-  dim_vect_cc.push_back(NcDim_z_cc);
-  dim_vect_cc.push_back(NcDim_y_cc);
-  dim_vect_cc.push_back(NcDim_x_cc);
-
+  createDimensionSet("cell-grid", { "t", "z", "y", "x" });
   // create attributes
-  createAttVector("icellflag", "icell flag value", "--", dim_vect_cc, &(m_WGD->icellflag));
+  createAttVector("icellflag", "icell flag value", "--", "cell-grid", &(m_WGD->icellflag));
 
   // attributes for coefficients for SOR solver
-  createAttVector("e", "e cut-cell coefficient", "--", dim_vect_cc, &(m_WGD->e));
-  createAttVector("f", "f cut-cell coefficient", "--", dim_vect_cc, &(m_WGD->f));
-  createAttVector("g", "g cut-cell coefficient", "--", dim_vect_cc, &(m_WGD->g));
-  createAttVector("h", "h cut-cell coefficient", "--", dim_vect_cc, &(m_WGD->h));
-  createAttVector("m", "m cut-cell coefficient", "--", dim_vect_cc, &(m_WGD->m));
-  createAttVector("n", "n cut-cell coefficient", "--", dim_vect_cc, &(m_WGD->n));
+  createAttVector("e", "e cut-cell coefficient", "--", "cell-grid", &(m_WGD->e));
+  createAttVector("f", "f cut-cell coefficient", "--", "cell-grid", &(m_WGD->f));
+  createAttVector("g", "g cut-cell coefficient", "--", "cell-grid", &(m_WGD->g));
+  createAttVector("h", "h cut-cell coefficient", "--", "cell-grid", &(m_WGD->h));
+  createAttVector("m", "m cut-cell coefficient", "--", "cell-grid", &(m_WGD->m));
+  createAttVector("n", "n cut-cell coefficient", "--", "cell-grid", &(m_WGD->n));
 
   // attribute for the volume fraction (cut-cell)
-  createAttVector("building_volume_frac", "building volume fraction", "--", dim_vect_cc, &(m_WGD->building_volume_frac));
-  createAttVector("terrain_volume_frac", "terrain volume fraction", "--", dim_vect_cc, &(m_WGD->terrain_volume_frac));
+  createAttVector("building_volume_frac", "building volume fraction", "--", "cell-grid", &(m_WGD->building_volume_frac));
+  createAttVector("terrain_volume_frac", "terrain volume fraction", "--", "cell-grid", &(m_WGD->terrain_volume_frac));
 
   // create output fields
   addOutputFields();
@@ -187,8 +158,8 @@ void WINDSOutputWorkspace::save(QEStime timeOut)
   // set time
   timeCurrent = timeOut;
 
-  //std::string s = timeOut.getTimestamp();
-  //std::copy(s.begin(), s.end(), timestamp.begin());
+  // std::string s = timeOut.getTimestamp();
+  // std::copy(s.begin(), s.end(), timestamp.begin());
 
   // save fields
   saveOutputFields();
