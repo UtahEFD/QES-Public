@@ -40,10 +40,6 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, const std::str
   : QESNetCDFOutput(output_file)
 {
   std::cout << "[Output] \t Setting fields of workspace file" << std::endl;
-  setAllOutputFields();
-
-  // set list of fields to save, no option available for this file
-  output_fields = all_output_fields;
 
   // copy of WGD pointer
   m_WGD = WGD;
@@ -146,8 +142,7 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, const std::str
   createAttVector("building_volume_frac", "building volume fraction", "--", "cell-grid", &(m_WGD->building_volume_frac));
   createAttVector("terrain_volume_frac", "terrain volume fraction", "--", "cell-grid", &(m_WGD->terrain_volume_frac));
 
-  // create output fields
-  addOutputFields();
+  addOutputFields(set_all_output_fields);
 }
 
 
