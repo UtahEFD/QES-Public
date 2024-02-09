@@ -94,13 +94,11 @@ void QESNetCDFOutput::createDimension(const std::string &name,
 {
   if (output_dimensions.find(name) == output_dimensions.end()) {
     NcDim ncDim = addDimension(name, data->size());
-    std::vector<NcDim> dim_vect;
-    dim_vect.push_back(ncDim);
-    AttVectorInt att = { data, name, long_name, units, dim_vect };
-    addField(att.name, att.units, att.long_name, att.dimensions, ncInt);
-    // map_att_vector_int.emplace(name, att);
+    std::vector<NcDim> dimensions;
+    dimensions.push_back(ncDim);
+    addField(name, units, long_name, dimensions, ncInt);
+    saveField2D(name, *data);
     output_dimensions.insert({ name, ncDim });
-    // set_all_output_fields.insert(name);
   } else {
     std::cerr << "[ERROR] Dimension already exits" << std::endl;
     exit(1);
@@ -114,13 +112,11 @@ void QESNetCDFOutput::createDimension(const std::string &name,
 {
   if (output_dimensions.find(name) == output_dimensions.end()) {
     NcDim ncDim = addDimension(name, data->size());
-    std::vector<NcDim> dim_vect;
-    dim_vect.push_back(ncDim);
-    AttVectorFlt att = { data, name, long_name, units, dim_vect };
-    addField(att.name, att.units, att.long_name, att.dimensions, ncFloat);
-    // map_att_vector_flt.emplace(name, att);
+    std::vector<NcDim> dimensions;
+    dimensions.push_back(ncDim);
+    addField(name, units, long_name, dimensions, ncFloat);
+    saveField2D(name, *data);
     output_dimensions.insert({ name, ncDim });
-    // set_all_output_fields.insert(name);
   } else {
     std::cerr << "[ERROR] Dimension already exits" << std::endl;
     exit(1);
@@ -134,11 +130,10 @@ void QESNetCDFOutput::createDimension(const std::string &name,
 {
   if (output_dimensions.find(name) == output_dimensions.end()) {
     NcDim ncDim = addDimension(name, data->size());
-    std::vector<NcDim> dim_vect;
-    dim_vect.push_back(ncDim);
-    AttVectorDbl att = { data, name, long_name, units, dim_vect };
-    // map_att_vector_dbl.emplace(name, att);
-    addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
+    std::vector<NcDim> dimensions;
+    dimensions.push_back(ncDim);
+    addField(name, units, long_name, dimensions, ncDouble);
+    saveField2D(name, *data);
     output_dimensions.insert({ name, ncDim });
     // set_all_output_fields.insert(name);
   } else {
