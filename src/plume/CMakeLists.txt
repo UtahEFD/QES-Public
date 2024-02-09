@@ -17,7 +17,6 @@ SET( qesPlumeCoreSources
     Concentration.cpp
     StatisticsDirector.cpp
 
-    Plume.cpp
     AdvectParticle.cpp
     DepositParticle.cpp
 

@@ -52,8 +52,10 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, std::
   m_PGD = PGD;
 
   // setup output frequency control information
+  setStartTime(m_PGD->getSimTimeStart());
   averagingStartTime = m_PGD->getSimTimeStart() + PID->colParams->averagingStartTime;
   averagingPeriod = PID->colParams->averagingPeriod;
+  nextOutputTime = averagingStartTime + averagingPeriod;
 
 #if 0 
   // !!! Because collection parameters could not know anything about simulation duration at parse time,
@@ -127,175 +129,12 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, std::
   }// else does divide evenly, no need to adjust anything so no else
 #endif
 
-  // set the initial next output time value
-  nextOutputTime = averagingStartTime + averagingPeriod;
-
-  /*
-  // need the simulation timeStep for use in concentration averaging
-  timeStep = PID->plumeParams->timeStep;
-
-
-  // --------------------------------------------------------
-  // setup information: sampling box/concentration
-  // --------------------------------------------------------
-
-  // Sampling box variables for calculating concentration data
-  nBoxesX = PID->colParams->nBoxesX;
-  nBoxesY = PID->colParams->nBoxesY;
-  nBoxesZ = PID->colParams->nBoxesZ;
-
-  lBndx = PID->colParams->boxBoundsX1;
-  uBndx = PID->colParams->boxBoundsX2;
-  lBndy = PID->colParams->boxBoundsY1;
-  uBndy = PID->colParams->boxBoundsY2;
-  lBndz = PID->colParams->boxBoundsZ1;
-  uBndz = PID->colParams->boxBoundsZ2;
-
-  boxSizeX = (uBndx - lBndx) / (nBoxesX);
-  boxSizeY = (uBndy - lBndy) / (nBoxesY);
-  boxSizeZ = (uBndz - lBndz) / (nBoxesZ);
-
-  volume = boxSizeX * boxSizeY * boxSizeZ;
-
-  // output concentration storage variables
-  xBoxCen.resize(nBoxesX);
-  yBoxCen.resize(nBoxesY);
-  zBoxCen.resize(nBoxesZ);
-  int zR = 0, yR = 0, xR = 0;
-  for (int k = 0; k < nBoxesZ; ++k) {
-    zBoxCen.at(k) = lBndz + (zR * boxSizeZ) + (boxSizeZ / 2.0);
-    zR++;
-  }
-  for (int j = 0; j < nBoxesY; ++j) {
-    yBoxCen.at(j) = lBndy + (yR * boxSizeY) + (boxSizeY / 2.0);
-    yR++;
-  }
-  for (int i = 0; i < nBoxesX; ++i) {
-    xBoxCen.at(i) = lBndx + (xR * boxSizeX) + (boxSizeX / 2.0);
-    xR++;
-  }
-
-  // initialization of the container
-  pBox.resize(nBoxesX * nBoxesY * nBoxesZ, 0);
-  conc.resize(nBoxesX * nBoxesY * nBoxesZ, 0.0);
-   */
-  
   // --------------------------------------------------------
   // setup information:
   // --------------------------------------------------------
-
-  /* moved to depostion class
-  int nbrFace = WGD->wall_below_indices.size()
-                + WGD->wall_above_indices.size()
-                + WGD->wall_back_indices.size()
-                + WGD->wall_front_indices.size()
-                + WGD->wall_left_indices.size()
-                + WGD->wall_right_indices.size();
-  */
-
-  // --------------------------------------------------------
-  // setup the netcdf output information storage
-  // --------------------------------------------------------
-
-  setStartTime(m_PGD->getSimTimeStart());
-
   for (const auto &pm : m_PGD->models) {
     pm.second->stats->setOutput(this);
   }
-  // setup desired output fields string
-  // output_fields = { "x", "y", "z", "pBox", "conc", "tAvg" };
-  // output_fields = { "x", "y", "z", "pBox", "conc", "tAvg", "xDep", "yDep", "zDep", "depcvol" };
-
-  // set data dimensions, which in this case are cell-centered dimensions
-  // space dimensions
-  // NcDim NcDim_x = addDimension("x", nBoxesX);
-  // NcDim NcDim_y = addDimension("y", nBoxesY);
-  // NcDim NcDim_z = addDimension("z", nBoxesZ);
-
-
-  // create attributes for time dimension
-  // std::vector<NcDim> dim_vect_t;
-  // dim_vect_t.push_back(NcDim_t);
-  // createAttScalar("tAvg", "Averaging time", "s", dim_vect_t, &ongoingAveragingTime);
-  /*
-  createField("tAvg", "Averaging time", "s", "t", &ongoingAveragingTime);
-
-  createDimension("x", "x-center collection box", "m", &xBoxCen);
-  createDimension("y", "y-center collection box", "m", &yBoxCen);
-  createDimension("z", "z-center collection box", "m", &zBoxCen);
-
-  createDimensionSet("concentration", { "t", "z", "y", "x" });
-
-  createField("pBox", "number of particle per box", "#ofPar", "concentration", &pBox);
-  createField("conc", "concentration", "g m-3", "concentration", &conc);
-*/
-  /*
-  // create attributes space dimensions
-  std::vector<NcDim> dim_vect_x;
-  dim_vect_x.push_back(NcDim_x);
-  createField("x", "x-center collection box", "m", dim_vect_x, &xBoxCen);
-  std::vector<NcDim> dim_vect_y;
-  dim_vect_y.push_back(NcDim_y);
-  createField("y", "y-center collection box", "m", dim_vect_y, &yBoxCen);
-  std::vector<NcDim> dim_vect_z;
-  dim_vect_z.push_back(NcDim_z);
-  createField("z", "z-center collection box", "m", dim_vect_z, &zBoxCen);
-
-  // create 3D vector and put in the dimensions (nt,nz,ny,nx).
-  // !!! make sure the order is specificall nt,nz,ny,nx in this spot,
-  //  the order doesn't seem to matter for other spots
-  std::vector<NcDim> dim_vect_3d;
-  dim_vect_3d.push_back(NcDim_t);
-  dim_vect_3d.push_back(NcDim_z);
-  dim_vect_3d.push_back(NcDim_y);
-  dim_vect_3d.push_back(NcDim_x);
-
-
-  // create attributes for all output information
-  createField("pBox", "number of particle per box", "#ofPar", dim_vect_3d, &pBox);
-  createField("conc", "concentration", "g m-3", dim_vect_3d, &conc);
-*/
-  // face dimensions
-  // NcDim NcDim_nFace = addDimension("nFace", m_plume->deposition->nbrFace);
-  // NcDim NcDim_x = addDimension("x",nBoxesX);
-  // NcDim NcDim_y = addDimension("y",nBoxesY);
-  // NcDim NcDim_z = addDimension("z",nBoxesZ);
-
-  // NcDim NcDim_xDep = addDimension("xDep", m_PGD->deposition->x.size());
-  // NcDim NcDim_yDep = addDimension("yDep", m_PGD->deposition->y.size());
-  // NcDim NcDim_zDep = addDimension("zDep", m_PGD->deposition->z.size());
-
-  /*
-    std::vector<NcDim> dim_vect_xDep;
-    dim_vect_xDep.push_back(NcDim_xDep);
-    createField("xDep", "x-distance, deposition grid", "m", dim_vect_xDep, &(m_plume->deposition->x));
-    std::vector<NcDim> dim_vect_yDep;
-    dim_vect_yDep.push_back(NcDim_yDep);
-    createField("yDep", "y-distance, deposition grid", "m", dim_vect_yDep, &(m_plume->deposition->y));
-    std::vector<NcDim> dim_vect_zDep;
-    dim_vect_zDep.push_back(NcDim_zDep);
-    createField("zDep", "z-distance, deposition grid", "m", dim_vect_zDep, &(m_plume->deposition->z));
-
-    std::vector<NcDim> dim_vectDep;
-    dim_vectDep.push_back(NcDim_t);
-    dim_vectDep.push_back(NcDim_zDep);
-    dim_vectDep.push_back(NcDim_yDep);
-    dim_vectDep.push_back(NcDim_xDep);
-  */
-  // createField("depcvol", "deposited mass", "g", dim_vectDep, &(m_plume->deposition->depcvol));
-
-  // create attributes space dimensions
-  // std::vector<NcDim> dim_vect_face;
-  // dim_vect_face.push_back(NcDim_nFace);
-  // createField("xface","x-face","m",dim_vect_face,&xBoxCen);
-  // createField("yface","y-face","m",dim_vect_face,&xBoxCen);
-  // createField("zface","z-face","m",dim_vect_face,&xBoxCen);
-
-  // !!! make sure the order is specificall nt,nz,ny,nx in this spot,
-  //  the order doesn't seem to matter for other spots
-  // dim_vect_face.clear();
-  // dim_vect_face.push_back(NcDim_t);
-  // dim_vect_face.push_back(NcDim_nFace);
 
   // create output fields
   addOutputFields(set_all_output_fields);
@@ -320,64 +159,3 @@ void PlumeOutput::save(QEStime timeIn)
     }
   }
 };
-
-void PlumeOutput::boxCount()
-{
-  /*
-    // for all particles see where they are relative to the concentration collection boxes
-    for (auto &par : *m_PGD->particles->tracer) {
-      // because particles all start out as active now, need to also check the release time
-      if (par.isActive) {
-
-        // Calculate which collection box this particle is currently in.
-        // The method is the same as the setInterp3Dindexing() function in the Eulerian class:
-        //  Correct the particle position by the bounding box starting edge
-        //  then divide by the dx of the boxes plus a small number, running a floor function on the result
-        //  to get the index of the nearest concentration box node in the negative direction.
-        //  No need to calculate the fractional distance between nearest nodes since not interpolating.
-        // Because the particle position is offset by the bounding box starting edge,
-        //  particles in a spot to the left of the box will have a negative index
-        //  and particles in a spot to the right of the box will have an index greater than the number of boxes.
-        // Because dividing is not just the box size, but is the box size plus a really small number,
-        //  particles are considered in a box if they are on the left hand node to the right hand node
-        //  so particles go outside the box if their indices are at nx-2, not nx-1.
-
-        // x-direction
-        int idx = floor((par.xPos - lBndx) / (boxSizeX + 1e-9));
-        // y-direction
-        int idy = floor((par.yPos - lBndy) / (boxSizeY + 1e-9));
-        // z-direction
-        int idz = floor((par.zPos - lBndz) / (boxSizeZ + 1e-9));
-
-        // now, does the particle land in one of the boxes?
-        // if so, add one particle to that box count
-        if (idx >= 0 && idx <= nBoxesX - 1 && idy >= 0 && idy <= nBoxesY - 1 && idz >= 0 && idz <= nBoxesZ - 1) {
-          int id = idz * nBoxesY * nBoxesX + idy * nBoxesX + idx;
-          pBox[id]++;
-          conc[id] = conc[id] + par.m * par.wdecay * timeStep;
-        }
-
-      }// is active == true
-
-    }// particle loop
-
-    for (auto &par : *m_PGD->particles->heavy) {
-      // because particles all start out as active now, need to also check the release time
-      if (par.isActive) {
-        // x-direction
-        int idx = floor((par.xPos - lBndx) / (boxSizeX + 1e-9));
-        // y-direction
-        int idy = floor((par.yPos - lBndy) / (boxSizeY + 1e-9));
-        // z-direction
-        int idz = floor((par.zPos - lBndz) / (boxSizeZ + 1e-9));
-
-        // now, does the particle land in one of the boxes?
-        if (idx >= 0 && idx <= nBoxesX - 1 && idy >= 0 && idy <= nBoxesY - 1 && idz >= 0 && idz <= nBoxesZ - 1) {
-          int id = idz * nBoxesY * nBoxesX + idy * nBoxesX + idx;
-          pBox[id]++;
-          conc[id] = conc[id] + par.m * par.wdecay * timeStep;
-        }
-      }// is active == true
-    }// particle loop
-    */
-}

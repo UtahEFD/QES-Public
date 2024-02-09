@@ -192,12 +192,13 @@ PLUMEGeneralData::PLUMEGeneralData(PlumeInputData *PID, WINDSGeneralData *WGD, T
     models[p->tag]->initialize(PID, WGD, TGD, this);
   }
 
-  // new model can also be added without XML interface with the correct constructor
-  // for example: models[tag] = new Particle_Model(...);
-
-  // can use the AddSource visitor to add sources to the model.
-  // std::vector<TracerParticle_Source *> new_sources;
-  // models[tag]->accept(new AddSource(new_sources));
+  /* FM - NOTE ON MODEL INITIALIZATION
+   * new model can also be added without XML interface with the correct constructor
+   * for example: models[tag] = new Particle_Model(...);
+   * can use the AddSource visitor to add sources to the model.
+   * std::vector<TracerParticle_Source *> new_sources;
+   * models[tag]->accept(new AddSource(new_sources));
+   */
 }
 
 void PLUMEGeneralData::run(QEStime loopTimeEnd,
@@ -240,54 +241,24 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd,
   std::cout << "\t\t Particles: Released = " << isReleasedCount << " "
             << "Active = " << isActiveCount << "." << std::endl;
 
-  // LA note: that this loop goes from 0 to nTimes-2, not nTimes-1. This is
-  // because
-  //  a given time iteration is calculating where particles for the current time
-  //  end up for the next time so in essence each time iteration is calculating
-  //  stuff for one timestep ahead of the loop. This also comes out in making
-  //  sure the numPar to release makes sense. A list of times from 0 to 10 with
-  //  timestep of 1 means that nTimes is 11. So if the loop went from times 0 to
-  //  10 in that case, if 10 pars were released each time, 110 particles, not
-  //  100 particles would end up being released.
-  // LA note on debug timers: because the loop is doing stuff for the next time,
-  // and particles start getting released at time zero,
-  //  this means that the updateFrequency needs to match with tStep+1, not
-  //  tStep. At the same time, the current time output to consol output and to
-  //  function calls need to also be set to tStep+1.
-  // FMargairaz -> need clean-up
+  // --------------------------------------------------------
+  // MAIN TIME LOOP
+  // --------------------------------------------------------
   while (simTimeCurr < loopTimeEnd) {
-    // need to release new particles -> add new particles to the number to move
-    // int nParsToRelease = generateParticleList(simTime, WGD, TGD);
-    // generateParticleList(simTime, WGD, TGD);
 
-    /*if (debug) {
-      int nParsToRelease = 0;
-      updateCounts();
-      std::cout << "Time = " << simTime << " s (iteration = " << simTimeIdx
-                << "). Finished emitting particles "
-                << "from " << allSources.size() << " sources. "
-                << "Particles: New released = " << nParsToRelease << " "
-                << "Total released = " << isReleasedCount << "." << std::endl;
-    }*/
-
-    // Move each particle for every simulation time step
-    // Advection Loop
+    auto startTime = std::chrono::high_resolution_clock::now();
 
     // the current time, updated in this loop with each new par_dt.
-    // Will end at simTimes.at(simTimeIdx+1) at the end of this particle loop
     double timeRemainder = loopTimeEnd - simTimeCurr;
     if (timeRemainder > sim_dt) {
       timeRemainder = sim_dt;
     }
-
-    auto startTime = std::chrono::high_resolution_clock::now();
 
     // This the main loop over all active particles
     for (const auto &pm : models) {
       pm.second->generateParticleList(simTimeCurr, timeRemainder, WGD, TGD, this);
       pm.second->advect(timeRemainder, WGD, TGD, this);
     }
-
 
     // incrementation of time and timestep
     simTimeIdx++;
@@ -299,8 +270,6 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd,
     }
 
     // netcdf output for a given simulation timestep
-    // note that the first time is already output, so this is the time the loop
-    // iteration is calculating, not the input time to the loop iteration
     for (auto &id_out : outputVec) {
       id_out->save(simTimeCurr);
     }
@@ -328,8 +297,10 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd,
         timers.printStoredTime("advection loop");
       }
     }
-
-  }// end of time loop
+  }
+  // --------------------------------------------------------
+  // END TIME LOOP
+  // --------------------------------------------------------
 
   updateCounts();
 
@@ -654,7 +625,7 @@ void PLUMEGeneralData::setParticle(WINDSGeneralData *WGD, TURBGeneralData *TGD, 
 
 double PLUMEGeneralData::getMaxVariance(const TURBGeneralData *TGD)
 {
-  // set thoe initial maximum value to a very small number. The idea is to go through each value of the data,
+  // set the initial maximum value to a very small number. The idea is to go through each value of the data,
   // setting the current value to the max value each time the current value is bigger than the old maximum value
   double maximumVal = -10e-10;
 
@@ -967,13 +938,13 @@ void PLUMEGeneralData::showCurrentStatus()
   updateCounts();
   std::cout << "----------------------------------------------------------------- \n";
   std::cout << "[QES-Plume]\t End run particle summary \n";
-  std::cout << "Current simulation time: " << simTimeCurr << "\n";
-  std::cout << "Simulation run time: " << simTimeCurr - simTimeStart << "\n";
-  std::cout << "Total number of particles released: " << isReleasedCount << "\n";
-  std::cout << "Current number of particles in simulation: " << isActiveCount << "\n";
-  std::cout << "Number of rogue particles: " << isRogueCount << "\n";
+  std::cout << "\t\t Current simulation time: " << simTimeCurr << "\n";
+  std::cout << "\t\t Simulation run time: " << simTimeCurr - simTimeStart << "\n";
+  std::cout << "\t\t Total number of particles released: " << isReleasedCount << "\n";
+  std::cout << "\t\t Current number of particles in simulation: " << isActiveCount << "\n";
+  std::cout << "\t\t Number of rogue particles: " << isRogueCount << "\n";
   for (const auto &pm : models) {
-    std::cout << "Name: " << pm.first << " with " << pm.second->get_nbr_active() << " particles \n";
+    std::cout << "\t\t Name: " << pm.first << " with " << pm.second->get_nbr_active() << " particles \n";
   }
   // std::cout << "Number of deleted particles: " << isNotActiveCount << "\n";
   std::cout << "----------------------------------------------------------------- \n"

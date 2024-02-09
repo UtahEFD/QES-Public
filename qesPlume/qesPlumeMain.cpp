@@ -51,7 +51,7 @@
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
 
-#include "plume/Plume.hpp"
+#include "plume/PLUMEGeneralData.h"
 
 #include "util/QESNetCDFOutput.h"
 #include "plume/PlumeOutput.h"
@@ -88,14 +88,14 @@ int main(int argc, char **argv)
   TURBGeneralData *TGD = new TURBGeneralData(arguments.inputTURBFile, WGD);
 
   // Create instance of Plume model class
-  Plume *plume = new Plume(PID, WGD, TGD);
+  PLUMEGeneralData *PGD = new PLUMEGeneralData(PID, WGD, TGD);
 
   // create output instance
   std::vector<QESNetCDFOutput *> outputVec;
   // always supposed to output lagrToEulOutput data
-  // outputVec.push_back(new PlumeOutput(PID, plume, arguments.outputFile));
+  outputVec.push_back(new PlumeOutput(PID, PGD, arguments.outputFile));
   if (arguments.doParticleDataOutput) {
-    outputVec.push_back(new PlumeOutputParticleData(PID, plume, arguments.outputParticleDataFile));
+    // outputVec.push_back(new PlumeOutputParticleData(PID, PGD, arguments.outputParticleDataFile));
   }
 
   for (int index = 0; index < WGD->totalTimeIncrements; index++) {
@@ -112,14 +112,14 @@ int main(int argc, char **argv)
     } else {
       endtime = WGD->timestamp[index + 1];
     }
-    plume->run(endtime, WGD, TGD, outputVec);
+    PGD->run(endtime, WGD, TGD, outputVec);
 
     // compute run time information and print the elapsed execution time
     std::cout << "[QES-Plume] \t Finished." << std::endl;
   }
 
   std::cout << "End run particle summary \n";
-  plume->showCurrentStatus();
+  PGD->showCurrentStatus();
   timers.printStoredTime("QES-Plume total runtime");
   std::cout << "##############################################################" << std::endl;
 
