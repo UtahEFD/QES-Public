@@ -66,14 +66,21 @@ public:
 
   void compute(QEStime &, const float &);
 
+  bool getOutputStatus() { return need_output; }
+  void resetOutputStatus() { need_output = false; }
+  void setOutput(QESNetCDFOutput *);
+
 protected:
   std::unordered_map<std::string, Statistics *> elements;
 
   QEStime averagingStartTime;
   QEStime nextOutputTime;
-  float averagingPeriod;
-  float ongoingAveragingTime;
+  float averagingPeriod = 0;
+  float ongoingAveragingTime = 0;
 
 private:
   StatisticsDirector() = default;
+
+  bool need_reset = false;
+  bool need_output = false;
 };

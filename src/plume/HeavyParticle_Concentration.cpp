@@ -65,7 +65,19 @@ void HeavyParticle_Concentration::collect(QEStime &timeIn, const float &timeStep
 
 void HeavyParticle_Concentration::finalize(QEStime &timeIn)
 {
-  for (auto c : conc) {
+  for (auto &c : conc) {
     c = c / (ongoingAveragingTime * volume);
   }
+}
+
+void HeavyParticle_Concentration::setOutput(QESNetCDFOutput *out)
+{
+  out->createDimension("x_c", "x-center collection box", "m", &xBoxCen);
+  out->createDimension("y_c", "y-center collection box", "m", &yBoxCen);
+  out->createDimension("z_c", "z-center collection box", "m", &zBoxCen);
+
+  out->createDimensionSet("concentration", { "t", "z_c", "y_c", "x_c" });
+
+  out->createField("p", "number of particle per box", "#ofPar", "concentration", &pBox);
+  out->createField("c", "concentration", "g m-3", "concentration", &conc);
 }

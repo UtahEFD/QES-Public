@@ -129,18 +129,11 @@ public:
   virtual void save(QEStime) = 0;
   virtual void save(float) {}
 
-protected:
-  QESNetCDFOutput() {}
-
   void createDimension(const std::string &, const std::string &, const std::string &, std::vector<int> *);
   void createDimension(const std::string &, const std::string &, const std::string &, std::vector<float> *);
   void createDimension(const std::string &, const std::string &, const std::string &, std::vector<double> *);
 
-  std::map<std::string, NcDim> output_dimensions;
-
   void createDimensionSet(const std::string &, const std::vector<std::string> &);
-
-  std::map<std::string, std::vector<NcDim>> output_dimension_sets;
 
   // create attribute scalar based on type of data
   void createField(const std::string &, const std::string &, const std::string &, const std::string &, int *);
@@ -151,6 +144,9 @@ protected:
   void createField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<int> *);
   void createField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<float> *);
   void createField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<double> *);
+
+protected:
+  QESNetCDFOutput() {}
 
   // create attribute scalar based on type of data
   void createAttScalar(const std::string &, const std::string &, const std::string &, const std::vector<NcDim> &, int *);
@@ -186,6 +182,9 @@ protected:
   bool flagStartTimeSet = false;
   double time = 0; /**< :document this: */
 
+  std::map<std::string, NcDim> output_dimensions;
+  std::map<std::string, std::vector<NcDim>> output_dimension_sets;
+  
   std::set<std::string> set_all_output_fields;
 
   std::vector<std::string> all_output_fields;

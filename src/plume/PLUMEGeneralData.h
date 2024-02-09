@@ -88,9 +88,12 @@
 
 #include "AddSource.h"
 
+class PlumeOutput;
 
 class PLUMEGeneralData
 {
+  // define output class as friend
+  friend class PlumeOutput;
 
 public:
   PLUMEGeneralData(WINDSGeneralData *, TURBGeneralData *);
