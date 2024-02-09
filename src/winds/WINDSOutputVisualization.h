@@ -65,7 +65,7 @@ protected:
   /**
    * :document this:
    */
-  void setAllOutputFields();
+  void setAllOutputFields() {}
 
 private:
   ///@{
