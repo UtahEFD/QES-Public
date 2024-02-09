@@ -69,10 +69,6 @@ int main(int argc, char **argv)
 {
   QESout::splashScreen();
 
-  // set up timer information for the simulation runtime
-  calcTime timers;
-  timers.startNewTimer("QES-Plume total runtime");// start recording execution time
-
   // parse command line arguments
   PlumeArgs arguments;
   arguments.processArguments(argc, argv);
@@ -118,9 +114,7 @@ int main(int argc, char **argv)
     std::cout << "[QES-Plume] \t Finished." << std::endl;
   }
 
-  std::cout << "End run particle summary \n";
   PGD->showCurrentStatus();
-  timers.printStoredTime("QES-Plume total runtime");
   std::cout << "##############################################################" << std::endl;
 
   exit(EXIT_SUCCESS);
