@@ -39,7 +39,7 @@
 WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, const std::string &output_file)
   : QESNetCDFOutput(output_file)
 {
-  std::cout << "[Output] \t Setting fields of workspace file" << std::endl;
+  std::cout << "[QES-WINDS] \t Setting fields of workspace file" << std::endl;
 
   // copy of WGD pointer
   m_WGD = WGD;
@@ -96,13 +96,13 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, const std::str
   // 3D vector dimension (time dep)
   createDimensionSet("face-grid", { "t", "z_face", "y_face", "x_face" });
   // create attributes
-  createAttVector("u", "x-component velocity", "m s-1", "face-grid", &(m_WGD->u));
-  createAttVector("v", "y-component velocity", "m s-1", "face-grid", &(m_WGD->v));
-  createAttVector("w", "z-component velocity", "m s-1", "face-grid", &(m_WGD->w));
+  createField("u", "x-component velocity", "m s-1", "face-grid", &(m_WGD->u));
+  createField("v", "y-component velocity", "m s-1", "face-grid", &(m_WGD->v));
+  createField("w", "z-component velocity", "m s-1", "face-grid", &(m_WGD->w));
 
-  createAttVector("u0", "x-component initial velocity", "m s-1", "face-grid", &(m_WGD->u0));
-  createAttVector("v0", "y-component initial velocity", "m s-1", "face-grid", &(m_WGD->v0));
-  createAttVector("w0", "z-component initial velocity", "m s-1", "face-grid", &(m_WGD->w0));
+  createField("u0", "x-component initial velocity", "m s-1", "face-grid", &(m_WGD->u0));
+  createField("v0", "y-component initial velocity", "m s-1", "face-grid", &(m_WGD->v0));
+  createField("w0", "z-component initial velocity", "m s-1", "face-grid", &(m_WGD->w0));
 
   // set cell-centered data dimensions
   // space dimensions
@@ -111,36 +111,36 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, const std::str
   createDimension("z", "z-distance", "m", &m_z);
 
   createDimensionSet("z-grid", { "z" });
-  createAttVector("dz_array", "dz size of the cells", "m", "z-grid", &m_dz_array);
+  createField("dz_array", "dz size of the cells", "m", "z-grid", &m_dz_array);
 
   // create 2D vector (surface, indep of time)
   createDimensionSet("terrain-grid", { "y", "x" });
   // create attributes
-  createAttVector("terrain", "terrain height", "m", "terrain-grid", &(m_WGD->terrain));
-  createAttVector("z0_u", "terrain aerodynamic roughness, u", "m", "terrain-grid", &(m_WGD->z0_domain_u));
-  createAttVector("z0_v", "terrain aerodynamic roughness, v", "m", "terrain-grid", &(m_WGD->z0_domain_v));
+  createField("terrain", "terrain height", "m", "terrain-grid", &(m_WGD->terrain));
+  createField("z0_u", "terrain aerodynamic roughness, u", "m", "terrain-grid", &(m_WGD->z0_domain_u));
+  createField("z0_v", "terrain aerodynamic roughness, v", "m", "terrain-grid", &(m_WGD->z0_domain_v));
 
   // 3D vector dimension
   createDimensionSet("cell-grid-no-time", { "z", "y", "x" });
   // create attributes
-  createAttVector("mixlength", "distance to nearest object", "m", "cell-grid-no-time", &(m_WGD->mixingLengths));
+  createField("mixlength", "distance to nearest object", "m", "cell-grid-no-time", &(m_WGD->mixingLengths));
 
   // 3D vector dimension (time dep)
   createDimensionSet("cell-grid", { "t", "z", "y", "x" });
   // create attributes
-  createAttVector("icellflag", "icell flag value", "--", "cell-grid", &(m_WGD->icellflag));
+  createField("icellflag", "icell flag value", "--", "cell-grid", &(m_WGD->icellflag));
 
   // attributes for coefficients for SOR solver
-  createAttVector("e", "e cut-cell coefficient", "--", "cell-grid", &(m_WGD->e));
-  createAttVector("f", "f cut-cell coefficient", "--", "cell-grid", &(m_WGD->f));
-  createAttVector("g", "g cut-cell coefficient", "--", "cell-grid", &(m_WGD->g));
-  createAttVector("h", "h cut-cell coefficient", "--", "cell-grid", &(m_WGD->h));
-  createAttVector("m", "m cut-cell coefficient", "--", "cell-grid", &(m_WGD->m));
-  createAttVector("n", "n cut-cell coefficient", "--", "cell-grid", &(m_WGD->n));
+  createField("e", "e cut-cell coefficient", "--", "cell-grid", &(m_WGD->e));
+  createField("f", "f cut-cell coefficient", "--", "cell-grid", &(m_WGD->f));
+  createField("g", "g cut-cell coefficient", "--", "cell-grid", &(m_WGD->g));
+  createField("h", "h cut-cell coefficient", "--", "cell-grid", &(m_WGD->h));
+  createField("m", "m cut-cell coefficient", "--", "cell-grid", &(m_WGD->m));
+  createField("n", "n cut-cell coefficient", "--", "cell-grid", &(m_WGD->n));
 
   // attribute for the volume fraction (cut-cell)
-  createAttVector("building_volume_frac", "building volume fraction", "--", "cell-grid", &(m_WGD->building_volume_frac));
-  createAttVector("terrain_volume_frac", "terrain volume fraction", "--", "cell-grid", &(m_WGD->terrain_volume_frac));
+  createField("building_volume_frac", "building volume fraction", "--", "cell-grid", &(m_WGD->building_volume_frac));
+  createField("terrain_volume_frac", "terrain volume fraction", "--", "cell-grid", &(m_WGD->terrain_volume_frac));
 
   addOutputFields(set_all_output_fields);
 }
@@ -254,46 +254,11 @@ void WINDSOutputWorkspace::setBuildingFields(NcDim *NcDim_t, NcDim *NcDim_buildi
   tmp_fields.clear();// clear the vector
   tmp_fields = { "length_eff", "width_eff", "upwind_dir", "Lr" };
   output_fields.insert(output_fields.end(), tmp_fields.begin(), tmp_fields.end());
-
-  return;
-}
-
-void WINDSOutputWorkspace::setAllOutputFields()
-{
-  all_output_fields.clear();
-  // all possible output fields need to be add to this list
-  all_output_fields = { "x",
-                        "y",
-                        "z",
-                        "x_face",
-                        "y_face",
-                        "z_face",
-                        "dz_array",
-                        "u",
-                        "v",
-                        "w",
-                        "u0",
-                        "v0",
-                        "w0",
-                        "icellflag",
-                        "terrain",
-                        "z0_u",
-                        "z0_v",
-                        "e",
-                        "f",
-                        "g",
-                        "h",
-                        "m",
-                        "n",
-                        "building_volume_frac",
-                        "terrain_volume_frac",
-                        "mixlength" };
 }
 
 // [FM] Feb.28.2020 OBSOLETE
 void WINDSOutputWorkspace::getBuildingFields()
 {
-
 #if 0
   int nBuildings = m_WGD->allBuildingsV.size();
 
@@ -340,5 +305,4 @@ void WINDSOutputWorkspace::getBuildingFields()
     Lr[id] = m_WGD->allBuildingsV[id]->Lr;
   }
 #endif
-  return;
 }

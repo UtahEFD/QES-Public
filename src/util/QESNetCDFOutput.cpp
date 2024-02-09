@@ -170,11 +170,11 @@ void QESNetCDFOutput::createDimensionSet(const std::string &name,
 //----------------------------------------
 // create attribute scalar
 // -> int
-void QESNetCDFOutput::createAttScalar(const std::string &name,
-                                      const std::string &long_name,
-                                      const std::string &units,
-                                      const std::string &dims,
-                                      int *data)
+void QESNetCDFOutput::createField(const std::string &name,
+                                  const std::string &long_name,
+                                  const std::string &units,
+                                  const std::string &dims,
+                                  int *data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
   AttScalarInt att = { data, name, long_name, units, { output_dimensions[dims] } };
@@ -182,11 +182,11 @@ void QESNetCDFOutput::createAttScalar(const std::string &name,
   set_all_output_fields.insert(name);
 }
 // -> float
-void QESNetCDFOutput::createAttScalar(const std::string &name,
-                                      const std::string &long_name,
-                                      const std::string &units,
-                                      const std::string &dims,
-                                      float *data)
+void QESNetCDFOutput::createField(const std::string &name,
+                                  const std::string &long_name,
+                                  const std::string &units,
+                                  const std::string &dims,
+                                  float *data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
   AttScalarFlt att = { data, name, long_name, units, { output_dimensions[dims] } };
@@ -194,11 +194,11 @@ void QESNetCDFOutput::createAttScalar(const std::string &name,
   set_all_output_fields.insert(name);
 }
 // -> double
-void QESNetCDFOutput::createAttScalar(const std::string &name,
-                                      const std::string &long_name,
-                                      const std::string &units,
-                                      const std::string &dims,
-                                      double *data)
+void QESNetCDFOutput::createField(const std::string &name,
+                                  const std::string &long_name,
+                                  const std::string &units,
+                                  const std::string &dims,
+                                  double *data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
   AttScalarDbl att = { data, name, long_name, units, { output_dimensions[dims] } };
@@ -209,11 +209,11 @@ void QESNetCDFOutput::createAttScalar(const std::string &name,
 //----------------------------------------
 // create attribute Vector
 // -> int
-void QESNetCDFOutput::createAttVector(const std::string &name,
-                                      const std::string &long_name,
-                                      const std::string &units,
-                                      const std::string &dims,
-                                      std::vector<int> *data)
+void QESNetCDFOutput::createField(const std::string &name,
+                                  const std::string &long_name,
+                                  const std::string &units,
+                                  const std::string &dims,
+                                  std::vector<int> *data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
   AttVectorInt att = { data, name, long_name, units, output_dimension_sets[dims] };
@@ -221,11 +221,11 @@ void QESNetCDFOutput::createAttVector(const std::string &name,
   set_all_output_fields.insert(name);
 }
 // -> float
-void QESNetCDFOutput::createAttVector(const std::string &name,
-                                      const std::string &long_name,
-                                      const std::string &units,
-                                      const std::string &dims,
-                                      std::vector<float> *data)
+void QESNetCDFOutput::createField(const std::string &name,
+                                  const std::string &long_name,
+                                  const std::string &units,
+                                  const std::string &dims,
+                                  std::vector<float> *data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
   AttVectorFlt att = { data, name, long_name, units, output_dimension_sets[dims] };
@@ -233,11 +233,11 @@ void QESNetCDFOutput::createAttVector(const std::string &name,
   set_all_output_fields.insert(name);
 }
 // -> double
-void QESNetCDFOutput::createAttVector(const std::string &name,
-                                      const std::string &long_name,
-                                      const std::string &units,
-                                      const std::string &dims,
-                                      std::vector<double> *data)
+void QESNetCDFOutput::createField(const std::string &name,
+                                  const std::string &long_name,
+                                  const std::string &units,
+                                  const std::string &dims,
+                                  std::vector<double> *data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
   AttVectorDbl att = { data, name, long_name, units, output_dimension_sets[dims] };
@@ -365,6 +365,8 @@ void QESNetCDFOutput::addOutputFields()
     } else if (map_att_vector_char.count(key)) {
       // vector char
       output_vector_char.push_back(map_att_vector_char[key]);
+    } else {
+      std::cerr << "[WARNING] field " << key << " not defined (excluding dimensions)" << std::endl;
     }
   }
 

@@ -60,7 +60,7 @@ protected:
   /**
    * :document this:
    */
-  void setAllOutputFields();
+  void setAllOutputFields() {}
 
 private:
   std::vector<float> m_x, m_y, m_z;

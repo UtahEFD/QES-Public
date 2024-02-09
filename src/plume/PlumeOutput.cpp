@@ -198,7 +198,7 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, std::
   setStartTime(m_PGD->getSimTimeStart());
 
   // setup desired output fields string
-  output_fields = { "x", "y", "z", "pBox", "conc", "tAvg" };
+  // output_fields = { "x", "y", "z", "pBox", "conc", "tAvg" };
   // output_fields = { "x", "y", "z", "pBox", "conc", "tAvg", "xDep", "yDep", "zDep", "depcvol" };
 
   // set data dimensions, which in this case are cell-centered dimensions
@@ -212,7 +212,7 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, std::
   // std::vector<NcDim> dim_vect_t;
   // dim_vect_t.push_back(NcDim_t);
   // createAttScalar("tAvg", "Averaging time", "s", dim_vect_t, &ongoingAveragingTime);
-  createAttScalar("tAvg", "Averaging time", "s", "t", &ongoingAveragingTime);
+  createField("tAvg", "Averaging time", "s", "t", &ongoingAveragingTime);
 
   createDimension("x", "x-center collection box", "m", &xBoxCen);
   createDimension("y", "y-center collection box", "m", &yBoxCen);
@@ -220,20 +220,20 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, std::
 
   createDimensionSet("concentration", { "t", "z", "y", "x" });
 
-  createAttVector("pBox", "number of particle per box", "#ofPar", "concentration", &pBox);
-  createAttVector("conc", "concentration", "g m-3", "concentration", &conc);
+  createField("pBox", "number of particle per box", "#ofPar", "concentration", &pBox);
+  createField("conc", "concentration", "g m-3", "concentration", &conc);
 
   /*
   // create attributes space dimensions
   std::vector<NcDim> dim_vect_x;
   dim_vect_x.push_back(NcDim_x);
-  createAttVector("x", "x-center collection box", "m", dim_vect_x, &xBoxCen);
+  createField("x", "x-center collection box", "m", dim_vect_x, &xBoxCen);
   std::vector<NcDim> dim_vect_y;
   dim_vect_y.push_back(NcDim_y);
-  createAttVector("y", "y-center collection box", "m", dim_vect_y, &yBoxCen);
+  createField("y", "y-center collection box", "m", dim_vect_y, &yBoxCen);
   std::vector<NcDim> dim_vect_z;
   dim_vect_z.push_back(NcDim_z);
-  createAttVector("z", "z-center collection box", "m", dim_vect_z, &zBoxCen);
+  createField("z", "z-center collection box", "m", dim_vect_z, &zBoxCen);
 
   // create 3D vector and put in the dimensions (nt,nz,ny,nx).
   // !!! make sure the order is specificall nt,nz,ny,nx in this spot,
@@ -246,8 +246,8 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, std::
 
 
   // create attributes for all output information
-  createAttVector("pBox", "number of particle per box", "#ofPar", dim_vect_3d, &pBox);
-  createAttVector("conc", "concentration", "g m-3", dim_vect_3d, &conc);
+  createField("pBox", "number of particle per box", "#ofPar", dim_vect_3d, &pBox);
+  createField("conc", "concentration", "g m-3", dim_vect_3d, &conc);
 */
   // face dimensions
   // NcDim NcDim_nFace = addDimension("nFace", m_plume->deposition->nbrFace);
@@ -262,13 +262,13 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, std::
   /*
     std::vector<NcDim> dim_vect_xDep;
     dim_vect_xDep.push_back(NcDim_xDep);
-    createAttVector("xDep", "x-distance, deposition grid", "m", dim_vect_xDep, &(m_plume->deposition->x));
+    createField("xDep", "x-distance, deposition grid", "m", dim_vect_xDep, &(m_plume->deposition->x));
     std::vector<NcDim> dim_vect_yDep;
     dim_vect_yDep.push_back(NcDim_yDep);
-    createAttVector("yDep", "y-distance, deposition grid", "m", dim_vect_yDep, &(m_plume->deposition->y));
+    createField("yDep", "y-distance, deposition grid", "m", dim_vect_yDep, &(m_plume->deposition->y));
     std::vector<NcDim> dim_vect_zDep;
     dim_vect_zDep.push_back(NcDim_zDep);
-    createAttVector("zDep", "z-distance, deposition grid", "m", dim_vect_zDep, &(m_plume->deposition->z));
+    createField("zDep", "z-distance, deposition grid", "m", dim_vect_zDep, &(m_plume->deposition->z));
 
     std::vector<NcDim> dim_vectDep;
     dim_vectDep.push_back(NcDim_t);
@@ -276,14 +276,14 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, std::
     dim_vectDep.push_back(NcDim_yDep);
     dim_vectDep.push_back(NcDim_xDep);
   */
-  // createAttVector("depcvol", "deposited mass", "g", dim_vectDep, &(m_plume->deposition->depcvol));
+  // createField("depcvol", "deposited mass", "g", dim_vectDep, &(m_plume->deposition->depcvol));
 
   // create attributes space dimensions
   // std::vector<NcDim> dim_vect_face;
   // dim_vect_face.push_back(NcDim_nFace);
-  // createAttVector("xface","x-face","m",dim_vect_face,&xBoxCen);
-  // createAttVector("yface","y-face","m",dim_vect_face,&xBoxCen);
-  // createAttVector("zface","z-face","m",dim_vect_face,&xBoxCen);
+  // createField("xface","x-face","m",dim_vect_face,&xBoxCen);
+  // createField("yface","y-face","m",dim_vect_face,&xBoxCen);
+  // createField("zface","z-face","m",dim_vect_face,&xBoxCen);
 
   // !!! make sure the order is specificall nt,nz,ny,nx in this spot,
   //  the order doesn't seem to matter for other spots
@@ -292,7 +292,7 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, std::
   // dim_vect_face.push_back(NcDim_nFace);
 
   // create output fields
-  addOutputFields();
+  addOutputFields(set_all_output_fields);
 }
 
 // Save output at cell-centered values

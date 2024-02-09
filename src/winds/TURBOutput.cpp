@@ -38,9 +38,7 @@
 TURBOutput::TURBOutput(TURBGeneralData *tgd, std::string output_file)
   : QESNetCDFOutput(output_file)
 {
-  std::cout << "[Output] \t Setting output fields for Turbulence data" << std::endl;
-
-  setAllOutputFields();
+  std::cout << "[QES-TURB] \t Setting output fields for turbulence data" << std::endl;
 
   // set list of fields to save, no option available for this file
   output_fields = all_output_fields;
@@ -65,70 +63,38 @@ TURBOutput::TURBOutput(TURBGeneralData *tgd, std::string output_file)
   // 3D vector dimension (time dep)
   createDimensionSet("turb-grid", { "t", "z", "y", "x" });
 
-  createAttVector("iturbflag", "icell turb flag", "--", "turb-grid", &(m_TGD->iturbflag));
+  createField("iturbflag", "icell turb flag", "--", "turb-grid", &(m_TGD->iturbflag));
 
   // create attributes for velocity gradient tensor
-  createAttVector("Gxx", "velocity gradient tensor: Gxx = dudx", "s-1", "turb-grid", &(m_TGD->Gxx));
-  createAttVector("Gyx", "velocity gradient tensor: Gyx = dvdx", "s-1", "turb-grid", &(m_TGD->Gyx));
-  createAttVector("Gzx", "velocity gradient tensor: Gzx = dwdx", "s-1", "turb-grid", &(m_TGD->Gzx));
-  createAttVector("Gxy", "velocity gradient tensor: Gxy = dudy", "s-1", "turb-grid", &(m_TGD->Gxy));
-  createAttVector("Gyy", "velocity gradient tensor: Gyy = dvdy", "s-1", "turb-grid", &(m_TGD->Gyy));
-  createAttVector("Gzy", "velocity gradient tensor: Gzy = dwdy", "s-1", "turb-grid", &(m_TGD->Gzy));
-  createAttVector("Gxz", "velocity gradient tensor: Gxz = dudz", "s-1", "turb-grid", &(m_TGD->Gxz));
-  createAttVector("Gyz", "velocity gradient tensor: Gyz = dvdz", "s-1", "turb-grid", &(m_TGD->Gyz));
-  createAttVector("Gzz", "velocity gradient tensor: Gzz = dwdz", "s-1", "turb-grid", &(m_TGD->Gzz));
+  createField("Gxx", "velocity gradient tensor: Gxx = dudx", "s-1", "turb-grid", &(m_TGD->Gxx));
+  createField("Gyx", "velocity gradient tensor: Gyx = dvdx", "s-1", "turb-grid", &(m_TGD->Gyx));
+  createField("Gzx", "velocity gradient tensor: Gzx = dwdx", "s-1", "turb-grid", &(m_TGD->Gzx));
+  createField("Gxy", "velocity gradient tensor: Gxy = dudy", "s-1", "turb-grid", &(m_TGD->Gxy));
+  createField("Gyy", "velocity gradient tensor: Gyy = dvdy", "s-1", "turb-grid", &(m_TGD->Gyy));
+  createField("Gzy", "velocity gradient tensor: Gzy = dwdy", "s-1", "turb-grid", &(m_TGD->Gzy));
+  createField("Gxz", "velocity gradient tensor: Gxz = dudz", "s-1", "turb-grid", &(m_TGD->Gxz));
+  createField("Gyz", "velocity gradient tensor: Gyz = dvdz", "s-1", "turb-grid", &(m_TGD->Gyz));
+  createField("Gzz", "velocity gradient tensor: Gzz = dwdz", "s-1", "turb-grid", &(m_TGD->Gzz));
 
   // create attribute for mixing length
-  createAttVector("L", "mixing length", "m", "turb-grid", &(m_TGD->Lm));
+  createField("L", "mixing length", "m", "turb-grid", &(m_TGD->Lm));
 
   // create derived attributes
-  createAttVector("txx", "uu-component of stress tensor", "m2s-2", "turb-grid", &(m_TGD->txx));
-  createAttVector("tyy", "vv-component of stress tensor", "m2s-2", "turb-grid", &(m_TGD->tyy));
-  createAttVector("tzz", "ww-component of stress tensor", "m2s-2", "turb-grid", &(m_TGD->tzz));
-  createAttVector("txy", "uv-component of stress tensor", "m2s-2", "turb-grid", &(m_TGD->txy));
-  createAttVector("txz", "uw-component of stress tensor", "m2s-2", "turb-grid", &(m_TGD->txz));
-  createAttVector("tyz", "vw-component of stress tensor", "m2s-2", "turb-grid", &(m_TGD->tyz));
-  createAttVector("tke", "turbulent kinetic energy", "m2s-2", "turb-grid", &(m_TGD->tke));
-  createAttVector("CoEps", "dissipation rate", "m2s-3", "turb-grid", &(m_TGD->CoEps));
-  createAttVector("div_tau_x", "x-component of stress-tensor divergence", "ms-2", "turb-grid", &(m_TGD->div_tau_x));
-  createAttVector("div_tau_y", "y-component of stress-tensor divergence", "ms-2", "turb-grid", &(m_TGD->div_tau_y));
-  createAttVector("div_tau_z", "z-component of stress-tensor divergence", "ms-2", "turb-grid", &(m_TGD->div_tau_z));
+  createField("txx", "uu-component of stress tensor", "m2s-2", "turb-grid", &(m_TGD->txx));
+  createField("tyy", "vv-component of stress tensor", "m2s-2", "turb-grid", &(m_TGD->tyy));
+  createField("tzz", "ww-component of stress tensor", "m2s-2", "turb-grid", &(m_TGD->tzz));
+  createField("txy", "uv-component of stress tensor", "m2s-2", "turb-grid", &(m_TGD->txy));
+  createField("txz", "uw-component of stress tensor", "m2s-2", "turb-grid", &(m_TGD->txz));
+  createField("tyz", "vw-component of stress tensor", "m2s-2", "turb-grid", &(m_TGD->tyz));
+  createField("tke", "turbulent kinetic energy", "m2s-2", "turb-grid", &(m_TGD->tke));
+  createField("CoEps", "dissipation rate", "m2s-3", "turb-grid", &(m_TGD->CoEps));
+  createField("div_tau_x", "x-component of stress-tensor divergence", "ms-2", "turb-grid", &(m_TGD->div_tau_x));
+  createField("div_tau_y", "y-component of stress-tensor divergence", "ms-2", "turb-grid", &(m_TGD->div_tau_y));
+  createField("div_tau_z", "z-component of stress-tensor divergence", "ms-2", "turb-grid", &(m_TGD->div_tau_z));
 
   // create output fields
-  addOutputFields();
+  addOutputFields(set_all_output_fields);
 }
-
-void TURBOutput::setAllOutputFields()
-{
-  all_output_fields.clear();
-  // all possible output fields need to be add to this list
-  all_output_fields = { "x",
-                        "y",
-                        "z",
-                        "iturbflag",
-                        "Gxx",
-                        "Gyx",
-                        "Gzx",
-                        "Gxy",
-                        "Gyy",
-                        "Gzy",
-                        "Gxz",
-                        "Gyz",
-                        "Gzz",
-                        "L",
-                        "txx",
-                        "txy",
-                        "txz",
-                        "tyz",
-                        "tyy",
-                        "tzz",
-                        "tke",
-                        "CoEps",
-                        "div_tau_x",
-                        "div_tau_y",
-                        "div_tau_z" };
-}
-
 
 // Save output at cell-centered values
 void TURBOutput::save(QEStime timeOut)

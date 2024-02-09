@@ -41,26 +41,9 @@ WINDSOutputVisualization::WINDSOutputVisualization(WINDSGeneralData *WGD,
                                                    const std::string &output_file)
   : QESNetCDFOutput(output_file)
 {
-  std::cout << "[Output] \t Getting output fields for visualisation file" << std::endl;
-
-  setAllOutputFields();
+  std::cout << "[QES-WINDS] \t Getting output fields for visualisation file" << std::endl;
 
   std::vector<std::string> fileOP = WID->fileOptions->outputFields;
-  bool valid_output;
-
-  if (fileOP.empty() || fileOP[0] == "all") {
-    output_fields = all_output_fields;
-    valid_output = true;
-  } else {
-    output_fields = { "x", "y", "z" };
-    output_fields.insert(output_fields.end(), fileOP.begin(), fileOP.end());
-    valid_output = validateFileOptions();
-  }
-
-  if (!valid_output) {
-    std::cerr << "Error: invalid output fields for visualization fields output\n";
-    exit(EXIT_FAILURE);
-  }
 
   // copy of WGD pointer
   m_WGD = WGD;
@@ -104,36 +87,27 @@ WINDSOutputVisualization::WINDSOutputVisualization(WINDSGeneralData *WGD,
   // create 2D vector (time indep)
   createDimensionSet("terrain-grid", { "y", "x" });
   // create attributes
-  createAttVector("terrain", "terrain height", "m", "terrain-grid", &(m_WGD->terrain));
+  createField("terrain", "terrain height", "m", "terrain-grid", &(m_WGD->terrain));
 
   createDimensionSet("wind-grid", { "t", "z", "y", "x" });
   // create attributes
-  createAttVector("u", "x-component velocity", "m s-1", "wind-grid", &u_out);
-  createAttVector("v", "y-component velocity", "m s-1", "wind-grid", &v_out);
-  createAttVector("w", "z-component velocity", "m s-1", "wind-grid", &w_out);
-  createAttVector("mag", "velocity magnitude", "m s-1", "wind-grid", &mag_out);
+  createField("u", "x-component velocity", "m s-1", "wind-grid", &u_out);
+  createField("v", "y-component velocity", "m s-1", "wind-grid", &v_out);
+  createField("w", "z-component velocity", "m s-1", "wind-grid", &w_out);
+  createField("mag", "velocity magnitude", "m s-1", "wind-grid", &mag_out);
 
-  createAttVector("icell", "icell flag value", "--", "wind-grid", &icellflag_out);
-  createAttVector("icellInitial", "icell flag value", "--", "wind-grid", &icellflag2_out);
+  createField("icell", "icell flag value", "--", "wind-grid", &icellflag_out);
+  createField("icellInitial", "icell flag value", "--", "wind-grid", &icellflag2_out);
 
   // create output fields
-  addOutputFields();
-}
 
-void WINDSOutputVisualization::setAllOutputFields()
-{
-  all_output_fields.clear();
-  // all possible output fields need to be added to this list
-  all_output_fields = { "x",
-                        "y",
-                        "z",
-                        "u",
-                        "v",
-                        "w",
-                        "mag",
-                        "icell",
-                        "icellInitial",
-                        "terrain" };
+  if (fileOP.empty() || fileOP[0] == "all") {
+    addOutputFields(set_all_output_fields);
+  } else {
+    std::set<std::string> out;
+    std::copy(fileOP.begin(), fileOP.end(), std::inserter(out, out.end()));
+    addOutputFields(out);
+  }
 }
 
 // Save output at cell-centered values

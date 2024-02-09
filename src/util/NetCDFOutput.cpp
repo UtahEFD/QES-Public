@@ -43,7 +43,7 @@ using namespace netCDF::exceptions;
 // constructor, linked to NetCDF file, replace mode only
 NetCDFOutput ::NetCDFOutput(const std::string &output_file)
 {
-  std::cout << "[NetCDFOutput] \t Writing to " << output_file << std::endl;
+  std::cout << "[NetCDFOutput] \t set file: " << output_file << std::endl;
   outfile = new NcFile(output_file, NcFile::replace);
 }
 
