@@ -67,22 +67,6 @@ public:
   // This is the one function that needs called from outside after constructor time
   void save(QEStime);
 
-  // averaging period in seconds
-  float averagingPeriod;
-  // need the simulation timeStep for use in concentration averaging
-  float timeStep;
-  // Sampling box variables for calculating concentration data
-  // Number of boxes to use for the sampling box
-  int nBoxesX, nBoxesY, nBoxesZ;// Copies of the input: nBoxesX, Y, and Z.
-  // upper & lower bounds in each direction of the sampling boxes
-  float lBndx, lBndy, lBndz, uBndx, uBndy, uBndz;// Copies of the input: boxBoundsX1, boxBoundsX2, boxBoundsY1,
-  float boxSizeX, boxSizeY, boxSizeZ;// these are the box sizes in each direction, calculated from nBoxes, lBnd, and uBnd variables
-  float volume;// volume of the sampling boxes (=nBoxesX*nBoxesY*nBoxesZ)
-
-  // output concentration storage variables
-  std::vector<float> xBoxCen, yBoxCen, zBoxCen;// list of x,y, and z points for the concentration sampling box information
-  std::vector<int> pBox;// sampling box particle counter (for average)
-  std::vector<float> conc;// concentration values (for output)
 
 private:
   // default constructor
@@ -90,10 +74,11 @@ private:
 
   // time averaging frequency control information
   // in this case, this is also the output control information
-  // time to start concentration averaging, not the time to start output.
+  // time to start concentration averaging.
   QEStime averagingStartTime;
-  //
-  float ongoingAveragingTime;
+
+  // averaging period in seconds
+  float averagingPeriod;
 
   // variables needed for getting proper averaging and output time control
   // next output time value that is updated each time save is called and output occurs.
@@ -102,8 +87,4 @@ private:
 
   // pointer to the class that save needs to use to get the data for the concentration calculation
   PLUMEGeneralData *m_PGD;
-
-
-  // function for counting the number of particles in the sampling boxes
-  void boxCount();
 };

@@ -7,15 +7,15 @@
 
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
-#include "plume/Plume.hpp"
+#include "plume/PLUMEGeneralData.h"
 
 #include "vectorMath.h"
 
-class test_PlumeGeneralData : public Plume
+class test_PlumeGeneralData : public PLUMEGeneralData
 {
 public:
   test_PlumeGeneralData(WINDSGeneralData *WGD, TURBGeneralData *TGD)
-    : Plume(WGD, TGD)
+    : PLUMEGeneralData(WGD, TGD)
   {}
   virtual ~test_PlumeGeneralData()
   {}
@@ -30,7 +30,7 @@ public:
   // void testGPU_struct(int);
 #endif
 
-  using Plume::interp;
+  using PLUMEGeneralData::interp;
 
 private:
   test_PlumeGeneralData();

@@ -27,7 +27,7 @@
   </collectionParameters>
   <particleParameters>
     <heavyParticle>
-      <tag>test</tag>
+      <tag>heavy</tag>
       <particleDensity> 2.0 </particleDensity>
       <particleDiameter> 5 </particleDiameter>
       <depositionFlag>false</depositionFlag>
