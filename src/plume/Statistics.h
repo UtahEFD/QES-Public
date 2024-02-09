@@ -45,6 +45,7 @@
 #endif
 
 #include "util/QEStime.h"
+#include "util/QESNetCDFOutput.h"
 
 class Statistics
 {
@@ -55,4 +56,6 @@ public:
   virtual void collect(QEStime &, const float &) = 0;
   virtual void finalize(QEStime &) = 0;
   virtual void reset() = 0;
+
+  virtual void setOutput(QESNetCDFOutput *) = 0;
 };

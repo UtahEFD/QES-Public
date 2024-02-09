@@ -55,6 +55,15 @@ void StatisticsDirector::enroll(const std::string &key, Statistics *s)
 
 void StatisticsDirector::compute(QEStime &timeIn, const float &timeStep)
 {
+  // reset buffer if needed
+  // Note: buffers need to be persistent for output.
+  if (need_reset) {
+    for (const auto &e : elements) {
+      e.second->reset();
+    }
+    need_reset = false;
+  }
+
   if (timeIn > averagingStartTime) {
     // incrementation of the averaging time
     ongoingAveragingTime += timeStep;
@@ -69,15 +78,21 @@ void StatisticsDirector::compute(QEStime &timeIn, const float &timeStep)
         e.second->finalize(timeIn);
       }
 
-      // notify output
-
       // reset variables
-      for (const auto &e : elements) {
-        e.second->reset();
-      }
+      need_reset = true;
+      // for output (need to be refined)
+      need_output = true;
 
-
+      // set nest output time
       nextOutputTime = nextOutputTime + averagingPeriod;
     }
+  }
+}
+
+void StatisticsDirector::setOutput(QESNetCDFOutput *out)
+{
+  out->createField("tAvg", "Averaging time", "s", "t", &ongoingAveragingTime);
+  for (const auto &e : elements) {
+    e.second->setOutput(out);
   }
 }

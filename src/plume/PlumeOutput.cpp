@@ -130,6 +130,7 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, std::
   // set the initial next output time value
   nextOutputTime = averagingStartTime + averagingPeriod;
 
+  /*
   // need the simulation timeStep for use in concentration averaging
   timeStep = PID->plumeParams->timeStep;
 
@@ -177,7 +178,8 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, std::
   // initialization of the container
   pBox.resize(nBoxesX * nBoxesY * nBoxesZ, 0);
   conc.resize(nBoxesX * nBoxesY * nBoxesZ, 0.0);
-
+   */
+  
   // --------------------------------------------------------
   // setup information:
   // --------------------------------------------------------
@@ -197,6 +199,9 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, std::
 
   setStartTime(m_PGD->getSimTimeStart());
 
+  for (const auto &pm : m_PGD->models) {
+    pm.second->stats->setOutput(this);
+  }
   // setup desired output fields string
   // output_fields = { "x", "y", "z", "pBox", "conc", "tAvg" };
   // output_fields = { "x", "y", "z", "pBox", "conc", "tAvg", "xDep", "yDep", "zDep", "depcvol" };
@@ -212,6 +217,7 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, std::
   // std::vector<NcDim> dim_vect_t;
   // dim_vect_t.push_back(NcDim_t);
   // createAttScalar("tAvg", "Averaging time", "s", dim_vect_t, &ongoingAveragingTime);
+  /*
   createField("tAvg", "Averaging time", "s", "t", &ongoingAveragingTime);
 
   createDimension("x", "x-center collection box", "m", &xBoxCen);
@@ -222,7 +228,7 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, std::
 
   createField("pBox", "number of particle per box", "#ofPar", "concentration", &pBox);
   createField("conc", "concentration", "g m-3", "concentration", &conc);
-
+*/
   /*
   // create attributes space dimensions
   std::vector<NcDim> dim_vect_x;
@@ -298,37 +304,15 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, std::
 // Save output at cell-centered values
 void PlumeOutput::save(QEStime timeIn)
 {
-
   if (timeIn > averagingStartTime) {
-
-    // incrementation of the averaging time
-    ongoingAveragingTime += timeStep;
-
-    // count the mass and number of particle in each box
-    boxCount();
 
     // output to NetCDF file
     if (timeIn >= nextOutputTime) {
-
-      // adjusting concentration for averaging time and volume of the box
-      // cc = 1/Tavg * 1/vol => in kg/m3
-      // conc count the mass in the box * dt
-      for (auto id = 0u; id < pBox.size(); id++) {
-        conc[id] = conc[id] / (ongoingAveragingTime * volume);
-      }
-
       // set output time for correct netcdf output
       timeCurrent = timeIn;
 
       // save the fields to NetCDF files
       saveOutputFields();
-
-      // reset container for the next averaging period
-      ongoingAveragingTime = 0.0;
-      for (auto id = 0u; id < pBox.size(); id++) {
-        pBox[id] = 0;
-        conc[id] = 0.0;
-      }
 
       // update the next output time value
       // so averaging and output only happens at the averaging frequency
