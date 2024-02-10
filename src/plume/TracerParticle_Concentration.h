@@ -35,6 +35,7 @@
 #pragma once
 
 #include "util/ManagedContainer.h"
+#include "util/QESOutputInterface.h"
 
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
@@ -57,7 +58,7 @@ public:
   void collect(QEStime &timeIn, const float &timeStep) override;
   void finalize(QEStime &timeIn) override;
 
-  void setOutput(QESNetCDFOutput *out) override;
+  void setOutput(QESFileOutput *out) override;
 
 protected:
   ManagedContainer<TracerParticle> *m_particles;

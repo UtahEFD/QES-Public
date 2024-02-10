@@ -38,6 +38,7 @@
 #include <map>
 #include <netcdf>
 
+#include "QESFileOutput.h"
 #include "NetCDFOutput.h"
 #include "QEStime.h"
 
@@ -115,6 +116,7 @@ struct AttVectorChar
  */
 
 class QESNetCDFOutput : public NetCDFOutput
+  , public QESFileOutput
 {
 public:
   explicit QESNetCDFOutput(const std::string &);
@@ -126,27 +128,27 @@ public:
    *
    * @note Can be called outside.
    */
-  virtual void save(QEStime) = 0;
-  virtual void save(float) {}
+  virtual void save(QEStime) override {}
+  virtual void save(float) override {}
 
-  void createDimension(const std::string &, const std::string &, const std::string &, std::vector<int> *);
-  void createDimension(const std::string &, const std::string &, const std::string &, std::vector<float> *);
-  void createDimension(const std::string &, const std::string &, const std::string &, std::vector<double> *);
+  void createDimension(const std::string &, const std::string &, const std::string &, std::vector<int> *) override;
+  void createDimension(const std::string &, const std::string &, const std::string &, std::vector<float> *) override;
+  void createDimension(const std::string &, const std::string &, const std::string &, std::vector<double> *) override;
 
-  void createDimensionSet(const std::string &, const std::vector<std::string> &);
+  void createDimensionSet(const std::string &, const std::vector<std::string> &) override;
 
   // create attribute scalar based on type of data
-  void createField(const std::string &, const std::string &, const std::string &, const std::string &, int *);
-  void createField(const std::string &, const std::string &, const std::string &, const std::string &, float *);
-  void createField(const std::string &, const std::string &, const std::string &, const std::string &, double *);
+  void createField(const std::string &, const std::string &, const std::string &, const std::string &, int *) override;
+  void createField(const std::string &, const std::string &, const std::string &, const std::string &, float *) override;
+  void createField(const std::string &, const std::string &, const std::string &, const std::string &, double *) override;
 
   // create attribute vector based on type of data
-  void createField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<int> *);
-  void createField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<float> *);
-  void createField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<double> *);
+  void createField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<int> *) override;
+  void createField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<float> *) override;
+  void createField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<double> *) override;
 
 protected:
-  QESNetCDFOutput() {}
+  QESNetCDFOutput() = default;
 
   // create attribute scalar based on type of data
   void createAttScalar(const std::string &, const std::string &, const std::string &, const std::vector<NcDim> &, int *);
@@ -184,7 +186,7 @@ protected:
 
   std::map<std::string, NcDim> output_dimensions;
   std::map<std::string, std::vector<NcDim>> output_dimension_sets;
-  
+
   std::set<std::string> set_all_output_fields;
 
   std::vector<std::string> all_output_fields;

@@ -69,6 +69,8 @@ void HeavyParticle_Model::initialize(const PlumeInputData *PID,
 
   stats = new StatisticsDirector(PID, PGD);
   stats->enroll("concentration", new HeavyParticle_Concentration(PID, this));
+  output_ptr.push_back(stats);
+  for (auto s : *stats) { output_ptr.push_back(s.second); }
 }
 
 void HeavyParticle_Model::generateParticleList(QEStime &timeCurrent,

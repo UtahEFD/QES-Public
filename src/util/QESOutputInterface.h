@@ -11,50 +11,37 @@
  * Copyright (c) 2022 Lucas Ulmer
  * Copyright (c) 2022 Pete Willemsen
  *
- * This file is part of QES-Plume
+ * This file is part of QES-Winds
  *
  * GPL-3.0 License
  *
- * QES-Plume is free software: you can redistribute it and/or modify
+ * QES-Winds is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3 of the License.
  *
- * QES-Plume is distributed in the hope that it will be useful,
+ * QES-Winds is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Statistics.h
- * @brief
- */
+/** @file QESFileOutput.h */
 
 #pragma once
 
+#include <string>
 #include <iostream>
-#include <fstream>
-#include <unordered_map>
-#include <cmath>
-#include <cstring>
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif
+#include "QESFileOutput.h"
 
-#include "util/QEStime.h"
-#include "util/QESOutputInterface.h"
-
-
-class Statistics : public QESOutputInterface
+class QESOutputInterface
 {
 public:
-  Statistics() = default;
-  ~Statistics() = default;
+  QESOutputInterface() = default;
+  ~QESOutputInterface() = default;
 
-  virtual void collect(QEStime &, const float &) = 0;
-  virtual void finalize(QEStime &) = 0;
-  virtual void reset() = 0;
+  virtual void setOutput(QESFileOutput *) = 0;
 };

@@ -71,7 +71,7 @@ void TracerParticle_Concentration::finalize(QEStime &timeIn)
 }
 
 
-void TracerParticle_Concentration::setOutput(QESNetCDFOutput *out)
+void TracerParticle_Concentration::setOutput(QESFileOutput *out)
 {
   out->createDimension("x_c", "x-center collection box", "m", &xBoxCen);
   out->createDimension("y_c", "y-center collection box", "m", &yBoxCen);
