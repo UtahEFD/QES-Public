@@ -57,7 +57,7 @@ public:
   void collect(QEStime &timeIn, const float &timeStep) override;
   void finalize(QEStime &timeIn) override;
 
-  void setOutput(QESNetCDFOutput *out) override;
+  void setOutput(QESFileOutput *out) override;
 
 protected:
   ManagedContainer<HeavyParticle> *m_particles;

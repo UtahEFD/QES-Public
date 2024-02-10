@@ -133,7 +133,11 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, std::
   // setup information:
   // --------------------------------------------------------
   for (const auto &pm : m_PGD->models) {
-    pm.second->stats->setOutput(this);
+    std::cout << "model loop" << std::endl;
+    for (const auto &p : pm.second->output_ptr) {
+      std::cout << "output loop" << std::endl;
+      p->setOutput(this);
+    }
   }
 
   // create output fields

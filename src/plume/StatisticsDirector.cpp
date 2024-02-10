@@ -89,10 +89,10 @@ void StatisticsDirector::compute(QEStime &timeIn, const float &timeStep)
   }
 }
 
-void StatisticsDirector::setOutput(QESNetCDFOutput *out)
+void StatisticsDirector::setOutput(QESFileOutput *out)
 {
-  out->createField("tAvg", "Averaging time", "s", "t", &ongoingAveragingTime);
-  for (const auto &e : elements) {
+  out->createField("t_avg", "Averaging time", "s", "t", &ongoingAveragingTime);
+  /*for (const auto &e : elements) {
     e.second->setOutput(out);
-  }
+  }*/
 }

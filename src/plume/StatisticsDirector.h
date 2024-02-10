@@ -45,13 +45,14 @@
 #endif
 
 #include "util/QEStime.h"
+#include "util/QESOutputInterface.h"
 
 #include "Statistics.h"
 
 class PlumeInputData;
 class PLUMEGeneralData;
 
-class StatisticsDirector
+class StatisticsDirector : public QESOutputInterface
 {
 public:
   StatisticsDirector(const PlumeInputData *, PLUMEGeneralData *);
@@ -68,7 +69,7 @@ public:
 
   bool getOutputStatus() { return need_output; }
   void resetOutputStatus() { need_output = false; }
-  void setOutput(QESNetCDFOutput *);
+  void setOutput(QESFileOutput *) override;
 
 protected:
   std::unordered_map<std::string, Statistics *> elements;
