@@ -14,11 +14,11 @@
 
 #include "plume/SourceParameters.hpp"
 #include "plume/PI_SourceGeometry.hpp"
-#include "plume/SourceGeometry_Cube.hpp"
-#include "plume/SourceGeometry_FullDomain.hpp"
-#include "plume/SourceGeometry_Line.hpp"
-#include "plume/SourceGeometry_Point.hpp"
-#include "plume/SourceGeometry_SphereShell.hpp"
+#include "plume/PI_SourceGeometry_Cube.hpp"
+#include "plume/PI_SourceGeometry_FullDomain.hpp"
+#include "plume/PI_SourceGeometry_Line.hpp"
+#include "plume/PI_SourceGeometry_Point.hpp"
+#include "plume/PI_SourceGeometry_SphereShell.hpp"
 
 #include "util/ParseInterface.h"
 

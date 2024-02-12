@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file SourceCircle.hpp
+/** @file SourceLine.hpp
  * @brief This class represents a specific source type.
  *
  * @note Child of SourceType
@@ -37,42 +37,40 @@
 
 #pragma once
 
+
 #include "PI_SourceGeometry.hpp"
 
-class SourceGeometry_SphereShell : public PI_SourceGeometry
+class PI_SourceGeometry_Line : public PI_SourceGeometry
 {
 private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
   // guidelines for how to set these variables within an inherited source are given in SourceType.
 
-  std::random_device rd;// Will be used to obtain a seed for the random number engine
-  std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
-  std::normal_distribution<> normalDistribution;
-
-  double posX = -1.0;
-  double posY = -1.0;
-  double posZ = -1.0;
-  double radius = -1.0;
+  double posX_0 = -1.0;
+  double posY_0 = -1.0;
+  double posZ_0 = -1.0;
+  double posX_1 = -1.0;
+  double posY_1 = -1.0;
+  double posZ_1 = -1.0;
 
 protected:
 public:
   // Default constructor
-  SourceGeometry_SphereShell() : PI_SourceGeometry(SourceShape::sphereShell)
+  PI_SourceGeometry_Line() : PI_SourceGeometry(SourceShape::line)
   {
-    prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
-    normalDistribution = std::normal_distribution<>(0.0, 1.0);
   }
 
   // destructor
-  ~SourceGeometry_SphereShell() = default;
-
+  ~PI_SourceGeometry_Line() = default;
 
   void parseValues() override
   {
-    parsePrimitive<double>(true, posX, "posX");
-    parsePrimitive<double>(true, posY, "posY");
-    parsePrimitive<double>(true, posZ, "posZ");
-    parsePrimitive<double>(true, radius, "radius");
+    parsePrimitive<double>(true, posX_0, "posX_0");
+    parsePrimitive<double>(true, posY_0, "posY_0");
+    parsePrimitive<double>(true, posZ_0, "posZ_0");
+    parsePrimitive<double>(true, posX_1, "posX_1");
+    parsePrimitive<double>(true, posY_1, "posY_1");
+    parsePrimitive<double>(true, posZ_1, "posZ_1");
   }
 
 

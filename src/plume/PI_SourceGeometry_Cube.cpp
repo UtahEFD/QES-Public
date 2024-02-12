@@ -35,9 +35,9 @@
  * @sa SourceType
  */
 
-#include "SourceGeometry_Cube.hpp"
+#include "PI_SourceGeometry_Cube.hpp"
 
-void SourceGeometry_Cube::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
+void PI_SourceGeometry_Cube ::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
   if (m_minX > m_maxX) {
     std::cerr << "[ERROR] \t SourceGeometry_Cube::checkPosInfo: \n\t\t input minX is greater than input maxX! minX = \"" << m_minX
@@ -88,7 +88,7 @@ void SourceGeometry_Cube::checkPosInfo(const double &domainXstart, const double 
   }
 }
 
-void SourceGeometry_Cube::setInitialPosition(double &x, double &y, double &z)
+void PI_SourceGeometry_Cube ::setInitialPosition(double &x, double &y, double &z)
 {
   // generate uniform dist in domain
   x = uniformDistribution(prng) * (m_maxX - m_minX) + m_minX;

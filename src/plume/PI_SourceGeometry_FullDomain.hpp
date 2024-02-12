@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file SourceCube.cpp
+/** @file SourceFullDomain.hpp
  * @brief This class represents a specific source type.
  *
  * @note Child of SourceType
@@ -37,20 +37,24 @@
 
 #pragma once
 
+
 #include "PI_SourceGeometry.hpp"
 
-class SourceGeometry_Cube : public PI_SourceGeometry
+class PI_SourceGeometry_FullDomain : public PI_SourceGeometry
 {
 private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
   // guidelines for how to set these variables within an inherited source are given in SourceType.
 
-  double m_minX = -1.0;
-  double m_minY = -1.0;
-  double m_minZ = -1.0;
-  double m_maxX = -1.0;
-  double m_maxY = -1.0;
-  double m_maxZ = -1.0;
+  // this source is a bit weird because the domain size has to be obtained after the input parser.
+  //  this would mean either doing a function call unique to this source to supply the required data during the dispersion constructor
+  //  or by using checkPosInfo() differently than it is normally intended to set the domain size variables
+  double xDomainStart = -1.0;
+  double yDomainStart = -1.0;
+  double zDomainStart = -1.0;
+  double xDomainEnd = -1.0;
+  double yDomainEnd = -1.0;
+  double zDomainEnd = -1.0;
 
   std::random_device rd;// Will be used to obtain a seed for the random number engine
   std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
@@ -59,25 +63,19 @@ private:
 protected:
 public:
   // Default constructor
-  SourceGeometry_Cube() : PI_SourceGeometry(SourceShape::cube)
+  PI_SourceGeometry_FullDomain() : PI_SourceGeometry(SourceShape::fullDomain)
   {
     prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
     uniformDistribution = std::uniform_real_distribution<>(0.0, 1.0);
   }
 
   // destructor
-  ~SourceGeometry_Cube() = default;
+  ~PI_SourceGeometry_FullDomain() = default;
 
   void parseValues() override
   {
-    parsePrimitive<double>(true, m_minX, "minX");
-    parsePrimitive<double>(true, m_minY, "minY");
-    parsePrimitive<double>(true, m_minZ, "minZ");
-    parsePrimitive<double>(true, m_maxX, "maxX");
-    parsePrimitive<double>(true, m_maxY, "maxY");
-    parsePrimitive<double>(true, m_maxZ, "maxZ");
+    // no paramter
   }
-
 
   void checkPosInfo(const double &domainXstart,
                     const double &domainXend,

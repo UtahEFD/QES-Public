@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file SourceLine.hpp
+/** @file SourcePoint.hpp
  * @brief This class represents a specific source type.
  *
  * @note Child of SourceType
@@ -40,37 +40,32 @@
 
 #include "PI_SourceGeometry.hpp"
 
-class SourceGeometry_Line : public PI_SourceGeometry
+class PI_SourceGeometry_Point : public PI_SourceGeometry
 {
 private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
   // guidelines for how to set these variables within an inherited source are given in SourceType.
 
-  double posX_0 = -1.0;
-  double posY_0 = -1.0;
-  double posZ_0 = -1.0;
-  double posX_1 = -1.0;
-  double posY_1 = -1.0;
-  double posZ_1 = -1.0;
+  double posX = -1.0;
+  double posY = -1.0;
+  double posZ = -1.0;
 
 protected:
 public:
   // Default constructor
-  SourceGeometry_Line() : PI_SourceGeometry(SourceShape::line)
+  PI_SourceGeometry_Point() : PI_SourceGeometry(SourceShape::point)
   {
   }
 
   // destructor
-  ~SourceGeometry_Line() = default;
+  ~PI_SourceGeometry_Point() = default;
+
 
   void parseValues() override
   {
-    parsePrimitive<double>(true, posX_0, "posX_0");
-    parsePrimitive<double>(true, posY_0, "posY_0");
-    parsePrimitive<double>(true, posZ_0, "posZ_0");
-    parsePrimitive<double>(true, posX_1, "posX_1");
-    parsePrimitive<double>(true, posY_1, "posY_1");
-    parsePrimitive<double>(true, posZ_1, "posZ_1");
+    parsePrimitive<double>(true, posX, "posX");
+    parsePrimitive<double>(true, posY, "posY");
+    parsePrimitive<double>(true, posZ, "posZ");
   }
 
 

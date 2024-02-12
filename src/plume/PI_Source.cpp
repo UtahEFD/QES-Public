@@ -79,11 +79,11 @@ void PI_Source::setSourceGeometry()
   std::vector<PI_SourceGeometry *> sGeom_tmp;
 
   // first parse all the release types into the temporary variable rType_tmp
-  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<PI_SourceGeometry, SourceGeometry_Cube>("sourceGeometry_Cube"));
-  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<PI_SourceGeometry, SourceGeometry_FullDomain>("sourceGeometry_FullDomain"));
-  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<PI_SourceGeometry, SourceGeometry_Line>("sourceGeometry_Line"));
-  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<PI_SourceGeometry, SourceGeometry_Point>("sourceGeometry_Point"));
-  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<PI_SourceGeometry, SourceGeometry_SphereShell>("sourceGeometry_SphereShell"));
+  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<PI_SourceGeometry, PI_SourceGeometry_Cube>("sourceGeometry_Cube"));
+  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<PI_SourceGeometry, PI_SourceGeometry_FullDomain>("sourceGeometry_FullDomain"));
+  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<PI_SourceGeometry, PI_SourceGeometry_Line>("sourceGeometry_Line"));
+  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<PI_SourceGeometry, PI_SourceGeometry_Point>("sourceGeometry_Point"));
+  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<PI_SourceGeometry, PI_SourceGeometry_SphereShell>("sourceGeometry_SphereShell"));
 
 
   // now if the number of release types is not 1, there was a problem, need to quit with an error

@@ -35,30 +35,30 @@
  * @sa SourceType
  */
 
-#include "SourceGeometry_Point.hpp"
+#include "PI_SourceGeometry_Point.hpp"
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-void SourceGeometry_Point::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
+void PI_SourceGeometry_Point::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
   if (posX < domainXstart || posX > domainXend) {
-    std::cerr << "[ERROR] \t SourceGeometry_Point::checkPosInfo: \n\t\t input posX is outside of domain! posX = \"" << posX
+    std::cerr << "[ERROR] \t PI_SourceGeometry_Point::checkPosInfo: \n\t\t input posX is outside of domain! posX = \"" << posX
               << "\" domainXstart = \"" << domainXstart << "\" domainXend = \"" << domainXend << "\"" << std::endl;
     exit(1);
   }
   if (posY < domainYstart || posY > domainYend) {
-    std::cerr << "[ERROR] \t SourceGeometry_Point::checkPosInfo: \n\t\t input posY is outside of domain! posY = \"" << posY
+    std::cerr << "[ERROR] \t PI_SourceGeometry_Point::checkPosInfo: \n\t\t input posY is outside of domain! posY = \"" << posY
               << "\" domainYstart = \"" << domainYstart << "\" domainYend = \"" << domainYend << "\"" << std::endl;
     exit(1);
   }
   if (posZ < domainZstart || posZ > domainZend) {
-    std::cerr << "[ERROR] \t SourceGeometry_Point::checkPosInfo: \n\t\t input posZ is outside of domain! posZ = \"" << posZ
+    std::cerr << "[ERROR] \t PI_SourceGeometry_Point::checkPosInfo: \n\t\t input posZ is outside of domain! posZ = \"" << posZ
               << "\" domainZstart = \"" << domainZstart << "\" domainZend = \"" << domainZend << "\"" << std::endl;
     exit(1);
   }
 }
 
-void SourceGeometry_Point::setInitialPosition(double &x, double &y, double &z)
+void PI_SourceGeometry_Point::setInitialPosition(double &x, double &y, double &z)
 {
   // set initial position
   x = posX;

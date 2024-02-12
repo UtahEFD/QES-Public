@@ -42,11 +42,11 @@
 
 #include "PI_Source.hpp"
 #include "PI_SourceGeometry.hpp"
-#include "SourceGeometry_Cube.hpp"
-#include "SourceGeometry_FullDomain.hpp"
-#include "SourceGeometry_Line.hpp"
-#include "SourceGeometry_Point.hpp"
-#include "SourceGeometry_SphereShell.hpp"
+#include "PI_SourceGeometry_Cube.hpp"
+#include "PI_SourceGeometry_FullDomain.hpp"
+#include "PI_SourceGeometry_Line.hpp"
+#include "PI_SourceGeometry_Point.hpp"
+#include "PI_SourceGeometry_SphereShell.hpp"
 
 #include "Particle.h"
 #include "Particle_Tracer.hpp"
