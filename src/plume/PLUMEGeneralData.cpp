@@ -428,7 +428,7 @@ void PLUMEGeneralData::GLE_solver(Particle *p, double &par_dt, TURBGeneralData *
                        p->CoEps);
 
   // now need to call makeRealizable on tau
-  makeRealizable(txx, txy, txz, tyy, tyz, tzz);
+  makeRealizable(txx, txy, txz, tyy, tyz, tzz, invarianceTol);
 
   // now need to calculate the inverse values for tau
   // directly modifies the values of tau
@@ -590,7 +590,7 @@ void PLUMEGeneralData::setParticle(WINDSGeneralData *WGD, TURBGeneralData *TGD, 
   par_ptr->wFluct_old = par_ptr->wFluct;
 
   // now need to call makeRealizable on tau
-  makeRealizable(txx, txy, txz, tyy, tyz, tzz);
+  makeRealizable(txx, txy, txz, tyy, tyz, tzz, invarianceTol);
 
   // set tau_old to the interpolated values for each position
   par_ptr->txx = txx;
@@ -672,7 +672,8 @@ void PLUMEGeneralData::makeRealizable(double &txx,
                                       double &txz,
                                       double &tyy,
                                       double &tyz,
-                                      double &tzz)
+                                      double &tzz,
+                                      const double &tol)
 {
   // first calculate the invariants and see if they are already realizable
   // the calcInvariants function modifies the values directly, so they always
@@ -683,7 +684,7 @@ void PLUMEGeneralData::makeRealizable(double &txx,
   double invar_zz = 0.0;
   calcInvariants(txx, txy, txz, tyy, tyz, tzz, invar_xx, invar_yy, invar_zz);
 
-  if (invar_xx > invarianceTol && invar_yy > invarianceTol && invar_zz > invarianceTol) {
+  if (invar_xx > tol && invar_yy > tol && invar_zz > tol) {
     return;// tau is already realizable
   }
 
@@ -694,7 +695,7 @@ void PLUMEGeneralData::makeRealizable(double &txx,
   double ks = 1.01 * (-b + std::sqrt(b * b - 16.0 / 3.0 * c)) / (8.0 / 3.0);
 
   // if the initial guess is bad, use the straight up invar_xx value
-  if (ks < invarianceTol || isnan(ks)) {
+  if (ks < tol || isnan(ks)) {
     ks = 0.5 * std::abs(txx + tyy + tzz);// also 0.5*abs(invar_xx)
   }
 
@@ -727,7 +728,7 @@ void PLUMEGeneralData::makeRealizable(double &txx,
   //  if it isn't realizable, so maybe another approach for when the iterations
   //  are reached might be smart
   int iter = 0;
-  while ((invar_xx < invarianceTol || invar_yy < invarianceTol || invar_zz < invarianceTol) && iter < 1000) {
+  while ((invar_xx < tol || invar_yy < tol || invar_zz < tol) && iter < 1000) {
     iter = iter + 1;
 
     // increase subfilter tke by 5%
