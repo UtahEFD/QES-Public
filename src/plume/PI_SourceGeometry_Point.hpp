@@ -40,7 +40,7 @@
 
 #include "PI_SourceGeometry.hpp"
 
-class SourceGeometry_Point : public PI_SourceGeometry
+class PI_SourceGeometry_Point : public PI_SourceGeometry
 {
 private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
@@ -53,12 +53,12 @@ private:
 protected:
 public:
   // Default constructor
-  SourceGeometry_Point() : PI_SourceGeometry(SourceShape::point)
+  PI_SourceGeometry_Point() : PI_SourceGeometry(SourceShape::point)
   {
   }
 
   // destructor
-  ~SourceGeometry_Point() = default;
+  ~PI_SourceGeometry_Point() = default;
 
 
   void parseValues() override

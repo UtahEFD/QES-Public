@@ -35,44 +35,44 @@
  * @sa SourceType
  */
 
-#include "SourceGeometry_Line.hpp"
+#include "PI_SourceGeometry_Line.hpp"
 
-void SourceGeometry_Line::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
+void PI_SourceGeometry_Line::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
   if (posX_0 < domainXstart || posX_0 > domainXend) {
-    std::cerr << "[ERROR] \t SourceGeometry_Line::checkPosInfo: \n\t\t input posX_0 is outside of domain! posX_0 = \"" << posX_0
+    std::cerr << "[ERROR] \t PI_SourceGeometry_Line::checkPosInfo: \n\t\t input posX_0 is outside of domain! posX_0 = \"" << posX_0
               << "\" domainXstart = \"" << domainXstart << "\" domainXend = \"" << domainXend << "\"" << std::endl;
     exit(1);
   }
   if (posY_0 < domainYstart || posY_0 > domainYend) {
-    std::cerr << "[ERROR] \t SourceGeometry_Line::checkPosInfo: \n\t\t input posY_0 is outside of domain! posY_0 = \"" << posY_0
+    std::cerr << "[ERROR] \t PI_SourceGeometry_Line::checkPosInfo: \n\t\t input posY_0 is outside of domain! posY_0 = \"" << posY_0
               << "\" domainYstart = \"" << domainYstart << "\" domainYend = \"" << domainYend << "\"" << std::endl;
     exit(1);
   }
   if (posZ_0 < domainZstart || posZ_0 > domainZend) {
-    std::cerr << "[ERROR] \t SourceGeometry_Line::checkPosInfo: \n\t\t input posZ_0 is outside of domain! posZ_0 = \"" << posZ_0
+    std::cerr << "[ERROR] \t PI_SourceGeometry_Line::checkPosInfo: \n\t\t input posZ_0 is outside of domain! posZ_0 = \"" << posZ_0
               << "\" domainZstart = \"" << domainZstart << "\" domainZend = \"" << domainZend << "\"" << std::endl;
     exit(1);
   }
 
   if (posX_1 < domainXstart || posX_1 > domainXend) {
-    std::cerr << "[ERROR] \t SourceGeometry_Line::checkPosInfo: \n\t\t input posX_1 is outside of domain! posX_1 = \"" << posX_1
+    std::cerr << "[ERROR] \t PI_SourceGeometry_Line::checkPosInfo: \n\t\t input posX_1 is outside of domain! posX_1 = \"" << posX_1
               << "\" domainXstart = \"" << domainXstart << "\" domainXend = \"" << domainXend << "\"" << std::endl;
     exit(1);
   }
   if (posY_1 < domainYstart || posY_1 > domainYend) {
-    std::cerr << "[ERROR] \t SourceGeometry_Line::checkPosInfo: \n\t\t input posY_1 is outside of domain! posY_1 = \"" << posY_1
+    std::cerr << "[ERROR] \t PI_SourceGeometry_Line::checkPosInfo: \n\t\t input posY_1 is outside of domain! posY_1 = \"" << posY_1
               << "\" domainYstart = \"" << domainYstart << "\" domainYend = \"" << domainYend << "\"" << std::endl;
     exit(1);
   }
   if (posZ_1 < domainZstart || posZ_1 > domainZend) {
-    std::cerr << "[ERROR] \t SourceGeometry_Line::checkPosInfo: \n\t\t input posZ_1 is outside of domain! posZ_1 = \"" << posZ_1
+    std::cerr << "[ERROR] \t PI_SourceGeometry_Line::checkPosInfo: \n\t\t input posZ_1 is outside of domain! posZ_1 = \"" << posZ_1
               << "\" domainZstart = \"" << domainZstart << "\" domainZend = \"" << domainZend << "\"" << std::endl;
     exit(1);
   }
 }
 
-void SourceGeometry_Line::setInitialPosition(double &x, double &y, double &z)
+void PI_SourceGeometry_Line::setInitialPosition(double &x, double &y, double &z)
 {
   // generate random point on line between m_pt0 and m_pt1
   double diffX = posX_1 - posX_0;

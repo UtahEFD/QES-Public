@@ -25,7 +25,7 @@ SET( qesPlumeCoreSources
     PlumeOutput.cpp
     PlumeOutputParticleData.cpp
 
-    BoundaryConditions.hpp
+    PI_BoundaryConditions.hpp
     DomainBoundaryConditions.cpp
 
     ParticleManager.cpp
@@ -39,24 +39,25 @@ SET( qesPlumeCoreSources
     HeavyParticle_Source.cpp
     HeavyParticle_Concentration.cpp
 
-    Particle.hpp
+    Particle.h
     ParticleFactories.hpp
     Particle_Tracer.hpp
     Particle_Heavy.hpp
     ParticleFactories.cpp
 
-    ReleaseType.hpp
-    ReleaseType_instantaneous.hpp
-    ReleaseType_continuous.hpp
-    ReleaseType_duration.hpp
-
     PI_Source.cpp
-    SourceGeometry.hpp
-    SourceGeometry_Cube.cpp SourceGeometry_Cube.hpp
-    SourceGeometry_FullDomain.cpp SourceGeometry_FullDomain.hpp
-    SourceGeometry_Line.cpp SourceGeometry_Line.hpp
-    SourceGeometry_Point.cpp SourceGeometry_Point.hpp
-    SourceGeometry_SphereShell.cpp SourceGeometry_SphereShell.hpp
+
+    PI_ReleaseType.hpp
+    PI_ReleaseType_instantaneous.hpp
+    PI_ReleaseType_continuous.hpp
+    PI_ReleaseType_duration.hpp
+
+    PI_SourceGeometry.hpp
+    PI_SourceGeometry_Cube.cpp PI_SourceGeometry_Cube.hpp
+    PI_SourceGeometry_FullDomain.cpp PI_SourceGeometry_FullDomain.hpp
+    PI_SourceGeometry_Line.cpp PI_SourceGeometry_Line.hpp
+    PI_SourceGeometry_Point.cpp PI_SourceGeometry_Point.hpp
+    PI_SourceGeometry_SphereShell.cpp PI_SourceGeometry_SphereShell.hpp
 
     Source.cpp
     Source_TracerParticles.cpp

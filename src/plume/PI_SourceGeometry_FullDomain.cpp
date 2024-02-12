@@ -35,9 +35,9 @@
  * @sa SourceType
  */
 
-#include "SourceGeometry_FullDomain.hpp"
+#include "PI_SourceGeometry_FullDomain.hpp"
 
-void SourceGeometry_FullDomain::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
+void PI_SourceGeometry_FullDomain::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
 
   // notice that setting the variables as I am doing right now is not the standard way of doing this function
@@ -69,7 +69,7 @@ void SourceGeometry_FullDomain::checkPosInfo(const double &domainXstart, const d
   //  cause there is no easy checking method to be implemented here
 }
 
-void SourceGeometry_FullDomain::setInitialPosition(double &x, double &y, double &z)
+void PI_SourceGeometry_FullDomain::setInitialPosition(double &x, double &y, double &z)
 {
   // generate uniform dist in domain
   x = uniformDistribution(prng) * (xDomainEnd - xDomainStart) + xDomainStart;
