@@ -39,11 +39,13 @@
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
 
-#include "Deposition.h"
 #include "ParticleModel.h"
+#include "ParticleModel_Visitor.h"
 
 #include "TracerParticle.h"
 #include "TracerParticle_Source.h"
+
+#include "Deposition.h"
 
 class PI_TracerParticle;
 class TracerParticle_Concentration;
@@ -55,7 +57,7 @@ public:
 
   ~TracerParticle_Model() = default;
 
-  void accept(ModelVisitor *visitor) override
+  void accept(ParticleModel_Visitor *visitor) override
   {
     visitor->visitTracerParticle_Model(this);
   }
