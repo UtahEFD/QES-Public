@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file ParticleOutputParameters.hpp 
+/** @file Sources.hpp
  * @brief This class contains data and variables that set flags and
  * settngs read from the xml.
  *
@@ -38,25 +38,37 @@
 
 #pragma once
 
-
 #include "util/ParseInterface.h"
-#include <string>
-#include <vector>
 
-class ParticleOutputParameters : public ParseInterface
+#include "PI_Particle.hpp"
+
+#include "ParticleModel.h"
+#include "TracerParticle_Model.h"
+
+class PI_TracerParticle : public PI_Particle
 {
-private:
+protected:
 public:
-  float outputStartTime = -1.0;
-  float outputEndTime = -1.0;
-  float outputFrequency;
-  std::vector<std::string> outputFields;
+  // default constructor
+  PI_TracerParticle()
+    : PI_Particle(ParticleType::tracer, false)
+  {}
 
-  virtual void parseValues()
+  // destructor
+  ~PI_TracerParticle()
   {
-    parsePrimitive<float>(false, outputStartTime, "outputStartTime");
-    parsePrimitive<float>(false, outputEndTime, "outputEndTime");
-    parsePrimitive<float>(true, outputFrequency, "outputFrequency");
-    parseMultiPrimitives<std::string>(false, outputFields, "outputFields");
   }
+
+  void parseValues() override
+  {
+    parsePrimitive<std::string>(true, tag, "tag");
+    parseMultiElements(false, sources, "source");
+  }
+
+  virtual ParticleModel *create() override
+  {
+    return new TracerParticle_Model(this);
+  }
+
+  // void setParticleParameters(Particle *ptr) override {}
 };

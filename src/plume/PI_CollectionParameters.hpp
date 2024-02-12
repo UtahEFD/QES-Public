@@ -51,7 +51,7 @@
 #include <string>
 #include <cmath>
 
-class CollectionParameters : public ParseInterface
+class PI_CollectionParameters : public ParseInterface
 {
 
 private:

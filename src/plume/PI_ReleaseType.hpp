@@ -50,11 +50,11 @@ enum ParticleReleaseType {
   duration
 };
 
-class ReleaseType : public ParseInterface
+class PI_ReleaseType : public ParseInterface
 {
 private:
   // default constructor
-  ReleaseType() = default;
+  PI_ReleaseType() = default;
 
 protected:
 public:
@@ -78,12 +78,12 @@ public:
   // Mass per particle
   double m_massPerParticle = 0.0;
 
-  explicit ReleaseType(const ParticleReleaseType &type) : parReleaseType(type)
+  explicit PI_ReleaseType(const ParticleReleaseType &type) : parReleaseType(type)
   {
   }
 
   // destructor
-  virtual ~ReleaseType() = default;
+  virtual ~PI_ReleaseType() = default;
 
 
   // this function is used to parse all the variables for each release type in a given source from the input .xml file

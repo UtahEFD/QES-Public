@@ -13,7 +13,7 @@
 #include "plume/Source_HeavyParticles.h"
 
 #include "plume/SourceParameters.hpp"
-#include "plume/SourceGeometry.hpp"
+#include "plume/PI_SourceGeometry.hpp"
 #include "plume/SourceGeometry_Cube.hpp"
 #include "plume/SourceGeometry_FullDomain.hpp"
 #include "plume/SourceGeometry_Line.hpp"

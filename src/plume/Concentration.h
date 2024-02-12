@@ -57,7 +57,7 @@
 
 #include "Statistics.h"
 
-#include "CollectionParameters.hpp"
+#include "PI_CollectionParameters.hpp"
 
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
@@ -67,13 +67,13 @@
 #include "InterpPowerLaw.h"
 #include "InterpTriLinear.h"
 
-#include "Particle.hpp"
+#include "Particle.h"
 #include "PlumeInputData.hpp"
 
 class Concentration : public Statistics
 {
 public:
-  explicit Concentration(const CollectionParameters *colParams);
+  explicit Concentration(const PI_CollectionParameters *colParams);
 
   ~Concentration() = default;
 

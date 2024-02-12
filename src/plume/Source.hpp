@@ -40,15 +40,15 @@
 #include <random>
 #include <list>
 
-#include "PI_Source.h"
-#include "SourceGeometry.hpp"
+#include "PI_Source.hpp"
+#include "PI_SourceGeometry.hpp"
 #include "SourceGeometry_Cube.hpp"
 #include "SourceGeometry_FullDomain.hpp"
 #include "SourceGeometry_Line.hpp"
 #include "SourceGeometry_Point.hpp"
 #include "SourceGeometry_SphereShell.hpp"
 
-#include "Particle.hpp"
+#include "Particle.h"
 #include "Particle_Tracer.hpp"
 #include "Particle_Heavy.hpp"
 
@@ -56,10 +56,10 @@
 #include "ParticleContainers.h"
 #include "ParticleFactories.hpp"
 
-#include "ReleaseType.hpp"
-#include "ReleaseType_instantaneous.hpp"
-#include "ReleaseType_continuous.hpp"
-#include "ReleaseType_duration.hpp"
+#include "PI_ReleaseType.hpp"
+#include "PI_ReleaseType_instantaneous.hpp"
+#include "PI_ReleaseType_continuous.hpp"
+#include "PI_ReleaseType_duration.hpp"
 
 // #include "Interp.h"
 #include "util/ParseInterface.h"
@@ -72,8 +72,8 @@ class ParseSource : public ParseInterface
 private:
 protected:
   ParseParticle *m_protoParticle{};
-  SourceGeometry *m_sourceGeometry{};
-  ReleaseType *m_releaseType{};
+  PI_SourceGeometry *m_sourceGeometry{};
+  PI_ReleaseType *m_releaseType{};
 
 public:
   // this is the index of the source in the dispersion class overall list of sources
@@ -176,8 +176,8 @@ protected:
 
   // ParticleTypeFactory *m_particleTypeFactory{};
   ParseParticle *m_protoParticle{};
-  SourceGeometry *m_sourceGeometry{};
-  ReleaseType *m_releaseType{};
+  PI_SourceGeometry *m_sourceGeometry{};
+  PI_ReleaseType *m_releaseType{};
 
 public:
   // this is the index of the source in the dispersion class overall list of sources
@@ -251,8 +251,8 @@ protected:
 
   // ParticleTypeFactory *m_particleTypeFactory{};
   ParseParticle *m_protoParticle{};
-  SourceGeometry *m_sourceGeometry{};
-  ReleaseType *m_releaseType{};
+  PI_SourceGeometry *m_sourceGeometry{};
+  PI_ReleaseType *m_releaseType{};
 
 public:
   // this is the index of the source in the dispersion class overall list of sources

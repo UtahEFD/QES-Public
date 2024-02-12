@@ -75,7 +75,7 @@
 #include "WallReflection_StairStep.h"
 #include "WallReflection_TriMesh.h"
 
-#include "Particle.hpp"
+#include "Particle.h"
 #include "ParticleContainers.h"
 #include "Source.hpp"
 #include "Source_TracerParticles.h"

@@ -28,50 +28,51 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file ReleaseType_continuous.hpp
- * @brief This class represents a specific release type.
+/** @file Sources.hpp
+ * @brief This class contains data and variables that set flags and
+ * settngs read from the xml.
  *
- * @note Child of ReleaseType
- * @sa ReleaseType
+ * @note Child of ParseInterface
+ * @sa ParseInterface
  */
 
 #pragma once
 
-#include "ReleaseType.hpp"
+#include "util/ParseInterface.h"
 
-class ReleaseType_continuous : public ReleaseType
+#include "PI_Particle.hpp"
+#include "HeavyParticle_Model.h"
+
+class PI_HeavyParticle : public PI_Particle
 {
-private:
-  // note that this also inherits data members:
-  // ParticleReleaseType m_rType, int m_particlePerTimestep, double m_releaseStartTime,
-  //  double m_releaseEndTime, and int m_numPar from ReleaseType.
-  // guidelines for how to set these variables within an inherited ReleaseType are given in ReleaseType.hpp.
-
-
 protected:
 public:
-  // Default constructor
-  ReleaseType_continuous() : ReleaseType(ParticleReleaseType::continuous)
-  {
-  }
+  // default constructor
+  PI_HeavyParticle()
+    : PI_Particle(ParticleType::heavy, true)
+  {}
 
   // destructor
-  ~ReleaseType_continuous() = default;
+  ~PI_HeavyParticle() = default;
 
   void parseValues() override
   {
-    parsePrimitive<int>(true, m_particlePerTimestep, "particlePerTimestep");
-    parsePrimitive<double>(false, m_massPerSec, "massPerSec");
+    parsePrimitive<std::string>(true, tag, "tag");
+    parsePrimitive<double>(true, rho, "particleDensity");
+    parsePrimitive<double>(true, d, "particleDiameter");
+
+    parsePrimitive<bool>(true, depFlag, "depositionFlag");
+    parsePrimitive<double>(false, c1, "c1");
+    parsePrimitive<double>(false, c2, "c2");
+
+    parsePrimitive<double>(false, decayConst, "decayConst");
+
+    parseMultiElements(false, sources, "source");
   }
+  // void setParticleParameters(Particle *ptr) override {}
 
-
-  void calcReleaseInfo(const double &timestep, const double &simDur) override
+  virtual ParticleModel *create() override
   {
-    // set the overall releaseType variables from the variables found in this class
-    m_releaseStartTime = 0;
-    m_releaseEndTime = simDur;
-    int nReleaseTimes = std::ceil(simDur / timestep);
-    m_numPar = m_particlePerTimestep * nReleaseTimes;
-    m_massPerParticle = m_massPerSec / (m_particlePerTimestep / timestep);
+    return new HeavyParticle_Model(this);
   }
 };

@@ -34,7 +34,7 @@
 
 #pragma once
 
-#include "Particle.hpp"
+#include "Particle.h"
 #include "Particle_Tracer.hpp"
 #include "Particle_Heavy.hpp"
 #include <unordered_map>

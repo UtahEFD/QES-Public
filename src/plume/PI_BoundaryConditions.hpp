@@ -28,47 +28,53 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Sources.hpp
- * @brief This class contains data and variables that set flags and
- * settngs read from the xml.
+/** @file BoundaryCondition.hpp
+ * @brief
  *
- * @note Child of ParseInterface
- * @sa ParseInterface
+ * @note Child of ArgumentParsing
+ * @sa ArgumentParsing
  */
 
 #pragma once
 
+#include <string>
+
 #include "util/ParseInterface.h"
 
-#include "PI_Particle.h"
 
-#include "ParticleModel.h"
-#include "TracerParticle_Model.h"
-
-class PI_TracerParticle : public PI_Particle
+class PI_BoundaryConditions : public ParseInterface
 {
-protected:
+
+private:
 public:
-  // default constructor
-  PI_TracerParticle()
-    : PI_Particle(ParticleType::tracer, false)
-  {}
+  // current possible BCtypes are:
+  // "exiting", "periodic", "reflection"
 
-  // destructor
-  ~PI_TracerParticle()
+  std::string xBCtype;
+  std::string yBCtype;
+  std::string zBCtype;
+
+  // possible reflection methods:
+  /*
+   * "doNothing" (default)   - nothing happen when particle enter wall
+   * "setInactive"           - particle is set to inactive when entering a wall
+   * "stairstepReflection"   - particle use full stair step reflection when entering a wall
+   */
+
+  std::string wallReflection;
+
+  virtual void parseValues()
   {
-  }
+    parsePrimitive<std::string>(true, xBCtype, "xBCtype");
+    parsePrimitive<std::string>(true, yBCtype, "yBCtype");
+    parsePrimitive<std::string>(true, zBCtype, "zBCtype");
 
-  void parseValues() override
-  {
-    parsePrimitive<std::string>(true, tag, "tag");
-    parseMultiElements(false, sources, "source");
-  }
 
-  virtual ParticleModel *create() override
-  {
-    return new TracerParticle_Model(this);
-  }
+    wallReflection = "";
+    parsePrimitive<std::string>(false, wallReflection, "wallReflection");
 
-  // void setParticleParameters(Particle *ptr) override {}
+    if (wallReflection == "") {
+      wallReflection = "doNothing";
+    }
+  }
 };

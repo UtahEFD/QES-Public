@@ -34,7 +34,7 @@
 
 #include "PLUMEGeneralData.h"
 
-#include "PI_HeavyParticle.h"
+#include "PI_HeavyParticle.hpp"
 #include "HeavyParticle_Concentration.h"
 
 #include "HeavyParticle_Model.h"

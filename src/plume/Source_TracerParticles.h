@@ -39,17 +39,17 @@
 
 #include "Source.hpp"
 
-#include "Particle.hpp"
+#include "Particle.h"
 #include "Particle_Tracer.hpp"
 
 #include "ParticleManager.h"
 #include "ParticleContainers.h"
 #include "ParticleFactories.hpp"
 
-#include "ReleaseType.hpp"
-#include "ReleaseType_instantaneous.hpp"
-#include "ReleaseType_continuous.hpp"
-#include "ReleaseType_duration.hpp"
+#include "PI_ReleaseType.hpp"
+#include "PI_ReleaseType_instantaneous.hpp"
+#include "PI_ReleaseType_continuous.hpp"
+#include "PI_ReleaseType_duration.hpp"
 
 // #include "Interp.h"
 #include "util/ParseInterface.h"

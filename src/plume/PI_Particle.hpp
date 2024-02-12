@@ -28,53 +28,68 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file BoundaryCondition.hpp 
- * @brief 
+/** @file Sources.hpp
+ * @brief This class contains data and variables that set flags and
+ * settngs read from the xml.
  *
- * @note Child of ArgumentParsing
- * @sa ArgumentParsing
+ * @note Child of ParseInterface
+ * @sa ParseInterface
  */
 
 #pragma once
 
-#include <string>
-
 #include "util/ParseInterface.h"
 
+#include "PI_Source.hpp"
+#include "Particle.h"
+#include "ParticleModel.h"
 
-class BoundaryConditions : public ParseInterface
+class Source;
+class GroundDeposition;
+class CanopyDeposition;
+
+class PI_Particle : public ParseInterface
 {
-
 private:
+  // default constructor
+  PI_Particle()
+    : d(0.0), m(0.0), rho(0.0),
+      depFlag(false), decayConst(0.0), c1(2.049), c2(1.19)
+  {}
+
+protected:
+  PI_Particle(const ParticleType &type, const bool &flag)
+    : particleType(type),
+      d(0.0), m(0.0), rho(0.0),
+      depFlag(flag), decayConst(0.0), c1(2.049), c2(1.19)
+  {}
+
 public:
-  // current possible BCtypes are:
-  // "exiting", "periodic", "reflection"
+  virtual ParticleModel *create() = 0;
 
-  std::string xBCtype;
-  std::string yBCtype;
-  std::string zBCtype;
+  // particle type
+  ParticleType particleType;
 
-  // possible reflection methods:
-  /*
-   * "doNothing" (default)   - nothing happen when particle enter wall
-   * "setInactive"           - particle is set to inactive when entering a wall
-   * "stairstepReflection"   - particle use full stair step reflection when entering a wall
-   */
+  std::string tag;
 
-  std::string wallReflection;
+  std::vector<PI_Source *> sources;
 
-  virtual void parseValues()
-  {
-    parsePrimitive<std::string>(true, xBCtype, "xBCtype");
-    parsePrimitive<std::string>(true, yBCtype, "yBCtype");
-    parsePrimitive<std::string>(true, zBCtype, "zBCtype");
+  // Physical properties
+  // diameter of particle (micron)
+  double d;
+  // mass of particle (g)
+  double m;
+  // density of particle (kg/m3)
+  double rho;
+
+  bool depFlag;
+  double decayConst, c1, c2;
+
+  // destructor
+  ~PI_Particle() = default;
+
+  virtual void parseValues() = 0;
 
 
-    wallReflection = "";
-    parsePrimitive<std::string>(false, wallReflection, "wallReflection");
-
-    if (wallReflection == "") {
-      wallReflection = "doNothing";
-    }
-  }
+  // virtual void setParticleParameters(Particle *) = 0;
 };

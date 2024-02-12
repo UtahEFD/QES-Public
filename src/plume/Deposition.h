@@ -63,7 +63,7 @@
 #include "InterpPowerLaw.h"
 #include "InterpTriLinear.h"
 
-#include "Particle.hpp"
+#include "Particle.h"
 
 class Deposition
 {

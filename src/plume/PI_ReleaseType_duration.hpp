@@ -37,39 +37,56 @@
 
 #pragma once
 
-#include "ReleaseType.hpp"
+#include "PI_ReleaseType.hpp"
 
-class ReleaseType_instantaneous : public ReleaseType
+class PI_ReleaseType_duration : public PI_ReleaseType
 {
 private:
   // note that this also inherits data members ParticleReleaseType m_rType, int m_particlePerTimestep, double m_releaseStartTime,
   //  double m_releaseEndTime, and int m_numPar from ReleaseType.
   // guidelines for how to set these variables within an inherited ReleaseType are given in ReleaseType.hpp.
 
-
 protected:
 public:
   // Default constructor
-  ReleaseType_instantaneous() : ReleaseType(ParticleReleaseType::instantaneous)
+  PI_ReleaseType_duration() : PI_ReleaseType(ParticleReleaseType::duration)
   {
   }
 
   // destructor
-  ~ReleaseType_instantaneous() = default;
-
+  ~PI_ReleaseType_duration() = default;
 
   void parseValues() override
   {
-    parsePrimitive<int>(true, m_numPar, "numPar");
+    parsePrimitive<double>(true, m_releaseStartTime, "releaseStartTime");
+    parsePrimitive<double>(true, m_releaseEndTime, "releaseEndTime");
+    parsePrimitive<int>(true, m_particlePerTimestep, "particlePerTimestep");
     parsePrimitive<double>(false, m_totalMass, "totalMass");
+    parsePrimitive<double>(false, m_massPerSec, "massPerSec");
   }
+
 
   void calcReleaseInfo(const double &timestep, const double &simDur) override
   {
     // set the overall releaseType variables from the variables found in this class
-    m_particlePerTimestep = m_numPar;
-    m_releaseStartTime = 0;
-    m_releaseEndTime = 0;
-    m_massPerParticle = m_totalMass / m_numPar;
+    double releaseDur = m_releaseEndTime - m_releaseStartTime;
+    if (releaseDur <= 0) {
+      std::cerr << "[ERROR]" << std::endl;
+      exit(1);
+    }
+    int nReleaseTimes = std::ceil(releaseDur / timestep);
+    m_numPar = m_particlePerTimestep * nReleaseTimes;
+    if (m_totalMass != 0.0 && m_massPerSec != 0.0) {
+      std::cerr << "[ERROR]" << std::endl;
+      exit(1);
+    } else if (m_totalMass != 0.0) {
+      m_massPerSec = m_totalMass / releaseDur;
+      m_massPerParticle = m_totalMass / m_numPar;
+    } else if (m_massPerSec != 0.0) {
+      m_totalMass = m_massPerSec * releaseDur;
+      m_massPerParticle = m_massPerSec / (m_particlePerTimestep / timestep);
+    } else {
+      m_massPerParticle = 0.0;
+    }
   }
 };

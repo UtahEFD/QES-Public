@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Sources.hpp
+/** @file ParticleOutputParameters.hpp
  * @brief This class contains data and variables that set flags and
  * settngs read from the xml.
  *
@@ -38,41 +38,25 @@
 
 #pragma once
 
+
 #include "util/ParseInterface.h"
+#include <string>
+#include <vector>
 
-#include "PI_Particle.h"
-#include "HeavyParticle_Model.h"
-
-class PI_HeavyParticle : public PI_Particle
+class PI_ParticleOutputParameters : public ParseInterface
 {
-protected:
+private:
 public:
-  // default constructor
-  PI_HeavyParticle()
-    : PI_Particle(ParticleType::heavy, true)
-  {}
+  float outputStartTime = -1.0;
+  float outputEndTime = -1.0;
+  float outputFrequency;
+  std::vector<std::string> outputFields;
 
-  // destructor
-  ~PI_HeavyParticle() = default;
-
-  void parseValues() override
+  virtual void parseValues()
   {
-    parsePrimitive<std::string>(true, tag, "tag");
-    parsePrimitive<double>(true, rho, "particleDensity");
-    parsePrimitive<double>(true, d, "particleDiameter");
-
-    parsePrimitive<bool>(true, depFlag, "depositionFlag");
-    parsePrimitive<double>(false, c1, "c1");
-    parsePrimitive<double>(false, c2, "c2");
-
-    parsePrimitive<double>(false, decayConst, "decayConst");
-
-    parseMultiElements(false, sources, "source");
-  }
-  // void setParticleParameters(Particle *ptr) override {}
-
-  virtual ParticleModel *create() override
-  {
-    return new HeavyParticle_Model(this);
+    parsePrimitive<float>(false, outputStartTime, "outputStartTime");
+    parsePrimitive<float>(false, outputEndTime, "outputEndTime");
+    parsePrimitive<float>(true, outputFrequency, "outputFrequency");
+    parseMultiPrimitives<std::string>(false, outputFields, "outputFields");
   }
 };

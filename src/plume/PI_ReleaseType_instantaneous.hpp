@@ -28,69 +28,48 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Sources.hpp
- * @brief This class contains data and variables that set flags and
- * settngs read from the xml.
+/** @file ReleaseType_continuous.hpp
+ * @brief This class represents a specific release type.
  *
- * @note Child of ParseInterface
- * @sa ParseInterface
+ * @note Child of ReleaseType
+ * @sa ReleaseType
  */
 
 #pragma once
 
-#include "util/ParseInterface.h"
+#include "PI_ReleaseType.hpp"
 
-#include "PI_Source.h"
-#include "Particle.hpp"
-#include "ParticleModel.h"
-
-class Source;
-class GroundDeposition;
-class CanopyDeposition;
-
-class PI_Particle : public ParseInterface
+class PI_ReleaseType_instantaneous : public PI_ReleaseType
 {
 private:
-  // default constructor
-  PI_Particle()
-    : d(0.0), m(0.0), rho(0.0),
-      depFlag(false), decayConst(0.0), c1(2.049), c2(1.19)
-  {}
+  // note that this also inherits data members ParticleReleaseType m_rType, int m_particlePerTimestep, double m_releaseStartTime,
+  //  double m_releaseEndTime, and int m_numPar from ReleaseType.
+  // guidelines for how to set these variables within an inherited ReleaseType are given in ReleaseType.hpp.
+
 
 protected:
-  PI_Particle(const ParticleType &type, const bool &flag)
-    : particleType(type),
-      d(0.0), m(0.0), rho(0.0),
-      depFlag(flag), decayConst(0.0), c1(2.049), c2(1.19)
-  {}
-
 public:
-
-  virtual ParticleModel *create() = 0;
-
-  // particle type
-  ParticleType particleType;
-
-  std::string tag;
-
-  std::vector<PI_Source *> sources;
-
-  // Physical properties
-  // diameter of particle (micron)
-  double d;
-  // mass of particle (g)
-  double m;
-  // density of particle (kg/m3)
-  double rho;
-
-  bool depFlag;
-  double decayConst, c1, c2;
+  // Default constructor
+  PI_ReleaseType_instantaneous() : PI_ReleaseType(ParticleReleaseType::instantaneous)
+  {
+  }
 
   // destructor
-  ~PI_Particle() = default;
-
-  virtual void parseValues() = 0;
+  ~PI_ReleaseType_instantaneous() = default;
 
 
-  // virtual void setParticleParameters(Particle *) = 0;
+  void parseValues() override
+  {
+    parsePrimitive<int>(true, m_numPar, "numPar");
+    parsePrimitive<double>(false, m_totalMass, "totalMass");
+  }
+
+  void calcReleaseInfo(const double &timestep, const double &simDur) override
+  {
+    // set the overall releaseType variables from the variables found in this class
+    m_particlePerTimestep = m_numPar;
+    m_releaseStartTime = 0;
+    m_releaseEndTime = 0;
+    m_massPerParticle = m_totalMass / m_numPar;
+  }
 };

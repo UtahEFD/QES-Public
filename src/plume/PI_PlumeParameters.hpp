@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file PlumeParameters.hpp 
+/** @file PlumeParameters.hpp
  * @brief This class contains data and variables that set flags and
  * settngs read from the xml.
  *
@@ -42,7 +42,7 @@
 #include <string>
 #include <cmath>
 
-class PlumeParameters : public ParseInterface
+class PI_PlumeParameters : public ParseInterface
 {
 
 private:
@@ -50,20 +50,20 @@ public:
   float simDur; /**< amount of time to run the simulation */
   float timeStep; /**< overall integration timestep */
   float CourantNum; /**< Courant Number,
-		       how to divide the timestep up for each particle to keep them 
-		       moving one grid cell at a time */
-  double invarianceTol; /** < tolerance used to determine whether makeRealizeable should be run 
-			   on the stress tensor for a particle */
+                       how to divide the timestep up for each particle to keep them
+                       moving one grid cell at a time */
+  double invarianceTol; /** < tolerance used to determine whether makeRealizeable should be run
+                           on the stress tensor for a particle */
 
-  int updateFrequency_particleLoop; /**< frequency to print out information during the particle loop of the solver. 
-				      Only used during debug mode */
+  int updateFrequency_particleLoop; /**< frequency to print out information during the particle loop of the solver.
+                                      Only used during debug mode */
   float updateFrequency_timeLoop; /**< frequency to print out information during the time integration loop of the solver. */
 
   std::string interpMethod; /**< interpolation method:
-			       triLinear - tri linear interpolation (default)
-			       nearestCell - use value from the cell where the particle is 
-			       analyticalPowerLaw - use analytical solution from the power law
-			    */
+                               triLinear - tri linear interpolation (default)
+                               nearestCell - use value from the cell where the particle is
+                               analyticalPowerLaw - use analytical solution from the power law
+                            */
 
   /**
    * Parse the input file for parameters.
