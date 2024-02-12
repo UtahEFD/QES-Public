@@ -41,9 +41,9 @@
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
 
+#include "ParticleModel_Visitor.h"
 #include "StatisticsDirector.h"
 #include "Deposition.h"
-#include "ParticleContainers.h"
 #include "Source.hpp"
 
 class PlumeInputData;
@@ -52,19 +52,12 @@ class PLUMEGeneralData;
 class TracerParticle_Model;
 class HeavyParticle_Model;
 
-class ModelVisitor
-{
-public:
-  virtual void visitTracerParticle_Model(TracerParticle_Model *) = 0;
-  virtual void visitHeavyParticle_Model(HeavyParticle_Model *) = 0;
-};
-
 class ParticleModel
 {
 public:
   virtual ~ParticleModel() = default;
 
-  virtual void accept(ModelVisitor *visitor) = 0;
+  virtual void accept(ParticleModel_Visitor *visitor) = 0;
 
   virtual void initialize(const PlumeInputData *PID,
                           WINDSGeneralData *WGD,

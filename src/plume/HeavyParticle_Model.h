@@ -39,11 +39,13 @@
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
 
-#include "Deposition.h"
 #include "ParticleModel.h"
-#include "Source.hpp"
+#include "ParticleModel_Visitor.h"
+
 #include "HeavyParticle.h"
 #include "HeavyParticle_Source.h"
+
+#include "Deposition.h"
 
 class PI_HeavyParticle;
 class HeavyParticle_Concentration;
@@ -54,7 +56,7 @@ public:
   explicit HeavyParticle_Model(const PI_HeavyParticle *);
   ~HeavyParticle_Model() = default;
 
-  void accept(ModelVisitor *visitor) override
+  void accept(ParticleModel_Visitor *visitor) override
   {
     visitor->visitHeavyParticle_Model(this);
   }

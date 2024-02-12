@@ -66,6 +66,7 @@ public:
     colParams = 0;
     partOutParams = 0;
     particleParams = 0;
+    BCs = 0;
   }
 
   PlumeInputData(const std::string fileName)
@@ -74,7 +75,8 @@ public:
     colParams = 0;
     partOutParams = 0;
     particleParams = 0;
-
+    BCs = 0;
+    
     // read and parse the XML
     parseXML(fileName, "QESPlumeParameters");
   }
