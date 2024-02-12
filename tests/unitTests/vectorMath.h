@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file vectorMath.h 
+/** @file vectorMath.h
  * @brief This class handles the random number generation
  */
 
@@ -50,6 +50,7 @@ typedef struct
   float _32;
   float _33;
 } mat3;
+
 typedef struct
 {
   float _11;
@@ -75,7 +76,7 @@ public:
   vectorMath()
   {}
   static void calcInvariants(const mat3sym &, vec3 &);
-  static void makeRealizable(const float, mat3sym &);
+  static void makeRealizable(const float &, mat3sym &);
   static bool invert3(mat3 &);
   static void matmult(const mat3 &, const vec3 &, vec3 &);
 };
@@ -92,7 +93,7 @@ inline void vectorMath::calcInvariants(const mat3sym &tau, vec3 &invar)
              + tau._13 * (tau._12 * tau._23 - tau._22 * tau._13);
 }
 
-inline void vectorMath::makeRealizable(const float invarianceTol, mat3sym &tau)
+inline void vectorMath::makeRealizable(const float &invarianceTol, mat3sym &tau)
 {
   // first calculate the invariants and see if they are already realizable
   vec3 invar = { 0.0, 0.0, 0.0 };
@@ -120,13 +121,19 @@ inline void vectorMath::makeRealizable(const float invarianceTol, mat3sym &tau)
   // through all this process, only the diagonals are really increased by a
   // value of 0.05% of the subfilter tke ks start by initializing the separate
   // stress tensor
-  mat3sym tau_new;
-  tau_new._11 = tau._11 + 2.0 / 3.0 * ks;
+  mat3sym tau_new = { tau._11 + 2.0f / 3.0f * ks,
+                      tau._12,
+                      tau._13,
+                      tau._22 + 2.0f / 3.0f * ks,
+                      tau._23,
+                      tau._33 + 2.0f / 3.0f * ks };
+
+  /*tau_new._11 = tau._11 + 2.0 / 3.0 * ks;
   tau_new._12 = tau._12;
   tau_new._13 = tau._13;
   tau_new._22 = tau._22 + 2.0 / 3.0 * ks;
   tau_new._23 = tau._23;
-  tau_new._33 = tau._33 + 2.0 / 3.0 * ks;
+  tau_new._33 = tau._33 + 2.0 / 3.0 * ks;*/
 
   calcInvariants(tau_new, invar);
 
@@ -144,16 +151,16 @@ inline void vectorMath::makeRealizable(const float invarianceTol, mat3sym &tau)
 
     // note that the right hand side is not tau_new, to force tau to only
     // increase by increasing ks
-    tau_new._11 = tau._11 + 2.0 / 3.0 * ks;
-    tau_new._22 = tau._22 + 2.0 / 3.0 * ks;
-    tau_new._33 = tau._33 + 2.0 / 3.0 * ks;
+    tau_new._11 = tau._11 + 2.0f / 3.0f * ks;
+    tau_new._22 = tau._22 + 2.0f / 3.0f * ks;
+    tau_new._33 = tau._33 + 2.0f / 3.0f * ks;
 
     calcInvariants(tau_new, invar);
   }
 
   if (iter == 999) {
-    //std::cout << "WARNING (Plume::makeRealizable): unable to make stress "
-    //             "tensor realizble.";
+    // std::cout << "WARNING (Plume::makeRealizable): unable to make stress "
+    //              "tensor realizble.";
   }
 
   // now set the output actual stress tensor using the separate temporary stress
@@ -178,8 +185,18 @@ inline bool vectorMath::invert3(mat3 &A)
   } else {
 
     // calculate the inverse (cannot be done implace)
-    mat3 Ainv;
-    Ainv._11 = (A._22 * A._33 - A._23 * A._32) / det;
+    mat3 A_inv = { (A._22 * A._33 - A._23 * A._32) / det,
+                   -(A._12 * A._33 - A._13 * A._32) / det,
+                   (A._12 * A._23 - A._22 * A._13) / det,
+                   -(A._21 * A._33 - A._23 * A._31) / det,
+                   (A._11 * A._33 - A._13 * A._31) / det,
+                   -(A._11 * A._23 - A._13 * A._21) / det,
+                   (A._21 * A._32 - A._31 * A._22) / det,
+                   -(A._11 * A._32 - A._12 * A._31) / det,
+                   (A._11 * A._22 - A._12 * A._21) / det };
+
+    /*mat3 Ainv;
+    Ainv._11 = (A._22 * A._33 - A._23 * A._32) / det,
     Ainv._12 = -(A._12 * A._33 - A._13 * A._32) / det;
     Ainv._13 = (A._12 * A._23 - A._22 * A._13) / det;
     Ainv._21 = -(A._21 * A._33 - A._23 * A._31) / det;
@@ -187,10 +204,10 @@ inline bool vectorMath::invert3(mat3 &A)
     Ainv._23 = -(A._11 * A._23 - A._13 * A._21) / det;
     Ainv._31 = (A._21 * A._32 - A._31 * A._22) / det;
     Ainv._32 = -(A._11 * A._32 - A._12 * A._31) / det;
-    Ainv._33 = (A._11 * A._22 - A._12 * A._21) / det;
+    Ainv._33 = (A._11 * A._22 - A._12 * A._21) / det;*/
 
     // set the input reference A matrix
-    A = Ainv;
+    A = A_inv;
 
     return true;
   }
@@ -198,7 +215,7 @@ inline bool vectorMath::invert3(mat3 &A)
 
 inline void vectorMath::matmult(const mat3 &A, const vec3 &b, vec3 &x)
 {
-  // now calculate the Ax=b x value from the input inverse A matrix and b matrix
+  // now calculate the x=Ab
   x._1 = b._1 * A._11 + b._2 * A._12 + b._3 * A._13;
   x._2 = b._1 * A._21 + b._2 * A._22 + b._3 * A._23;
   x._3 = b._1 * A._31 + b._2 * A._32 + b._3 * A._33;
