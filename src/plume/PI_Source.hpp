@@ -40,57 +40,65 @@
 
 #include "util/ParseInterface.h"
 
-#include "PI_Source.h"
-#include "Particle.hpp"
-#include "ParticleModel.h"
+#include "PI_SourceGeometry.hpp"
+#include "SourceGeometry_Cube.hpp"
+#include "SourceGeometry_FullDomain.hpp"
+#include "SourceGeometry_Line.hpp"
+#include "SourceGeometry_Point.hpp"
+#include "SourceGeometry_SphereShell.hpp"
 
-class Source;
-class GroundDeposition;
-class CanopyDeposition;
+#include "PI_ReleaseType.hpp"
+#include "PI_ReleaseType_instantaneous.hpp"
+#include "PI_ReleaseType_continuous.hpp"
+#include "PI_ReleaseType_duration.hpp"
 
-class PI_Particle : public ParseInterface
+class PI_Source : public ParseInterface
 {
 private:
-  // default constructor
-  PI_Particle()
-    : d(0.0), m(0.0), rho(0.0),
-      depFlag(false), decayConst(0.0), c1(2.049), c2(1.19)
-  {}
-
 protected:
-  PI_Particle(const ParticleType &type, const bool &flag)
-    : particleType(type),
-      d(0.0), m(0.0), rho(0.0),
-      depFlag(flag), decayConst(0.0), c1(2.049), c2(1.19)
-  {}
+  PI_SourceGeometry *m_sourceGeometry{};
+  PI_ReleaseType *m_releaseType{};
 
 public:
-
-  virtual ParticleModel *create() = 0;
-
-  // particle type
-  ParticleType particleType;
-
-  std::string tag;
-
-  std::vector<PI_Source *> sources;
-
-  // Physical properties
-  // diameter of particle (micron)
-  double d;
-  // mass of particle (g)
-  double m;
-  // density of particle (kg/m3)
-  double rho;
-
-  bool depFlag;
-  double decayConst, c1, c2;
+  // constructor
+  PI_Source() = default;
 
   // destructor
-  ~PI_Particle() = default;
+  virtual ~PI_Source() = default;
 
-  virtual void parseValues() = 0;
+  int getNumParticles()
+  {
+    return m_releaseType->m_numPar;
+  }
 
+  void setReleaseType();
+  void setSourceGeometry();
 
-  // virtual void setParticleParameters(Particle *) = 0;
+  // accessor to geometry type
+  SourceShape geometryType()
+  {
+    return m_sourceGeometry->m_sGeom;
+  }
+  // accessor to release type
+  ParticleReleaseType releaseType()
+  {
+    return m_releaseType->parReleaseType;
+  }
+
+  void parseValues() override
+  {
+    setReleaseType();
+    setSourceGeometry();
+  }
+
+  void checkPosInfo(const double &domainXstart,
+                    const double &domainXend,
+                    const double &domainYstart,
+                    const double &domainYend,
+                    const double &domainZstart,
+                    const double &domainZend);
+
+  void checkReleaseInfo(const double &timestep, const double &simDur);
+  friend class Source;
+  friend class Source_v2;
 };

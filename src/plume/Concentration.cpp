@@ -35,7 +35,7 @@
 
 #include "Concentration.h"
 
-Concentration::Concentration(const CollectionParameters *colParams)
+Concentration::Concentration(const PI_CollectionParameters *colParams)
   : averagingPeriod(colParams->averagingPeriod), ongoingAveragingTime(0.0),
     nBoxesX(colParams->nBoxesX), nBoxesY(colParams->nBoxesY), nBoxesZ(colParams->nBoxesZ),
     lBndx(colParams->boxBoundsX1), uBndx(colParams->boxBoundsX2),

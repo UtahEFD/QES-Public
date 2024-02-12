@@ -40,35 +40,39 @@
 
 #include "util/ParseInterface.h"
 
-#include "PI_Particle.h"
+#include "PI_Particle.hpp"
+#include "HeavyParticle_Model.h"
 
-#include "ParticleModel.h"
-#include "TracerParticle_Model.h"
-
-class PI_TracerParticle : public PI_Particle
+class PI_HeavyParticle : public PI_Particle
 {
 protected:
 public:
   // default constructor
-  PI_TracerParticle()
-    : PI_Particle(ParticleType::tracer, false)
+  PI_HeavyParticle()
+    : PI_Particle(ParticleType::heavy, true)
   {}
 
   // destructor
-  ~PI_TracerParticle()
-  {
-  }
+  ~PI_HeavyParticle() = default;
 
   void parseValues() override
   {
     parsePrimitive<std::string>(true, tag, "tag");
+    parsePrimitive<double>(true, rho, "particleDensity");
+    parsePrimitive<double>(true, d, "particleDiameter");
+
+    parsePrimitive<bool>(true, depFlag, "depositionFlag");
+    parsePrimitive<double>(false, c1, "c1");
+    parsePrimitive<double>(false, c2, "c2");
+
+    parsePrimitive<double>(false, decayConst, "decayConst");
+
     parseMultiElements(false, sources, "source");
   }
+  // void setParticleParameters(Particle *ptr) override {}
 
   virtual ParticleModel *create() override
   {
-    return new TracerParticle_Model(this);
+    return new HeavyParticle_Model(this);
   }
-
-  // void setParticleParameters(Particle *ptr) override {}
 };

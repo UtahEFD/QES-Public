@@ -37,9 +37,9 @@
 
 #pragma once
 
-#include "ReleaseType.hpp"
+#include "PI_ReleaseType.hpp"
 
-class ReleaseType_continuous : public ReleaseType
+class PI_ReleaseType_continuous : public PI_ReleaseType
 {
 private:
   // note that this also inherits data members:
@@ -51,12 +51,12 @@ private:
 protected:
 public:
   // Default constructor
-  ReleaseType_continuous() : ReleaseType(ParticleReleaseType::continuous)
+  PI_ReleaseType_continuous() : PI_ReleaseType(ParticleReleaseType::continuous)
   {
   }
 
   // destructor
-  ~ReleaseType_continuous() = default;
+  ~PI_ReleaseType_continuous() = default;
 
   void parseValues() override
   {

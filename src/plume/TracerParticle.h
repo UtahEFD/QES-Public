@@ -38,7 +38,7 @@
 
 #pragma once
 
-#include "Particle.hpp"
+#include "Particle.h"
 
 
 class TracerParticle : public Particle

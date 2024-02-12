@@ -37,9 +37,9 @@
 
 #pragma once
 
-#include "SourceGeometry.hpp"
+#include "PI_SourceGeometry.hpp"
 
-class SourceGeometry_SphereShell : public SourceGeometry
+class SourceGeometry_SphereShell : public PI_SourceGeometry
 {
 private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
@@ -57,7 +57,7 @@ private:
 protected:
 public:
   // Default constructor
-  SourceGeometry_SphereShell() : SourceGeometry(SourceShape::sphereShell)
+  SourceGeometry_SphereShell() : PI_SourceGeometry(SourceShape::sphereShell)
   {
     prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
     normalDistribution = std::normal_distribution<>(0.0, 1.0);

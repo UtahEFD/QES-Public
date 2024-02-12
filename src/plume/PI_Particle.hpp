@@ -40,39 +40,56 @@
 
 #include "util/ParseInterface.h"
 
-#include "PI_Particle.h"
-#include "HeavyParticle_Model.h"
+#include "PI_Source.hpp"
+#include "Particle.h"
+#include "ParticleModel.h"
 
-class PI_HeavyParticle : public PI_Particle
+class Source;
+class GroundDeposition;
+class CanopyDeposition;
+
+class PI_Particle : public ParseInterface
 {
-protected:
-public:
+private:
   // default constructor
-  PI_HeavyParticle()
-    : PI_Particle(ParticleType::heavy, true)
+  PI_Particle()
+    : d(0.0), m(0.0), rho(0.0),
+      depFlag(false), decayConst(0.0), c1(2.049), c2(1.19)
   {}
 
+protected:
+  PI_Particle(const ParticleType &type, const bool &flag)
+    : particleType(type),
+      d(0.0), m(0.0), rho(0.0),
+      depFlag(flag), decayConst(0.0), c1(2.049), c2(1.19)
+  {}
+
+public:
+  virtual ParticleModel *create() = 0;
+
+  // particle type
+  ParticleType particleType;
+
+  std::string tag;
+
+  std::vector<PI_Source *> sources;
+
+  // Physical properties
+  // diameter of particle (micron)
+  double d;
+  // mass of particle (g)
+  double m;
+  // density of particle (kg/m3)
+  double rho;
+
+  bool depFlag;
+  double decayConst, c1, c2;
+
   // destructor
-  ~PI_HeavyParticle() = default;
+  ~PI_Particle() = default;
 
-  void parseValues() override
-  {
-    parsePrimitive<std::string>(true, tag, "tag");
-    parsePrimitive<double>(true, rho, "particleDensity");
-    parsePrimitive<double>(true, d, "particleDiameter");
+  virtual void parseValues() = 0;
 
-    parsePrimitive<bool>(true, depFlag, "depositionFlag");
-    parsePrimitive<double>(false, c1, "c1");
-    parsePrimitive<double>(false, c2, "c2");
 
-    parsePrimitive<double>(false, decayConst, "decayConst");
-
-    parseMultiElements(false, sources, "source");
-  }
-  // void setParticleParameters(Particle *ptr) override {}
-
-  virtual ParticleModel *create() override
-  {
-    return new HeavyParticle_Model(this);
-  }
+  // virtual void setParticleParameters(Particle *) = 0;
 };

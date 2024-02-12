@@ -37,9 +37,9 @@
 
 #pragma once
 
-#include "SourceGeometry.hpp"
+#include "PI_SourceGeometry.hpp"
 
-class SourceGeometry_Cube : public SourceGeometry
+class SourceGeometry_Cube : public PI_SourceGeometry
 {
 private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
@@ -59,7 +59,7 @@ private:
 protected:
 public:
   // Default constructor
-  SourceGeometry_Cube() : SourceGeometry(SourceShape::cube)
+  SourceGeometry_Cube() : PI_SourceGeometry(SourceShape::cube)
   {
     prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
     uniformDistribution = std::uniform_real_distribution<>(0.0, 1.0);

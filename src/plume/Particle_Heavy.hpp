@@ -36,7 +36,7 @@
 #pragma once
 
 #include "util/Vector3.h"
-#include "Particle.hpp"
+#include "Particle.h"
 
 
 class Particle_Heavy : public Particle

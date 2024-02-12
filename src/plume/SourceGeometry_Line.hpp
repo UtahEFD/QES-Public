@@ -38,9 +38,9 @@
 #pragma once
 
 
-#include "SourceGeometry.hpp"
+#include "PI_SourceGeometry.hpp"
 
-class SourceGeometry_Line : public SourceGeometry
+class SourceGeometry_Line : public PI_SourceGeometry
 {
 private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
@@ -56,7 +56,7 @@ private:
 protected:
 public:
   // Default constructor
-  SourceGeometry_Line() : SourceGeometry(SourceShape::line)
+  SourceGeometry_Line() : PI_SourceGeometry(SourceShape::line)
   {
   }
 

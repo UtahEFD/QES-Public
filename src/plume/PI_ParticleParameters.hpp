@@ -40,65 +40,19 @@
 
 #include "util/ParseInterface.h"
 
-#include "SourceGeometry.hpp"
-#include "SourceGeometry_Cube.hpp"
-#include "SourceGeometry_FullDomain.hpp"
-#include "SourceGeometry_Line.hpp"
-#include "SourceGeometry_Point.hpp"
-#include "SourceGeometry_SphereShell.hpp"
+#include "PI_Particle.hpp"
+#include "PI_TracerParticle.hpp"
+#include "PI_HeavyParticle.hpp"
 
-#include "ReleaseType.hpp"
-#include "ReleaseType_instantaneous.hpp"
-#include "ReleaseType_continuous.hpp"
-#include "ReleaseType_duration.hpp"
-
-class PI_Source : public ParseInterface
+class PI_ParticleParameters : public ParseInterface
 {
 private:
-protected:
-  SourceGeometry *m_sourceGeometry{};
-  ReleaseType *m_releaseType{};
-
 public:
-  // constructor
-  PI_Source() = default;
-
-  // destructor
-  virtual ~PI_Source() = default;
-
-  int getNumParticles()
-  {
-    return m_releaseType->m_numPar;
-  }
-
-  void setReleaseType();
-  void setSourceGeometry();
-
-  // accessor to geometry type
-  SourceShape geometryType()
-  {
-    return m_sourceGeometry->m_sGeom;
-  }
-  // accessor to release type
-  ParticleReleaseType releaseType()
-  {
-    return m_releaseType->parReleaseType;
-  }
+  std::vector<PI_Particle *> particles;
 
   void parseValues() override
   {
-    setReleaseType();
-    setSourceGeometry();
+    parseMultiPolymorphs(false, particles, Polymorph<PI_Particle, PI_TracerParticle>("tracerParticle"));
+    parseMultiPolymorphs(false, particles, Polymorph<PI_Particle, PI_HeavyParticle>("heavyParticle"));
   }
-
-  void checkPosInfo(const double &domainXstart,
-                    const double &domainXend,
-                    const double &domainYstart,
-                    const double &domainYend,
-                    const double &domainZstart,
-                    const double &domainZend);
-
-  void checkReleaseInfo(const double &timestep, const double &simDur);
-  friend class Source;
-  friend class Source_v2;
 };

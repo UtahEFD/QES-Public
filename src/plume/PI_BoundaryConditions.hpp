@@ -28,48 +28,53 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file ReleaseType_continuous.hpp
- * @brief This class represents a specific release type.
+/** @file BoundaryCondition.hpp
+ * @brief
  *
- * @note Child of ReleaseType
- * @sa ReleaseType
+ * @note Child of ArgumentParsing
+ * @sa ArgumentParsing
  */
 
 #pragma once
 
-#include "ReleaseType.hpp"
+#include <string>
 
-class ReleaseType_instantaneous : public ReleaseType
+#include "util/ParseInterface.h"
+
+
+class PI_BoundaryConditions : public ParseInterface
 {
+
 private:
-  // note that this also inherits data members ParticleReleaseType m_rType, int m_particlePerTimestep, double m_releaseStartTime,
-  //  double m_releaseEndTime, and int m_numPar from ReleaseType.
-  // guidelines for how to set these variables within an inherited ReleaseType are given in ReleaseType.hpp.
-
-
-protected:
 public:
-  // Default constructor
-  ReleaseType_instantaneous() : ReleaseType(ParticleReleaseType::instantaneous)
+  // current possible BCtypes are:
+  // "exiting", "periodic", "reflection"
+
+  std::string xBCtype;
+  std::string yBCtype;
+  std::string zBCtype;
+
+  // possible reflection methods:
+  /*
+   * "doNothing" (default)   - nothing happen when particle enter wall
+   * "setInactive"           - particle is set to inactive when entering a wall
+   * "stairstepReflection"   - particle use full stair step reflection when entering a wall
+   */
+
+  std::string wallReflection;
+
+  virtual void parseValues()
   {
-  }
+    parsePrimitive<std::string>(true, xBCtype, "xBCtype");
+    parsePrimitive<std::string>(true, yBCtype, "yBCtype");
+    parsePrimitive<std::string>(true, zBCtype, "zBCtype");
 
-  // destructor
-  ~ReleaseType_instantaneous() = default;
 
+    wallReflection = "";
+    parsePrimitive<std::string>(false, wallReflection, "wallReflection");
 
-  void parseValues() override
-  {
-    parsePrimitive<int>(true, m_numPar, "numPar");
-    parsePrimitive<double>(false, m_totalMass, "totalMass");
-  }
-
-  void calcReleaseInfo(const double &timestep, const double &simDur) override
-  {
-    // set the overall releaseType variables from the variables found in this class
-    m_particlePerTimestep = m_numPar;
-    m_releaseStartTime = 0;
-    m_releaseEndTime = 0;
-    m_massPerParticle = m_totalMass / m_numPar;
+    if (wallReflection == "") {
+      wallReflection = "doNothing";
+    }
   }
 };

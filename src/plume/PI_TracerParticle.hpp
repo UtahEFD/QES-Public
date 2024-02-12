@@ -40,19 +40,35 @@
 
 #include "util/ParseInterface.h"
 
-#include "PI_Particle.h"
-#include "PI_TracerParticle.h"
-#include "PI_HeavyParticle.h"
+#include "PI_Particle.hpp"
 
-class PI_ParticleParameters : public ParseInterface
+#include "ParticleModel.h"
+#include "TracerParticle_Model.h"
+
+class PI_TracerParticle : public PI_Particle
 {
-private:
+protected:
 public:
-  std::vector<PI_Particle *> particles;
+  // default constructor
+  PI_TracerParticle()
+    : PI_Particle(ParticleType::tracer, false)
+  {}
+
+  // destructor
+  ~PI_TracerParticle()
+  {
+  }
 
   void parseValues() override
   {
-    parseMultiPolymorphs(false, particles, Polymorph<PI_Particle, PI_TracerParticle>("tracerParticle"));
-    parseMultiPolymorphs(false, particles, Polymorph<PI_Particle, PI_HeavyParticle>("heavyParticle"));
+    parsePrimitive<std::string>(true, tag, "tag");
+    parseMultiElements(false, sources, "source");
   }
+
+  virtual ParticleModel *create() override
+  {
+    return new TracerParticle_Model(this);
+  }
+
+  // void setParticleParameters(Particle *ptr) override {}
 };

@@ -35,7 +35,7 @@
 
 #include <unordered_map>
 
-#include "Particle.hpp"
+#include "Particle.h"
 #include "Particle_Tracer.hpp"
 #include "Particle_Heavy.hpp"
 

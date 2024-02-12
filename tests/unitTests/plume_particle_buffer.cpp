@@ -13,7 +13,7 @@
 #include "util/ManagedContainer.h"
 // #include "plume/ParticleManager.h"
 
-#include "plume/Particle.hpp"
+#include "plume/Particle.h"
 #include "plume/Particle_Tracer.hpp"
 
 void scrubParticleList(std::list<Particle *> &particleList)

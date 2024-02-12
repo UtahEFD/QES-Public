@@ -53,10 +53,10 @@ enum SourceShape {
   fullDomain
 };
 
-class SourceGeometry : public ParseInterface
+class PI_SourceGeometry : public ParseInterface
 {
 private:
-  SourceGeometry() = default;
+  PI_SourceGeometry() = default;
 
 protected:
   // ParticleTypeFactory *m_particleTypeFactory = nullptr;
@@ -68,12 +68,12 @@ public:
   SourceShape m_sGeom;
 
   // constructor
-  explicit SourceGeometry(const SourceShape &type) : m_sGeom(type)
+  explicit PI_SourceGeometry(const SourceShape &type) : m_sGeom(type)
   {
   }
 
   // destructor
-  virtual ~SourceGeometry() = default;
+  virtual ~PI_SourceGeometry() = default;
 
 
   // this function is used to parse all the variables for each source from the input .xml file

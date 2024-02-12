@@ -37,12 +37,11 @@
 
 #pragma once
 
-#include "PlumeParameters.hpp"
-#include "CollectionParameters.hpp"
-#include "ParticleOutputParameters.hpp"
-#include "PI_ParticleParameters.h"
-#include "SourceParameters.hpp"
-#include "BoundaryConditions.hpp"
+#include "PI_PlumeParameters.hpp"
+#include "PI_CollectionParameters.hpp"
+#include "PI_ParticleOutputParameters.hpp"
+#include "PI_ParticleParameters.hpp"
+#include "PI_BoundaryConditions.hpp"
 
 #include "util/ParseInterface.h"
 
@@ -54,12 +53,11 @@ class PlumeInputData : public ParseInterface
 {
 
 public:
-  PlumeParameters *plumeParams = nullptr;
-  CollectionParameters *colParams = nullptr;
-  ParticleOutputParameters *partOutParams = nullptr;
-  SourceParameters *sourceParams = nullptr;
+  PI_PlumeParameters *plumeParams = nullptr;
+  PI_CollectionParameters *colParams = nullptr;
+  PI_ParticleOutputParameters *partOutParams = nullptr;
   PI_ParticleParameters *particleParams = nullptr;
-  BoundaryConditions *BCs = nullptr;
+  PI_BoundaryConditions *BCs = nullptr;
 
 
   PlumeInputData()
@@ -67,7 +65,6 @@ public:
     plumeParams = 0;
     colParams = 0;
     partOutParams = 0;
-    sourceParams = 0;
     particleParams = 0;
   }
 
@@ -76,7 +73,6 @@ public:
     plumeParams = 0;
     colParams = 0;
     partOutParams = 0;
-    sourceParams = 0;
     particleParams = 0;
 
     // read and parse the XML
@@ -85,11 +81,10 @@ public:
 
   virtual void parseValues()
   {
-    parseElement<PlumeParameters>(true, plumeParams, "plumeParameters");
-    parseElement<CollectionParameters>(true, colParams, "collectionParameters");
-    parseElement<ParticleOutputParameters>(false, partOutParams, "particleOutputParameters");
-    parseElement<SourceParameters>(false, sourceParams, "sourceParameters");
+    parseElement<PI_PlumeParameters>(true, plumeParams, "plumeParameters");
+    parseElement<PI_CollectionParameters>(true, colParams, "collectionParameters");
+    parseElement<PI_ParticleOutputParameters>(false, partOutParams, "particleOutputParameters");
     parseElement<PI_ParticleParameters>(false, particleParams, "particleParameters");
-    parseElement<BoundaryConditions>(true, BCs, "boundaryConditions");
+    parseElement<PI_BoundaryConditions>(true, BCs, "boundaryConditions");
   }
 };

@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "plume/Particle.hpp"
+#include "plume/Particle.h"
 #include "plume/Particle_Tracer.hpp"
 #include "plume/Particle_Heavy.hpp"
 #include "plume/ParticleFactories.hpp"

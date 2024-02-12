@@ -37,7 +37,7 @@
 
 #include "PlumeInputData.hpp"
 #include "PLUMEGeneralData.h"
-#include "PI_TracerParticle.h"
+#include "PI_TracerParticle.hpp"
 
 TracerParticle_Model::TracerParticle_Model(const PI_TracerParticle *in)
   : ParticleModel(ParticleType::tracer, in->tag)

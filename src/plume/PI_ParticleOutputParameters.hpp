@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file ParticleOutputParameters.hpp 
+/** @file ParticleOutputParameters.hpp
  * @brief This class contains data and variables that set flags and
  * settngs read from the xml.
  *
@@ -43,7 +43,7 @@
 #include <string>
 #include <vector>
 
-class ParticleOutputParameters : public ParseInterface
+class PI_ParticleOutputParameters : public ParseInterface
 {
 private:
 public:
