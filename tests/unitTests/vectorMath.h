@@ -36,7 +36,7 @@
 
 #include <iostream>
 #include <cstdlib>
-#include <math.h>
+#include <cmath>
 
 typedef struct
 {
@@ -72,13 +72,14 @@ typedef struct
 
 class vectorMath
 {
+private:
+  vectorMath() = default;
 public:
-  vectorMath()
-  {}
+
   static void calcInvariants(const mat3sym &, vec3 &);
   static void makeRealizable(const float &, mat3sym &);
-  static bool invert3(mat3 &);
-  static void matmult(const mat3 &, const vec3 &, vec3 &);
+  static bool invert(mat3 &);
+  static void multiply(const mat3 &, const vec3 &, vec3 &);
 };
 
 inline void vectorMath::calcInvariants(const mat3sym &tau, vec3 &invar)
@@ -106,13 +107,13 @@ inline void vectorMath::makeRealizable(const float &invarianceTol, mat3sym &tau)
 
   // make it realizeable
   // start by making a guess of ks, the subfilter scale tke
-  float b = 4.0 / 3.0 * invar._1;
+  float b = 4.0f / 3.0f * invar._1;
   float c = invar._2;
-  float ks = 1.01 * (-b + std::sqrt(b * b - 16.0 / 3.0 * c)) / (8.0 / 3.0);
+  float ks = 1.01f * (-b + std::sqrt(b * b - 16.0f / 3.0f * c)) / (8.0f / 3.0f);
 
   // if the initial guess is bad, use the straight up invar_xx value
   if (ks < invarianceTol || isnan(ks)) {
-    ks = 0.5 * std::abs(invar._1);// also 0.5*abs(invar_xx)
+    ks = 0.5f * std::abs(invar._1);// also 0.5*abs(invar_xx)
   }
 
   // to avoid increasing tau by more than ks increasing by 0.05%, use a separate
@@ -169,7 +170,7 @@ inline void vectorMath::makeRealizable(const float &invarianceTol, mat3sym &tau)
 }
 
 
-inline bool vectorMath::invert3(mat3 &A)
+inline bool vectorMath::invert(mat3 &A)
 {
 
   // calculate the determinant
@@ -213,7 +214,7 @@ inline bool vectorMath::invert3(mat3 &A)
   }
 }
 
-inline void vectorMath::matmult(const mat3 &A, const vec3 &b, vec3 &x)
+inline void vectorMath::multiply(const mat3 &A, const vec3 &b, vec3 &x)
 {
   // now calculate the x=Ab
   x._1 = b._1 * A._11 + b._2 * A._12 + b._3 * A._13;

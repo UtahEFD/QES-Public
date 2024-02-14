@@ -161,7 +161,8 @@ protected:
   void createAttVector(const std::string &, const std::string &, const std::string &, const std::vector<NcDim> &, std::vector<double> *);
   void createAttVector(const std::string &, const std::string &, const std::string &, const std::vector<NcDim> &, std::vector<char> *);
 
-  void setStartTime(QEStime);
+  void setStartTime(const QEStime &) override;
+  void setOutputTime(const QEStime &) override;
 
   // add fields based on output_fields
   void addOutputFields();
@@ -196,6 +197,7 @@ protected:
        (i.e. by the CTOR &add function) NOT to save them
        (i.e. by the function save) */
 
+private:
   ///@{
   /**
    * Output field in the NetCDF file for scalar/vector for each type.
@@ -225,7 +227,7 @@ protected:
   std::vector<AttVectorDbl> output_vector_dbl;
   std::vector<AttVectorChar> output_vector_char;
   ///@}
-private:
+
   std::string timestamp;
   std::vector<char> timestamp_out; /**< :document this: */
   // int output_counter = 0; /**< :document this: */

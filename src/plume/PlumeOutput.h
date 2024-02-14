@@ -55,7 +55,7 @@ class PlumeOutput : public QESNetCDFOutput
 {
 public:
   // specialized constructor
-  PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, std::string output_file);
+  PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, const std::string &output_file);
 
   // deconstructor
   ~PlumeOutput()
@@ -63,28 +63,24 @@ public:
   }
 
   // setup and save output for the given time
-  // in this case the saved data is output averaged concentration
-  // This is the one function that needs called from outside after constructor time
-  void save(QEStime);
-
+  void save(QEStime) override;
 
 private:
   // default constructor
-  PlumeOutput() {}
+  PlumeOutput() = default;
 
   // time averaging frequency control information
   // in this case, this is also the output control information
   // time to start concentration averaging.
-  QEStime averagingStartTime;
+  QEStime outputStartTime;
 
   // averaging period in seconds
-  float averagingPeriod;
+  float outputPeriod{};
 
-  // variables needed for getting proper averaging and output time control
+  // variables needed for getting proper output time control
   // next output time value that is updated each time save is called and output occurs.
-  // Also initializes a restart of the particle binning for the next time averaging period
   QEStime nextOutputTime;
 
   // pointer to the class that save needs to use to get the data for the concentration calculation
-  PLUMEGeneralData *m_PGD;
+  PLUMEGeneralData *m_PGD{};
 };

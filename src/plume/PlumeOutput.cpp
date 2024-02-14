@@ -42,7 +42,7 @@
 
 // note that this sets the output file and the bool for whether to do output, in the netcdf inherited classes
 // in this case, output should always be done, so the bool for whether to do output is set to true
-PlumeOutput::PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, std::string output_file)
+PlumeOutput::PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, const std::string &output_file)
   : QESNetCDFOutput(output_file)
 {
 
@@ -53,9 +53,9 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, std::
 
   // setup output frequency control information
   setStartTime(m_PGD->getSimTimeStart());
-  averagingStartTime = m_PGD->getSimTimeStart() + PID->colParams->averagingStartTime;
-  averagingPeriod = PID->colParams->averagingPeriod;
-  nextOutputTime = averagingStartTime + averagingPeriod;
+  outputStartTime = m_PGD->getSimTimeStart() + PID->colParams->averagingStartTime;
+  outputPeriod = PID->colParams->averagingPeriod;
+  nextOutputTime = outputStartTime + outputPeriod;
 
 #if 0 
   // !!! Because collection parameters could not know anything about simulation duration at parse time,
@@ -139,7 +139,6 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, std::
       p->setOutput(this);
     }
   }
-
   // create output fields
   addOutputFields(set_all_output_fields);
 }
@@ -147,19 +146,16 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, std::
 // Save output at cell-centered values
 void PlumeOutput::save(QEStime timeIn)
 {
-  if (timeIn > averagingStartTime) {
-
+  if (timeIn > outputStartTime) {
     // output to NetCDF file
     if (timeIn >= nextOutputTime) {
       // set output time for correct netcdf output
-      timeCurrent = timeIn;
-
+      setOutputTime(timeIn);
       // save the fields to NetCDF files
       saveOutputFields();
-
       // update the next output time value
       // so averaging and output only happens at the averaging frequency
-      nextOutputTime = nextOutputTime + averagingPeriod;
+      nextOutputTime = nextOutputTime + outputPeriod;
     }
   }
 };

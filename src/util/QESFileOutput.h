@@ -63,6 +63,9 @@ public:
   virtual void save(QEStime) = 0;
   virtual void save(float) = 0;
 
+  virtual void setStartTime(const QEStime &) = 0;
+  virtual void setOutputTime(const QEStime &) = 0;
+
   virtual void createDimension(const std::string &, const std::string &, const std::string &, std::vector<int> *) = 0;
   virtual void createDimension(const std::string &, const std::string &, const std::string &, std::vector<float> *) = 0;
   virtual void createDimension(const std::string &, const std::string &, const std::string &, std::vector<double> *) = 0;
