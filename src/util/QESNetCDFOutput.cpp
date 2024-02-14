@@ -57,11 +57,16 @@ QESNetCDFOutput::QESNetCDFOutput(const std::string &output_file)
   timestamp_out.resize(dateStrLen, '0');
 }
 
-void QESNetCDFOutput::setStartTime(QEStime in)
+void QESNetCDFOutput::setStartTime(const QEStime &in)
 {
   timeStart = in;
   addAtt("t", "simulation_start", timeStart.getTimestamp());
   flagStartTimeSet = true;
+}
+
+void QESNetCDFOutput::setOutputTime(const QEStime &in)
+{
+  timeCurrent = in;
 }
 
 bool QESNetCDFOutput::validateFileOptions()
