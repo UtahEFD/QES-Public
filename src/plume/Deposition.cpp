@@ -65,7 +65,7 @@ Deposition::Deposition(const WINDSGeneralData *WGD)
     it.resize(omp_get_num_threads(), 0.0);
   }
 #else
-  depcvol.resize(numcell_cent, 0.0);
+  depcvol.resize(WGD->numcell_cent, 0.0);
 #endif
 
   nbrFace = WGD->wall_below_indices.size()
