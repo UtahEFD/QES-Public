@@ -43,9 +43,9 @@
 
 #include "HeavyParticle.h"
 
-#include "ParticleManager.h"
+// #include "ParticleManager.h"
 #include "ParticleContainers.h"
-#include "ParticleFactories.hpp"
+// #include "ParticleFactories.hpp"
 
 #include "PI_ReleaseType.hpp"
 #include "PI_ReleaseType_instantaneous.hpp"

@@ -41,8 +41,8 @@ ParticleTypeFactory::ParticleTypeFactory()
   std::string largestr = "ParticleLarge";
   std::string heavygasstr = "ParticleHeavyGas";
 
-  RegisterParticles(ParticleType::tracer, &Particle_TracerFactory);
-  RegisterParticles(ParticleType::heavy, &Particle_HeavyFactory);
+  RegisterParticles(ParticleType::tracer, &particle_TracerFactory);
+  RegisterParticles(ParticleType::heavy, &particle_HeavyFactory);
   // RegisterParticles(ParticleType::large, &particleLargeFactory);
   // RegisterParticles(ParticleType::heavygas, &particleHeavyGasFactory);
 }
