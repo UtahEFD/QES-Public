@@ -66,8 +66,8 @@ SET( qesPlumeCoreSources
     WallReflection.cpp
     WallReflection_StairStep.cpp
     WallReflection_TriMesh.cpp
-    
-)
+
+        QESPlumeOutputDirector.cpp QESPlumeOutputDirector.h)
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
    CUDA_ADD_LIBRARY( qesplumecore

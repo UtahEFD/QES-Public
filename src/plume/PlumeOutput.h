@@ -57,7 +57,7 @@ public:
   // specialized constructor
   PlumeOutput(const PlumeInputData *PID, PLUMEGeneralData *PGD, const std::string &output_file);
 
-  // deconstructor
+  // destructor
   ~PlumeOutput()
   {
   }

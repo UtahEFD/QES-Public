@@ -31,7 +31,7 @@ add_library (qesutil ${LIB_TYPE}
   QESFileSystemHandler.cpp
 
   QEStime.cpp
-)
+        )
 
 FILE(GLOB files "*.h")
 INSTALL(FILES ${files} DESTINATION include/util)
