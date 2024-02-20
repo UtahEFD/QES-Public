@@ -96,8 +96,8 @@ class ParticleTypeFactory
 private:
   std::unordered_map<ParticleType, ParticleFactory *, std::hash<int>> ParticleTypeContainer;
 
-  Particle_TracerFactory Particle_TracerFactory;
-  Particle_HeavyFactory Particle_HeavyFactory;
+  Particle_TracerFactory particle_TracerFactory;
+  Particle_HeavyFactory particle_HeavyFactory;
   // ParticleLargeFactory particleLargeFactory;
   // ParticleHeavyGasFactory particleHeavyGasFactory;
 
