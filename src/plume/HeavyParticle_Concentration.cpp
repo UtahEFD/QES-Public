@@ -77,7 +77,8 @@ void HeavyParticle_Concentration::setOutput(QESFileOutput *out)
   out->createDimension("z_c", "z-center collection box", "m", &zBoxCen);
 
   out->createDimensionSet("concentration", { "t", "z_c", "y_c", "x_c" });
-
+  
+  out->createField("t_avg", "Averaging time", "s", "t", &ongoingAveragingTime);
   out->createField("p", "number of particle per box", "#ofPar", "concentration", &pBox);
   out->createField("c", "concentration", "g m-3", "concentration", &conc);
 }

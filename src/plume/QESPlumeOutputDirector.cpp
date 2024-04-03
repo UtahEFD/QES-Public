@@ -34,7 +34,7 @@
 
 #include "QESPlumeOutputDirector.h"
 
-void PLUMEOutputDirector::enroll(QESOutputInterface *, const std::string &, FileType)
+void PLUMEOutputDirector::attach(QESOutputInterface *, const std::string &, FileType)
 {
 }
 

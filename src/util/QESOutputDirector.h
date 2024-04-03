@@ -35,13 +35,28 @@
 #pragma once
 
 #include <string>
+#include <utility>
+
+#include "util/QESOutputDirector.h"
+#include "util/QESFileOutput.h"
+#include "util/QESOutputInterface.h"
 #include "QEStime.h"
 
 class QESOutputDirector
 {
 public:
-  QESOutputDirector() = default;
+  QESOutputDirector(std::string name) : basename(std::move(name))
+  {
+  }
   ~QESOutputDirector() = default;
 
-  virtual void save(const QEStime&) =0;
+  virtual void save(const QEStime &) {}
+  virtual void attach(QESOutputInterface *, const std::string &) {}
+
+protected:
+  QESOutputDirector() = default;
+
+  std::string basename;
+  std::vector<QESOutputInterface *> tmp1;
+  std::vector<QESFileOutput *> files;
 };

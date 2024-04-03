@@ -44,7 +44,7 @@ StatisticsDirector::StatisticsDirector(const PlumeInputData *PID, PLUMEGeneralDa
   nextOutputTime = averagingStartTime + averagingPeriod;
 }
 
-void StatisticsDirector::enroll(const std::string &key, Statistics *s)
+void StatisticsDirector::attach(const std::string &key, Statistics *s)
 {
   if (elements.find(key) == elements.end()) {
     elements.insert({ key, s });
@@ -87,12 +87,4 @@ void StatisticsDirector::compute(QEStime &timeIn, const float &timeStep)
       nextOutputTime = nextOutputTime + averagingPeriod;
     }
   }
-}
-
-void StatisticsDirector::setOutput(QESFileOutput *out)
-{
-  out->createField("t_avg", "Averaging time", "s", "t", &ongoingAveragingTime);
-  /*for (const auto &e : elements) {
-    e.second->setOutput(out);
-  }*/
 }

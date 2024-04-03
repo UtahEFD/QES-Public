@@ -56,7 +56,7 @@ public:
   ~PLUMEOutputDirector() = default;
 
   void save(const QEStime &) override;
-  void enroll(QESOutputInterface *, const std::string &, FileType);
+  void attach(QESOutputInterface *, const std::string &, FileType);
 
 private:
   std::vector<QESOutputInterface *> tmp1;

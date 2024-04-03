@@ -68,8 +68,8 @@ void HeavyParticle_Model::initialize(const PlumeInputData *PID,
   // concentration = new TracerParticle_Concentration(PID, pm);
 
   stats = new StatisticsDirector(PID, PGD);
-  stats->enroll("concentration", new HeavyParticle_Concentration(PID, this));
-  output_ptr.push_back(stats);
+  stats->attach("concentration", new HeavyParticle_Concentration(PID, this));
+
   for (auto s : *stats) { output_ptr.push_back(s.second); }
 }
 
