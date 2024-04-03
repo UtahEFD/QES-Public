@@ -25,6 +25,12 @@ target_link_libraries(unit_test_example_t00 Catch2::Catch2WithMain)
 
 add_executable(util_time util_time.cpp)
 
+add_executable(util_output
+        QESFileOutput.cpp
+        QESOutput.cpp
+        QESNetCDFOutput.cpp
+        util_output.cpp)
+
 IF ($CACHE{HAS_CUDA_SUPPORT})
 
   cuda_add_executable(test_CUDARandomGen
@@ -61,6 +67,7 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
 
   set(UNITTESTS
     util_time
+    util_output
     winds_terrain
     turbulence_derivative_CPU
     plume_interpolation_CPU
@@ -100,6 +107,7 @@ ELSE ($CACHE{HAS_CUDA_SUPPORT})
 
   set(UNITTESTS
       util_time
+      util_output
       winds_terrain
       turbulence_derivative_CPU
       plume_interpolation_CPU
