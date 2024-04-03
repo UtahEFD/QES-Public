@@ -52,7 +52,7 @@
 class PlumeInputData;
 class PLUMEGeneralData;
 
-class StatisticsDirector : public QESOutputInterface
+class StatisticsDirector
 {
 public:
   StatisticsDirector(const PlumeInputData *, PLUMEGeneralData *);
@@ -63,13 +63,12 @@ public:
   typename std::unordered_map<std::string, Statistics *>::iterator begin() { return elements.begin(); }
   typename std::unordered_map<std::string, Statistics *>::iterator end() { return elements.end(); }
 
-  void enroll(const std::string &key, Statistics *s);
+  void attach(const std::string &key, Statistics *s);
 
   void compute(QEStime &, const float &);
 
   bool getOutputStatus() { return need_output; }
   void resetOutputStatus() { need_output = false; }
-  void setOutput(QESFileOutput *) override;
 
 protected:
   std::unordered_map<std::string, Statistics *> elements;
