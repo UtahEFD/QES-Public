@@ -19,7 +19,7 @@ public:
   {
     int nBoxesX = 5;
     int nBoxesY = 5;
-    int nBoxesZ = 10;
+    int nBoxesZ = 2;
 
 
     // output concentration storage variables
@@ -58,7 +58,7 @@ public:
 
     m_output_file->createDimensionSet("concentration", { "t", "z_c", "y_c", "x_c" });
 
-    m_output_file->createField("t_avg", "Averaging time", "s", "t", &ongoingAveragingTime);
+    m_output_file->createField("t_avg", "Averaging time", "s", "time", &ongoingAveragingTime);
     m_output_file->createField("p", "number of particle per box", "#ofPar", "concentration", &pBox);
     m_output_file->createField("c", "concentration", "g m-3", "concentration", &conc);
 
@@ -118,9 +118,12 @@ TEST_CASE("unit test of output system")
   concentration->setOutputFields();
 
   QEStime t;
+
   concentration->save(t);
 
-  testFile->save(t);
+  t += 120;
+
+  concentration->save(t);
 
   // QESOutputInterface *spectra = new QESOutput();
   // testFile->attach(spectra);

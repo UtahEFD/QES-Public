@@ -11,5 +11,5 @@ void QESOutput::attach(QESFileOutputInterface *out)
 
 void QESOutput::save(QEStime t)
 {
-  std::cout << t << std::endl;
+  m_output_file->save(t);
 }

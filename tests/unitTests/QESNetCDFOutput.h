@@ -49,65 +49,6 @@ using namespace netCDF::exceptions;
 
 class Obj;
 
-// Attribute for scalar/vector for each type
-struct AttScalarInt
-{
-  int *data;
-  std::string name;
-  std::string long_name;
-  std::string units;
-  std::vector<NcDim> dimensions;
-};
-struct AttVectorInt
-{
-  std::vector<int> *data;
-  std::string name;
-  std::string long_name;
-  std::string units;
-  std::vector<NcDim> dimensions;
-};
-
-struct AttScalarFlt
-{
-  float *data;
-  std::string name;
-  std::string long_name;
-  std::string units;
-  std::vector<NcDim> dimensions;
-};
-struct AttVectorFlt
-{
-  std::vector<float> *data;
-  std::string name;
-  std::string long_name;
-  std::string units;
-  std::vector<NcDim> dimensions;
-};
-struct AttScalarDbl
-{
-  double *data;
-  std::string name;
-  std::string long_name;
-  std::string units;
-  std::vector<NcDim> dimensions;
-};
-struct AttVectorDbl
-{
-  std::vector<double> *data;
-  std::string name;
-  std::string long_name;
-  std::string units;
-  std::vector<NcDim> dimensions;
-};
-struct AttVectorChar
-{
-  std::vector<char> *data;
-  std::string name;
-  std::string long_name;
-  std::string units;
-  std::vector<NcDim> dimensions;
-};
-
 /**
  * @class QESNetCDFOutput
  * @brief Handles the saving of output files.
@@ -132,7 +73,11 @@ public:
    *
    * @note Can be called outside.
    */
-  virtual void save(QEStime) override { saveOutputFields(); }
+  virtual void save(QEStime t) override
+  {
+    setOutputTime(t);
+    saveOutputFields();
+  }
   virtual void save(float) override {}
 
   void createDimension(const std::string &, const std::string &, const std::string &, std::vector<int> *) override;
@@ -154,17 +99,6 @@ public:
 protected:
   QESNetCDFOutput() = default;
 
-  // create attribute scalar based on type of data
-  void createAttScalar(const std::string &, const std::string &, const std::string &, const std::vector<NcDim> &, int *);
-  void createAttScalar(const std::string &, const std::string &, const std::string &, const std::vector<NcDim> &, float *);
-  void createAttScalar(const std::string &, const std::string &, const std::string &, const std::vector<NcDim> &, double *);
-
-  // create attribute vector based on type of data
-  void createAttVector(const std::string &, const std::string &, const std::string &, const std::vector<NcDim> &, std::vector<int> *);
-  void createAttVector(const std::string &, const std::string &, const std::string &, const std::vector<NcDim> &, std::vector<float> *);
-  void createAttVector(const std::string &, const std::string &, const std::string &, const std::vector<NcDim> &, std::vector<double> *);
-  void createAttVector(const std::string &, const std::string &, const std::string &, const std::vector<NcDim> &, std::vector<char> *);
-
   void setStartTime(const QEStime &) override;
   void setOutputTime(const QEStime &) override;
 
@@ -173,8 +107,8 @@ protected:
   void addOutputFields(const std::set<std::string> &);
   // removed field
   void rmOutputField(const std::string &);
-  void rmTimeIndepFields();
-  // save fields
+  // void rmTimeIndepFields();
+  //  save fields
   void saveOutputFields();
 
   virtual void setAllOutputFields()
@@ -201,36 +135,6 @@ private:
        @note This vector is used ONLY for creating fields
        (i.e. by the CTOR &add function) NOT to save them
        (i.e. by the function save) */
-
-  ///@{
-  /**
-   * Output field in the NetCDF file for scalar/vector for each type.
-   *
-   * @note This is used ONLY to create and link fields.
-   */
-  std::map<std::string, AttScalarInt> map_att_scalar_int;
-  std::map<std::string, AttScalarFlt> map_att_scalar_flt;
-  std::map<std::string, AttScalarDbl> map_att_scalar_dbl;
-  std::map<std::string, AttVectorInt> map_att_vector_int;
-  std::map<std::string, AttVectorFlt> map_att_vector_flt;
-  std::map<std::string, AttVectorDbl> map_att_vector_dbl;
-  std::map<std::string, AttVectorChar> map_att_vector_char;
-  ///@}
-
-  ///@{
-  /**
-   * Vectors of output fields in the NetCDF file for scalar/vector for each type.
-   *
-   * @note This is used to save the fields, ONLY the fields in these 6 vectors will be saved.
-   */
-  std::vector<AttScalarInt> output_scalar_int;
-  std::vector<AttScalarFlt> output_scalar_flt;
-  std::vector<AttScalarDbl> output_scalar_dbl;
-  std::vector<AttVectorInt> output_vector_int;
-  std::vector<AttVectorFlt> output_vector_flt;
-  std::vector<AttVectorDbl> output_vector_dbl;
-  std::vector<AttVectorChar> output_vector_char;
-  ///@}
 
   std::string timestamp;
   std::vector<char> timestamp_out; /**< :document this: */
