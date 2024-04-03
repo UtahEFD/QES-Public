@@ -48,6 +48,7 @@ QESNetCDFOutput::QESNetCDFOutput(const std::string &output_file)
   dim_vect_t.push_back(NcDim_t);
   addField("t", "s", "time since start of simulation", dim_vect_t, ncDouble);
   output_dimensions.insert({ "t", NcDim_t });
+  output_dimension_sets.insert({ "time", { NcDim_t } });
 
   NcDim_tstr = addDimension("dateStrLen", dateStrLen);
   std::vector<NcDim> dim_vect_tstr;
@@ -177,12 +178,17 @@ void QESNetCDFOutput::createField(const std::string &name,
                                   int *data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
-  output_object.emplace(name, new ObjScalarInt(data, name, long_name, units, output_dimension_sets[dims]));
-  output_object[name]->add(this);
-  // AttScalarInt att = { data, name, long_name, units, { output_dimensions[dims] } };
-  // map_att_scalar_int.emplace(name, att);
-  set_all_output_fields.insert(name);
-  // addOutputFields({ name });
+  if (output_dimension_sets.find(dims) == output_dimension_sets.end()) {
+    std::cerr << "[ERROR] Set of dimensions does not exit adding " << name << std::endl;
+    exit(1);
+  } else {
+    output_object.emplace(name, new ObjScalarInt(data, name, long_name, units, { output_dimension_sets[dims] }));
+    output_object[name]->add(this);
+    // AttScalarInt att = { data, name, long_name, units, { output_dimensions[dims] } };
+    // map_att_scalar_int.emplace(name, att);
+    set_all_output_fields.insert(name);
+    // addOutputFields({ name });
+  }
 }
 // -> float
 void QESNetCDFOutput::createField(const std::string &name,
@@ -192,12 +198,17 @@ void QESNetCDFOutput::createField(const std::string &name,
                                   float *data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
-  output_object.emplace(name, new ObjScalarFlt(data, name, long_name, units, output_dimension_sets[dims]));
-  output_object[name]->add(this);
-  // AttScalarFlt att = { data, name, long_name, units, { output_dimensions[dims] } };
-  // map_att_scalar_flt.emplace(name, att);
-  set_all_output_fields.insert(name);
-  // addOutputFields({ name });
+  if (output_dimension_sets.find(dims) == output_dimension_sets.end()) {
+    std::cerr << "[ERROR] Set of dimensions does not exit adding " << name << std::endl;
+    exit(1);
+  } else {
+    output_object.emplace(name, new ObjScalarFlt(data, name, long_name, units, { output_dimension_sets[dims] }));
+    output_object[name]->add(this);
+    // AttScalarFlt att = { data, name, long_name, units, { output_dimensions[dims] } };
+    // map_att_scalar_flt.emplace(name, att);
+    set_all_output_fields.insert(name);
+    // addOutputFields({ name });
+  }
 }
 // -> double
 void QESNetCDFOutput::createField(const std::string &name,
@@ -207,12 +218,17 @@ void QESNetCDFOutput::createField(const std::string &name,
                                   double *data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
-  output_object.emplace(name, new ObjScalarDbl(data, name, long_name, units, output_dimension_sets[dims]));
-  output_object[name]->add(this);
-  // AttScalarDbl att = { data, name, long_name, units, { output_dimensions[dims] } };
-  // map_att_scalar_dbl.emplace(name, att);
-  set_all_output_fields.insert(name);
-  // addOutputFields({ name });
+  if (output_dimension_sets.find(dims) == output_dimension_sets.end()) {
+    std::cerr << "[ERROR] Set of dimensions does not exit adding " << name << std::endl;
+    exit(1);
+  } else {
+    output_object.emplace(name, new ObjScalarDbl(data, name, long_name, units, { output_dimension_sets[dims] }));
+    output_object[name]->add(this);
+    // AttScalarDbl att = { data, name, long_name, units, { output_dimensions[dims] } };
+    // map_att_scalar_dbl.emplace(name, att);
+    set_all_output_fields.insert(name);
+    // addOutputFields({ name });
+  }
 }
 
 //----------------------------------------
@@ -225,12 +241,17 @@ void QESNetCDFOutput::createField(const std::string &name,
                                   std::vector<int> *data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
-  output_object.emplace(name, new ObjVectorInt(data, name, long_name, units, output_dimension_sets[dims]));
-  output_object[name]->add(this);
-  // AttVectorInt att = { data, name, long_name, units, output_dimension_sets[dims] };
-  // map_att_vector_int.emplace(name, att);
-  set_all_output_fields.insert(name);
-  // addOutputFields({ name });
+  if (output_dimension_sets.find(dims) == output_dimension_sets.end()) {
+    std::cerr << "[ERROR] Set of dimensions does not exit adding " << name << std::endl;
+    exit(1);
+  } else {
+    output_object.emplace(name, new ObjVectorInt(data, name, long_name, units, output_dimension_sets[dims]));
+    output_object[name]->add(this);
+    // AttVectorInt att = { data, name, long_name, units, output_dimension_sets[dims] };
+    // map_att_vector_int.emplace(name, att);
+    set_all_output_fields.insert(name);
+    // addOutputFields({ name });
+  }
 }
 // -> float
 void QESNetCDFOutput::createField(const std::string &name,
@@ -240,12 +261,17 @@ void QESNetCDFOutput::createField(const std::string &name,
                                   std::vector<float> *data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
-  output_object.emplace(name, new ObjVectorFlt(data, name, long_name, units, output_dimension_sets[dims]));
-  output_object[name]->add(this);
-  // AttVectorFlt att = { data, name, long_name, units, output_dimension_sets[dims] };
-  // map_att_vector_flt.emplace(name, att);
-  set_all_output_fields.insert(name);
-  // addOutputFields({ name });
+  if (output_dimension_sets.find(dims) == output_dimension_sets.end()) {
+    std::cerr << "[ERROR] Set of dimensions does not exit adding " << name << std::endl;
+    exit(1);
+  } else {
+    output_object.emplace(name, new ObjVectorFlt(data, name, long_name, units, output_dimension_sets[dims]));
+    output_object[name]->add(this);
+    // AttVectorFlt att = { data, name, long_name, units, output_dimension_sets[dims] };
+    // map_att_vector_flt.emplace(name, att);
+    set_all_output_fields.insert(name);
+    // addOutputFields({ name });
+  }
 }
 // -> double
 void QESNetCDFOutput::createField(const std::string &name,
@@ -255,97 +281,19 @@ void QESNetCDFOutput::createField(const std::string &name,
                                   std::vector<double> *data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
-  output_object.emplace(name, new ObjVectorDbl(data, name, long_name, units, output_dimension_sets[dims]));
-  output_object[name]->add(this);
-  // AttVectorDbl att = { data, name, long_name, units, output_dimension_sets[dims] };
-  // map_att_vector_dbl.emplace(name, att);
-  set_all_output_fields.insert(name);
-  // addOutputFields({ name });
+  if (output_dimension_sets.find(dims) == output_dimension_sets.end()) {
+    std::cerr << "[ERROR] Set of dimensions does not exit adding " << name << std::endl;
+    exit(1);
+  } else {
+    output_object.emplace(name, new ObjVectorDbl(data, name, long_name, units, output_dimension_sets[dims]));
+    output_object[name]->add(this);
+    // AttVectorDbl att = { data, name, long_name, units, output_dimension_sets[dims] };
+    // map_att_vector_dbl.emplace(name, att);
+    set_all_output_fields.insert(name);
+    // addOutputFields({ name });
+  }
 }
 
-//----------------------------------------
-// create attribute scalar
-// -> int
-void QESNetCDFOutput::createAttScalar(const std::string &name,
-                                      const std::string &long_name,
-                                      const std::string &units,
-                                      const std::vector<NcDim> &dims,
-                                      int *data)
-{
-  // FM -> here I do not know what is the best way to add the ref to data.
-  AttScalarInt att = { data, name, long_name, units, dims };
-  map_att_scalar_int.emplace(name, att);
-}
-// -> float
-void QESNetCDFOutput::createAttScalar(const std::string &name,
-                                      const std::string &long_name,
-                                      const std::string &units,
-                                      const std::vector<NcDim> &dims,
-                                      float *data)
-{
-  // FM -> here I do not know what is the best way to add the ref to data.
-  AttScalarFlt att = { data, name, long_name, units, dims };
-  map_att_scalar_flt.emplace(name, att);
-}
-// -> double
-void QESNetCDFOutput::createAttScalar(const std::string &name,
-                                      const std::string &long_name,
-                                      const std::string &units,
-                                      const std::vector<NcDim> &dims,
-                                      double *data)
-{
-  // FM -> here I do not know what is the best way to add the ref to data.
-  AttScalarDbl att = { data, name, long_name, units, dims };
-  map_att_scalar_dbl.emplace(name, att);
-}
-
-//----------------------------------------
-// create attribute Vector
-// -> int
-void QESNetCDFOutput::createAttVector(const std::string &name,
-                                      const std::string &long_name,
-                                      const std::string &units,
-                                      const std::vector<NcDim> &dims,
-                                      std::vector<int> *data)
-{
-  // FM -> here I do not know what is the best way to add the ref to data.
-  AttVectorInt att = { data, name, long_name, units, dims };
-  map_att_vector_int.emplace(name, att);
-}
-// -> float
-void QESNetCDFOutput::createAttVector(const std::string &name,
-                                      const std::string &long_name,
-                                      const std::string &units,
-                                      const std::vector<NcDim> &dims,
-                                      std::vector<float> *data)
-{
-  // FM -> here I do not know what is the best way to add the ref to data.
-  AttVectorFlt att = { data, name, long_name, units, dims };
-  map_att_vector_flt.emplace(name, att);
-}
-// -> double
-void QESNetCDFOutput::createAttVector(const std::string &name,
-                                      const std::string &long_name,
-                                      const std::string &units,
-                                      const std::vector<NcDim> &dims,
-                                      std::vector<double> *data)
-{
-  // FM -> here I do not know what is the best way to add the ref to data.
-  AttVectorDbl att = { data, name, long_name, units, dims };
-  map_att_vector_dbl.emplace(name, att);
-}
-
-// -> char (for time)
-void QESNetCDFOutput::createAttVector(const std::string &name,
-                                      const std::string &long_name,
-                                      const std::string &units,
-                                      const std::vector<NcDim> &dims,
-                                      std::vector<char> *data)
-{
-  // FM -> here I do not know what is the best way to add the ref to data.
-  AttVectorChar att = { data, name, long_name, units, dims };
-  map_att_vector_char.emplace(name, att);
-}
 
 //----------------------------------------
 void QESNetCDFOutput::addOutputFields()
@@ -364,65 +312,6 @@ void QESNetCDFOutput::addOutputFields()
   for (auto s : output_fields) {
     output_object[s]->add(this);
   }
-  /*
-  for (const auto &key : output_fields) {
-    if (map_att_scalar_int.count(key)) {
-      // scalar int
-      output_scalar_int.push_back(map_att_scalar_int[key]);
-    } else if (map_att_scalar_flt.count(key)) {
-      // scalar flt
-      output_scalar_flt.push_back(map_att_scalar_flt[key]);
-    } else if (map_att_scalar_dbl.count(key)) {
-      // scalar dbl
-      output_scalar_dbl.push_back(map_att_scalar_dbl[key]);
-    } else if (map_att_vector_int.count(key)) {
-      // vector int
-      output_vector_int.push_back(map_att_vector_int[key]);
-    } else if (map_att_vector_flt.count(key)) {
-      // vector flt
-      output_vector_flt.push_back(map_att_vector_flt[key]);
-    } else if (map_att_vector_dbl.count(key)) {
-      // vector dbl
-      output_vector_dbl.push_back(map_att_vector_dbl[key]);
-    } else if (map_att_vector_char.count(key)) {
-      // vector char
-      output_vector_char.push_back(map_att_vector_char[key]);
-    } else {
-      std::cerr << "[WARNING] field " << key << " not defined (excluding dimensions)" << std::endl;
-    }
-  }
-
-  // add scalar fields
-  // -> int
-  for (const AttScalarInt &att : output_scalar_int) {
-    addField(att.name, att.units, att.long_name, att.dimensions, ncInt);
-  }
-  // -> float
-  for (const AttScalarFlt &att : output_scalar_flt) {
-    addField(att.name, att.units, att.long_name, att.dimensions, ncFloat);
-  }
-  // -> double
-  for (const AttScalarDbl &att : output_scalar_dbl) {
-    addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
-  }
-  // add vector fields
-  // -> int
-  for (const AttVectorInt &att : output_vector_int) {
-    addField(att.name, att.units, att.long_name, att.dimensions, ncInt);
-  }
-  // -> int
-  for (const AttVectorFlt &att : output_vector_flt) {
-    addField(att.name, att.units, att.long_name, att.dimensions, ncFloat);
-  }
-  // -> double
-  for (const AttVectorDbl &att : output_vector_dbl) {
-    addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
-  }
-  // -> char
-  for (const AttVectorChar &att : output_vector_char) {
-    addField(att.name, att.units, att.long_name, att.dimensions, ncChar);
-  }
-   */
 }
 //----------------------------------------
 void QESNetCDFOutput::addOutputFields(const std::set<std::string> &new_fields)
@@ -456,67 +345,6 @@ void QESNetCDFOutput::addOutputFields(const std::set<std::string> &new_fields)
   for (auto s : new_fields) {
     output_object[s]->add(this);
   }
-
-  /*
-  for (const auto &key : new_fields) {
-    if (map_att_scalar_int.count(key)) {
-      // scalar int
-      output_scalar_int.push_back(map_att_scalar_int[key]);
-      addField(map_att_scalar_int[key].name,
-               map_att_scalar_int[key].units,
-               map_att_scalar_int[key].long_name,
-               map_att_scalar_int[key].dimensions,
-               ncInt);
-    } else if (map_att_scalar_flt.count(key)) {
-      // scalar flt
-      output_scalar_flt.push_back(map_att_scalar_flt[key]);
-      addField(map_att_scalar_flt[key].name,
-               map_att_scalar_flt[key].units,
-               map_att_scalar_flt[key].long_name,
-               map_att_scalar_flt[key].dimensions,
-               ncFloat);
-    } else if (map_att_scalar_dbl.count(key)) {
-      // scalar dbl
-      output_scalar_dbl.push_back(map_att_scalar_dbl[key]);
-      addField(map_att_scalar_dbl[key].name,
-               map_att_scalar_dbl[key].units,
-               map_att_scalar_dbl[key].long_name,
-               map_att_scalar_dbl[key].dimensions,
-               ncDouble);
-    } else if (map_att_vector_int.count(key)) {
-      // vector int
-      output_vector_int.push_back(map_att_vector_int[key]);
-      addField(map_att_vector_int[key].name,
-               map_att_vector_int[key].units,
-               map_att_vector_int[key].long_name,
-               map_att_vector_int[key].dimensions,
-               ncInt);
-    } else if (map_att_vector_flt.count(key)) {
-      // vector flt
-      output_vector_flt.push_back(map_att_vector_flt[key]);
-      addField(map_att_vector_flt[key].name,
-               map_att_vector_flt[key].units,
-               map_att_vector_flt[key].long_name,
-               map_att_vector_flt[key].dimensions,
-               ncFloat);
-    } else if (map_att_vector_dbl.count(key)) {
-      // vector dbl
-      output_vector_dbl.push_back(map_att_vector_dbl[key]);
-      addField(map_att_vector_dbl[key].name,
-               map_att_vector_dbl[key].units,
-               map_att_vector_dbl[key].long_name,
-               map_att_vector_dbl[key].dimensions,
-               ncDouble);
-    } else if (map_att_vector_char.count(key)) {
-      // vector char
-      output_vector_char.push_back(map_att_vector_char[key]);
-      addField(map_att_vector_char[key].name,
-               map_att_vector_char[key].units,
-               map_att_vector_char[key].long_name,
-               map_att_vector_char[key].dimensions,
-               ncChar);
-    }
-  }*/
 }
 
 
@@ -531,115 +359,9 @@ void QESNetCDFOutput::rmOutputField(const std::string &name)
 
     FMargairaz
   */
-
-  // loop through scalar fields to remove
-  // -> int
-  for (unsigned int i = 0; i < output_scalar_int.size(); i++) {
-    if (output_scalar_int[i].name == name) {
-      output_scalar_int.erase(output_scalar_int.begin() + i);
-      return;
-    }
-  }
-  // -> float
-  for (unsigned int i = 0; i < output_scalar_flt.size(); i++) {
-    if (output_scalar_flt[i].name == name) {
-      output_scalar_flt.erase(output_scalar_flt.begin() + i);
-      return;
-    }
-  }
-
-  // -> double
-  for (unsigned int i = 0; i < output_scalar_dbl.size(); i++) {
-    if (output_scalar_dbl[i].name == name) {
-      output_scalar_dbl.erase(output_scalar_dbl.begin() + i);
-      return;
-    }
-  }
-
-  // loop through vector fields to remove
-  // -> int
-  for (unsigned int i = 0; i < output_vector_int.size(); i++) {
-    if (output_vector_int[i].name == name) {
-      output_vector_int.erase(output_vector_int.begin() + i);
-      return;
-    }
-  }
-  // -> float
-  for (unsigned int i = 0; i < output_vector_flt.size(); i++) {
-    if (output_vector_flt[i].name == name) {
-      output_vector_flt.erase(output_vector_flt.begin() + i);
-      return;
-    }
-  }
-  // -> double
-  for (unsigned int i = 0; i < output_vector_dbl.size(); i++) {
-    if (output_vector_dbl[i].name == name) {
-      output_vector_dbl.erase(output_vector_dbl.begin() + i);
-      return;
-    }
-  }
-  // -> char
-  for (unsigned int i = 0; i < output_vector_char.size(); i++) {
-    if (output_vector_char[i].name == name) {
-      output_vector_char.erase(output_vector_char.begin() + i);
-      return;
-    }
-  }
+  output_object.erase(name);
 }
 
-void QESNetCDFOutput::rmTimeIndepFields()
-{
-  /*
-    This function remove time indep field from the output vectors
-    Since the types are not know, one needs to loop through
-    the 6 output vector to find it.
-
-    Note: the fields CANNOT be added again.
-
-    FMargairaz
-  */
-
-  // loop through scalar fields to remove
-  // -> int
-  for (unsigned int i = 0; i < output_scalar_int.size(); i++) {
-    if (output_scalar_int[i].dimensions[0].getName() != "t") {
-      output_scalar_int.erase(output_scalar_int.begin() + i);
-    }
-  }
-  // -> float
-  for (unsigned int i = 0; i < output_scalar_flt.size(); i++) {
-    if (output_scalar_flt[i].dimensions[0].getName() != "t") {
-      output_scalar_flt.erase(output_scalar_flt.begin() + i);
-    }
-  }
-
-  // -> double
-  for (unsigned int i = 0; i < output_scalar_dbl.size(); i++) {
-    if (output_scalar_dbl[i].dimensions[0].getName() != "t") {
-      output_scalar_dbl.erase(output_scalar_dbl.begin() + i);
-    }
-  }
-
-  // loop through vector fields to remove
-  // -> int
-  for (unsigned int i = 0; i < output_vector_int.size(); i++) {
-    if (output_vector_int[i].dimensions[0].getName() != "t") {
-      output_vector_int.erase(output_vector_int.begin() + i);
-    }
-  }
-  // -> float
-  for (unsigned int i = 0; i < output_vector_flt.size(); i++) {
-    if (output_vector_flt[i].dimensions[0].getName() != "t") {
-      output_vector_flt.erase(output_vector_flt.begin() + i);
-    }
-  }
-  // -> double
-  for (unsigned int i = 0; i < output_vector_dbl.size(); i++) {
-    if (output_vector_dbl[i].dimensions[0].getName() != "t") {
-      output_vector_dbl.erase(output_vector_dbl.begin() + i);
-    }
-  }
-}
 
 void QESNetCDFOutput::saveOutputFields()
 {
@@ -652,8 +374,9 @@ void QESNetCDFOutput::saveOutputFields()
   */
 
   size_t output_counter = fields["t"].getDim(0).getSize();
-  //  std::cout << "[TEST OUTPUT] " << fields["t"].getDim(0).getSize() << std::endl;
-
+  std::cout << "[TEST OUTPUT] " << fields["t"].getDim(0).getSize() << std::endl;
+  std::cout << "[TEST OUTPUT] " << timeCurrent << std::endl;
+  
   if (output_counter == 0 && !flagStartTimeSet) {
     setStartTime(timeCurrent);
     time = 0.0;
@@ -678,133 +401,4 @@ void QESNetCDFOutput::saveOutputFields()
   for (const auto &s : set_all_output_fields) {
     output_object[s]->save(this, output_counter);
   }
-
-  /*
-  // loop through scalar fields to save
-  // -> int
-  for (unsigned int i = 0; i < output_scalar_int.size(); i++) {
-    std::vector<size_t> scalar_index;
-    scalar_index = { static_cast<unsigned long>(output_counter) };
-    saveField1D(output_scalar_int[i].name, scalar_index, output_scalar_int[i].data);
-  }
-  // -> float
-  for (unsigned int i = 0; i < output_scalar_flt.size(); i++) {
-    std::vector<size_t> scalar_index;
-    scalar_index = { static_cast<unsigned long>(output_counter) };
-    saveField1D(output_scalar_flt[i].name, scalar_index, output_scalar_flt[i].data);
-  }
-  // -> double
-  for (unsigned int i = 0; i < output_scalar_dbl.size(); i++) {
-    std::vector<size_t> scalar_index;
-    scalar_index = { static_cast<unsigned long>(output_counter) };
-    saveField1D(output_scalar_dbl[i].name, scalar_index, output_scalar_dbl[i].data);
-  }
-
-  // loop through vector fields to save
-  // -> int
-  for (unsigned int i = 0; i < output_vector_int.size(); i++) {
-
-    std::vector<size_t> vector_index;
-    std::vector<size_t> vector_size;
-
-    // if var is time dep -> special treatment for time
-    if (output_vector_int[i].dimensions[0].getName() == "t") {
-      vector_index.push_back(static_cast<size_t>(output_counter));
-      vector_size.push_back(1);
-      for (unsigned int d = 1; d < output_vector_int[i].dimensions.size(); d++) {
-        int dim = output_vector_int[i].dimensions[d].getSize();
-        vector_index.push_back(0);
-        vector_size.push_back(static_cast<unsigned long>(dim));
-      }
-    }
-    // if var not time dep -> use direct dimensions
-    else if (output_counter == 0) {
-      for (unsigned int d = 0; d < output_vector_int[i].dimensions.size(); d++) {
-        int dim = output_vector_int[i].dimensions[d].getSize();
-        vector_index.push_back(0);
-        vector_size.push_back(static_cast<unsigned long>(dim));
-      }
-    } else {
-      continue;
-    }
-
-    saveField2D(output_vector_int[i].name, vector_index, vector_size, *output_vector_int[i].data);
-  }
-  // -> float
-  for (unsigned int i = 0; i < output_vector_flt.size(); i++) {
-    std::vector<size_t> vector_index;
-    std::vector<size_t> vector_size;
-
-    // if var is time dep -> special treatment for time
-    if (output_vector_flt[i].dimensions[0].getName() == "t") {
-      vector_index.push_back(static_cast<size_t>(output_counter));
-      vector_size.push_back(1);
-      for (unsigned int d = 1; d < output_vector_flt[i].dimensions.size(); d++) {
-        int dim = output_vector_flt[i].dimensions[d].getSize();
-        vector_index.push_back(0);
-        vector_size.push_back(static_cast<unsigned long>(dim));
-      }
-    }
-    // if var not time dep -> use direct dimensions
-    else if (output_counter == 0) {
-      for (unsigned int d = 0; d < output_vector_flt[i].dimensions.size(); d++) {
-        int dim = output_vector_flt[i].dimensions[d].getSize();
-        vector_index.push_back(0);
-        vector_size.push_back(static_cast<unsigned long>(dim));
-      }
-    } else {
-      continue;
-    }
-
-    saveField2D(output_vector_flt[i].name, vector_index, vector_size, *output_vector_flt[i].data);
-  }
-  // -> double
-  for (unsigned int i = 0; i < output_vector_dbl.size(); i++) {
-    std::vector<size_t> vector_index;
-    std::vector<size_t> vector_size;
-
-    // if var is time dep -> special treatment for time
-    if (output_vector_dbl[i].dimensions[0].getName() == "t") {
-      vector_index.push_back(static_cast<size_t>(output_counter));
-      vector_size.push_back(1);
-      for (unsigned int d = 1; d < output_vector_dbl[i].dimensions.size(); d++) {
-        int dim = output_vector_dbl[i].dimensions[d].getSize();
-        vector_index.push_back(0);
-        vector_size.push_back(static_cast<unsigned long>(dim));
-      }
-    }
-    // if var not time dep -> use direct dimensions
-    else if (output_counter == 0) {
-      for (unsigned int d = 0; d < output_vector_dbl[i].dimensions.size(); d++) {
-        int dim = output_vector_dbl[i].dimensions[d].getSize();
-        vector_index.push_back(0);
-        vector_size.push_back(static_cast<unsigned long>(dim));
-      }
-    } else {
-      continue;
-    }
-
-    saveField2D(output_vector_dbl[i].name, vector_index, vector_size, *output_vector_dbl[i].data);
-  }
-  // -> Char for time
-  for (unsigned int i = 0; i < output_vector_char.size(); i++) {
-    std::vector<size_t> vector_index;
-    std::vector<size_t> vector_size;
-
-    // if var is time dep -> special treatment for time
-    if (output_vector_char[i].dimensions[0].getName() == "t") {
-      vector_index.push_back(static_cast<size_t>(output_counter));
-      vector_size.push_back(1);
-      for (unsigned int d = 1; d < output_vector_char[i].dimensions.size(); d++) {
-        int dim = output_vector_char[i].dimensions[d].getSize();
-        vector_index.push_back(0);
-        vector_size.push_back(static_cast<unsigned long>(dim));
-      }
-    }
-
-    saveField2D(output_vector_char[i].name, vector_index, vector_size, *output_vector_char[i].data);
-  }
-  */
-
-  output_counter++;
 }
