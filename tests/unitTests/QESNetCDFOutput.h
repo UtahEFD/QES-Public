@@ -73,9 +73,10 @@ public:
    *
    * @note Can be called outside.
    */
+
+  void newTimeEntry(QEStime) override;
   virtual void save(QEStime t) override
   {
-    setOutputTime(t);
     saveOutputFields();
   }
   virtual void save(float) override {}
@@ -108,8 +109,10 @@ protected:
   // removed field
   void rmOutputField(const std::string &);
   // void rmTimeIndepFields();
+
   //  save fields
   void saveOutputFields();
+  void saveOutputFields(const std::vector<std::string> &);
 
   virtual void setAllOutputFields()
   {}
@@ -119,6 +122,7 @@ private:
   /**< :document this: */
   NcDim NcDim_t;
   double time = 0;
+  size_t output_counter = 0;
 
   /**< :document this: */
   NcDim NcDim_tstr;
@@ -142,7 +146,7 @@ private:
        @note This vector is used ONLY for creating fields
        (i.e. by the CTOR &add function) NOT to save them
        (i.e. by the function save) */
-  
+
   std::map<std::string, Obj *> output_object;
 
   friend class ObjScalarInt;
@@ -157,7 +161,7 @@ class Obj
 {
 public:
   virtual void add(QESNetCDFOutput *) = 0;
-  virtual void save(QESNetCDFOutput *, const int &) = 0;
+  virtual void save(QESNetCDFOutput *, const size_t &) = 0;
 };
 
 class ObjScalarInt : public Obj
@@ -171,7 +175,7 @@ public:
   {
     f->addField(name, units, long_name, dimensions, ncInt);
   }
-  void save(QESNetCDFOutput *f, const int &output_counter) override
+  void save(QESNetCDFOutput *f, const size_t &output_counter) override
   {
     std::vector<size_t> scalar_index;
     scalar_index = { static_cast<unsigned long>(output_counter) };
@@ -181,7 +185,7 @@ public:
 private:
   ObjScalarInt() = default;
 
-  int *data;
+  int *data{};
   std::string name;
   std::string long_name;
   std::string units;
@@ -198,7 +202,7 @@ public:
   {
     f->addField(name, units, long_name, dimensions, ncInt);
   }
-  void save(QESNetCDFOutput *f, const int &output_counter) override
+  void save(QESNetCDFOutput *f, const size_t &output_counter) override
   {
     std::vector<size_t> vector_index;
     std::vector<size_t> vector_size;
@@ -208,7 +212,7 @@ public:
       vector_index.push_back(static_cast<size_t>(output_counter));
       vector_size.push_back(1);
       for (unsigned int d = 1; d < dimensions.size(); d++) {
-        int dim = dimensions[d].getSize();
+        size_t dim = dimensions[d].getSize();
         vector_index.push_back(0);
         vector_size.push_back(static_cast<unsigned long>(dim));
       }
@@ -216,7 +220,7 @@ public:
     // if var not time dep -> use direct dimensions
     else if (output_counter == 0) {
       for (unsigned int d = 0; d < dimensions.size(); d++) {
-        int dim = dimensions[d].getSize();
+        size_t dim = dimensions[d].getSize();
         vector_index.push_back(0);
         vector_size.push_back(static_cast<unsigned long>(dim));
       }
@@ -229,7 +233,7 @@ public:
 private:
   ObjVectorInt() = default;
 
-  std::vector<int> *data;
+  std::vector<int> *data{};
   std::string name;
   std::string long_name;
   std::string units;
@@ -246,7 +250,7 @@ public:
   {
     f->addField(name, units, long_name, dimensions, ncFloat);
   }
-  void save(QESNetCDFOutput *f, const int &output_counter) override
+  void save(QESNetCDFOutput *f, const size_t &output_counter) override
   {
     std::vector<size_t> scalar_index;
     scalar_index = { static_cast<unsigned long>(output_counter) };
@@ -255,7 +259,7 @@ public:
 
 private:
   ObjScalarFlt() = default;
-  float *data;
+  float *data{};
   std::string name;
   std::string long_name;
   std::string units;
@@ -272,7 +276,7 @@ public:
   {
     f->addField(name, units, long_name, dimensions, ncFloat);
   }
-  void save(QESNetCDFOutput *f, const int &output_counter) override
+  void save(QESNetCDFOutput *f, const size_t &output_counter) override
   {
     std::vector<size_t> vector_index;
     std::vector<size_t> vector_size;
@@ -282,7 +286,7 @@ public:
       vector_index.push_back(static_cast<size_t>(output_counter));
       vector_size.push_back(1);
       for (unsigned int d = 1; d < dimensions.size(); d++) {
-        int dim = dimensions[d].getSize();
+        size_t dim = dimensions[d].getSize();
         vector_index.push_back(0);
         vector_size.push_back(static_cast<unsigned long>(dim));
       }
@@ -290,7 +294,7 @@ public:
     // if var not time dep -> use direct dimensions
     else if (output_counter == 0) {
       for (unsigned int d = 0; d < dimensions.size(); d++) {
-        int dim = dimensions[d].getSize();
+        size_t dim = dimensions[d].getSize();
         vector_index.push_back(0);
         vector_size.push_back(static_cast<unsigned long>(dim));
       }
@@ -302,7 +306,7 @@ public:
 
 private:
   ObjVectorFlt() = default;
-  std::vector<float> *data;
+  std::vector<float> *data{};
   std::string name;
   std::string long_name;
   std::string units;
@@ -318,7 +322,7 @@ public:
   {
     f->addField(name, units, long_name, dimensions, ncDouble);
   }
-  void save(QESNetCDFOutput *f, const int &output_counter) override
+  void save(QESNetCDFOutput *f, const size_t &output_counter) override
   {
     std::vector<size_t> scalar_index;
     scalar_index = { static_cast<unsigned long>(output_counter) };
@@ -327,7 +331,7 @@ public:
 
 private:
   ObjScalarDbl() = default;
-  double *data;
+  double *data{};
   std::string name;
   std::string long_name;
   std::string units;
@@ -344,7 +348,7 @@ public:
   {
     f->addField(name, units, long_name, dimensions, ncDouble);
   }
-  void save(QESNetCDFOutput *f, const int &output_counter) override
+  void save(QESNetCDFOutput *f, const size_t &output_counter) override
   {
     std::vector<size_t> vector_index;
     std::vector<size_t> vector_size;
@@ -354,7 +358,7 @@ public:
       vector_index.push_back(static_cast<size_t>(output_counter));
       vector_size.push_back(1);
       for (unsigned int d = 1; d < dimensions.size(); d++) {
-        int dim = dimensions[d].getSize();
+        size_t dim = dimensions[d].getSize();
         vector_index.push_back(0);
         vector_size.push_back(static_cast<unsigned long>(dim));
       }
@@ -362,7 +366,7 @@ public:
     // if var not time dep -> use direct dimensions
     else if (output_counter == 0) {
       for (unsigned int d = 0; d < dimensions.size(); d++) {
-        int dim = dimensions[d].getSize();
+        size_t dim = dimensions[d].getSize();
         vector_index.push_back(0);
         vector_size.push_back(static_cast<unsigned long>(dim));
       }
@@ -374,7 +378,7 @@ public:
 
 private:
   ObjVectorDbl() = default;
-  std::vector<double> *data;
+  std::vector<double> *data{};
   std::string name;
   std::string long_name;
   std::string units;

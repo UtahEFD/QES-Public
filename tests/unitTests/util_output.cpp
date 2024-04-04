@@ -171,14 +171,20 @@ TEST_CASE("unit test of output system")
 
   QEStime t;
 
-  concentration->save(t);
-  spectra->save(t);
-  testFile->save(t);
-  
-  t += 120;
+  testFile->newTimeEntry(t);
 
   concentration->save(t);
   spectra->save(t);
+
+  testFile->save(t);
+
+  t += 120;
+
+  testFile->newTimeEntry(t);
+
+  concentration->save(t);
+  spectra->save(t);
+
   testFile->save(t);
 
   // QESOutputInterface *spectra = new QESOutput();
