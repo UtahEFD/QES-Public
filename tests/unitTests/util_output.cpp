@@ -73,6 +73,55 @@ protected:
   std::vector<float> conc;// concentration values (for output)
 };
 
+class Spectra : public QESOutput
+{
+public:
+  Spectra()
+  {
+    int nBoxesX = 5;
+    int nBoxesY = 5;
+
+    // output concentration storage variables
+    xBoxCen.resize(nBoxesX);
+    yBoxCen.resize(nBoxesY);
+
+    int zR = 0, yR = 0, xR = 0;
+    for (int j = 0; j < nBoxesY; ++j) {
+      yBoxCen.at(j) = 0 + (yR * 1) + (1 / 2.0);
+      yR++;
+    }
+    for (int i = 0; i < nBoxesX; ++i) {
+      xBoxCen.at(i) = 0 + (xR * 1) + (1 / 2.0);
+      xR++;
+    }
+
+    ongoingAveragingTime = 1000;
+
+    // initialization of the container
+    sp.resize(nBoxesX * nBoxesY, 0.0);
+  }
+
+  void setOutputFields() override
+  {
+    std::cout << "call set output" << std::endl;
+
+    m_output_file->createDimension("k_x", "x-wavenumber", "m-1", &xBoxCen);
+    m_output_file->createDimension("k_y", "y-wavenumber", "m-1", &yBoxCen);
+
+    m_output_file->createDimensionSet("spectra", { "t", "k_y", "k_x" });
+
+    m_output_file->createField("t_collection", "Collecting time", "s", "time", &ongoingAveragingTime);
+    m_output_file->createField("s", "spectra", "m-3", "spectra", &sp);
+
+    // need to have a way to track which variable is in which subject their own variables.
+  }
+
+protected:
+  // output concentration storage variables
+  float ongoingAveragingTime;
+  std::vector<float> xBoxCen, yBoxCen, zBoxCen;// list of x,y, and z points for the concentration sampling box information
+  std::vector<float> sp;// concentration values (for output)
+};
 
 class QESOutputDirector
 {
@@ -113,17 +162,24 @@ TEST_CASE("unit test of output system")
   QESFileOutputInterface *testFile = new QESNetCDFOutput("test.nc");
 
   QESOutputInterface *concentration = new Concentration();
-  testFile->attach(concentration);
-
+  concentration->attach(testFile);
   concentration->setOutputFields();
+
+  QESOutputInterface *spectra = new Spectra();
+  spectra->attach(testFile);
+  spectra->setOutputFields();
 
   QEStime t;
 
   concentration->save(t);
-
+  spectra->save(t);
+  testFile->save(t);
+  
   t += 120;
 
   concentration->save(t);
+  spectra->save(t);
+  testFile->save(t);
 
   // QESOutputInterface *spectra = new QESOutput();
   // testFile->attach(spectra);

@@ -116,13 +116,20 @@ protected:
   virtual bool validateFileOptions();
 
 private:
+  /**< :document this: */
   NcDim NcDim_t;
+  double time = 0;
+
+  /**< :document this: */
   NcDim NcDim_tstr;
-  const int dateStrLen = 19; /**< :document this: */
+  const int dateStrLen = 19;
+  std::string timestamp;
+  std::vector<char> timestamp_out;
+
+  /**< :document this: */
   QEStime timeStart;
-  QEStime timeCurrent;
   bool flagStartTimeSet = false;
-  double time = 0; /**< :document this: */
+  QEStime timeCurrent;
 
   std::map<std::string, NcDim> output_dimensions;
   std::map<std::string, std::vector<NcDim>> output_dimension_sets;
@@ -135,11 +142,7 @@ private:
        @note This vector is used ONLY for creating fields
        (i.e. by the CTOR &add function) NOT to save them
        (i.e. by the function save) */
-
-  std::string timestamp;
-  std::vector<char> timestamp_out; /**< :document this: */
-  // int output_counter = 0; /**< :document this: */
-
+  
   std::map<std::string, Obj *> output_object;
 
   friend class ObjScalarInt;
