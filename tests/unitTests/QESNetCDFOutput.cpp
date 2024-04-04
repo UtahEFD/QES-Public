@@ -363,20 +363,14 @@ void QESNetCDFOutput::rmOutputField(const std::string &name)
 }
 
 
-void QESNetCDFOutput::saveOutputFields()
+void QESNetCDFOutput::newTimeEntry(QEStime timeIn)
 {
-  /*
-    This function save the fields from the output vectors
-    Since the type is not know, one needs to loop through
-    the 6 output vector to find it.
+  timeCurrent = timeIn;
+  output_counter = fields["t"].getDim(0).getSize();
 
-    FMargairaz
-  */
-
-  size_t output_counter = fields["t"].getDim(0).getSize();
   std::cout << "[TEST OUTPUT] " << fields["t"].getDim(0).getSize() << std::endl;
   std::cout << "[TEST OUTPUT] " << timeCurrent << std::endl;
-  
+
   if (output_counter == 0 && !flagStartTimeSet) {
     setStartTime(timeCurrent);
     time = 0.0;
@@ -397,8 +391,34 @@ void QESNetCDFOutput::saveOutputFields()
   time_index = { static_cast<unsigned long>(output_counter), 0 };
   time_size = { 1, static_cast<unsigned long>(dateStrLen) };
   saveField2D("timestamp", time_index, time_size, timestamp_out);
+}
+
+void QESNetCDFOutput::saveOutputFields()
+{
+  /*
+    This function save the fields from the output vectors
+    Since the type is not know, one needs to loop through
+    the 6 output vector to find it.
+
+  FMargairaz
+      */
 
   for (const auto &s : set_all_output_fields) {
+    output_object[s]->save(this, output_counter);
+  }
+}
+
+void QESNetCDFOutput::saveOutputFields(const std::vector<std::string> &fields)
+{
+  /*
+    This function save the fields from the output vectors
+    Since the type is not know, one needs to loop through
+    the 6 output vector to find it.
+
+  FMargairaz
+      */
+
+  for (const auto &s : fields) {
     output_object[s]->save(this, output_counter);
   }
 }

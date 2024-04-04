@@ -27,7 +27,10 @@ public:
    * @note Can be called outside.
    */
 
+
+  virtual void newTimeEntry(QEStime) = 0;
   virtual void save(QEStime) = 0;
+
   virtual void save(float) = 0;
 
   virtual void setStartTime(const QEStime &) = 0;
