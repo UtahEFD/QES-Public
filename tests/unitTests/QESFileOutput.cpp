@@ -7,7 +7,6 @@
 
 void QESFileOutput::attach(QESOutputInterface *out)
 {
-  std::cout << "call attach" << std::endl;
-  out->attach(this);
+  std::cout << "[FILE] call attach" << std::endl;
   m_list_output.push_back(out);
 };
