@@ -74,11 +74,10 @@ public:
    * @note Can be called outside.
    */
 
-  void newTimeEntry(QEStime) override;
-  virtual void save(QEStime t) override
-  {
-    saveOutputFields();
-  }
+  void newTimeEntry(QEStime &) override;
+  //  save fields
+  void saveOutputFields(QEStime &) override;
+  void saveOutputFields(QEStime &, const std::vector<std::string> &) override;
   virtual void save(float) override {}
 
   void createDimension(const std::string &, const std::string &, const std::string &, std::vector<int> *) override;
@@ -110,9 +109,6 @@ protected:
   void rmOutputField(const std::string &);
   // void rmTimeIndepFields();
 
-  //  save fields
-  void saveOutputFields();
-  void saveOutputFields(const std::vector<std::string> &);
 
   virtual void setAllOutputFields()
   {}

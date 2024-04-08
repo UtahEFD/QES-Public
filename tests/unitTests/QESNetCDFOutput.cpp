@@ -363,7 +363,7 @@ void QESNetCDFOutput::rmOutputField(const std::string &name)
 }
 
 
-void QESNetCDFOutput::newTimeEntry(QEStime timeIn)
+void QESNetCDFOutput::newTimeEntry(QEStime &timeIn)
 {
   timeCurrent = timeIn;
   output_counter = fields["t"].getDim(0).getSize();
@@ -393,7 +393,7 @@ void QESNetCDFOutput::newTimeEntry(QEStime timeIn)
   saveField2D("timestamp", time_index, time_size, timestamp_out);
 }
 
-void QESNetCDFOutput::saveOutputFields()
+void QESNetCDFOutput::saveOutputFields(QEStime &timeIn)
 {
   /*
     This function save the fields from the output vectors
@@ -403,12 +403,16 @@ void QESNetCDFOutput::saveOutputFields()
   FMargairaz
       */
 
+  if (timeIn != timeCurrent) {
+    std::cerr << "[ERROR] attempting to save with wrong timestamp" << std::endl;
+    exit(1);
+  }
   for (const auto &s : set_all_output_fields) {
     output_object[s]->save(this, output_counter);
   }
 }
 
-void QESNetCDFOutput::saveOutputFields(const std::vector<std::string> &fields)
+void QESNetCDFOutput::saveOutputFields(QEStime &timeIn, const std::vector<std::string> &fields)
 {
   /*
     This function save the fields from the output vectors
@@ -417,7 +421,10 @@ void QESNetCDFOutput::saveOutputFields(const std::vector<std::string> &fields)
 
   FMargairaz
       */
-
+  if (timeIn != timeCurrent) {
+    std::cerr << "[ERROR] attempting to save with wrong timestamp" << std::endl;
+    exit(1);
+  }
   for (const auto &s : fields) {
     output_object[s]->save(this, output_counter);
   }
