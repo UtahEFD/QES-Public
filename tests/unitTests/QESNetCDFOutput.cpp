@@ -74,7 +74,7 @@ bool QESNetCDFOutput::validateFileOptions()
 {
 
   if (all_output_fields.empty()) {
-    std::cerr << "[QES-output] ERROR all output fields undefine -> cannot validate file options" << std::endl;
+    std::cerr << "[QES-output] ERROR all output fields undefined -> cannot validate file options" << std::endl;
     exit(EXIT_FAILURE);
   }
 
@@ -163,8 +163,20 @@ void QESNetCDFOutput::createDimensionSet(const std::string &name,
     }
     output_dimension_sets.insert({ name, dim_vect });
   } else {
-    std::cerr << "[ERROR] Set of dimensions already exits" << std::endl;
-    exit(1);
+    if (output_dimension_sets[name].size() == dims.size()) {
+      for (auto k = 0; k < output_dimension_sets[name].size(); ++k) {
+        if (output_dimension_sets[name][k].getName() != dims[k]) {
+          std::cerr << "[!!!ERROR!!!]\tSet of dimensions already exits and contain different dimensions" << std::endl;
+          exit(1);
+        } else {
+          // dimension in set is compatible.
+          // note: file cannot have 2 dimension with the same name
+        }
+      }
+    } else {
+      std::cerr << "[!!!ERROR!!!]\tSet of dimensions already exits and is not compatible" << std::endl;
+      exit(1);
+    }
   }
 }
 
