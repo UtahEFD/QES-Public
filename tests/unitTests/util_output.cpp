@@ -50,7 +50,7 @@ public:
 
   void setOutputFields() override
   {
-    std::cout << "call set output" << std::endl;
+    std::cout << "[Concentration] call set output" << std::endl;
 
     m_output_file->createDimension("x_c", "x-center collection box", "m", &xBoxCen);
     m_output_file->createDimension("y_c", "y-center collection box", "m", &yBoxCen);
@@ -62,6 +62,7 @@ public:
     m_output_file->createField("p", "number of particle per box", "#ofPar", "concentration", &pBox);
     m_output_file->createField("c", "concentration", "g m-3", "concentration", &conc);
 
+    output_fields = { "t_avg", "p", "c" };
     // need to have a way to track which variable is in which subject their own variables.
   }
 
@@ -103,7 +104,7 @@ public:
 
   void setOutputFields() override
   {
-    std::cout << "call set output" << std::endl;
+    std::cout << "[Spectra] call set output" << std::endl;
 
     m_output_file->createDimension("k_x", "x-wavenumber", "m-1", &xBoxCen);
     m_output_file->createDimension("k_y", "y-wavenumber", "m-1", &yBoxCen);
@@ -114,6 +115,7 @@ public:
     m_output_file->createField("s", "spectra", "m-3", "spectra", &sp);
 
     // need to have a way to track which variable is in which subject their own variables.
+    output_fields = { "t_collection", "s" };
   }
 
 protected:
@@ -176,16 +178,17 @@ TEST_CASE("unit test of output system")
   concentration->save(t);
   spectra->save(t);
 
-  testFile->save(t);
+  // testFile->save(t);
 
   t += 120;
 
   testFile->newTimeEntry(t);
 
-  concentration->save(t);
-  spectra->save(t);
+  // concentration->save(t);
+  // spectra->save(t);
 
   testFile->save(t);
+
 
   // QESOutputInterface *spectra = new QESOutput();
   // testFile->attach(spectra);

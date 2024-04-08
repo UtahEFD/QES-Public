@@ -33,4 +33,5 @@ class QESOutput : public QESOutputInterface
 
 protected:
   QESFileOutputInterface *m_output_file;
+  std::vector<std::string> output_fields;
 };

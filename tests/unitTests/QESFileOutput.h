@@ -28,8 +28,10 @@ public:
    */
 
 
-  virtual void newTimeEntry(QEStime) = 0;
-  virtual void save(QEStime) = 0;
+  virtual void newTimeEntry(QEStime &) = 0;
+  virtual void saveOutputFields(QEStime &) = 0;
+  virtual void saveOutputFields(QEStime &, const std::vector<std::string> &) = 0;
+  virtual void save(QEStime &) = 0;
 
   virtual void save(float) = 0;
 
@@ -59,7 +61,8 @@ public:
   explicit QESFileOutput() = default;
   virtual ~QESFileOutput() = default;
 
-  virtual void attach(QESOutputInterface *out) override;
+  void attach(QESOutputInterface *) override;
+  void save(QEStime &) override;
 
 protected:
   std::list<QESOutputInterface *> m_list_output;
