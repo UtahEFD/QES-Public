@@ -65,11 +65,6 @@ void QESNetCDFOutput::setStartTime(const QEStime &in)
   flagStartTimeSet = true;
 }
 
-void QESNetCDFOutput::setOutputTime(const QEStime &in)
-{
-  timeCurrent = in;
-}
-
 bool QESNetCDFOutput::validateFileOptions()
 {
 
@@ -375,15 +370,13 @@ void QESNetCDFOutput::rmOutputField(const std::string &name)
 }
 
 
-void QESNetCDFOutput::newTimeEntry(QEStime &timeIn)
+void QESNetCDFOutput::newTimeEntry(const QEStime &timeIn)
 {
   timeCurrent = timeIn;
   output_counter = fields["t"].getDim(0).getSize();
 
-  std::cout << "[TEST OUTPUT] " << fields["t"].getDim(0).getSize() << std::endl;
-  std::cout << "[TEST OUTPUT] " << timeCurrent << std::endl;
-
   if (output_counter == 0 && !flagStartTimeSet) {
+    std::cerr << "[!!!WARNING!!!]\tstart time not defined in output -> use first time entry as start time" << std::endl;
     setStartTime(timeCurrent);
     time = 0.0;
   } else {
@@ -407,13 +400,6 @@ void QESNetCDFOutput::newTimeEntry(QEStime &timeIn)
 
 void QESNetCDFOutput::saveOutputFields(QEStime &timeIn)
 {
-  /*
-    This function save the fields from the output vectors
-    Since the type is not know, one needs to loop through
-    the 6 output vector to find it.
-
-  FMargairaz
-      */
 
   if (timeIn != timeCurrent) {
     std::cerr << "[ERROR] attempting to save with wrong timestamp" << std::endl;
@@ -426,13 +412,7 @@ void QESNetCDFOutput::saveOutputFields(QEStime &timeIn)
 
 void QESNetCDFOutput::saveOutputFields(QEStime &timeIn, const std::vector<std::string> &fields)
 {
-  /*
-    This function save the fields from the output vectors
-    Since the type is not know, one needs to loop through
-    the 6 output vector to find it.
 
-  FMargairaz
-      */
   if (timeIn != timeCurrent) {
     std::cerr << "[ERROR] attempting to save with wrong timestamp" << std::endl;
     exit(1);

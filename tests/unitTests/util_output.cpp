@@ -48,6 +48,11 @@ public:
     conc.resize(nBoxesX * nBoxesY * nBoxesZ, 0.0);
   }
 
+  void prepData(QEStime t) override
+  {
+    save(t);
+  }
+
 protected:
   void setOutputFields() override
   {
@@ -102,6 +107,11 @@ public:
     sp.resize(nBoxesX * nBoxesY, 0.0);
   }
 
+  void prepData(QEStime t) override
+  {
+    save(t);
+  }
+
 protected:
   void setOutputFields() override
   {
@@ -118,7 +128,7 @@ protected:
     // need to have a way to track which variable is in which subject their own variables.
     // m_output_fields = { "t_collection", "s" };
   }
-  
+
   // output concentration storage variables
   float ongoingAveragingTime;
   std::vector<float> xBoxCen, yBoxCen, zBoxCen;// list of x,y, and z points for the concentration sampling box information
@@ -172,12 +182,15 @@ TEST_CASE("unit test of output system")
   // spectra->setOutputFields();
 
   QEStime t;
+  testFile->setStartTime(t);
+
+  t += 120;
 
   testFile->newTimeEntry(t);
 
   // concentration->compute()
-  concentration->save(t);
-  spectra->save(t);
+  concentration->prepData(t);
+  spectra->prepData(t);
 
   // testFile->save(t);
 
