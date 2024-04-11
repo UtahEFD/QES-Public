@@ -27,7 +27,7 @@ add_executable(util_time util_time.cpp)
 
 add_executable(util_output
         QESFileOutput.cpp
-        QESOutput.cpp
+        DataSource.cpp
         QESNetCDFOutput.cpp
         util_output.cpp)
 

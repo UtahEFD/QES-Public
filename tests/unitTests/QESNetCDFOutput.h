@@ -76,31 +76,32 @@ public:
 
   void newTimeEntry(QEStime &) override;
   //  save fields
-  void saveOutputFields(QEStime &) override;
-  void saveOutputFields(QEStime &, const std::vector<std::string> &) override;
   virtual void save(float) override {}
-
-  void createDimension(const std::string &, const std::string &, const std::string &, std::vector<int> *) override;
-  void createDimension(const std::string &, const std::string &, const std::string &, std::vector<float> *) override;
-  void createDimension(const std::string &, const std::string &, const std::string &, std::vector<double> *) override;
-
-  void createDimensionSet(const std::string &, const std::vector<std::string> &) override;
-
-  // create attribute scalar based on type of data
-  void createField(const std::string &, const std::string &, const std::string &, const std::string &, int *) override;
-  void createField(const std::string &, const std::string &, const std::string &, const std::string &, float *) override;
-  void createField(const std::string &, const std::string &, const std::string &, const std::string &, double *) override;
-
-  // create attribute vector based on type of data
-  void createField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<int> *) override;
-  void createField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<float> *) override;
-  void createField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<double> *) override;
 
 protected:
   QESNetCDFOutput() = default;
 
   void setStartTime(const QEStime &) override;
   void setOutputTime(const QEStime &) override;
+
+  void saveOutputFields(QEStime &) override;
+  void saveOutputFields(QEStime &, const std::vector<std::string> &) override;
+  
+  void newDimension(const std::string &, const std::string &, const std::string &, std::vector<int> *) override;
+  void newDimension(const std::string &, const std::string &, const std::string &, std::vector<float> *) override;
+  void newDimension(const std::string &, const std::string &, const std::string &, std::vector<double> *) override;
+
+  void newDimensionSet(const std::string &, const std::vector<std::string> &) override;
+
+  // create attribute scalar based on type of data
+  void newField(const std::string &, const std::string &, const std::string &, const std::string &, int *) override;
+  void newField(const std::string &, const std::string &, const std::string &, const std::string &, float *) override;
+  void newField(const std::string &, const std::string &, const std::string &, const std::string &, double *) override;
+
+  // create attribute vector based on type of data
+  void newField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<int> *) override;
+  void newField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<float> *) override;
+  void newField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<double> *) override;
 
   // add fields based on output_fields
   void addOutputFields();
