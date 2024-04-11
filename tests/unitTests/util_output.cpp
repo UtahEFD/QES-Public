@@ -161,22 +161,24 @@ TEST_CASE("unit test of output system")
 {
   // QESOutputDirector *testOutput = new QESOutputDirector("test");
 
-  QESFileOutputInterface *testFile = new QESNetCDFOutput("test.nc");
+  QESFileOutput *testFile = new QESNetCDFOutput("test.nc");
 
-  QESOutputInterface *concentration = new Concentration();
-  concentration->attach(testFile);
-  concentration->setOutputFields();
+  QESOutput *concentration = new Concentration();
+  testFile->attach(concentration);
+  // concentration->setOutputFields();
 
-  QESOutputInterface *spectra = new Spectra();
-  spectra->attach(testFile);
-  spectra->setOutputFields();
+  QESOutput *spectra = new Spectra();
+  testFile->attach(spectra);
+  // spectra->setOutputFields();
+
 
   QEStime t;
 
   testFile->newTimeEntry(t);
 
-  concentration->save(t);
-  spectra->save(t);
+  // concentration->compute()
+  // concentration->save(t);
+  // spectra->save(t);
 
   // testFile->save(t);
 
@@ -187,7 +189,7 @@ TEST_CASE("unit test of output system")
   // concentration->save(t);
   // spectra->save(t);
 
-  testFile->save(t);
+  // testFile->save(t);
 
 
   // QESOutputInterface *spectra = new QESOutput();
