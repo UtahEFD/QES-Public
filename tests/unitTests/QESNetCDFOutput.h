@@ -74,19 +74,15 @@ public:
    * @note Can be called outside.
    */
 
-  void newTimeEntry(QEStime &) override;
-  //  save fields
-  virtual void save(float) override {}
+  void newTimeEntry(const QEStime &) override;
+  void setStartTime(const QEStime &) override;
 
 protected:
   QESNetCDFOutput() = default;
 
-  void setStartTime(const QEStime &) override;
-  void setOutputTime(const QEStime &) override;
-
   void saveOutputFields(QEStime &) override;
   void saveOutputFields(QEStime &, const std::vector<std::string> &) override;
-  
+
   void newDimension(const std::string &, const std::string &, const std::string &, std::vector<int> *) override;
   void newDimension(const std::string &, const std::string &, const std::string &, std::vector<float> *) override;
   void newDimension(const std::string &, const std::string &, const std::string &, std::vector<double> *) override;
