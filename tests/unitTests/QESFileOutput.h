@@ -11,7 +11,7 @@
 
 #include "util/QEStime.h"
 
-class QESOutputInterface;
+class QESOutput;
 
 class QESFileOutputInterface
 {
@@ -19,7 +19,7 @@ public:
   explicit QESFileOutputInterface() = default;
   virtual ~QESFileOutputInterface() = default;
 
-  virtual void attach(QESOutputInterface *) = 0;
+  virtual void attach(QESOutput *) = 0;
 
   /**
    * :document this:
@@ -61,9 +61,9 @@ public:
   explicit QESFileOutput() = default;
   virtual ~QESFileOutput() = default;
 
-  void attach(QESOutputInterface *) override;
+  void attach(QESOutput *) override;
   void save(QEStime &) override;
 
 protected:
-  std::list<QESOutputInterface *> m_list_output;
+  std::list<QESOutput *> m_list_output;
 };

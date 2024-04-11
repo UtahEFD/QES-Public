@@ -5,9 +5,11 @@
 #include "QESFileOutput.h"
 #include "QESOutput.h"
 
-void QESFileOutput::attach(QESOutputInterface *out)
+void QESFileOutput::attach(QESOutput *out)
 {
   std::cout << "[FILE] call attach" << std::endl;
+  out->attach(this);
+  out->setOutputFields();
   m_list_output.push_back(out);
 };
 

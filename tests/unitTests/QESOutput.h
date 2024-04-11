@@ -21,17 +21,18 @@ public:
   QESOutputInterface() = default;
   ~QESOutputInterface() = default;
 
-  virtual void attach(QESFileOutputInterface *) = 0;
+  virtual void attach(QESFileOutput *) = 0;
   virtual void setOutputFields() = 0;
   virtual void save(QEStime) = 0;
 };
 
 class QESOutput : public QESOutputInterface
 {
-  void attach(QESFileOutputInterface *out) override;
+public:
+  void attach(QESFileOutput *out) override;
   void save(QEStime t) override;
 
 protected:
-  QESFileOutputInterface *m_output_file;
+  QESFileOutput *m_output_file;
   std::vector<std::string> output_fields;
 };
