@@ -11,7 +11,7 @@
 
 #include "util/QEStime.h"
 
-class QESOutput;
+class DataSource;
 
 class QESFileOutputInterface
 {
@@ -19,40 +19,40 @@ public:
   explicit QESFileOutputInterface() = default;
   virtual ~QESFileOutputInterface() = default;
 
-  virtual void attach(QESOutput *) = 0;
-
+  virtual void attach(DataSource *) = 0;
   /**
    * :document this:
    *
    * @note Can be called outside.
    */
 
-
   virtual void newTimeEntry(QEStime &) = 0;
-  virtual void saveOutputFields(QEStime &) = 0;
-  virtual void saveOutputFields(QEStime &, const std::vector<std::string> &) = 0;
+
   virtual void save(QEStime &) = 0;
-
   virtual void save(float) = 0;
-
+  
+protected:
   virtual void setStartTime(const QEStime &) = 0;
   virtual void setOutputTime(const QEStime &) = 0;
 
-  virtual void createDimension(const std::string &, const std::string &, const std::string &, std::vector<int> *) = 0;
-  virtual void createDimension(const std::string &, const std::string &, const std::string &, std::vector<float> *) = 0;
-  virtual void createDimension(const std::string &, const std::string &, const std::string &, std::vector<double> *) = 0;
+  virtual void saveOutputFields(QEStime &) = 0;
+  virtual void saveOutputFields(QEStime &, const std::vector<std::string> &) = 0;
 
-  virtual void createDimensionSet(const std::string &, const std::vector<std::string> &) = 0;
+  virtual void newDimension(const std::string &, const std::string &, const std::string &, std::vector<int> *) = 0;
+  virtual void newDimension(const std::string &, const std::string &, const std::string &, std::vector<float> *) = 0;
+  virtual void newDimension(const std::string &, const std::string &, const std::string &, std::vector<double> *) = 0;
 
-  // create attribute scalar based on type of data
-  virtual void createField(const std::string &, const std::string &, const std::string &, const std::string &, int *) = 0;
-  virtual void createField(const std::string &, const std::string &, const std::string &, const std::string &, float *) = 0;
-  virtual void createField(const std::string &, const std::string &, const std::string &, const std::string &, double *) = 0;
+  virtual void newDimensionSet(const std::string &, const std::vector<std::string> &) = 0;
 
-  // create attribute vector based on type of data
-  virtual void createField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<int> *){};
-  virtual void createField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<float> *){};
-  virtual void createField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<double> *){};
+  // new attribute scalar based on type of data
+  virtual void newField(const std::string &, const std::string &, const std::string &, const std::string &, int *) = 0;
+  virtual void newField(const std::string &, const std::string &, const std::string &, const std::string &, float *) = 0;
+  virtual void newField(const std::string &, const std::string &, const std::string &, const std::string &, double *) = 0;
+
+  // new attribute vector based on type of data
+  virtual void newField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<int> *) = 0;
+  virtual void newField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<float> *) = 0;
+  virtual void newField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<double> *) = 0;
 };
 
 class QESFileOutput : public QESFileOutputInterface
@@ -61,9 +61,11 @@ public:
   explicit QESFileOutput() = default;
   virtual ~QESFileOutput() = default;
 
-  void attach(QESOutput *) override;
+  void attach(DataSource *) override;
   void save(QEStime &) override;
 
 protected:
-  std::list<QESOutput *> m_list_output;
+  std::list<DataSource *> m_list_output;
+
+  friend DataSource;
 };

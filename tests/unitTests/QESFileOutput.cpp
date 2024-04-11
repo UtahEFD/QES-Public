@@ -3,9 +3,9 @@
 //
 //
 #include "QESFileOutput.h"
-#include "QESOutput.h"
+#include "DataSource.h"
 
-void QESFileOutput::attach(QESOutput *out)
+void QESFileOutput::attach(DataSource *out)
 {
   std::cout << "[FILE] call attach" << std::endl;
   out->attach(this);

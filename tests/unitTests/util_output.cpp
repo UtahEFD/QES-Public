@@ -9,10 +9,10 @@
 
 #include "util/QEStime.h"
 #include "QESFileOutput.h"
-#include "QESOutput.h"
+#include "DataSource.h"
 #include "QESNetCDFOutput.h"
 
-class Concentration : public QESOutput
+class Concentration : public DataSource
 {
 public:
   Concentration()
@@ -48,25 +48,25 @@ public:
     conc.resize(nBoxesX * nBoxesY * nBoxesZ, 0.0);
   }
 
+protected:
   void setOutputFields() override
   {
     std::cout << "[Concentration] call set output" << std::endl;
 
-    m_output_file->createDimension("x_c", "x-center collection box", "m", &xBoxCen);
-    m_output_file->createDimension("y_c", "y-center collection box", "m", &yBoxCen);
-    m_output_file->createDimension("z_c", "z-center collection box", "m", &zBoxCen);
+    defineDimension("x_c", "x-center collection box", "m", &xBoxCen);
+    defineDimension("y_c", "y-center collection box", "m", &yBoxCen);
+    defineDimension("z_c", "z-center collection box", "m", &zBoxCen);
 
-    m_output_file->createDimensionSet("concentration", { "t", "z_c", "y_c", "x_c" });
+    defineDimensionSet("concentration", { "t", "z_c", "y_c", "x_c" });
 
-    m_output_file->createField("t_avg", "Averaging time", "s", "time", &ongoingAveragingTime);
-    m_output_file->createField("p", "number of particle per box", "#ofPar", "concentration", &pBox);
-    m_output_file->createField("c", "concentration", "g m-3", "concentration", &conc);
+    defineVariable("t_avg", "Averaging time", "s", "time", &ongoingAveragingTime);
+    defineVariable("p", "number of particle per box", "#ofPar", "concentration", &pBox);
+    defineVariable("c", "concentration", "g m-3", "concentration", &conc);
 
-    output_fields = { "t_avg", "p", "c" };
-    // need to have a way to track which variable is in which subject their own variables.
+    //  need to have a way to track which variable is in which subject their own variables.
+    // m_output_fields = { "t_avg", "p", "c" };
   }
 
-protected:
   // output concentration storage variables
   float ongoingAveragingTime;
   std::vector<float> xBoxCen, yBoxCen, zBoxCen;// list of x,y, and z points for the concentration sampling box information
@@ -74,7 +74,7 @@ protected:
   std::vector<float> conc;// concentration values (for output)
 };
 
-class Spectra : public QESOutput
+class Spectra : public DataSource
 {
 public:
   Spectra()
@@ -102,23 +102,23 @@ public:
     sp.resize(nBoxesX * nBoxesY, 0.0);
   }
 
+protected:
   void setOutputFields() override
   {
     std::cout << "[Spectra] call set output" << std::endl;
 
-    m_output_file->createDimension("k_x", "x-wavenumber", "m-1", &xBoxCen);
-    m_output_file->createDimension("k_y", "y-wavenumber", "m-1", &yBoxCen);
+    defineDimension("k_x", "x-wavenumber", "m-1", &xBoxCen);
+    defineDimension("k_y", "y-wavenumber", "m-1", &yBoxCen);
 
-    m_output_file->createDimensionSet("spectra", { "t", "k_y", "k_x" });
+    defineDimensionSet("spectra", { "t", "k_y", "k_x" });
 
-    m_output_file->createField("t_collection", "Collecting time", "s", "time", &ongoingAveragingTime);
-    m_output_file->createField("s", "spectra", "m-3", "spectra", &sp);
+    defineVariable("t_collection", "Collecting time", "s", "time", &ongoingAveragingTime);
+    defineVariable("s", "spectra", "m-3", "spectra", &sp);
 
     // need to have a way to track which variable is in which subject their own variables.
-    output_fields = { "t_collection", "s" };
+    // m_output_fields = { "t_collection", "s" };
   }
-
-protected:
+  
   // output concentration storage variables
   float ongoingAveragingTime;
   std::vector<float> xBoxCen, yBoxCen, zBoxCen;// list of x,y, and z points for the concentration sampling box information
@@ -137,7 +137,7 @@ public:
   ~QESOutputDirector() = default;
 
   virtual void save(const QEStime &) {}
-  virtual void attach(QESFileOutput *out, QESOutputInterface *)
+  virtual void attach(QESFileOutput *out, DataSourceInterface *)
   {
     /*std::vector<QESOutputInterface *> output_ptr;
     for (auto p : output_ptr) {
@@ -146,14 +146,14 @@ public:
     }*/
   }
 
-  virtual void detach(QESFileOutput *out, QESOutputInterface *) = 0;
-  virtual void Notify(QESOutputInterface *, const std::string &) = 0;
+  virtual void detach(QESFileOutput *out, DataSourceInterface *) = 0;
+  virtual void Notify(DataSourceInterface *, const std::string &) = 0;
 
 protected:
   QESOutputDirector() = default;
 
   std::string basename;
-  std::vector<QESOutputInterface *> tmp1;
+  std::vector<DataSourceInterface *> tmp1;
   std::vector<QESFileOutput *> files;
 };
 
@@ -163,22 +163,21 @@ TEST_CASE("unit test of output system")
 
   QESFileOutput *testFile = new QESNetCDFOutput("test.nc");
 
-  QESOutput *concentration = new Concentration();
+  DataSource *concentration = new Concentration();
   testFile->attach(concentration);
   // concentration->setOutputFields();
 
-  QESOutput *spectra = new Spectra();
+  DataSource *spectra = new Spectra();
   testFile->attach(spectra);
   // spectra->setOutputFields();
-
 
   QEStime t;
 
   testFile->newTimeEntry(t);
 
   // concentration->compute()
-  // concentration->save(t);
-  // spectra->save(t);
+  concentration->save(t);
+  spectra->save(t);
 
   // testFile->save(t);
 
@@ -189,7 +188,7 @@ TEST_CASE("unit test of output system")
   // concentration->save(t);
   // spectra->save(t);
 
-  // testFile->save(t);
+  testFile->save(t);
 
 
   // QESOutputInterface *spectra = new QESOutput();
