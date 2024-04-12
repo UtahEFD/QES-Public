@@ -39,7 +39,7 @@
 #include "util/QEStime.h"
 #include "QESFileOutput.h"
 #include "DataSource.h"
-#include "QESNetCDFOutput.h"
+#include "QESNetCDFOutput_v2.h"
 
 class Concentration : public DataSource
 {
@@ -196,7 +196,7 @@ protected:
 TEST_CASE("unit test of output system")
 {
   // new file for output (set as NetCDF file)
-  QESFileOutput *testFile = new QESNetCDFOutput("test.nc");
+  QESFileOutput *testFile = new QESNetCDFOutput_v2("test.nc");
 
   // new data source and attach to output file
   DataSource *concentration = new Concentration();
