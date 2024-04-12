@@ -28,7 +28,7 @@ add_executable(util_time util_time.cpp)
 add_executable(util_output
         QESFileOutput.cpp
         DataSource.cpp
-        QESNetCDFOutput.cpp
+        QESNetCDFOutput_v2.cpp
         util_output.cpp)
 
 IF ($CACHE{HAS_CUDA_SUPPORT})

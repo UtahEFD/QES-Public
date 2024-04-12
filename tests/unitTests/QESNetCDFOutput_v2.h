@@ -28,7 +28,7 @@
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file QESNetCDFOutput.h */
+/** @file QESNetCDFOutput_v2.h */
 
 #pragma once
 
@@ -50,7 +50,7 @@ using namespace netCDF::exceptions;
 class Obj;
 
 /**
- * @class QESNetCDFOutput
+ * @class QESNetCDFOutput_v2
  * @brief Handles the saving of output files.
  *
  * Attributes are created based on the type of the data:
@@ -60,12 +60,12 @@ class Obj;
  *   - The methods allow to be type generic (as long as the data is either int, float, or double)
  */
 
-class QESNetCDFOutput : public NetCDFOutput
+class QESNetCDFOutput_v2 : public NetCDFOutput
   , public QESFileOutput
 {
 public:
-  explicit QESNetCDFOutput(const std::string &);
-  virtual ~QESNetCDFOutput()
+  explicit QESNetCDFOutput_v2(const std::string &);
+  virtual ~QESNetCDFOutput_v2()
   {}
 
   /**
@@ -78,7 +78,7 @@ public:
   void setStartTime(const QEStime &) override;
 
 protected:
-  QESNetCDFOutput() = default;
+  QESNetCDFOutput_v2() = default;
 
   void pushAllFieldsToFile(QEStime &) override;
   void pushFieldsToFile(QEStime &, const std::vector<std::string> &) override;
@@ -148,8 +148,8 @@ private:
 class Obj
 {
 public:
-  virtual void add(QESNetCDFOutput *) = 0;
-  virtual void save(QESNetCDFOutput *, const size_t &) = 0;
+  virtual void add(QESNetCDFOutput_v2 *) = 0;
+  virtual void save(QESNetCDFOutput_v2 *, const size_t &) = 0;
 };
 
 class ObjScalarInt : public Obj
@@ -159,11 +159,11 @@ public:
     : data(d), name(n), long_name(l_n), units(u), dimensions(dims)
   {}
 
-  void add(QESNetCDFOutput *f) override
+  void add(QESNetCDFOutput_v2 *f) override
   {
     f->addField(name, units, long_name, dimensions, ncInt);
   }
-  void save(QESNetCDFOutput *f, const size_t &output_counter) override
+  void save(QESNetCDFOutput_v2 *f, const size_t &output_counter) override
   {
     std::vector<size_t> scalar_index;
     scalar_index = { static_cast<unsigned long>(output_counter) };
@@ -186,11 +186,11 @@ public:
   ObjVectorInt(std::vector<int> *d, std::string n, std::string l_n, std::string u, std::vector<NcDim> dims)
     : data(d), name(n), long_name(l_n), units(u), dimensions(dims)
   {}
-  void add(QESNetCDFOutput *f) override
+  void add(QESNetCDFOutput_v2 *f) override
   {
     f->addField(name, units, long_name, dimensions, ncInt);
   }
-  void save(QESNetCDFOutput *f, const size_t &output_counter) override
+  void save(QESNetCDFOutput_v2 *f, const size_t &output_counter) override
   {
     std::vector<size_t> vector_index;
     std::vector<size_t> vector_size;
@@ -234,11 +234,11 @@ public:
   ObjScalarFlt(float *d, std::string n, std::string l_n, std::string u, std::vector<NcDim> dims)
     : data(d), name(n), long_name(l_n), units(u), dimensions(dims)
   {}
-  void add(QESNetCDFOutput *f) override
+  void add(QESNetCDFOutput_v2 *f) override
   {
     f->addField(name, units, long_name, dimensions, ncFloat);
   }
-  void save(QESNetCDFOutput *f, const size_t &output_counter) override
+  void save(QESNetCDFOutput_v2 *f, const size_t &output_counter) override
   {
     std::vector<size_t> scalar_index;
     scalar_index = { static_cast<unsigned long>(output_counter) };
@@ -260,11 +260,11 @@ public:
   ObjVectorFlt(std::vector<float> *d, std::string n, std::string l_n, std::string u, std::vector<NcDim> dims)
     : data(d), name(n), long_name(l_n), units(u), dimensions(dims)
   {}
-  void add(QESNetCDFOutput *f) override
+  void add(QESNetCDFOutput_v2 *f) override
   {
     f->addField(name, units, long_name, dimensions, ncFloat);
   }
-  void save(QESNetCDFOutput *f, const size_t &output_counter) override
+  void save(QESNetCDFOutput_v2 *f, const size_t &output_counter) override
   {
     std::vector<size_t> vector_index;
     std::vector<size_t> vector_size;
@@ -306,11 +306,11 @@ public:
   ObjScalarDbl(double *d, std::string n, std::string l_n, std::string u, std::vector<NcDim> dims)
     : data(d), name(n), long_name(l_n), units(u), dimensions(dims)
   {}
-  void add(QESNetCDFOutput *f) override
+  void add(QESNetCDFOutput_v2 *f) override
   {
     f->addField(name, units, long_name, dimensions, ncDouble);
   }
-  void save(QESNetCDFOutput *f, const size_t &output_counter) override
+  void save(QESNetCDFOutput_v2 *f, const size_t &output_counter) override
   {
     std::vector<size_t> scalar_index;
     scalar_index = { static_cast<unsigned long>(output_counter) };
@@ -332,11 +332,11 @@ public:
   ObjVectorDbl(std::vector<double> *d, std::string n, std::string l_n, std::string u, std::vector<NcDim> dims)
     : data(d), name(n), long_name(l_n), units(u), dimensions(dims)
   {}
-  void add(QESNetCDFOutput *f) override
+  void add(QESNetCDFOutput_v2 *f) override
   {
     f->addField(name, units, long_name, dimensions, ncDouble);
   }
-  void save(QESNetCDFOutput *f, const size_t &output_counter) override
+  void save(QESNetCDFOutput_v2 *f, const size_t &output_counter) override
   {
     std::vector<size_t> vector_index;
     std::vector<size_t> vector_size;
@@ -378,7 +378,7 @@ private:
     : data(d), name(n), long_name(l_n), units(u), dimensions(dims)
   {}
 
-  void save(QESNetCDFOutput *f, const int &output_counter) override
+  void save(QESNetCDFOutput_v2 *f, const int &output_counter) override
   {
     std::vector<size_t> vector_index;
     std::vector<size_t> vector_size;

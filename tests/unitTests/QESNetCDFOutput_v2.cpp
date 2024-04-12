@@ -29,7 +29,7 @@
  ****************************************************************************/
 
 /**
- * @file QESNetCDFOutput.cpp
+ * @file QESNetCDFOutput_v2.cpp
  * @brief Handles the saving of output files.
  * Attributes are created based on the type of the data:
  *   - Attributes are stored in map_att_*
@@ -38,9 +38,9 @@
  *   - The methods allow to be type generic (as long as the data is either int, float, or double)
  */
 
-#include "QESNetCDFOutput.h"
+#include "QESNetCDFOutput_v2.h"
 
-QESNetCDFOutput::QESNetCDFOutput(const std::string &output_file)
+QESNetCDFOutput_v2::QESNetCDFOutput_v2(const std::string &output_file)
   : NetCDFOutput(output_file)
 {
   NcDim_t = addDimension("t");
@@ -58,7 +58,7 @@ QESNetCDFOutput::QESNetCDFOutput(const std::string &output_file)
   timestamp_out.resize(dateStrLen, '0');
 }
 
-void QESNetCDFOutput::setStartTime(const QEStime &in)
+void QESNetCDFOutput_v2::setStartTime(const QEStime &in)
 {
   timeStart = in;
   addAtt("t", "simulation_start", timeStart.getTimestamp());
@@ -68,10 +68,10 @@ void QESNetCDFOutput::setStartTime(const QEStime &in)
 //----------------------------------------
 // create dimension
 // -> int
-void QESNetCDFOutput::newDimension(const std::string &name,
-                                   const std::string &long_name,
-                                   const std::string &units,
-                                   std::vector<int> *data)
+void QESNetCDFOutput_v2::newDimension(const std::string &name,
+                                      const std::string &long_name,
+                                      const std::string &units,
+                                      std::vector<int> *data)
 {
   if (output_dimensions.find(name) == output_dimensions.end()) {
     NcDim ncDim = addDimension(name, data->size());
@@ -86,10 +86,10 @@ void QESNetCDFOutput::newDimension(const std::string &name,
   }
 }
 // -> float
-void QESNetCDFOutput::newDimension(const std::string &name,
-                                   const std::string &long_name,
-                                   const std::string &units,
-                                   std::vector<float> *data)
+void QESNetCDFOutput_v2::newDimension(const std::string &name,
+                                      const std::string &long_name,
+                                      const std::string &units,
+                                      std::vector<float> *data)
 {
   if (output_dimensions.find(name) == output_dimensions.end()) {
     NcDim ncDim = addDimension(name, data->size());
@@ -104,10 +104,10 @@ void QESNetCDFOutput::newDimension(const std::string &name,
   }
 }
 // -> double
-void QESNetCDFOutput::newDimension(const std::string &name,
-                                   const std::string &long_name,
-                                   const std::string &units,
-                                   std::vector<double> *data)
+void QESNetCDFOutput_v2::newDimension(const std::string &name,
+                                      const std::string &long_name,
+                                      const std::string &units,
+                                      std::vector<double> *data)
 {
   if (output_dimensions.find(name) == output_dimensions.end()) {
     NcDim ncDim = addDimension(name, data->size());
@@ -123,8 +123,8 @@ void QESNetCDFOutput::newDimension(const std::string &name,
   }
 }
 // sets of dimension
-void QESNetCDFOutput::newDimensionSet(const std::string &name,
-                                      const std::vector<std::string> &dims)
+void QESNetCDFOutput_v2::newDimensionSet(const std::string &name,
+                                         const std::vector<std::string> &dims)
 {
   if (output_dimension_sets.find(name) == output_dimension_sets.end()) {
     std::vector<NcDim> dim_vect;
@@ -158,11 +158,11 @@ void QESNetCDFOutput::newDimensionSet(const std::string &name,
 //----------------------------------------
 // create attribute scalar
 // -> int
-void QESNetCDFOutput::newField(const std::string &name,
-                               const std::string &long_name,
-                               const std::string &units,
-                               const std::string &dims,
-                               int *data)
+void QESNetCDFOutput_v2::newField(const std::string &name,
+                                  const std::string &long_name,
+                                  const std::string &units,
+                                  const std::string &dims,
+                                  int *data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
   if (output_dimension_sets.find(dims) == output_dimension_sets.end()) {
@@ -175,11 +175,11 @@ void QESNetCDFOutput::newField(const std::string &name,
   }
 }
 // -> float
-void QESNetCDFOutput::newField(const std::string &name,
-                               const std::string &long_name,
-                               const std::string &units,
-                               const std::string &dims,
-                               float *data)
+void QESNetCDFOutput_v2::newField(const std::string &name,
+                                  const std::string &long_name,
+                                  const std::string &units,
+                                  const std::string &dims,
+                                  float *data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
   if (output_dimension_sets.find(dims) == output_dimension_sets.end()) {
@@ -192,11 +192,11 @@ void QESNetCDFOutput::newField(const std::string &name,
   }
 }
 // -> double
-void QESNetCDFOutput::newField(const std::string &name,
-                               const std::string &long_name,
-                               const std::string &units,
-                               const std::string &dims,
-                               double *data)
+void QESNetCDFOutput_v2::newField(const std::string &name,
+                                  const std::string &long_name,
+                                  const std::string &units,
+                                  const std::string &dims,
+                                  double *data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
   if (output_dimension_sets.find(dims) == output_dimension_sets.end()) {
@@ -212,11 +212,11 @@ void QESNetCDFOutput::newField(const std::string &name,
 //----------------------------------------
 // create attribute Vector
 // -> int
-void QESNetCDFOutput::newField(const std::string &name,
-                               const std::string &long_name,
-                               const std::string &units,
-                               const std::string &dims,
-                               std::vector<int> *data)
+void QESNetCDFOutput_v2::newField(const std::string &name,
+                                  const std::string &long_name,
+                                  const std::string &units,
+                                  const std::string &dims,
+                                  std::vector<int> *data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
   if (output_dimension_sets.find(dims) == output_dimension_sets.end()) {
@@ -229,11 +229,11 @@ void QESNetCDFOutput::newField(const std::string &name,
   }
 }
 // -> float
-void QESNetCDFOutput::newField(const std::string &name,
-                               const std::string &long_name,
-                               const std::string &units,
-                               const std::string &dims,
-                               std::vector<float> *data)
+void QESNetCDFOutput_v2::newField(const std::string &name,
+                                  const std::string &long_name,
+                                  const std::string &units,
+                                  const std::string &dims,
+                                  std::vector<float> *data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
   if (output_dimension_sets.find(dims) == output_dimension_sets.end()) {
@@ -246,11 +246,11 @@ void QESNetCDFOutput::newField(const std::string &name,
   }
 }
 // -> double
-void QESNetCDFOutput::newField(const std::string &name,
-                               const std::string &long_name,
-                               const std::string &units,
-                               const std::string &dims,
-                               std::vector<double> *data)
+void QESNetCDFOutput_v2::newField(const std::string &name,
+                                  const std::string &long_name,
+                                  const std::string &units,
+                                  const std::string &dims,
+                                  std::vector<double> *data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
   if (output_dimension_sets.find(dims) == output_dimension_sets.end()) {
@@ -265,7 +265,7 @@ void QESNetCDFOutput::newField(const std::string &name,
 
 
 //----------------------------------------
-void QESNetCDFOutput::addOutputFields()
+void QESNetCDFOutput_v2::addOutputFields()
 {
   // create list of fields to save base on output_fields
   for (auto s : output_fields) {
@@ -273,7 +273,7 @@ void QESNetCDFOutput::addOutputFields()
   }
 }
 //----------------------------------------
-void QESNetCDFOutput::addOutputFields(const std::set<std::string> &new_fields)
+void QESNetCDFOutput_v2::addOutputFields(const std::set<std::string> &new_fields)
 {
   // checking that all the fields are defined.
   std::set<std::string> result;
@@ -297,14 +297,14 @@ void QESNetCDFOutput::addOutputFields(const std::set<std::string> &new_fields)
 }
 
 
-void QESNetCDFOutput::rmOutputField(const std::string &name)
+void QESNetCDFOutput_v2::rmOutputField(const std::string &name)
 {
   // remove object from the map
   output_object.erase(name);
 }
 
 
-void QESNetCDFOutput::newTimeEntry(const QEStime &timeIn)
+void QESNetCDFOutput_v2::newTimeEntry(const QEStime &timeIn)
 {
   timeCurrent = timeIn;
   output_counter = fields["t"].getDim(0).getSize();
@@ -338,7 +338,7 @@ void QESNetCDFOutput::newTimeEntry(const QEStime &timeIn)
   notifyDataSourcesOfNewTimeEntry();
 }
 
-void QESNetCDFOutput::pushAllFieldsToFile(QEStime &timeIn)
+void QESNetCDFOutput_v2::pushAllFieldsToFile(QEStime &timeIn)
 {
 
   if (timeIn != timeCurrent) {
@@ -350,7 +350,7 @@ void QESNetCDFOutput::pushAllFieldsToFile(QEStime &timeIn)
   }
 }
 
-void QESNetCDFOutput::pushFieldsToFile(QEStime &timeIn, const std::vector<std::string> &fields)
+void QESNetCDFOutput_v2::pushFieldsToFile(QEStime &timeIn, const std::vector<std::string> &fields)
 {
 
   if (timeIn != timeCurrent) {
