@@ -30,8 +30,6 @@
 
 /** @file util_output.cpp */
 
-#include <catch2/catch_test_macros.hpp>
-
 #include <iostream>
 #include <list>
 #include <string>
@@ -161,39 +159,7 @@ protected:
   std::vector<float> sp;// concentration values (for output)
 };
 
-class QESOutputDirector
-{
-  /*
-   * this class is the observer/mediator interface for QES-output files
-   */
-public:
-  QESOutputDirector(std::string name) : basename(std::move(name))
-  {
-  }
-  ~QESOutputDirector() = default;
-
-  virtual void save(const QEStime &) {}
-  virtual void attach(QESFileOutput_v2 *out, DataSourceInterface *)
-  {
-    /*std::vector<QESOutputInterface *> output_ptr;
-    for (auto p : output_ptr) {
-      std::cout << "output loop" << std::endl;
-      p->setOutput(out);
-    }*/
-  }
-
-  virtual void detach(QESFileOutput_v2 *out, DataSourceInterface *) = 0;
-  virtual void Notify(DataSourceInterface *, const std::string &) = 0;
-
-protected:
-  QESOutputDirector() = default;
-
-  std::string basename;
-  std::vector<DataSourceInterface *> tmp1;
-  std::vector<QESFileOutput_v2 *> files;
-};
-
-TEST_CASE("unit test of output system")
+int main()
 {
   // new file for output (set as NetCDF file)
   QESFileOutput_v2 *testFile = new QESNetCDFOutput_v2("test.nc");
