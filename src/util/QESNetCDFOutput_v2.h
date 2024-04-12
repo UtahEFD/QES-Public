@@ -38,9 +38,9 @@
 #include <map>
 #include <netcdf>
 
-#include "QESFileOutput.h"
-#include "util/NetCDFOutput.h"
-#include "util/QEStime.h"
+#include "QESFileOutput_v2.h"
+#include "NetCDFOutput.h"
+#include "QEStime.h"
 
 using namespace netCDF;
 using namespace netCDF::exceptions;
@@ -61,7 +61,7 @@ class Obj;
  */
 
 class QESNetCDFOutput_v2 : public NetCDFOutput
-  , public QESFileOutput
+  , public QESFileOutput_v2
 {
 public:
   explicit QESNetCDFOutput_v2(const std::string &);

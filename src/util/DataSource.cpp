@@ -34,7 +34,7 @@
 
 #include "DataSource.h"
 
-void DataSource::attachToFile(QESFileOutput *out)
+void DataSource::attachToFile(QESFileOutput_v2 *out)
 {
   std::cout << "[DATA SOURCE] attach to file" << std::endl;
   m_output_file = out;

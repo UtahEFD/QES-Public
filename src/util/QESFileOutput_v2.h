@@ -29,25 +29,23 @@
  ****************************************************************************/
 
 /**
- * @file QESFileOutput.h
+ * @file QESFileOutput_v2.h
  */
 #pragma once
-
-#include <catch2/catch_test_macros.hpp>
 
 #include <iostream>
 #include <list>
 #include <string>
 
-#include "util/QEStime.h"
+#include "QEStime.h"
 
 class DataSource;
 
-class QESFileOutputInterface
+class QESFileOutput_v2Interface
 {
 public:
-  explicit QESFileOutputInterface() = default;
-  virtual ~QESFileOutputInterface() = default;
+  explicit QESFileOutput_v2Interface() = default;
+  virtual ~QESFileOutput_v2Interface() = default;
 
   virtual void attachDataSource(DataSource *) = 0;
   /**
@@ -64,7 +62,7 @@ public:
 
 protected:
   virtual void notifyDataSourcesOfNewTimeEntry() = 0;
-  
+
   virtual void pushAllFieldsToFile(QEStime &) = 0;
   virtual void pushFieldsToFile(QEStime &, const std::vector<std::string> &) = 0;
 
@@ -85,11 +83,11 @@ protected:
   virtual void newField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<double> *) = 0;
 };
 
-class QESFileOutput : public QESFileOutputInterface
+class QESFileOutput_v2 : public QESFileOutput_v2Interface
 {
 public:
-  explicit QESFileOutput() = default;
-  virtual ~QESFileOutput() = default;
+  explicit QESFileOutput_v2() = default;
+  virtual ~QESFileOutput_v2() = default;
 
   void attachDataSource(DataSource *) override;
   void notifyDataSourcesOfNewTimeEntry() override;

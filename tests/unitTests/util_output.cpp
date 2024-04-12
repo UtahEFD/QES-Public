@@ -37,9 +37,9 @@
 #include <string>
 
 #include "util/QEStime.h"
-#include "QESFileOutput.h"
-#include "DataSource.h"
-#include "QESNetCDFOutput_v2.h"
+#include "util/QESFileOutput_v2.h"
+#include "util/DataSource.h"
+#include "util/QESNetCDFOutput_v2.h"
 
 class Concentration : public DataSource
 {
@@ -173,7 +173,7 @@ public:
   ~QESOutputDirector() = default;
 
   virtual void save(const QEStime &) {}
-  virtual void attach(QESFileOutput *out, DataSourceInterface *)
+  virtual void attach(QESFileOutput_v2 *out, DataSourceInterface *)
   {
     /*std::vector<QESOutputInterface *> output_ptr;
     for (auto p : output_ptr) {
@@ -182,7 +182,7 @@ public:
     }*/
   }
 
-  virtual void detach(QESFileOutput *out, DataSourceInterface *) = 0;
+  virtual void detach(QESFileOutput_v2 *out, DataSourceInterface *) = 0;
   virtual void Notify(DataSourceInterface *, const std::string &) = 0;
 
 protected:
@@ -190,13 +190,13 @@ protected:
 
   std::string basename;
   std::vector<DataSourceInterface *> tmp1;
-  std::vector<QESFileOutput *> files;
+  std::vector<QESFileOutput_v2 *> files;
 };
 
 TEST_CASE("unit test of output system")
 {
   // new file for output (set as NetCDF file)
-  QESFileOutput *testFile = new QESNetCDFOutput_v2("test.nc");
+  QESFileOutput_v2 *testFile = new QESNetCDFOutput_v2("test.nc");
 
   // new data source and attach to output file
   DataSource *concentration = new Concentration();

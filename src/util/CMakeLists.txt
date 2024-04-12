@@ -30,8 +30,11 @@ add_library (qesutil ${LIB_TYPE}
   QESNetCDFOutput.cpp 
   QESFileSystemHandler.cpp
 
-  QEStime.cpp
-        )
+  QESFileOutput_v2.cpp
+  QESNetCDFOutput_v2.cpp
+  DataSource.cpp
+
+  QEStime.cpp)
 
 FILE(GLOB files "*.h")
 INSTALL(FILES ${files} DESTINATION include/util)
