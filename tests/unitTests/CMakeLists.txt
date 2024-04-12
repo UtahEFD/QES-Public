@@ -26,9 +26,6 @@ target_link_libraries(unit_test_example_t00 Catch2::Catch2WithMain)
 add_executable(util_time util_time.cpp)
 
 add_executable(util_output
-        QESFileOutput.cpp
-        DataSource.cpp
-        QESNetCDFOutput_v2.cpp
         util_output.cpp)
 
 IF ($CACHE{HAS_CUDA_SUPPORT})

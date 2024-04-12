@@ -34,14 +34,13 @@
 
 #pragma once
 
-#include <catch2/catch_test_macros.hpp>
 
 #include <iostream>
 #include <list>
 #include <string>
 
-#include "util/QEStime.h"
-#include "QESFileOutput.h"
+#include "QEStime.h"
+#include "QESFileOutput_v2.h"
 
 class DataSourceInterface
 {
@@ -56,7 +55,7 @@ public:
 
 protected:
   virtual void setOutputFields() = 0;
-  virtual void attachToFile(QESFileOutput *) = 0;
+  virtual void attachToFile(QESFileOutput_v2 *) = 0;
   virtual void pushToFile(QEStime) = 0;
   virtual void notifyOfNewTimeEntry() = 0;
 };
@@ -98,7 +97,7 @@ public:
 
 protected:
   void pushToFile(QEStime t) override;
-  void attachToFile(QESFileOutput *out) override;
+  void attachToFile(QESFileOutput_v2 *out) override;
   void notifyOfNewTimeEntry() override;
 
   void defineDimension(const std::string &, const std::string &, const std::string &, std::vector<int> *) override;
@@ -118,10 +117,10 @@ protected:
   void defineVariable(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<double> *) override;
 
 private:
-  QESFileOutput *m_output_file{};
+  QESFileOutput_v2 *m_output_file{};
   std::vector<std::string> m_output_fields{};
 
   bool m_pushed_to_file = false;
 
-  friend QESFileOutput;
+  friend QESFileOutput_v2;
 };
