@@ -409,6 +409,8 @@ add_subdirectory(qesWinds)
 add_subdirectory(qesPlume)
 add_subdirectory(qes)
 
+add_subdirectory(examples)
+
 # ----------------------------------------------------------
 #  Testing Suite
 # ----------------------------------------------------------
