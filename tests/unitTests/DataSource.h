@@ -52,12 +52,13 @@ public:
   DataSourceInterface() = default;
   ~DataSourceInterface() = default;
 
-  virtual void prepData(QEStime) = 0;
+  virtual void prepareDataAndPushToFile(QEStime) = 0;
 
 protected:
   virtual void setOutputFields() = 0;
-  virtual void attach(QESFileOutput *) = 0;
-  virtual void save(QEStime) = 0;
+  virtual void attachToFile(QESFileOutput *) = 0;
+  virtual void pushToFile(QEStime) = 0;
+  virtual void notifyOfNewTimeEntry() = 0;
 };
 
 class FileInterface
@@ -94,10 +95,11 @@ class DataSource : public DataSourceInterface
 public:
   DataSource() = default;
   ~DataSource() = default;
-  
+
 protected:
-  void save(QEStime t) override;
-  void attach(QESFileOutput *out) override;
+  void pushToFile(QEStime t) override;
+  void attachToFile(QESFileOutput *out) override;
+  void notifyOfNewTimeEntry() override;
 
   void defineDimension(const std::string &, const std::string &, const std::string &, std::vector<int> *) override;
   void defineDimension(const std::string &, const std::string &, const std::string &, std::vector<float> *) override;
@@ -118,6 +120,8 @@ protected:
 private:
   QESFileOutput *m_output_file{};
   std::vector<std::string> m_output_fields{};
+
+  bool m_pushed_to_file = false;
 
   friend QESFileOutput;
 };

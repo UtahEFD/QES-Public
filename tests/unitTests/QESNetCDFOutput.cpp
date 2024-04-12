@@ -65,26 +65,6 @@ void QESNetCDFOutput::setStartTime(const QEStime &in)
   flagStartTimeSet = true;
 }
 
-bool QESNetCDFOutput::validateFileOptions()
-{
-
-  if (all_output_fields.empty()) {
-    std::cerr << "[QES-output] ERROR all output fields undefined -> cannot validate file options" << std::endl;
-    exit(EXIT_FAILURE);
-  }
-
-  // check if all fileOptions->outputFields are possible
-  bool doContains(true);
-  std::size_t iter = 0, maxiter = output_fields.size();
-
-  while (doContains && iter < maxiter) {
-    doContains = find(all_output_fields.begin(), all_output_fields.end(), output_fields.at(iter)) != all_output_fields.end();
-    iter++;
-  }
-
-  return doContains;
-}
-
 //----------------------------------------
 // create dimension
 // -> int
@@ -191,10 +171,7 @@ void QESNetCDFOutput::newField(const std::string &name,
   } else {
     output_object.emplace(name, new ObjScalarInt(data, name, long_name, units, { output_dimension_sets[dims] }));
     output_object[name]->add(this);
-    // AttScalarInt att = { data, name, long_name, units, { output_dimensions[dims] } };
-    // map_att_scalar_int.emplace(name, att);
     set_all_output_fields.insert(name);
-    // addOutputFields({ name });
   }
 }
 // -> float
@@ -211,10 +188,7 @@ void QESNetCDFOutput::newField(const std::string &name,
   } else {
     output_object.emplace(name, new ObjScalarFlt(data, name, long_name, units, { output_dimension_sets[dims] }));
     output_object[name]->add(this);
-    // AttScalarFlt att = { data, name, long_name, units, { output_dimensions[dims] } };
-    // map_att_scalar_flt.emplace(name, att);
     set_all_output_fields.insert(name);
-    // addOutputFields({ name });
   }
 }
 // -> double
@@ -231,10 +205,7 @@ void QESNetCDFOutput::newField(const std::string &name,
   } else {
     output_object.emplace(name, new ObjScalarDbl(data, name, long_name, units, { output_dimension_sets[dims] }));
     output_object[name]->add(this);
-    // AttScalarDbl att = { data, name, long_name, units, { output_dimensions[dims] } };
-    // map_att_scalar_dbl.emplace(name, att);
     set_all_output_fields.insert(name);
-    // addOutputFields({ name });
   }
 }
 
@@ -254,10 +225,7 @@ void QESNetCDFOutput::newField(const std::string &name,
   } else {
     output_object.emplace(name, new ObjVectorInt(data, name, long_name, units, output_dimension_sets[dims]));
     output_object[name]->add(this);
-    // AttVectorInt att = { data, name, long_name, units, output_dimension_sets[dims] };
-    // map_att_vector_int.emplace(name, att);
     set_all_output_fields.insert(name);
-    // addOutputFields({ name });
   }
 }
 // -> float
@@ -274,10 +242,7 @@ void QESNetCDFOutput::newField(const std::string &name,
   } else {
     output_object.emplace(name, new ObjVectorFlt(data, name, long_name, units, output_dimension_sets[dims]));
     output_object[name]->add(this);
-    // AttVectorFlt att = { data, name, long_name, units, output_dimension_sets[dims] };
-    // map_att_vector_flt.emplace(name, att);
     set_all_output_fields.insert(name);
-    // addOutputFields({ name });
   }
 }
 // -> double
@@ -294,10 +259,7 @@ void QESNetCDFOutput::newField(const std::string &name,
   } else {
     output_object.emplace(name, new ObjVectorDbl(data, name, long_name, units, output_dimension_sets[dims]));
     output_object[name]->add(this);
-    // AttVectorDbl att = { data, name, long_name, units, output_dimension_sets[dims] };
-    // map_att_vector_dbl.emplace(name, att);
     set_all_output_fields.insert(name);
-    // addOutputFields({ name });
   }
 }
 
@@ -305,16 +267,6 @@ void QESNetCDFOutput::newField(const std::string &name,
 //----------------------------------------
 void QESNetCDFOutput::addOutputFields()
 {
-  /*
-    This function add the  fields to the output vectors
-    and link them to the NetCDF.
-
-    Since the type is not know, one needs to loop through
-    the 6 output vector to find it.
-
-    FMargairaz
-  */
-
   // create list of fields to save base on output_fields
   for (auto s : output_fields) {
     output_object[s]->add(this);
@@ -323,16 +275,6 @@ void QESNetCDFOutput::addOutputFields()
 //----------------------------------------
 void QESNetCDFOutput::addOutputFields(const std::set<std::string> &new_fields)
 {
-  /*
-   * This function add the  fields to the output vectors
-   * and link them to the NetCDF.
-   *
-   * Since the type is not know, one needs to loop through
-   * the 6 output vector to find it.
-   *  - FMargairaz
-   */
-
-
   // checking that all the fields are defined.
   std::set<std::string> result;
   std::set_difference(new_fields.begin(),
@@ -357,15 +299,7 @@ void QESNetCDFOutput::addOutputFields(const std::set<std::string> &new_fields)
 
 void QESNetCDFOutput::rmOutputField(const std::string &name)
 {
-  /*
-    This function remove a field from the output vectors
-    Since the type is not know, one needs to loop through
-    the 6 output vector to find it.
-
-    Note: the field CANNOT be added again.
-
-    FMargairaz
-  */
+  // remove object from the map
   output_object.erase(name);
 }
 
@@ -375,6 +309,7 @@ void QESNetCDFOutput::newTimeEntry(const QEStime &timeIn)
   timeCurrent = timeIn;
   output_counter = fields["t"].getDim(0).getSize();
 
+  // check if start time is define (needed for "time")
   if (output_counter == 0 && !flagStartTimeSet) {
     std::cerr << "[!!!WARNING!!!]\tstart time not defined in output -> use first time entry as start time" << std::endl;
     setStartTime(timeCurrent);
@@ -383,11 +318,13 @@ void QESNetCDFOutput::newTimeEntry(const QEStime &timeIn)
     time = timeCurrent - timeStart;
   }
 
+  // push time to file
   std::vector<size_t> time_index;
   std::vector<size_t> time_size;
   time_index = { static_cast<unsigned long>(output_counter) };
   saveField1D("t", time_index, &time);
 
+  // push timestamp to file (note: timestamp is char[])
   timeCurrent.getTimestamp(timestamp);
   // std::copy(timestamp.begin(), timestamp.end(), timestamp_out.begin());
   for (int i = 0; i < dateStrLen; ++i) {
@@ -396,9 +333,12 @@ void QESNetCDFOutput::newTimeEntry(const QEStime &timeIn)
   time_index = { static_cast<unsigned long>(output_counter), 0 };
   time_size = { 1, static_cast<unsigned long>(dateStrLen) };
   saveField2D("timestamp", time_index, time_size, timestamp_out);
+
+  // notify all data sources of new time entry (reset push2file flags)
+  notifyDataSourcesOfNewTimeEntry();
 }
 
-void QESNetCDFOutput::saveOutputFields(QEStime &timeIn)
+void QESNetCDFOutput::pushAllFieldsToFile(QEStime &timeIn)
 {
 
   if (timeIn != timeCurrent) {
@@ -410,7 +350,7 @@ void QESNetCDFOutput::saveOutputFields(QEStime &timeIn)
   }
 }
 
-void QESNetCDFOutput::saveOutputFields(QEStime &timeIn, const std::vector<std::string> &fields)
+void QESNetCDFOutput::pushFieldsToFile(QEStime &timeIn, const std::vector<std::string> &fields)
 {
 
   if (timeIn != timeCurrent) {

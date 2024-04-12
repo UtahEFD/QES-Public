@@ -49,7 +49,7 @@ public:
   explicit QESFileOutputInterface() = default;
   virtual ~QESFileOutputInterface() = default;
 
-  virtual void attach(DataSource *) = 0;
+  virtual void attachDataSource(DataSource *) = 0;
   /**
    * :document this:
    *
@@ -63,8 +63,10 @@ public:
   virtual void save(float) = 0;
 
 protected:
-  virtual void saveOutputFields(QEStime &) = 0;
-  virtual void saveOutputFields(QEStime &, const std::vector<std::string> &) = 0;
+  virtual void notifyDataSourcesOfNewTimeEntry() = 0;
+  
+  virtual void pushAllFieldsToFile(QEStime &) = 0;
+  virtual void pushFieldsToFile(QEStime &, const std::vector<std::string> &) = 0;
 
   virtual void newDimension(const std::string &, const std::string &, const std::string &, std::vector<int> *) = 0;
   virtual void newDimension(const std::string &, const std::string &, const std::string &, std::vector<float> *) = 0;
@@ -89,12 +91,13 @@ public:
   explicit QESFileOutput() = default;
   virtual ~QESFileOutput() = default;
 
-  void attach(DataSource *) override;
+  void attachDataSource(DataSource *) override;
+  void notifyDataSourcesOfNewTimeEntry() override;
   void save(QEStime &) override;
   void save(float t) override {}
 
 protected:
-  std::list<DataSource *> m_list_output;
+  std::list<DataSource *> m_list_data_source;
 
   friend DataSource;
 };
