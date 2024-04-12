@@ -36,13 +36,13 @@
 
 void DataSource::attachToFile(QESFileOutput_v2 *out)
 {
-  std::cout << "[DATA SOURCE] attach to file" << std::endl;
+  // std::cout << "[DATA SOURCE] attach to file" << std::endl;
   m_output_file = out;
 }
 
 void DataSource::pushToFile(QEStime t)
 {
-  std::cout << "[DATA SOURCE] push to file" << std::endl;
+  // std::cout << "[DATA SOURCE] push to file" << std::endl;
   if (!m_pushed_to_file) {
     m_output_file->pushFieldsToFile(t, m_output_fields);
     m_pushed_to_file = true;
@@ -51,7 +51,7 @@ void DataSource::pushToFile(QEStime t)
 
 void DataSource::notifyOfNewTimeEntry()
 {
-  std::cout << "[DATA SOURCE] notified of new time entry" << std::endl;
+  // std::cout << "[DATA SOURCE] notified of new time entry" << std::endl;
   m_pushed_to_file = false;
 }
 

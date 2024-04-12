@@ -36,7 +36,7 @@
 
 void QESFileOutput_v2::attachDataSource(DataSource *dataSource)
 {
-  std::cout << "[FILE] call attach" << std::endl;
+  // std::cout << "[FILE] call attach" << std::endl;
   dataSource->attachToFile(this);
   dataSource->setOutputFields();
   m_list_data_source.push_back(dataSource);
@@ -44,14 +44,14 @@ void QESFileOutput_v2::attachDataSource(DataSource *dataSource)
 
 void QESFileOutput_v2::notifyDataSourcesOfNewTimeEntry()
 {
-  std::cout << "[FILE] notify all data sources" << std::endl;
+  // std::cout << "[FILE] notify all data sources" << std::endl;
   for (auto ds : m_list_data_source) {
     ds->notifyOfNewTimeEntry();
   }
 }
 void QESFileOutput_v2::save(QEStime &timeIn)
 {
-  std::cout << "[FILE] call all saves" << std::endl;
+  // std::cout << "[FILE] call all saves" << std::endl;
   for (auto ds : m_list_data_source) {
     ds->pushToFile(timeIn);
   }
