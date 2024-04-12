@@ -80,8 +80,8 @@ public:
 protected:
   QESNetCDFOutput() = default;
 
-  void saveOutputFields(QEStime &) override;
-  void saveOutputFields(QEStime &, const std::vector<std::string> &) override;
+  void pushAllFieldsToFile(QEStime &) override;
+  void pushFieldsToFile(QEStime &, const std::vector<std::string> &) override;
 
   void newDimension(const std::string &, const std::string &, const std::string &, std::vector<int> *) override;
   void newDimension(const std::string &, const std::string &, const std::string &, std::vector<float> *) override;
@@ -104,12 +104,7 @@ protected:
   void addOutputFields(const std::set<std::string> &);
   // removed field
   void rmOutputField(const std::string &);
-  // void rmTimeIndepFields();
 
-
-  virtual void setAllOutputFields()
-  {}
-  virtual bool validateFileOptions();
 
 private:
   /**< :document this: */

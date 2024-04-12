@@ -34,15 +34,25 @@
 
 #include "DataSource.h"
 
-void DataSource::attach(QESFileOutput *out)
+void DataSource::attachToFile(QESFileOutput *out)
 {
-  std::cout << "[DATA SOURCE] call attach" << std::endl;
+  std::cout << "[DATA SOURCE] attach to file" << std::endl;
   m_output_file = out;
 }
 
-void DataSource::save(QEStime t)
+void DataSource::pushToFile(QEStime t)
 {
-  m_output_file->saveOutputFields(t, m_output_fields);
+  std::cout << "[DATA SOURCE] push to file" << std::endl;
+  if (!m_pushed_to_file) {
+    m_output_file->pushFieldsToFile(t, m_output_fields);
+    m_pushed_to_file = true;
+  }
+}
+
+void DataSource::notifyOfNewTimeEntry()
+{
+  std::cout << "[DATA SOURCE] notified of new time entry" << std::endl;
+  m_pushed_to_file = false;
 }
 
 void DataSource::defineDimension(const std::string &name,

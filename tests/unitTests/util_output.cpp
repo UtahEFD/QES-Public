@@ -1,6 +1,35 @@
-//
-// Created by Fabien Margairaz on 4/1/24.
-//
+/****************************************************************************
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
+ *
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
+ *
+ * This file is part of QES-Winds
+ *
+ * GPL-3.0 License
+ *
+ * QES-Winds is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Winds is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
+/** @file util_output.cpp */
+
 #include <catch2/catch_test_macros.hpp>
 
 #include <iostream>
@@ -48,9 +77,10 @@ public:
     conc.resize(nBoxesX * nBoxesY * nBoxesZ, 0.0);
   }
 
-  void prepData(QEStime t) override
+  void prepareDataAndPushToFile(QEStime t) override
   {
-    save(t);
+    std::cout << "[Concentration] prepare data and push to file" << std::endl;
+    pushToFile(t);
   }
 
 protected:
@@ -67,9 +97,6 @@ protected:
     defineVariable("t_avg", "Averaging time", "s", "time", &ongoingAveragingTime);
     defineVariable("p", "number of particle per box", "#ofPar", "concentration", &pBox);
     defineVariable("c", "concentration", "g m-3", "concentration", &conc);
-
-    //  need to have a way to track which variable is in which subject their own variables.
-    // m_output_fields = { "t_avg", "p", "c" };
   }
 
   // output concentration storage variables
@@ -101,15 +128,17 @@ public:
       xR++;
     }
 
-    ongoingAveragingTime = 1000;
+    ongoingAveragingTime = 0;
 
     // initialization of the container
     sp.resize(nBoxesX * nBoxesY, 0.0);
   }
 
-  void prepData(QEStime t) override
+  void prepareDataAndPushToFile(QEStime t) override
   {
-    save(t);
+    std::cout << "[Spectra] prepare data and push to file" << std::endl;
+    ongoingAveragingTime += 1000;
+    pushToFile(t);
   }
 
 protected:
@@ -124,9 +153,6 @@ protected:
 
     defineVariable("t_collection", "Collecting time", "s", "time", &ongoingAveragingTime);
     defineVariable("s", "spectra", "m-3", "spectra", &sp);
-
-    // need to have a way to track which variable is in which subject their own variables.
-    // m_output_fields = { "t_collection", "s" };
   }
 
   // output concentration storage variables
@@ -169,42 +195,36 @@ protected:
 
 TEST_CASE("unit test of output system")
 {
-  // QESOutputDirector *testOutput = new QESOutputDirector("test");
-
+  // new file for output (set as NetCDF file)
   QESFileOutput *testFile = new QESNetCDFOutput("test.nc");
 
+  // new data source and attach to output file
   DataSource *concentration = new Concentration();
-  testFile->attach(concentration);
-  // concentration->setOutputFields();
+  testFile->attachDataSource(concentration);
 
+  // new data source and attach to output file
   DataSource *spectra = new Spectra();
-  testFile->attach(spectra);
-  // spectra->setOutputFields();
+  testFile->attachDataSource(spectra);
 
+  // set a new time ('now' from default constructor)
   QEStime t;
+  // set the start time in the output file
   testFile->setStartTime(t);
 
+  // increment time and add a new time entry in the file
   t += 120;
-
   testFile->newTimeEntry(t);
 
-  // concentration->compute()
-  concentration->prepData(t);
-  spectra->prepData(t);
+  // do so calculations and push to file
+  concentration->prepareDataAndPushToFile(t);
+  spectra->prepareDataAndPushToFile(t);
 
-  // testFile->save(t);
-
+  // increment time and add a new time entry in the file
   t += 120;
-
   testFile->newTimeEntry(t);
 
-  // concentration->save(t);
-  // spectra->save(t);
-
+  // alternatively, the file can call all the data source to push to file.
+  // note: prepare data will NOT be called in that case, but data sources
+  //       that already pushed to file will not push again
   testFile->save(t);
-
-
-  // QESOutputInterface *spectra = new QESOutput();
-  // testFile->attach(spectra);
-  // spectra->setOutputFields();
 }
