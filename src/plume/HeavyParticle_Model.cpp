@@ -93,7 +93,7 @@ void HeavyParticle_Model::generateParticleList(QEStime &timeCurrent,
 #pragma omp parallel for default(none) shared(WGD, TGD, PGD)
   for (auto k = 0u; k < particles->get_nbr_added(); ++k) {
     // set particle ID (use global particle counter)
-    PGD->setParticle(WGD, TGD, particles->get_added(k));
+    PGD->initializeParticleValues(particles->get_added(k), WGD, TGD);
     // add here all the
   }
 }
@@ -103,7 +103,10 @@ void HeavyParticle_Model::addSources(std::vector<HeavyParticle_Source *> newSour
   sources.insert(sources.end(), newSources.begin(), newSources.end());
 }
 
-void HeavyParticle_Model::advect(const double &total_time_interval, WINDSGeneralData *WGD, TURBGeneralData *TGD, PLUMEGeneralData *PGD)
+void HeavyParticle_Model::advect(const double &total_time_interval,
+                                 WINDSGeneralData *WGD,
+                                 TURBGeneralData *TGD,
+                                 PLUMEGeneralData *PGD)
 {
 #pragma omp parallel for default(none) shared(WGD, TGD, PGD, total_time_interval)
   for (auto k = 0u; k < particles->size(); ++k) {

@@ -229,9 +229,9 @@ public:
 
   void updateCounts();
   void applyBC(Particle *);
-
+  // initialize
   // void setParticleVals(WINDSGeneralData *, TURBGeneralData *, std::list<Particle *>);
-  void setParticle(WINDSGeneralData *WGD, TURBGeneralData *TGD, Particle *par_ptr);
+  void initializeParticleValues(Particle *par_ptr, WINDSGeneralData *WGD, TURBGeneralData *TGD);
   // this function gets sources from input data and adds them to the allSources vector
   // this function also calls the many check and calc functions for all the input sources
   // !!! note that these check and calc functions have to be called here
