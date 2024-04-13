@@ -34,6 +34,57 @@
 
 #include "HeavyParticle_Concentration.h"
 
+HeavyParticle_Concentration::HeavyParticle_Concentration(const PI_CollectionParameters *colParams, HeavyParticle_Model *pm)
+  : averagingPeriod(colParams->averagingPeriod), ongoingAveragingTime(0.0),
+    nBoxesX(colParams->nBoxesX), nBoxesY(colParams->nBoxesY), nBoxesZ(colParams->nBoxesZ),
+    lBndx(colParams->boxBoundsX1), uBndx(colParams->boxBoundsX2),
+    lBndy(colParams->boxBoundsY1), uBndy(colParams->boxBoundsY2),
+    lBndz(colParams->boxBoundsZ1), uBndz(colParams->boxBoundsZ2)
+{
+  // setup output frequency control information
+  // averagingStartTime = m_plume->getSimTimeStart() + PID->colParams->averagingStartTime;
+  averagingPeriod = colParams->averagingPeriod;
+
+  // set the initial next output time value
+  // nextOutputTime = averagingStartTime + averagingPeriod;
+
+  // --------------------------------------------------------
+  // setup information: sampling box/concentration
+  // --------------------------------------------------------
+
+  // Sampling box variables for calculating concentration data
+  boxSizeX = (uBndx - lBndx) / (nBoxesX);
+  boxSizeY = (uBndy - lBndy) / (nBoxesY);
+  boxSizeZ = (uBndz - lBndz) / (nBoxesZ);
+
+  volume = boxSizeX * boxSizeY * boxSizeZ;
+
+  // output concentration storage variables
+  xBoxCen.resize(nBoxesX);
+  yBoxCen.resize(nBoxesY);
+  zBoxCen.resize(nBoxesZ);
+
+  int zR = 0, yR = 0, xR = 0;
+  for (int k = 0; k < nBoxesZ; ++k) {
+    zBoxCen.at(k) = lBndz + (zR * boxSizeZ) + (boxSizeZ / 2.0);
+    zR++;
+  }
+  for (int j = 0; j < nBoxesY; ++j) {
+    yBoxCen.at(j) = lBndy + (yR * boxSizeY) + (boxSizeY / 2.0);
+    yR++;
+  }
+  for (int i = 0; i < nBoxesX; ++i) {
+    xBoxCen.at(i) = lBndx + (xR * boxSizeX) + (boxSizeX / 2.0);
+    xR++;
+  }
+
+  // initialization of the container
+  pBox.resize(nBoxesX * nBoxesY * nBoxesZ, 0);
+  conc.resize(nBoxesX * nBoxesY * nBoxesZ, 0.0);
+
+  m_particles = pm->get_particles();
+}
+
 void HeavyParticle_Concentration::collect(QEStime &timeIn, const float &timeStep)
 {
   // for all particles see where they are relative to the concentration collection boxes
@@ -69,16 +120,34 @@ void HeavyParticle_Concentration::finalize(QEStime &timeIn)
     c = c / (ongoingAveragingTime * volume);
   }
 }
-
-void HeavyParticle_Concentration::setOutput(QESFileOutput *out)
+void HeavyParticle_Concentration::reset()
 {
-  out->createDimension("x_c", "x-center collection box", "m", &xBoxCen);
-  out->createDimension("y_c", "y-center collection box", "m", &yBoxCen);
-  out->createDimension("z_c", "z-center collection box", "m", &zBoxCen);
+  // reset container for the next averaging period
+  ongoingAveragingTime = 0.0;
+  for (auto &p : pBox) {
+    p = 0.0;
+  }
+  for (auto &c : conc) {
+    c = 0.0;
+  }
+}
 
-  out->createDimensionSet("concentration", { "t", "z_c", "y_c", "x_c" });
-  
-  out->createField("t_avg", "Averaging time", "s", "t", &ongoingAveragingTime);
-  out->createField("p", "number of particle per box", "#ofPar", "concentration", &pBox);
-  out->createField("c", "concentration", "g m-3", "concentration", &conc);
+void HeavyParticle_Concentration::prepareDataAndPushToFile(QEStime t)
+{
+  finalize(t);
+  pushToFile(t);
+  reset();
+}
+
+void HeavyParticle_Concentration::setOutputFields()
+{
+  defineDimension("x_c", "x-center collection box", "m", &xBoxCen);
+  defineDimension("y_c", "y-center collection box", "m", &yBoxCen);
+  defineDimension("z_c", "z-center collection box", "m", &zBoxCen);
+
+  defineDimensionSet("concentration", { "t", "z_c", "y_c", "x_c" });
+
+  defineVariable("t_avg", "Averaging time", "s", "t", &ongoingAveragingTime);
+  defineVariable("p", "number of particle per box", "#ofPar", "concentration", &pBox);
+  defineVariable("c", "concentration", "g m-3", "concentration", &conc);
 }

@@ -40,10 +40,6 @@
 #include <cmath>
 #include <cstring>
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
 #include "util/QEStime.h"
 #include "util/QESOutputInterface.h"
 
@@ -59,11 +55,11 @@ public:
 
   ~StatisticsDirector() = default;
 
-  Statistics *get(const std::string &key) { return elements[key]; }
-  typename std::unordered_map<std::string, Statistics *>::iterator begin() { return elements.begin(); }
-  typename std::unordered_map<std::string, Statistics *>::iterator end() { return elements.end(); }
+  StatisticsInterface *get(const std::string &key) { return elements[key]; }
+  typename std::unordered_map<std::string, StatisticsInterface *>::iterator begin() { return elements.begin(); }
+  typename std::unordered_map<std::string, StatisticsInterface *>::iterator end() { return elements.end(); }
 
-  void attach(const std::string &key, Statistics *s);
+  void attach(const std::string &key, StatisticsInterface *s);
 
   void compute(QEStime &, const float &);
 
@@ -71,7 +67,7 @@ public:
   void resetOutputStatus() { need_output = false; }
 
 protected:
-  std::unordered_map<std::string, Statistics *> elements;
+  std::unordered_map<std::string, StatisticsInterface *> elements;
 
   QEStime averagingStartTime;
   QEStime nextOutputTime;

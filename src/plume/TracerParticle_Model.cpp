@@ -68,10 +68,10 @@ void TracerParticle_Model::initialize(const PlumeInputData *PID,
 
   stats = new StatisticsDirector(PID, PGD);
   if (PID->colParams) {
-    stats->attach("concentration", new TracerParticle_Concentration(PID, this));
+    stats->attach("concentration", new TracerParticle_Concentration(PID->colParams, this));
   }
 
-  for (auto s : *stats) { output_ptr.push_back(s.second); }
+  // for (auto s : *stats) { output_ptr.push_back(s.second); }
 }
 
 void TracerParticle_Model::generateParticleList(QEStime &timeCurrent,

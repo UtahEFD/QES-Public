@@ -35,6 +35,7 @@
 #pragma once
 
 #include "util/ManagedContainer.h"
+#include "util/DataSource.h"
 
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
@@ -43,22 +44,59 @@
 #include "HeavyParticle.h"
 #include "HeavyParticle_Model.h"
 
-#include "Concentration.h"
 
-
-class HeavyParticle_Concentration : public Concentration
+class HeavyParticle_Concentration : public StatisticsInterface
+  , public DataSource
 {
 public:
-  explicit HeavyParticle_Concentration(const PlumeInputData *PID, HeavyParticle_Model *pm)
-    : Concentration(PID->colParams)
-  {
-    m_particles = pm->get_particles();
-  }
+  HeavyParticle_Concentration(const PI_CollectionParameters *, HeavyParticle_Model *);
+  ~HeavyParticle_Concentration() = default;
+
   void collect(QEStime &timeIn, const float &timeStep) override;
   void finalize(QEStime &timeIn) override;
+  void reset() override;
 
-  void setOutput(QESFileOutput *out) override;
+  void prepareDataAndPushToFile(QEStime) override;
 
 protected:
+  int get_x_index(const float &) const;
+  int get_y_index(const float &) const;
+  int get_z_index(const float &) const;
+
+  void setOutputFields() override;
+
+  // averaging period in seconds
+  float averagingPeriod;
+  float ongoingAveragingTime;
+  // Sampling box variables for calculating concentration data
+  // Number of boxes to use for the sampling box
+  int nBoxesX, nBoxesY, nBoxesZ;// Copies of the input: nBoxesX, Y, and Z.
+  // upper & lower bounds in each direction of the sampling boxes
+  float lBndx, lBndy, lBndz, uBndx, uBndy, uBndz;// Copies of the input: boxBoundsX1, boxBoundsX2, boxBoundsY1,
+  float boxSizeX, boxSizeY, boxSizeZ;// these are the box sizes in each direction, calculated from nBoxes, lBnd, and uBnd variables
+  float volume;// volume of the sampling boxes (=nBoxesX*nBoxesY*nBoxesZ)
+
+  // output concentration storage variables
+  std::vector<float> xBoxCen, yBoxCen, zBoxCen;// list of x,y, and z points for the concentration sampling box information
+  std::vector<int> pBox;// sampling box particle counter (for average)
+  std::vector<float> conc;// concentration values (for output)
+
   ManagedContainer<HeavyParticle> *m_particles;
+
+
+private:
+  HeavyParticle_Concentration() = default;
 };
+
+inline int HeavyParticle_Concentration::get_x_index(const float &x) const
+{
+  return floor((x - lBndx) / (boxSizeX + 1e-9));
+}
+inline int HeavyParticle_Concentration::get_y_index(const float &y) const
+{
+  return floor((y - lBndy) / (boxSizeY + 1e-9));
+}
+inline int HeavyParticle_Concentration::get_z_index(const float &z) const
+{
+  return floor((z - lBndz) / (boxSizeZ + 1e-9));
+}

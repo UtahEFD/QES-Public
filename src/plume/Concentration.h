@@ -70,7 +70,7 @@
 #include "Particle.h"
 #include "PlumeInputData.hpp"
 
-class Concentration : public Statistics
+class Concentration : public StatisticsInterface
 {
 public:
   explicit Concentration(const PI_CollectionParameters *colParams);
@@ -82,7 +82,7 @@ public:
 
   // virtual void computeForOutput() = 0;
   //  reset buffer
-  virtual void reset();
+  // virtual void reset();
 
   // averaging period in seconds
   float averagingPeriod;

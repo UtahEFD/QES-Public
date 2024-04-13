@@ -14,7 +14,6 @@ SET( qesPlumeCoreSources
     InterpTriLinear.cpp    
 
     Deposition.cpp
-    Concentration.cpp
     StatisticsDirector.cpp
 
     AdvectParticle.cpp
@@ -67,7 +66,7 @@ SET( qesPlumeCoreSources
     WallReflection_StairStep.cpp
     WallReflection_TriMesh.cpp
 
-        QESPlumeOutputDirector.cpp QESPlumeOutputDirector.h)
+    QESPlumeOutputDirector.cpp QESPlumeOutputDirector.h)
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
    CUDA_ADD_LIBRARY( qesplumecore
