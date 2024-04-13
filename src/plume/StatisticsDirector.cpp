@@ -44,7 +44,7 @@ StatisticsDirector::StatisticsDirector(const PlumeInputData *PID, PLUMEGeneralDa
   nextOutputTime = averagingStartTime + averagingPeriod;
 }
 
-void StatisticsDirector::attach(const std::string &key, Statistics *s)
+void StatisticsDirector::attach(const std::string &key, StatisticsInterface *s)
 {
   if (elements.find(key) == elements.end()) {
     elements.insert({ key, s });

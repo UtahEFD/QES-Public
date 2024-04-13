@@ -83,15 +83,3 @@ Concentration::Concentration(const PI_CollectionParameters *colParams)
   pBox.resize(nBoxesX * nBoxesY * nBoxesZ, 0);
   conc.resize(nBoxesX * nBoxesY * nBoxesZ, 0.0);
 }
-
-void Concentration::reset()
-{
-  // reset container for the next averaging period
-  ongoingAveragingTime = 0.0;
-  for (auto p : pBox) {
-    p = 0.0;
-  }
-  for (auto c : conc) {
-    c = 0.0;
-  }
-}

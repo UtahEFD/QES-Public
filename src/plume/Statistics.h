@@ -40,19 +40,15 @@
 #include <cmath>
 #include <cstring>
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 
 #include "util/QEStime.h"
-#include "util/QESOutputInterface.h"
 
 
-class Statistics : public QESOutputInterface
+class StatisticsInterface
 {
 public:
-  Statistics() = default;
-  ~Statistics() = default;
+  StatisticsInterface() = default;
+  ~StatisticsInterface() = default;
 
   virtual void collect(QEStime &, const float &) = 0;
   virtual void finalize(QEStime &) = 0;
