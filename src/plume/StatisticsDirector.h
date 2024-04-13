@@ -67,22 +67,15 @@ public:
 
   void compute(QEStime &, const float &);
 
-  bool getOutputStatus() { return need_output; }
-  void resetOutputStatus() { need_output = false; }
-
 protected:
   std::unordered_map<std::string, DataSource *> elements;
 
   QEStime averagingStartTime;
   QEStime nextOutputTime;
   float averagingPeriod = 0;
-  float ongoingAveragingTime = 0;
 
-  QESFileOutput_v2 *testFile;
+  QESFileOutput_v2 *statsFile;
 
 private:
   StatisticsDirector() = default;
-
-  bool need_reset = false;
-  bool need_output = false;
 };

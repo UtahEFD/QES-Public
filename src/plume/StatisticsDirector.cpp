@@ -42,15 +42,15 @@ StatisticsDirector::StatisticsDirector(const PlumeInputData *PID, PLUMEGeneralDa
   averagingStartTime = PGD->getSimTimeStart() + PID->colParams->averagingStartTime;
   averagingPeriod = PID->colParams->averagingPeriod;
   nextOutputTime = averagingStartTime + averagingPeriod;
-  testFile = new QESNetCDFOutput_v2("test.nc");
-  testFile->setStartTime(PGD->getSimTimeStart());
+  statsFile = new QESNetCDFOutput_v2("test.nc");
+  statsFile->setStartTime(PGD->getSimTimeStart());
 }
 
 void StatisticsDirector::attach(const std::string &key, DataSource *s)
 {
   if (elements.find(key) == elements.end()) {
     elements.insert({ key, s });
-    testFile->attachDataSource(s);
+    statsFile->attachDataSource(s);
   } else {
     exit(1);
   }
@@ -58,18 +58,7 @@ void StatisticsDirector::attach(const std::string &key, DataSource *s)
 
 void StatisticsDirector::compute(QEStime &timeIn, const float &timeStep)
 {
-  // reset buffer if needed
-  // Note: buffers need to be persistent for output.
-  if (need_reset) {
-    for (const auto &e : elements) {
-      e.second->reset();
-    }
-    need_reset = false;
-  }
-
   if (timeIn > averagingStartTime) {
-    // incrementation of the averaging time
-    ongoingAveragingTime += timeStep;
 
     for (const auto &e : elements) {
       e.second->collect(timeIn, timeStep);
@@ -78,15 +67,10 @@ void StatisticsDirector::compute(QEStime &timeIn, const float &timeStep)
     if (timeIn >= nextOutputTime) {
       // compute the stats
 
-      testFile->newTimeEntry(timeIn);
+      statsFile->newTimeEntry(timeIn);
       for (const auto &e : elements) {
         e.second->prepareDataAndPushToFile(timeIn);
       }
-
-      // reset variables
-      need_reset = true;
-      // for output (need to be refined)
-      need_output = true;
 
       // set nest output time
       nextOutputTime = nextOutputTime + averagingPeriod;

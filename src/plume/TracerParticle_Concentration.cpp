@@ -135,7 +135,6 @@ void TracerParticle_Concentration::reset()
 
 void TracerParticle_Concentration::prepareDataAndPushToFile(QEStime t)
 {
-  std::cout << "TracerParticle_Concentration::prepareDataAndPushToFile" << std::endl;
   finalize(t);
   pushToFile(t);
   reset();
