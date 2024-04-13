@@ -543,7 +543,9 @@ void PLUMEGeneralData::GLE_solver(Particle *p, double &par_dt, TURBGeneralData *
   p->tzz = tzz;
 }
 
-void PLUMEGeneralData::setParticle(WINDSGeneralData *WGD, TURBGeneralData *TGD, Particle *par_ptr)
+void PLUMEGeneralData::initializeParticleValues(Particle *par_ptr,
+                                                WINDSGeneralData *WGD,
+                                                TURBGeneralData *TGD)
 {
 
   // set the positions to be used by the simulation to the initial positions
