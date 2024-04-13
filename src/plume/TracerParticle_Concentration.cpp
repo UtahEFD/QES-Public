@@ -112,6 +112,7 @@ void TracerParticle_Concentration::collect(QEStime &timeIn, const float &timeSte
     }// is active == true
 
   }// particle loop
+  ongoingAveragingTime += timeStep;
 }
 
 void TracerParticle_Concentration::finalize(QEStime &timeIn)
@@ -134,6 +135,7 @@ void TracerParticle_Concentration::reset()
 
 void TracerParticle_Concentration::prepareDataAndPushToFile(QEStime t)
 {
+  std::cout << "TracerParticle_Concentration::prepareDataAndPushToFile" << std::endl;
   finalize(t);
   pushToFile(t);
   reset();
@@ -147,7 +149,7 @@ void TracerParticle_Concentration::setOutputFields()
 
   defineDimensionSet("concentration", { "t", "z_c", "y_c", "x_c" });
 
-  defineVariable("t_avg", "Averaging time", "s", "t", &ongoingAveragingTime);
+  defineVariable("t_avg", "Averaging time", "s", "time", &ongoingAveragingTime);
   defineVariable("p", "number of particle per box", "#ofPar", "concentration", &pBox);
   defineVariable("c", "concentration", "g m-3", "concentration", &conc);
 }

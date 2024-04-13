@@ -45,8 +45,7 @@
 #include "HeavyParticle_Model.h"
 
 
-class HeavyParticle_Concentration : public StatisticsInterface
-  , public DataSource
+class HeavyParticle_Concentration : public DataSource
 {
 public:
   HeavyParticle_Concentration(const PI_CollectionParameters *, HeavyParticle_Model *);
