@@ -53,6 +53,10 @@ public:
 
   virtual void prepareDataAndPushToFile(QEStime) = 0;
 
+  virtual void collect(QEStime &, const float &){};
+  virtual void finalize(QEStime &){};
+  virtual void reset(){};
+
 protected:
   virtual void setOutputFields() = 0;
   virtual void attachToFile(QESFileOutput_v2 *) = 0;

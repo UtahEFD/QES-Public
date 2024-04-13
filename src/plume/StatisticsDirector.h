@@ -43,6 +43,10 @@
 #include "util/QEStime.h"
 #include "util/QESOutputInterface.h"
 
+#include "util/QESFileOutput_v2.h"
+#include "util/DataSource.h"
+#include "util/QESNetCDFOutput_v2.h"
+
 #include "Statistics.h"
 
 class PlumeInputData;
@@ -55,11 +59,11 @@ public:
 
   ~StatisticsDirector() = default;
 
-  StatisticsInterface *get(const std::string &key) { return elements[key]; }
-  typename std::unordered_map<std::string, StatisticsInterface *>::iterator begin() { return elements.begin(); }
-  typename std::unordered_map<std::string, StatisticsInterface *>::iterator end() { return elements.end(); }
+  DataSource *get(const std::string &key) { return elements[key]; }
+  typename std::unordered_map<std::string, DataSource *>::iterator begin() { return elements.begin(); }
+  typename std::unordered_map<std::string, DataSource *>::iterator end() { return elements.end(); }
 
-  void attach(const std::string &key, StatisticsInterface *s);
+  void attach(const std::string &key, DataSource *s);
 
   void compute(QEStime &, const float &);
 
@@ -67,12 +71,14 @@ public:
   void resetOutputStatus() { need_output = false; }
 
 protected:
-  std::unordered_map<std::string, StatisticsInterface *> elements;
+  std::unordered_map<std::string, DataSource *> elements;
 
   QEStime averagingStartTime;
   QEStime nextOutputTime;
   float averagingPeriod = 0;
   float ongoingAveragingTime = 0;
+
+  QESFileOutput_v2 *testFile;
 
 private:
   StatisticsDirector() = default;

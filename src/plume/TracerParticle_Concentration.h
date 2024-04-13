@@ -45,8 +45,7 @@
 #include "TracerParticle_Model.h"
 
 
-class TracerParticle_Concentration : public StatisticsInterface
-  , public DataSource
+class TracerParticle_Concentration : public DataSource
 {
 public:
   TracerParticle_Concentration(const PI_CollectionParameters *, TracerParticle_Model *);
