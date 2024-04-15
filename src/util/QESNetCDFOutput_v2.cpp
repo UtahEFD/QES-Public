@@ -65,6 +65,45 @@ void QESNetCDFOutput_v2::setStartTime(const QEStime &in)
   flagStartTimeSet = true;
 }
 
+void QESNetCDFOutput_v2::newTimeEntry(const QEStime &timeIn)
+{
+  if (timeCurrent == timeIn) {
+    // std::cerr << "[!!!WARNING!!!]\ttime for new entry already exists" << std::endl;
+    return;
+  }
+
+  timeCurrent = timeIn;
+  output_counter = fields["t"].getDim(0).getSize();
+
+  // check if start time is define (needed for "time")
+  if (output_counter == 0 && !flagStartTimeSet) {
+    std::cerr << "[!!!WARNING!!!]\tstart time not defined in output -> use first time entry as start time" << std::endl;
+    setStartTime(timeCurrent);
+    time = 0.0;
+  } else {
+    time = timeCurrent - timeStart;
+  }
+
+  // push time to file
+  std::vector<size_t> time_index;
+  std::vector<size_t> time_size;
+  time_index = { static_cast<unsigned long>(output_counter) };
+  saveField1D("t", time_index, &time);
+
+  // push timestamp to file (note: timestamp is char[])
+  timeCurrent.getTimestamp(timestamp);
+  // std::copy(timestamp.begin(), timestamp.end(), timestamp_out.begin());
+  for (int i = 0; i < dateStrLen; ++i) {
+    timestamp_out[i] = timestamp[i];
+  }
+  time_index = { static_cast<unsigned long>(output_counter), 0 };
+  time_size = { 1, static_cast<unsigned long>(dateStrLen) };
+  saveField2D("timestamp", time_index, time_size, timestamp_out);
+
+  // notify all data sources of new time entry (reset push2file flags)
+  notifyDataSourcesOfNewTimeEntry();
+}
+
 //----------------------------------------
 // create dimension
 // -> int
@@ -301,41 +340,6 @@ void QESNetCDFOutput_v2::rmOutputField(const std::string &name)
 {
   // remove object from the map
   output_object.erase(name);
-}
-
-
-void QESNetCDFOutput_v2::newTimeEntry(const QEStime &timeIn)
-{
-  timeCurrent = timeIn;
-  output_counter = fields["t"].getDim(0).getSize();
-
-  // check if start time is define (needed for "time")
-  if (output_counter == 0 && !flagStartTimeSet) {
-    std::cerr << "[!!!WARNING!!!]\tstart time not defined in output -> use first time entry as start time" << std::endl;
-    setStartTime(timeCurrent);
-    time = 0.0;
-  } else {
-    time = timeCurrent - timeStart;
-  }
-
-  // push time to file
-  std::vector<size_t> time_index;
-  std::vector<size_t> time_size;
-  time_index = { static_cast<unsigned long>(output_counter) };
-  saveField1D("t", time_index, &time);
-
-  // push timestamp to file (note: timestamp is char[])
-  timeCurrent.getTimestamp(timestamp);
-  // std::copy(timestamp.begin(), timestamp.end(), timestamp_out.begin());
-  for (int i = 0; i < dateStrLen; ++i) {
-    timestamp_out[i] = timestamp[i];
-  }
-  time_index = { static_cast<unsigned long>(output_counter), 0 };
-  time_size = { 1, static_cast<unsigned long>(dateStrLen) };
-  saveField2D("timestamp", time_index, time_size, timestamp_out);
-
-  // notify all data sources of new time entry (reset push2file flags)
-  notifyDataSourcesOfNewTimeEntry();
 }
 
 void QESNetCDFOutput_v2::pushAllFieldsToFile(QEStime &timeIn)
