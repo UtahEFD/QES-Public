@@ -69,12 +69,12 @@ void TracerParticle_Model::initialize(const PlumeInputData *PID,
   // stats = new TracerParticle_Statistics(PID, PGD, this);
   // concentration = new TracerParticle_Concentration(PID, pm);
 
-  stats = new StatisticsDirector(PID, PGD);
+  QESFileOutput_v2 *outfile = new QESNetCDFOutput_v2("test_"+tag+"_plumeOut.nc");
+  stats = new StatisticsDirector(PID, PGD, outfile);
   if (PID->colParams) {
     stats->attach("concentration", new TracerParticle_Concentration(PID->colParams, this));
   }
-
-  // for (auto s : *stats) { output_ptr.push_back(s.second); }
+  // other statistics can be added here
 }
 
 void TracerParticle_Model::generateParticleList(QEStime &timeCurrent,
@@ -84,7 +84,7 @@ void TracerParticle_Model::generateParticleList(QEStime &timeCurrent,
                                                 PLUMEGeneralData *PGD)
 {
   int nbr_new_particle = 0;
-  float time = timeCurrent - PGD->getSimTimeStart();
+  double time = timeCurrent - PGD->getSimTimeStart();
   for (auto source : sources) {
     nbr_new_particle += source->getNewParticleNumber(dt, time);
   }
