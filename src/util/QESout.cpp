@@ -47,7 +47,7 @@ void splashScreen()
 #ifdef HAS_CUDA
   std::cout << "\t* CUDA support available!" << std::endl;
 #else
-  std::cout << "\t* No CUDA support - CPU Only Computations!" << std::endl;
+  std::cout << "* No CUDA support - CPU Only Computations!" << std::endl;
 #endif
 
 #ifdef HAS_OPTIX
@@ -55,7 +55,7 @@ void splashScreen()
 #endif
 
 #ifdef _OPENMP
-  std::cout << "\t* OpenMP is available!" << std::endl;
+  std::cout << "* OpenMP is available!" << std::endl;
 #endif
   std::cout << "###################################################################" << std::endl;
 }

@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
   if (arguments.terrainOut) {
     if (WID->simParams->DTE_heightField) {
       std::cout << "Creating terrain OBJ....\n";
-      WID->simParams->DTE_heightField->outputOBJ(arguments.filenameTerrain);
+      WID->simParams->DTE_heightField->outputOBJ(arguments.outputFileBasename + "_terrainOut.obj");
       std::cout << "OBJ created....\n";
     } else {
       QESout::error("No dem file specified as input");
@@ -120,13 +120,12 @@ int main(int argc, char *argv[])
   // create WINDS output classes
   std::vector<QESNetCDFOutput *> outputVec;
   if (arguments.visuOutput) {
-    outputVec.push_back(new WINDSOutputVisualization(WGD, WID, arguments.netCDFFileVisu));
+    outputVec.push_back(new WINDSOutputVisualization(WGD, WID, arguments.outputFileBasename + "_windsOut.nc"));
   }
   if (arguments.wkspOutput) {
-    outputVec.push_back(new WINDSOutputWorkspace(WGD, arguments.netCDFFileWksp));
+    outputVec.push_back(new WINDSOutputWorkspace(WGD, arguments.outputFileBasename + "_windsWk.nc"));
   }
-
-
+  
   // Generate the general TURB data from WINDS data
   // based on if the turbulence output file is defined
   TURBGeneralData *TGD = nullptr;
@@ -134,7 +133,7 @@ int main(int argc, char *argv[])
     TGD = new TURBGeneralData(WID, WGD);
   }
   if (arguments.compTurb && arguments.turbOutput) {
-    outputVec.push_back(new TURBOutput(TGD, arguments.netCDFFileTurb));
+    outputVec.push_back(new TURBOutput(TGD, arguments.outputFileBasename + "_turbOut.nc"));
   }
 
   PLUMEGeneralData *PGD = nullptr;
@@ -146,7 +145,7 @@ int main(int argc, char *argv[])
     PGD = new PLUMEGeneralData(PID, WGD, TGD);
 
     // always supposed to output lagrToEulOutput data
-    outputPlume.push_back(new PlumeOutput(PID, PGD, arguments.outputPlumeFile));
+    outputPlume.push_back(new PlumeOutput(PID, PGD, arguments.outputFileBasename + "_plumeOut.nc"));
     // if (arguments.doParticleDataOutput) {
     //  outputPlume.push_back(new PlumeOutputParticleData(PID, plume, arguments.outputParticleDataFile));
     //}
