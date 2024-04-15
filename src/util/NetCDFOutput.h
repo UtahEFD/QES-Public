@@ -52,10 +52,12 @@ protected:
   NcFile *outfile; /**< File to write. */
   std::map<std::string, NcVar> fields; /**< :document this: */
 
+  std::string filename;
+
 public:
   // initializer
   explicit NetCDFOutput(const std::string &);
-  virtual ~NetCDFOutput() = default;
+  virtual ~NetCDFOutput();
 
   // setter
   NcDim addDimension(const std::string &, int size = 0);
