@@ -129,6 +129,7 @@ public:
   QEStime getSimTimeStart() const { return simTimeStart; }
   QEStime getSimTimeCurrent() const { return simTimeCurr; }
 
+  void printProgress(const double &);
   void showCurrentStatus();
 
   std::map<std::string, ParticleModel *> models;
@@ -152,7 +153,10 @@ public:
 
   // interpolation methods
   Interp *interp = nullptr;
+  // wall reflection method
+  WallReflection *wallReflect = nullptr;
 
+private:
   // Deposition *deposition = nullptr;
 
   // these values are calculated from the urb and turb grids by dispersion
@@ -176,9 +180,6 @@ public:
   double dz{};
   double dxy{};
   double boxSizeZ{};
-
-  // wall reflection method
-  WallReflection *wallReflect = nullptr;
 
   // domain boundary conditions method
   DomainBC *domainBC_x = nullptr;
@@ -227,6 +228,7 @@ public:
 
   // private:
 
+public:
   void updateCounts();
   void applyBC(Particle *);
   // initialize
@@ -315,6 +317,7 @@ public:
                              const double &w,
                              const double &timeRemainder);
 
+private:
   // utility functions for the plume solver
   static void calcInvariants(const double &txx,
                              const double &txy,
@@ -365,6 +368,5 @@ public:
                       const std::string &,
                       const std::string &);
 
-private:
   PLUMEGeneralData() = default;
 };

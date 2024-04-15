@@ -231,7 +231,7 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd,
   }
 
   QEStime nextUpdate = simTimeCurr + updateFrequency_timeLoop;
-  float simTime = simTimeCurr - simTimeStart;
+  double simTime = simTimeCurr - simTimeStart;
 
   updateCounts();
 
@@ -277,25 +277,8 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd,
     // output the time, isRogueCount, and isNotActiveCount information for all
     // simulations, but only when the updateFrequency allows
     if (simTimeCurr >= nextUpdate || (simTimeCurr == loopTimeEnd)) {
-      if (verbose) {
-        updateCounts();
-        std::cout << "[QES-Plume]\t Time = " << simTimeCurr
-                  << " (t = " << simTime << " s, iter = " << simTimeIdx << "). "
-                  << "Particles: released = " << isReleasedCount << " "
-                  << "active = " << isActiveCount << " "
-                  << "rogue = " << isRogueCount << "." << std::endl;
-      } else {
-        updateCounts();
-        std::cout << "[QES-Plume]\t Time = " << simTimeCurr
-                  << " (t = " << simTime << " s, iter = " << simTimeIdx << "). "
-                  << "Particles: released = " << isReleasedCount << " "
-                  << "active = " << isActiveCount << "." << std::endl;
-      }
+      printProgress(simTime);
       nextUpdate += (float)updateFrequency_timeLoop;
-      // output advection loop runtime if in debug mode
-      if (debug) {
-        timers.printStoredTime("advection loop");
-      }
     }
   }
   // --------------------------------------------------------
@@ -303,7 +286,7 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd,
   // --------------------------------------------------------
 
   updateCounts();
-
+  
   std::cout << "[QES-Plume]\t End of particles advection at Time = " << simTimeCurr
             << " s (iteration = " << simTimeIdx << "). \n";
   std::cout << "\t\t Particles: Released = " << isReleasedCount << " "
@@ -933,6 +916,27 @@ void PLUMEGeneralData::updateCounts()
     isRogueCount += pm.second->get_nbr_rogue();
     isActiveCount += pm.second->get_nbr_active();
     isReleasedCount += pm.second->get_nbr_inserted();
+  }
+}
+void PLUMEGeneralData::printProgress(const double &time)
+{
+  updateCounts();
+  if (verbose) {
+
+    std::cout << "[QES-Plume]\t Time = " << simTimeCurr
+              << " (t = " << time << " s, iter = " << simTimeIdx << "). "
+              << "Particles: released = " << isReleasedCount << " "
+              << "active = " << isActiveCount << " "
+              << "rogue = " << isRogueCount << "." << std::endl;
+  } else {
+    std::cout << "[QES-Plume]\t Time = " << simTimeCurr
+              << " (t = " << time << " s, iter = " << simTimeIdx << "). "
+              << "Particles: released = " << isReleasedCount << " "
+              << "active = " << isActiveCount << "." << std::endl;
+  }
+  // output advection loop runtime if in debug mode
+  if (debug) {
+    timers.printStoredTime("advection loop");
   }
 }
 
