@@ -74,8 +74,8 @@ public:
    * @note Can be called outside.
    */
 
-  void newTimeEntry(const QEStime &) override;
   void setStartTime(const QEStime &) override;
+  void newTimeEntry(const QEStime &) override;
 
 protected:
   QESNetCDFOutput_v2() = default;

@@ -149,6 +149,6 @@ void TracerParticle_Concentration::setOutputFields()
   defineDimensionSet("concentration", { "t", "z_c", "y_c", "x_c" });
 
   defineVariable("t_avg", "Averaging time", "s", "time", &ongoingAveragingTime);
-  defineVariable("p", "number of particle per box", "#ofPar", "concentration", &pBox);
+  defineVariable("p_count", "number of particle per box", "#ofPar", "concentration", &pBox);
   defineVariable("c", "concentration", "g m-3", "concentration", &conc);
 }

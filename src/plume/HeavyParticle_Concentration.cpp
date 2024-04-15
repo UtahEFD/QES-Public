@@ -112,6 +112,7 @@ void HeavyParticle_Concentration::collect(QEStime &timeIn, const float &timeStep
     }// is active == true
 
   }// particle loop
+  ongoingAveragingTime += timeStep;
 }
 
 void HeavyParticle_Concentration::finalize(QEStime &timeIn)
@@ -147,7 +148,7 @@ void HeavyParticle_Concentration::setOutputFields()
 
   defineDimensionSet("concentration", { "t", "z_c", "y_c", "x_c" });
 
-  defineVariable("t_avg", "Averaging time", "s", "t", &ongoingAveragingTime);
-  defineVariable("p", "number of particle per box", "#ofPar", "concentration", &pBox);
+  defineVariable("t_avg", "Averaging time", "s", "time", &ongoingAveragingTime);
+  defineVariable("p_count", "number of particle per box", "#ofPar", "concentration", &pBox);
   defineVariable("c", "concentration", "g m-3", "concentration", &conc);
 }
