@@ -37,43 +37,44 @@
 #include "PlumeInputData.hpp"
 #include "PLUMEGeneralData.h"
 
-StatisticsDirector::StatisticsDirector(const PlumeInputData *PID, PLUMEGeneralData *PGD)
+StatisticsDirector::StatisticsDirector(const PlumeInputData *PID, PLUMEGeneralData *PGD, QESFileOutput_v2 *outfile)
 {
-  averagingStartTime = PGD->getSimTimeStart() + PID->colParams->averagingStartTime;
-  averagingPeriod = PID->colParams->averagingPeriod;
-  nextOutputTime = averagingStartTime + averagingPeriod;
-  statsFile = new QESNetCDFOutput_v2("test.nc");
-  statsFile->setStartTime(PGD->getSimTimeStart());
+  m_startCollectionTime = PGD->getSimTimeStart() + PID->colParams->averagingStartTime;
+  m_collectionPeriod = PID->colParams->averagingPeriod;
+  m_nextOutputTime = m_startCollectionTime + m_collectionPeriod;
+  m_statsFile = outfile;
+  m_statsFile->setStartTime(PGD->getSimTimeStart());
 }
 
 void StatisticsDirector::attach(const std::string &key, DataSource *s)
 {
   if (elements.find(key) == elements.end()) {
     elements.insert({ key, s });
-    statsFile->attachDataSource(s);
+    m_statsFile->attachDataSource(s);
   } else {
+    std::cerr << "[!!!ERROR!!!]\tstat with key = " << key << " already exists" << std::endl;
     exit(1);
   }
 }
 
 void StatisticsDirector::compute(QEStime &timeIn, const float &timeStep)
 {
-  if (timeIn > averagingStartTime) {
+  if (timeIn > m_startCollectionTime) {
 
     for (const auto &e : elements) {
       e.second->collect(timeIn, timeStep);
     }
 
-    if (timeIn >= nextOutputTime) {
+    if (timeIn >= m_nextOutputTime) {
       // compute the stats
 
-      statsFile->newTimeEntry(timeIn);
+      m_statsFile->newTimeEntry(timeIn);
       for (const auto &e : elements) {
         e.second->prepareDataAndPushToFile(timeIn);
       }
 
       // set nest output time
-      nextOutputTime = nextOutputTime + averagingPeriod;
+      m_nextOutputTime = m_nextOutputTime + m_collectionPeriod;
     }
   }
 }

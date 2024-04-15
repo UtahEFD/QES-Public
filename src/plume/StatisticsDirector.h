@@ -55,7 +55,7 @@ class PLUMEGeneralData;
 class StatisticsDirector
 {
 public:
-  StatisticsDirector(const PlumeInputData *, PLUMEGeneralData *);
+  StatisticsDirector(const PlumeInputData *, PLUMEGeneralData *, QESFileOutput_v2 *);
 
   ~StatisticsDirector() = default;
 
@@ -67,14 +67,16 @@ public:
 
   void compute(QEStime &, const float &);
 
+  QESFileOutput_v2 *getOutputFile() { return m_statsFile; }
+
 protected:
   std::unordered_map<std::string, DataSource *> elements;
 
-  QEStime averagingStartTime;
-  QEStime nextOutputTime;
-  float averagingPeriod = 0;
+  QEStime m_startCollectionTime;
+  QEStime m_nextOutputTime;
+  float m_collectionPeriod = 0;
 
-  QESFileOutput_v2 *statsFile;
+  QESFileOutput_v2 *m_statsFile{};
 
 private:
   StatisticsDirector() = default;
