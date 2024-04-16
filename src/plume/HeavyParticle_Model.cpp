@@ -56,6 +56,11 @@ HeavyParticle_Model::HeavyParticle_Model(const PI_HeavyParticle *in)
 
   // deposition = new Deposition(WGD);
 }
+HeavyParticle_Model::~HeavyParticle_Model()
+{
+  delete particles;
+  delete stats;
+}
 
 void HeavyParticle_Model::initialize(const PlumeInputData *PID,
                                      WINDSGeneralData *WGD,
@@ -66,7 +71,7 @@ void HeavyParticle_Model::initialize(const PlumeInputData *PID,
 
   // stats = new TracerParticle_Statistics(PID, PGD, this);
   // concentration = new TracerParticle_Concentration(PID, pm);
-  
+
   stats = new StatisticsDirector(PID, PGD, new QESNetCDFOutput_v2(PGD->plumeParameters.outputFileBasename + "_" + tag + "_plumeOut.nc"));
   if (PID->colParams) {
     stats->attach("concentration", new HeavyParticle_Concentration(PID->colParams, this));

@@ -91,8 +91,6 @@ public:
   std::string tag{};
   StatisticsDirector *stats = nullptr;
 
-  std::vector<QESOutputInterface *> output_ptr;
-
 protected:
   explicit ParticleModel(ParticleType type, std::string tag_in)
     : particleType(type), tag(std::move(tag_in))

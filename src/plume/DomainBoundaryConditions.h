@@ -28,8 +28,8 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file DoaminBoundaryConditions.h 
- * @brief 
+/** @file DoaminBoundaryConditions.h
+ * @brief
  */
 
 #pragma once
@@ -53,8 +53,7 @@ public:
     domainStart = dS;
     domainEnd = dE;
   }
-  ~DomainBC()
-  {}
+  virtual ~DomainBC() = default;
   virtual bool enforce(double &, double &) = 0;
 };
 

@@ -201,9 +201,9 @@ PLUMEGeneralData::~PLUMEGeneralData()
   delete domainBC_y;
   delete domainBC_z;
 
-  for (auto p : models)
+  for (const auto& p : models)
     delete p.second;
-  
+
 #ifdef _OPENMP
   for (auto p : threadRNG)
     delete p;

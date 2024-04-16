@@ -57,7 +57,7 @@ class StatisticsDirector
 public:
   StatisticsDirector(const PlumeInputData *, PLUMEGeneralData *, QESFileOutput_v2 *);
 
-  ~StatisticsDirector() = default;
+  ~StatisticsDirector();
 
   DataSource *get(const std::string &key) { return elements[key]; }
   typename std::unordered_map<std::string, DataSource *>::iterator begin() { return elements.begin(); }

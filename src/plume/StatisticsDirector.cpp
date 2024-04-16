@@ -45,6 +45,10 @@ StatisticsDirector::StatisticsDirector(const PlumeInputData *PID, PLUMEGeneralDa
   m_statsFile = outfile;
   m_statsFile->setStartTime(PGD->getSimTimeStart());
 }
+StatisticsDirector::~StatisticsDirector()
+{
+  delete m_statsFile;
+}
 
 void StatisticsDirector::attach(const std::string &key, DataSource *s)
 {

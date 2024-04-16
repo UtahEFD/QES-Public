@@ -54,7 +54,7 @@ class HeavyParticle_Model : public ParticleModel
 {
 public:
   explicit HeavyParticle_Model(const PI_HeavyParticle *);
-  ~HeavyParticle_Model() = default;
+  ~HeavyParticle_Model();
 
   void accept(ParticleModel_Visitor *visitor) override
   {

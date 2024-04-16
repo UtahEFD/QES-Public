@@ -65,8 +65,7 @@ public:
     m_interp = interp;
   }
 
-  ~WallReflection()
-  {}
+  virtual ~WallReflection() = default;
   virtual bool reflect(const WINDSGeneralData *,
                        double &,
                        double &,
