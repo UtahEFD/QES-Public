@@ -71,8 +71,8 @@ TEST_CASE("Regression test of QES-Plume: sinusoidal stress")
 
   // Create instance of Plume model class
   // auto *plume = new Plume(PID, WGD, TGD);
-
-  auto *PGD = new PLUMEGeneralData(PID, WGD, TGD);
+  PlumeParameters PP("", false, false);
+  auto *PGD = new PLUMEGeneralData(PP, PID, WGD, TGD);
   // create output instance
   std::vector<QESNetCDFOutput *> outputVec;
   // always supposed to output lagrToEulOutput data

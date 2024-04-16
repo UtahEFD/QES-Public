@@ -23,7 +23,8 @@ TEST_CASE("vector math")
 
   auto *WGD = new test_WINDSGeneralData(gridSize, gridRes);
   auto *TGD = new test_TURBGeneralData(WGD);
-  auto *PGD = new test_PlumeGeneralData(WGD, TGD);
+  PlumeParameters PP("", false, false);
+  auto *PGD = new test_PlumeGeneralData(PP, WGD, TGD);
 
   printf("--------------------------------------\n");
   printf("starting PLUME vector math CPU...\n");
@@ -38,6 +39,10 @@ TEST_CASE("vector math")
   // PGD->testGPU(100000);
   // PGD->testGPU_struct(1000000);
 #endif
+  
+  delete WGD;
+  delete TGD;
+  delete PGD;
 }
 
 #if 0

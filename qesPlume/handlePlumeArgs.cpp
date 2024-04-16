@@ -102,6 +102,10 @@ void PlumeArgs::processArguments(int argc, char *argv[])
     }
   }
 
+  plumeParameters.outputFileBasename = netCDFFileBasename;
+  plumeParameters.plumeOutput = true;
+  plumeParameters.particleOutput = doParticleDataOutput;
+
   std::cout << "Summary of QES PLUME options: " << std::endl;
   std::cout << "----------------------------" << std::endl;
   std::cout << "Plume model in stand alone mode" << std::endl;

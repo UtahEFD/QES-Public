@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file handlePlumeArgs.hpp 
+/** @file handlePlumeArgs.hpp
  * @class PlumeArgs
  * @brief This class handles different commandline options and arguments
  * and places the values into variables.
@@ -45,6 +45,8 @@
 #include "util/ArgumentParsing.h"
 #include "util/QESout.h"
 
+#include "plume/PLUMEGeneralData.h"
+
 class PlumeArgs : public ArgumentParsing
 {
 public:
@@ -55,15 +57,15 @@ public:
   }
 
   /*
-     * Takes in the commandline arguments and places
-     * them into variables.
-     *
-     * @param argc -number of commandline options/arguments
-     * @param argv -array of strings for arguments
-     */
+   * Takes in the commandline arguments and places
+   * them into variables.
+   *
+   * @param argc -number of commandline options/arguments
+   * @param argv -array of strings for arguments
+   */
   void processArguments(int argc, char *argv[]);
 
-  //bool debug = false;
+  // bool debug = false;
   bool verbose = false;
 
   std::string qesPlumeParamFile = "";
@@ -73,6 +75,8 @@ public:
   std::string projectQESFiles = "";
   std::string inputWINDSFile = "";
   std::string inputTURBFile = "";
+
+  PlumeParameters plumeParameters;
 
   // going to assume concentration is always output. So these next options are like choices for additional debug output
   bool doEulDataOutput;
