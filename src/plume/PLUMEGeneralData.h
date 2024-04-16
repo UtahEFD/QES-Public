@@ -110,13 +110,13 @@ class PLUMEGeneralData
   friend class PlumeOutput;
 
 public:
-  PLUMEGeneralData(PlumeParameters, WINDSGeneralData *, TURBGeneralData *);
+  PLUMEGeneralData(const PlumeParameters &, WINDSGeneralData *, TURBGeneralData *);
   // constructor
   // first makes a copy of the urb grid number of values and the domain size as determined by dispersion
   // then sets up the concentration sampling box information for output
   // next copies important input time values and calculates needed time information
   // lastly sets up the boundary condition functions and checks to make sure input BC's are valid
-  PLUMEGeneralData(PlumeParameters, PlumeInputData *, WINDSGeneralData *, TURBGeneralData *);
+  PLUMEGeneralData(const PlumeParameters &, PlumeInputData *, WINDSGeneralData *, TURBGeneralData *);
 
   virtual ~PLUMEGeneralData();
 

@@ -33,7 +33,7 @@
 #include "PLUMEGeneralData.h"
 #include <queue>
 
-PLUMEGeneralData::PLUMEGeneralData(PlumeParameters PP, WINDSGeneralData *WGD, TURBGeneralData *TGD) : plumeParameters(PP)
+PLUMEGeneralData::PLUMEGeneralData(const PlumeParameters &PP, WINDSGeneralData *WGD, TURBGeneralData *TGD) : plumeParameters(PP)
 {
   // copy debug information
   debug = false;// arguments->debug;
@@ -50,7 +50,7 @@ PLUMEGeneralData::PLUMEGeneralData(PlumeParameters PP, WINDSGeneralData *WGD, TU
   dxy = WGD->dxy;
 }
 
-PLUMEGeneralData::PLUMEGeneralData(PlumeParameters PP, PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
+PLUMEGeneralData::PLUMEGeneralData(const PlumeParameters &PP, PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   : plumeParameters(PP)
 {
   std::cout << "-------------------------------------------------------------------" << std::endl;
@@ -201,7 +201,7 @@ PLUMEGeneralData::~PLUMEGeneralData()
   delete domainBC_y;
   delete domainBC_z;
 
-  for (const auto& p : models)
+  for (const auto &p : models)
     delete p.second;
 
 #ifdef _OPENMP

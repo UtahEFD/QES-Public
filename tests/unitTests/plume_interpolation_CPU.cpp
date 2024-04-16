@@ -18,7 +18,8 @@ TEST_CASE("interpolation fine grid", "[Working]")
 
   test_WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes);
   test_TURBGeneralData *TGD = new test_TURBGeneralData(WGD);
-  test_PlumeGeneralData *PGD = new test_PlumeGeneralData(WGD, TGD);
+  PlumeParameters PP("", false, false);
+  test_PlumeGeneralData *PGD = new test_PlumeGeneralData(PP, WGD, TGD);
   PGD->setInterpMethod("triLinear", WGD, TGD);
 
   test_functions *tf = new test_functions(WGD, TGD, "trig");
@@ -111,6 +112,10 @@ TEST_CASE("interpolation fine grid", "[Working]")
     errT = errT / float(N);
     REQUIRE(errT < tol);
   }
+
+  delete WGD;
+  delete TGD;
+  delete PGD;
 }
 
 TEST_CASE("interpolation coarse grid", "[Working]")
@@ -121,7 +126,8 @@ TEST_CASE("interpolation coarse grid", "[Working]")
 
   test_WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes);
   test_TURBGeneralData *TGD = new test_TURBGeneralData(WGD);
-  test_PlumeGeneralData *PGD = new test_PlumeGeneralData(WGD, TGD);
+  PlumeParameters PP("", false, false);
+  test_PlumeGeneralData *PGD = new test_PlumeGeneralData(PP, WGD, TGD);
   PGD->setInterpMethod("triLinear", WGD, TGD);
 
   test_functions *tf = new test_functions(WGD, TGD, "trig");
@@ -162,6 +168,9 @@ TEST_CASE("interpolation coarse grid", "[Working]")
       REQUIRE(err < tol);
     }
   }
+  delete WGD;
+  delete TGD;
+  delete PGD;
 }
 
 TEST_CASE("interpolation stretched grid", "[Working]")
@@ -177,7 +186,8 @@ TEST_CASE("interpolation stretched grid", "[Working]")
   test_WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes, dz_array);
 
   test_TURBGeneralData *TGD = new test_TURBGeneralData(WGD);
-  test_PlumeGeneralData *PGD = new test_PlumeGeneralData(WGD, TGD);
+  PlumeParameters PP("", false, false);
+  test_PlumeGeneralData *PGD = new test_PlumeGeneralData(PP, WGD, TGD);
   PGD->setInterpMethod("triLinear", WGD, TGD);
 
   test_functions *tf = new test_functions(WGD, TGD, "trig");
@@ -271,4 +281,8 @@ TEST_CASE("interpolation stretched grid", "[Working]")
     errT = errT / float(N);
     REQUIRE(errT < tol);
   }
+
+  delete WGD;
+  delete TGD;
+  delete PGD;
 }

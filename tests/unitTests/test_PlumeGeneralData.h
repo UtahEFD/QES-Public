@@ -14,8 +14,8 @@
 class test_PlumeGeneralData : public PLUMEGeneralData
 {
 public:
-  test_PlumeGeneralData(WINDSGeneralData *WGD, TURBGeneralData *TGD)
-    : PLUMEGeneralData(WGD, TGD)
+  test_PlumeGeneralData(const PlumeParameters &PP, WINDSGeneralData *WGD, TURBGeneralData *TGD)
+    : PLUMEGeneralData(PP, WGD, TGD)
   {}
   virtual ~test_PlumeGeneralData()
   {}

@@ -80,7 +80,7 @@ int main(int argc, char **argv)
   TURBGeneralData *TGD = new TURBGeneralData(arguments.inputTURBFile, WGD);
 
   // Create instance of Plume model class
-  PLUMEGeneralData *PGD = new PLUMEGeneralData(PID, WGD, TGD);
+  PLUMEGeneralData *PGD = new PLUMEGeneralData(arguments.plumeParameters, PID, WGD, TGD);
 
   // create output instance
   std::vector<QESNetCDFOutput *> outputVec;
@@ -112,6 +112,12 @@ int main(int argc, char **argv)
 
   PGD->showCurrentStatus();
   std::cout << "##############################################################" << std::endl;
+
+  delete WGD;
+  delete TGD;
+
+  delete PID;
+  delete PGD;
 
   exit(EXIT_SUCCESS);
 }

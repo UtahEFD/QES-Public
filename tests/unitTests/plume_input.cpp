@@ -21,7 +21,7 @@
 #include "plume/HeavyParticle_Model.h"
 
 
-TEST_CASE("plume input test")
+TEST_CASE("Plume test inputs for multiple particle models")
 {
   // set up timer information for the simulation runtime
   calcTime timers;
@@ -81,7 +81,7 @@ TEST_CASE("plume input test")
     std::cout << pm->getParticleType() << std::endl;
   }*/
 }
-TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
+TEST_CASE("Plume test inputs for multiple particle models with uniform winds and turbulence")
 {
   // set up timer information for the simulation runtime
   calcTime timers;
@@ -136,12 +136,13 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
   TGD->divergenceStress();
 
   // Create instance of Plume model class
-  auto *PGD = new PLUMEGeneralData(PID, WGD, TGD);
+  PlumeParameters PP("plume_input", false, false);
+  auto *PGD = new PLUMEGeneralData(PP, PID, WGD, TGD);
 
   // create output instance
   std::vector<QESNetCDFOutput *> outputVec;
-  std::string outFile = QES_DIR;
-  outFile.append("/scratch/UniformFlow_xDir_ContRelease_plumeOut.nc");
+  // std::string outFile = QES_DIR;
+  // outFile.append("/scratch/UniformFlow_xDir_ContRelease_plumeOut.nc");
 
   // auto *plumeOutput = new PlumeOutput(PID, plume, outFile);
   // outputVec.push_back(plumeOutput);
@@ -157,4 +158,10 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
   timers.printStoredTime("QES-Plume total runtime");
   std::cout << "##############################################################" << std::endl
             << std::endl;
+
+  delete WGD;
+  delete TGD;
+
+  delete PID;
+  delete PGD;
 }
