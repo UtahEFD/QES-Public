@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
   if (arguments.wkspOutput) {
     outputVec.push_back(new WINDSOutputWorkspace(WGD, arguments.outputFileBasename + "_windsWk.nc"));
   }
-  
+
   // Generate the general TURB data from WINDS data
   // based on if the turbulence output file is defined
   TURBGeneralData *TGD = nullptr;
@@ -142,10 +142,11 @@ int main(int argc, char *argv[])
 
   if (arguments.compPlume) {
     // Create instance of Plume model class
-    PGD = new PLUMEGeneralData(PID, WGD, TGD);
+
+    PGD = new PLUMEGeneralData(arguments.plumeParameters, PID, WGD, TGD);
 
     // always supposed to output lagrToEulOutput data
-    outputPlume.push_back(new PlumeOutput(PID, PGD, arguments.outputFileBasename + "_plumeOut.nc"));
+    // outputPlume.push_back(new PlumeOutput(PID, PGD, arguments.outputFileBasename + "_plumeOut.nc"));
     // if (arguments.doParticleDataOutput) {
     //  outputPlume.push_back(new PlumeOutputParticleData(PID, plume, arguments.outputParticleDataFile));
     //}
@@ -203,6 +204,19 @@ int main(int argc, char *argv[])
 
   if (PGD != nullptr) {
     PGD->showCurrentStatus();
+  }
+
+  delete WID;
+  delete WGD;
+  delete TGD;
+
+  delete PID;
+  delete PGD;
+  for (auto f : outputVec) {
+    delete f;
+  }
+  for (auto f : outputPlume) {
+    delete f;
   }
 
   exit(EXIT_SUCCESS);

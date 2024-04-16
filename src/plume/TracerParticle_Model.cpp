@@ -68,9 +68,8 @@ void TracerParticle_Model::initialize(const PlumeInputData *PID,
 
   // stats = new TracerParticle_Statistics(PID, PGD, this);
   // concentration = new TracerParticle_Concentration(PID, pm);
-
-  QESFileOutput_v2 *outfile = new QESNetCDFOutput_v2("test_"+tag+"_plumeOut.nc");
-  stats = new StatisticsDirector(PID, PGD, outfile);
+  
+  stats = new StatisticsDirector(PID, PGD, new QESNetCDFOutput_v2(PGD->plumeParameters.outputFileBasename + "_" + tag + "_plumeOut.nc"));
   if (PID->colParams) {
     stats->attach("concentration", new TracerParticle_Concentration(PID->colParams, this));
   }

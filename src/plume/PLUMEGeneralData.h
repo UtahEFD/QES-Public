@@ -36,6 +36,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <utility>
 #include <vector>
 #include <map>
 #include <list>
@@ -88,6 +89,19 @@
 
 #include "AddSource.h"
 
+class PlumeParameters
+{
+public:
+  PlumeParameters() = default;
+  PlumeParameters(std::string s1, bool b1, bool b2)
+    : outputFileBasename(std::move(s1)), plumeOutput(b1), particleOutput(b2)
+  {}
+  ~PlumeParameters() = default;
+  std::string outputFileBasename;
+  bool plumeOutput = true;
+  bool particleOutput = false;
+};
+
 class PlumeOutput;
 
 class PLUMEGeneralData
@@ -96,15 +110,15 @@ class PLUMEGeneralData
   friend class PlumeOutput;
 
 public:
-  PLUMEGeneralData(WINDSGeneralData *, TURBGeneralData *);
+  PLUMEGeneralData(PlumeParameters, WINDSGeneralData *, TURBGeneralData *);
   // constructor
   // first makes a copy of the urb grid number of values and the domain size as determined by dispersion
   // then sets up the concentration sampling box information for output
   // next copies important input time values and calculates needed time information
   // lastly sets up the boundary condition functions and checks to make sure input BC's are valid
-  PLUMEGeneralData(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *);
+  PLUMEGeneralData(PlumeParameters, PlumeInputData *, WINDSGeneralData *, TURBGeneralData *);
 
-  virtual ~PLUMEGeneralData() = default;
+  virtual ~PLUMEGeneralData();
 
   // this is the plume solver. It performs a time integration of the particle positions and particle velocity fluctuations
   // with calculations done on a per particle basis. During each iteration, temporary single value particle information
@@ -151,6 +165,7 @@ public:
   RandomSingleton *RNG = nullptr;
 #endif
 
+  PlumeParameters plumeParameters;
   // interpolation methods
   Interp *interp = nullptr;
   // wall reflection method
@@ -216,12 +231,6 @@ private:
 
   // timer class useful for debugging and timing different operations
   calcTime timers;
-
-  // copies of debug related information from the input arguments
-  bool doParticleDataOutput{};
-  bool outputSimInfoFile{};
-  std::string outputFolder;
-  std::string caseBaseName;
 
   bool debug = false;
   bool verbose = false;

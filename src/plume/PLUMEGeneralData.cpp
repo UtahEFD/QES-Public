@@ -33,15 +33,10 @@
 #include "PLUMEGeneralData.h"
 #include <queue>
 
-PLUMEGeneralData::PLUMEGeneralData(WINDSGeneralData *WGD, TURBGeneralData *TGD)
+PLUMEGeneralData::PLUMEGeneralData(PlumeParameters PP, WINDSGeneralData *WGD, TURBGeneralData *TGD) : plumeParameters(PP)
 {
   // copy debug information
-  doParticleDataOutput = false;// arguments->doParticleDataOutput;
-  outputSimInfoFile = false;// arguments->doSimInfoFileOutput;
-  outputFolder = "";// arguments->outputFolder;
-  caseBaseName = "";// arguments->caseBaseName;
   debug = false;// arguments->debug;
-
   verbose = false;// arguments->verbose;
 
   // make local copies of the QES-Winds nVals for each dimension
@@ -55,18 +50,14 @@ PLUMEGeneralData::PLUMEGeneralData(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   dxy = WGD->dxy;
 }
 
-PLUMEGeneralData::PLUMEGeneralData(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
+PLUMEGeneralData::PLUMEGeneralData(PlumeParameters PP, PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
+  : plumeParameters(PP)
 {
   std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "[QES-Plume]\t Initialization of plume model...\n";
 
   // copy debug information
-  doParticleDataOutput = false;// arguments->doParticleDataOutput;
-  outputSimInfoFile = false;// arguments->doSimInfoFileOutput;
-  outputFolder = "";// arguments->outputFolder;
-  caseBaseName = "";// arguments->caseBaseName;
   debug = false;// arguments->debug;
-
   verbose = false;// arguments->verbose;
 
   // make local copies of the QES-Winds nVals for each dimension
@@ -201,6 +192,26 @@ PLUMEGeneralData::PLUMEGeneralData(PlumeInputData *PID, WINDSGeneralData *WGD, T
    */
 }
 
+PLUMEGeneralData::~PLUMEGeneralData()
+{
+  delete interp;
+  delete wallReflect;
+
+  delete domainBC_x;
+  delete domainBC_y;
+  delete domainBC_z;
+
+  for (auto p : models)
+    delete p.second;
+  
+#ifdef _OPENMP
+  for (auto p : threadRNG)
+    delete p;
+#else
+  delete RNG = nullptr;
+#endif
+}
+
 void PLUMEGeneralData::run(QEStime loopTimeEnd,
                            WINDSGeneralData *WGD,
                            TURBGeneralData *TGD,
@@ -286,7 +297,7 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd,
   // --------------------------------------------------------
 
   updateCounts();
-  
+
   std::cout << "[QES-Plume]\t End of particles advection at Time = " << simTimeCurr
             << " s (iteration = " << simTimeIdx << "). \n";
   std::cout << "\t\t Particles: Released = " << isReleasedCount << " "
