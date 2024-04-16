@@ -43,7 +43,7 @@ void DataSource::attachToFile(QESFileOutput_v2 *out)
 void DataSource::pushToFile(QEStime t)
 {
   // std::cout << "[DATA SOURCE] push to file" << std::endl;
-  if (!m_pushed_to_file) {
+  if (!m_pushed_to_file && m_output_file) {
     m_output_file->pushFieldsToFile(t, m_output_fields);
     m_pushed_to_file = true;
   }
@@ -60,7 +60,9 @@ void DataSource::defineDimension(const std::string &name,
                                  const std::string &units,
                                  std::vector<int> *data)
 {
-  m_output_file->newDimension(name, long_name, units, data);
+  if (m_output_file) {
+    m_output_file->newDimension(name, long_name, units, data);
+  }
 }
 
 void DataSource::defineDimension(const std::string &name,
@@ -68,7 +70,9 @@ void DataSource::defineDimension(const std::string &name,
                                  const std::string &units,
                                  std::vector<float> *data)
 {
-  m_output_file->newDimension(name, long_name, units, data);
+  if (m_output_file) {
+    m_output_file->newDimension(name, long_name, units, data);
+  }
 }
 
 void DataSource::defineDimension(const std::string &name,
@@ -76,12 +80,16 @@ void DataSource::defineDimension(const std::string &name,
                                  const std::string &units,
                                  std::vector<double> *data)
 {
-  m_output_file->newDimension(name, long_name, units, data);
+  if (m_output_file) {
+    m_output_file->newDimension(name, long_name, units, data);
+  }
 }
 
 void DataSource::defineDimensionSet(const std::string &name, const std::vector<std::string> &dims)
 {
-  m_output_file->newDimensionSet(name, dims);
+  if (m_output_file) {
+    m_output_file->newDimensionSet(name, dims);
+  }
 }
 
 void DataSource::defineVariable(const std::string &name,
@@ -90,8 +98,10 @@ void DataSource::defineVariable(const std::string &name,
                                 const std::string &dims,
                                 int *data)
 {
-  m_output_file->newField(name, long_name, units, dims, data);
-  m_output_fields.push_back(name);
+  if (m_output_file) {
+    m_output_file->newField(name, long_name, units, dims, data);
+    m_output_fields.push_back(name);
+  }
 }
 void DataSource::defineVariable(const std::string &name,
                                 const std::string &long_name,
@@ -99,8 +109,10 @@ void DataSource::defineVariable(const std::string &name,
                                 const std::string &dims,
                                 float *data)
 {
-  m_output_file->newField(name, long_name, units, dims, data);
-  m_output_fields.push_back(name);
+  if (m_output_file) {
+    m_output_file->newField(name, long_name, units, dims, data);
+    m_output_fields.push_back(name);
+  }
 }
 
 void DataSource::defineVariable(const std::string &name,
@@ -109,8 +121,10 @@ void DataSource::defineVariable(const std::string &name,
                                 const std::string &dims,
                                 double *data)
 {
-  m_output_file->newField(name, long_name, units, dims, data);
-  m_output_fields.push_back(name);
+  if (m_output_file) {
+    m_output_file->newField(name, long_name, units, dims, data);
+    m_output_fields.push_back(name);
+  }
 }
 
 void DataSource::defineVariable(const std::string &name,
@@ -119,8 +133,10 @@ void DataSource::defineVariable(const std::string &name,
                                 const std::string &dims,
                                 std::vector<int> *data)
 {
-  m_output_file->newField(name, long_name, units, dims, data);
-  m_output_fields.push_back(name);
+  if (m_output_file) {
+    m_output_file->newField(name, long_name, units, dims, data);
+    m_output_fields.push_back(name);
+  }
 }
 
 void DataSource::defineVariable(const std::string &name,
@@ -129,8 +145,10 @@ void DataSource::defineVariable(const std::string &name,
                                 const std::string &dims,
                                 std::vector<float> *data)
 {
-  m_output_file->newField(name, long_name, units, dims, data);
-  m_output_fields.push_back(name);
+  if (m_output_file) {
+    m_output_file->newField(name, long_name, units, dims, data);
+    m_output_fields.push_back(name);
+  }
 }
 
 void DataSource::defineVariable(const std::string &name,
@@ -139,6 +157,8 @@ void DataSource::defineVariable(const std::string &name,
                                 const std::string &dims,
                                 std::vector<double> *data)
 {
-  m_output_file->newField(name, long_name, units, dims, data);
-  m_output_fields.push_back(name);
+  if (m_output_file) {
+    m_output_file->newField(name, long_name, units, dims, data);
+    m_output_fields.push_back(name);
+  }
 }
