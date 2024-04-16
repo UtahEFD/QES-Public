@@ -59,8 +59,7 @@ public:
   // copies the turb grid values for nx, ny, nz, nt, dx, dy, and dz to the QES grid,
   // then calculates the tau gradients which are then used to calculate the flux_div grid values.
   Interp(WINDSGeneralData *);
-  ~Interp()
-  {}
+  virtual ~Interp() = default;
 
   // The Plume domain bounds.
   double xStart, xEnd;

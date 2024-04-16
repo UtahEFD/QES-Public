@@ -55,7 +55,7 @@ class TracerParticle_Model : public ParticleModel
 public:
   explicit TracerParticle_Model(const PI_TracerParticle *);
 
-  ~TracerParticle_Model() = default;
+  ~TracerParticle_Model();
 
   void accept(ParticleModel_Visitor *visitor) override
   {
