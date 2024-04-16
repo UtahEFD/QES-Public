@@ -77,12 +77,8 @@
 #include "WallReflection_TriMesh.h"
 
 #include "Particle.h"
-#include "ParticleContainers.h"
-#include "Source.hpp"
-#include "Source_TracerParticles.h"
-#include "Source_HeavyParticles.h"
+#include "Source.h"
 
-#include "ParticleManager.h"
 #include "ParticleModel.h"
 #include "HeavyParticle_Model.h"
 #include "TracerParticle_Model.h"

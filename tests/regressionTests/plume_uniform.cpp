@@ -16,7 +16,6 @@
 #include "test_WINDSGeneralData.h"
 
 #include "winds/WINDSGeneralData.h"
-#include "plume/Plume.hpp"
 #include "plume/PLUMEGeneralData.h"
 
 #include "plume/TracerParticle_Concentration.h"

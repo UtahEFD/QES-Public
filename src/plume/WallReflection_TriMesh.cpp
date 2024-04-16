@@ -33,8 +33,6 @@
  */
 
 #include "WallReflection_TriMesh.h"
-#include "Plume.hpp"
-
 
 bool WallReflection_TriMesh::reflect(const WINDSGeneralData *WGD,
                                      double &xPos,

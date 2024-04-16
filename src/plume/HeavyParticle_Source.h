@@ -39,36 +39,23 @@
 
 #include "util/ManagedContainer.h"
 
-#include "Source.hpp"
-
+#include "Source.h"
 #include "HeavyParticle.h"
-
-// #include "ParticleManager.h"
-#include "ParticleContainers.h"
-// #include "ParticleFactories.hpp"
-
 #include "PI_ReleaseType.hpp"
 #include "PI_ReleaseType_instantaneous.hpp"
 #include "PI_ReleaseType_continuous.hpp"
 #include "PI_ReleaseType_duration.hpp"
 
-// #include "Interp.h"
-#include "util/ParseInterface.h"
-#include "winds/WINDSGeneralData.h"
-
-class HeavyParticle_Source : public Source_v2
+class HeavyParticle_Source : public Source
 {
 public:
-  HeavyParticle_Source(const int &sidx, const PI_Source *in) : Source_v2(sidx, in) {}
+  HeavyParticle_Source(const int &sidx, const PI_Source *in) : Source(sidx, in) {}
   // destructor
   ~HeavyParticle_Source() override = default;
 
   int getNewParticleNumber(const float &dt,
                            const float &currTime) override;
 
-  void emitParticles(const float &dt,
-                     const float &currTime,
-                     ParticleContainers *particles) override {}
   virtual void emitParticles(const float &dt,
                              const float &currTime,
                              ManagedContainer<HeavyParticle> *particles);

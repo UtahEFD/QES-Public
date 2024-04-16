@@ -44,7 +44,7 @@
 #include "ParticleModel_Visitor.h"
 #include "StatisticsDirector.h"
 #include "Deposition.h"
-#include "Source.hpp"
+#include "Source.h"
 
 class PlumeInputData;
 class PLUMEGeneralData;

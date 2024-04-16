@@ -39,36 +39,23 @@
 
 #include "util/ManagedContainer.h"
 
-#include "Source.hpp"
-
+#include "Source.h"
 #include "TracerParticle.h"
-
-// #include "ParticleManager.h"
-#include "ParticleContainers.h"
-// #include "ParticleFactories.hpp"
-
 #include "PI_ReleaseType.hpp"
 #include "PI_ReleaseType_instantaneous.hpp"
 #include "PI_ReleaseType_continuous.hpp"
 #include "PI_ReleaseType_duration.hpp"
 
-// #include "Interp.h"
-#include "util/ParseInterface.h"
-#include "winds/WINDSGeneralData.h"
-
-class TracerParticle_Source : public Source_v2
+class TracerParticle_Source : public Source
 {
 public:
-  TracerParticle_Source(const int &sidx, const PI_Source *in) : Source_v2(sidx, in) {}
+  TracerParticle_Source(const int &sidx, const PI_Source *in) : Source(sidx, in) {}
   // destructor
   ~TracerParticle_Source() override = default;
 
   int getNewParticleNumber(const float &dt,
                            const float &currTime) override;
 
-  void emitParticles(const float &dt,
-                     const float &currTime,
-                     ParticleContainers *particles) override {}
   virtual void emitParticles(const float &dt,
                              const float &currTime,
                              ManagedContainer<TracerParticle> *particles);

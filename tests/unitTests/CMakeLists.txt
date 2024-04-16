@@ -47,12 +47,6 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
    cuda_add_executable(plume_vector_classes_CPU
      plume_vector_classes_CPU.cpp)
 
-  cuda_add_executable(plume_particle_factory
-          plume_particle_factory.cpp)
-
-  cuda_add_executable(plume_sources
-          plume_sources.cpp)
-
   cuda_add_executable(plume_input
           plume_input.cpp)
 
@@ -66,8 +60,6 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
     turbulence_derivative_CPU
     plume_interpolation_CPU
     plume_vector_classes_CPU
-    plume_particle_factory
-    plume_sources
     plume_input
     plume_particle_buffer
     test_CUDARandomGen)
@@ -87,12 +79,6 @@ ELSE ($CACHE{HAS_CUDA_SUPPORT})
    add_executable(plume_vector_classes_CPU
            plume_vector_classes_CPU.cpp)
 
-   add_executable(plume_particle_factory
-           plume_particle_factory.cpp)
-
-   add_executable(plume_sources
-           plume_sources.cpp)
-
    add_executable(plume_input
            plume_input.cpp)
 
@@ -106,8 +92,6 @@ ELSE ($CACHE{HAS_CUDA_SUPPORT})
       turbulence_derivative_CPU
       plume_interpolation_CPU
       plume_vector_classes_CPU
-      plume_particle_factory
-      plume_sources
       plume_input
       plume_particle_buffer)
       

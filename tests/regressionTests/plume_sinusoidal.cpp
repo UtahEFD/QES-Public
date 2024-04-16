@@ -15,7 +15,6 @@
 
 #include "test_WINDSGeneralData.h"
 
-#include "plume/Plume.hpp"
 #include "plume/PLUMEGeneralData.h"
 
 #include "util/QESNetCDFOutput.h"
