@@ -14,7 +14,7 @@
 // #include "plume/ParticleManager.h"
 
 #include "plume/Particle.h"
-#include "plume/Particle_Tracer.hpp"
+#include "plume/TracerParticle.h"
 
 void scrubParticleList(std::list<Particle *> &particleList)
 {
@@ -33,11 +33,6 @@ void advect(Particle *p)
   p->uMean = 10;
 }
 
-void advect(Particle_Tracer *p)
-{
-  p->uMean = 10;
-}
-
 TEST_CASE("buffer", "[in progress]")
 {
 
@@ -49,7 +44,7 @@ TEST_CASE("buffer", "[in progress]")
     std::list<Particle *> nextSetOfParticles;
     for (int pidx = 0; pidx < 1000; ++pidx) {
 
-      Particle *cPar = new Particle_Tracer();
+      Particle *cPar = new TracerParticle();
       cPar->isActive = true;
       nextSetOfParticles.push_front(cPar);
     }
@@ -103,7 +98,7 @@ TEST_CASE("buffer", "[in progress]")
   */
 
   start = std::chrono::high_resolution_clock::now();
-  ManagedContainer<Particle_Tracer> tracers;
+  ManagedContainer<TracerParticle> tracers;
 
   for (int k = 0; k < 10000; ++k) {
     tracers.sweep(1000);
@@ -133,7 +128,7 @@ TEST_CASE("buffer large", "[in progress]")
 {
   auto start = std::chrono::high_resolution_clock::now();
 
-  ManagedContainer<Particle_Tracer> tracers(10000);
+  ManagedContainer<TracerParticle> tracers(10000);
   for (int k = 0; k < 10000; ++k) {
     tracers.sweep(1000);
 

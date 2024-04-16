@@ -16,9 +16,6 @@ SET( qesPlumeCoreSources
     Deposition.cpp
     StatisticsDirector.cpp
 
-    AdvectParticle.cpp
-    DepositParticle.cpp
-
     PLUMEGeneralData.cpp
 
     PlumeOutput.cpp
@@ -27,9 +24,6 @@ SET( qesPlumeCoreSources
     PI_BoundaryConditions.hpp
     DomainBoundaryConditions.cpp
 
-    ParticleManager.cpp
-    ParticleContainers.cpp
-
     TracerParticle_Model.cpp
     TracerParticle_Source.cpp
     TracerParticle_Concentration.cpp
@@ -37,12 +31,6 @@ SET( qesPlumeCoreSources
     HeavyParticle_Model.cpp
     HeavyParticle_Source.cpp
     HeavyParticle_Concentration.cpp
-
-    Particle.h
-    ParticleFactories.hpp
-    Particle_Tracer.hpp
-    Particle_Heavy.hpp
-    ParticleFactories.cpp
 
     PI_Source.cpp
 
@@ -57,10 +45,6 @@ SET( qesPlumeCoreSources
     PI_SourceGeometry_Line.cpp PI_SourceGeometry_Line.hpp
     PI_SourceGeometry_Point.cpp PI_SourceGeometry_Point.hpp
     PI_SourceGeometry_SphereShell.cpp PI_SourceGeometry_SphereShell.hpp
-
-    Source.cpp
-    Source_TracerParticles.cpp
-    Source_HeavyParticles.cpp
 
     WallReflection.cpp
     WallReflection_StairStep.cpp

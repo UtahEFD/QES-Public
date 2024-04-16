@@ -33,7 +33,6 @@
  */
 
 #include "WallReflection_StairStep.h"
-#include "Plume.hpp"
 
 bool WallReflection_StairStep::reflect(const WINDSGeneralData *WGD,
                                        double &xPos,

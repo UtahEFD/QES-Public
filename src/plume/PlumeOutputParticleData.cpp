@@ -37,7 +37,6 @@
  */
 
 #include "PlumeOutputParticleData.h"
-#include "Plume.hpp"
 
 // note that this sets the output file and the bool for whether to do output, in the netcdf inherited classes
 PlumeOutputParticleData::PlumeOutputParticleData(PlumeInputData *PID, Plume *plume_ptr, std::string output_file)
@@ -89,11 +88,11 @@ PlumeOutputParticleData::PlumeOutputParticleData(PlumeInputData *PID, Plume *plu
   // LA note: because the time counter in this class uses time and not a timeIdx, also need to use the timestep
 
   // time to start output, adjusted if the output duration does not divide evenly by the output frequency
-  if (PID->partOutParams->outputStartTime < 0)
-    outputStartTime = m_plume->getSimTimeStart();
-  else
-    outputStartTime = m_plume->getSimTimeStart() + PID->partOutParams->outputStartTime;
-
+  if (PID->partOutParams->outputStartTime < 0) {
+    // outputStartTime = m_plume->getSimTimeStart();
+  } else {
+    // outputStartTime = m_plume->getSimTimeStart() + PID->partOutParams->outputStartTime;
+  }
   // output frequency
   outputFrequency = PID->partOutParams->outputFrequency;
 
@@ -150,7 +149,7 @@ PlumeOutputParticleData::PlumeOutputParticleData(PlumeInputData *PID, Plume *plu
   // --------------------------------------------------------
 
   // get total number of particle to be released
-  numPar = m_plume->getTotalParsToRelease();
+  // numPar = m_plume->getTotalParsToRelease();
   std::cout << "[PlumeOutputParticleData] total number of particle to be saved in file " << numPar << std::endl;
 
   // initialize all the output containers
@@ -195,7 +194,7 @@ PlumeOutputParticleData::PlumeOutputParticleData(PlumeInputData *PID, Plume *plu
   // setup the netcdf output information storage
   // --------------------------------------------------------
 
-  setStartTime(m_plume->getSimTimeStart());
+  // setStartTime(m_plume->getSimTimeStart());
 
   // set data dimensions, which in this case are cell-centered dimensions
   // particles dimensions
@@ -274,7 +273,7 @@ void PlumeOutputParticleData::save(QEStime timeIn)
   // only output if it is during the next output time but before the end time
   if (timeIn >= nextOutputTime) {
     // copy particle info into the required output storage containers
-    for (auto &parItr : m_plume->particleList) {
+    /*for (auto &parItr : m_plume->particleList) {
 
       int parID = parItr->particleID;
 
@@ -314,7 +313,7 @@ void PlumeOutputParticleData::save(QEStime timeIn)
         isActive[parID] = 1;
       else
         isActive[parID] = 0;
-    }
+    }*/
 
 
     // set output time for correct netcdf output
