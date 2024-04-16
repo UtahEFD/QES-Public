@@ -87,7 +87,8 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
 
   // Create instance of Plume model class
   // auto *plume = new Plume(PID, WGD, TGD);
-  auto *PGD = new PLUMEGeneralData(PID, WGD, TGD);
+  PlumeParameters PP("", false, false);
+  auto *PGD = new PLUMEGeneralData(PP, PID, WGD, TGD);
 
   // create output instance
   std::vector<QESNetCDFOutput *> outputVec;
@@ -129,7 +130,7 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
   float CNorm = (uMean * H * H / Q);
 
   float dt = PID->plumeParams->timeStep;
-  float tAvg = test_conc->averagingPeriod;
+  float tAvg = test_conc->ongoingAveragingTime;
 
   // normalization of particle count #particle -> time-averaged # particle/m3
   float CC = dt / tAvg / test_conc->volume;

@@ -128,6 +128,10 @@ void QESArgs::processArguments(int argc, char *argv[])
     particleOutput = false;
   }
 
+  plumeParameters.outputFileBasename = outputFileBasename;
+  plumeParameters.plumeOutput = plumeOutput;
+  plumeParameters.particleOutput = particleOutput;
+
   std::cout << "Summary of QES options: " << std::endl;
   std::cout << "----------------------------" << std::endl;
   // parameter files:
