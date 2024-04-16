@@ -208,7 +208,7 @@ PLUMEGeneralData::~PLUMEGeneralData()
   for (auto p : threadRNG)
     delete p;
 #else
-  delete RNG = nullptr;
+  delete RNG;
 #endif
 }
 
