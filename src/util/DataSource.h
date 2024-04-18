@@ -59,7 +59,7 @@ public:
 
 protected:
   virtual void setOutputFields() = 0;
-  virtual void attachToFile(QESFileOutput_v2 *) = 0;
+  virtual void attachToFile(QESFileOutput_Interface *) = 0;
   virtual void pushToFile(QEStime) = 0;
   virtual void notifyOfNewTimeEntry() = 0;
 };
@@ -101,7 +101,7 @@ public:
 
 protected:
   void pushToFile(QEStime t) override;
-  void attachToFile(QESFileOutput_v2 *out) override;
+  void attachToFile(QESFileOutput_Interface *out) override;
   void notifyOfNewTimeEntry() override;
 
   void defineDimension(const std::string &, const std::string &, const std::string &, std::vector<int> *) override;
@@ -121,10 +121,11 @@ protected:
   void defineVariable(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<double> *) override;
 
 private:
-  QESFileOutput_v2 *m_output_file{};
+  QESFileOutput_Interface *m_output_file{};
   std::vector<std::string> m_output_fields{};
 
   bool m_pushed_to_file = false;
 
   friend QESFileOutput_v2;
+  friend QESNullOutput;
 };

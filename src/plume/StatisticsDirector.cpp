@@ -37,13 +37,13 @@
 #include "PlumeInputData.hpp"
 #include "PLUMEGeneralData.h"
 
-StatisticsDirector::StatisticsDirector(const PlumeInputData *PID, PLUMEGeneralData *PGD, QESFileOutput_v2 *outfile)
+StatisticsDirector::StatisticsDirector(const PlumeInputData *PID, PLUMEGeneralData *PGD, QESFileOutput_Interface *outfile)
 {
   m_startCollectionTime = PGD->getSimTimeStart() + PID->colParams->averagingStartTime;
   m_collectionPeriod = PID->colParams->averagingPeriod;
   m_nextOutputTime = m_startCollectionTime + m_collectionPeriod;
   m_statsFile = outfile;
-  if (m_statsFile) { m_statsFile->setStartTime(PGD->getSimTimeStart()); }
+  m_statsFile->setStartTime(PGD->getSimTimeStart());
 }
 StatisticsDirector::~StatisticsDirector()
 {
@@ -54,7 +54,7 @@ void StatisticsDirector::attach(const std::string &key, DataSource *s)
 {
   if (elements.find(key) == elements.end()) {
     elements.insert({ key, s });
-    if (m_statsFile) { m_statsFile->attachDataSource(s); }
+    m_statsFile->attachDataSource(s);
   } else {
     std::cerr << "[!!!ERROR!!!]\tstat with key = " << key << " already exists" << std::endl;
     exit(1);
@@ -72,7 +72,7 @@ void StatisticsDirector::compute(QEStime &timeIn, const float &timeStep)
     if (timeIn >= m_nextOutputTime) {
       // compute the stats
 
-      if (m_statsFile) { m_statsFile->newTimeEntry(timeIn); }
+      m_statsFile->newTimeEntry(timeIn);
       for (const auto &e : elements) {
         e.second->prepareDataAndPushToFile(timeIn);
       }
