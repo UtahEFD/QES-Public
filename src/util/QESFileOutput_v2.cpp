@@ -56,3 +56,9 @@ void QESFileOutput_v2::save(QEStime &timeIn)
     ds->pushToFile(timeIn);
   }
 }
+
+void QESNullOutput::attachDataSource(DataSource *dataSource)
+{
+  // std::cout << "[FILE] call attach" << std::endl;
+  dataSource->attachToFile(this);
+}

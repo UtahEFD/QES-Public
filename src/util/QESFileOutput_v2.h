@@ -41,11 +41,11 @@
 
 class DataSource;
 
-class QESFileOutput_v2Interface
+class QESFileOutput_Interface
 {
 public:
-  explicit QESFileOutput_v2Interface() = default;
-  virtual ~QESFileOutput_v2Interface() = default;
+  explicit QESFileOutput_Interface() = default;
+  virtual ~QESFileOutput_Interface() = default;
 
   virtual void attachDataSource(DataSource *) = 0;
   /**
@@ -81,21 +81,64 @@ protected:
   virtual void newField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<int> *) = 0;
   virtual void newField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<float> *) = 0;
   virtual void newField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<double> *) = 0;
+
+  friend DataSource;
 };
 
-class QESFileOutput_v2 : public QESFileOutput_v2Interface
+class QESFileOutput_v2 : public QESFileOutput_Interface
 {
 public:
   explicit QESFileOutput_v2() = default;
   virtual ~QESFileOutput_v2() = default;
 
   void attachDataSource(DataSource *) override;
-  void notifyDataSourcesOfNewTimeEntry() override;
+
   void save(QEStime &) override;
   void save(float t) override {}
 
+  void notifyDataSourcesOfNewTimeEntry() override;
+
 protected:
   std::list<DataSource *> m_list_data_source;
+};
 
-  friend DataSource;
+class QESNullOutput : public QESFileOutput_Interface
+{
+public:
+  explicit QESNullOutput(const std::string &s)
+  {
+    std::cerr << "[!!!WARNING!!!]\toutput disabled for file: " << s << std::endl;
+  }
+  virtual ~QESNullOutput() = default;
+
+  void attachDataSource(DataSource *s) override;
+
+  void setStartTime(const QEStime &t) override {}
+  void newTimeEntry(const QEStime &t) override {}
+
+  void notifyDataSourcesOfNewTimeEntry() override {}
+  void save(QEStime &t) override {}
+  void save(float t) override {}
+
+  virtual void pushAllFieldsToFile(QEStime &t) override {}
+  virtual void pushFieldsToFile(QEStime &t, const std::vector<std::string> &s) override {}
+
+  virtual void newDimension(const std::string &s1, const std::string &s2, const std::string &s3, std::vector<int> *d) override {}
+  virtual void newDimension(const std::string &s1, const std::string &s2, const std::string &s3, std::vector<float> *d) override {}
+  virtual void newDimension(const std::string &s1, const std::string &s2, const std::string &s3, std::vector<double> *d) override {}
+
+  virtual void newDimensionSet(const std::string &s, const std::vector<std::string> &d) override {}
+
+  // new attribute scalar based on type of data
+  virtual void newField(const std::string &s1, const std::string &s2, const std::string &s3, const std::string &s4, int *d) override {}
+  virtual void newField(const std::string &s1, const std::string &s2, const std::string &s3, const std::string &s4, float *d) override {}
+  virtual void newField(const std::string &s1, const std::string &s2, const std::string &s3, const std::string &s4, double *d) override {}
+
+  // new attribute vector based on type of data
+  virtual void newField(const std::string &s1, const std::string &s2, const std::string &s3, const std::string &s4, std::vector<int> *d) override {}
+  virtual void newField(const std::string &s1, const std::string &s2, const std::string &s3, const std::string &s4, std::vector<float> *d) override {}
+  virtual void newField(const std::string &s1, const std::string &s2, const std::string &s3, const std::string &s4, std::vector<double> *d) override {}
+
+protected:
+  explicit QESNullOutput() = default;
 };

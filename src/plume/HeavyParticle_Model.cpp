@@ -71,10 +71,13 @@ void HeavyParticle_Model::initialize(const PlumeInputData *PID,
 
   // stats = new TracerParticle_Statistics(PID, PGD, this);
   // concentration = new TracerParticle_Concentration(PID, pm);
-  QESFileOutput_v2 *outfile = nullptr;
+  QESFileOutput_Interface *outfile = nullptr;
   if (PGD->plumeParameters.plumeOutput) {
     outfile = new QESNetCDFOutput_v2(PGD->plumeParameters.outputFileBasename + "_" + tag + "_plumeOut.nc");
+  } else {
+    outfile = new QESNullOutput(PGD->plumeParameters.outputFileBasename + "_" + tag + "_plumeOut.nc");
   }
+
   stats = new StatisticsDirector(PID, PGD, outfile);
   if (PID->colParams) {
     stats->attach("concentration", new HeavyParticle_Concentration(PID->colParams, this));

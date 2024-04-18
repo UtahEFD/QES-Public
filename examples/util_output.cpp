@@ -162,7 +162,7 @@ protected:
 int main()
 {
   // new file for output (set as NetCDF file)
-  QESFileOutput_v2 *testFile = new QESNetCDFOutput_v2("test.nc");
+  QESFileOutput_Interface *testFile = new QESNetCDFOutput_v2("test.nc");
 
   // new data source and attach to output file
   DataSource *concentration = new Concentration();
