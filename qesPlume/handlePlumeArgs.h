@@ -52,9 +52,7 @@ class PlumeArgs : public ArgumentParsing
 public:
   PlumeArgs();
 
-  ~PlumeArgs()
-  {
-  }
+  ~PlumeArgs() = default;
 
   /*
    * Takes in the commandline arguments and places
@@ -68,24 +66,21 @@ public:
   // bool debug = false;
   bool verbose = false;
 
-  std::string qesPlumeParamFile = "";
+  std::string qesPlumeParamFile;
 
-  std::string netCDFFileBasename = ""; /**< Base name for all NetCDF output files */
+  std::string outputFileBasename; /**< Base name for all output files */
 
-  std::string projectQESFiles = "";
-  std::string inputWINDSFile = "";
-  std::string inputTURBFile = "";
+  std::string projectQESFiles;
+  std::string inputWINDSFile;
+  std::string inputTURBFile;
 
   PlumeParameters plumeParameters;
 
   // going to assume concentration is always output. So these next options are like choices for additional debug output
-  bool doEulDataOutput;
-  bool doParticleDataOutput;
-  bool doSimInfoFileOutput;
+  bool plumeOutput, particleOutput;
 
   // output file variables created from the outputFolder and caseBaseName
-  std::string outputEulerianFile;
-  std::string outputFile;
+  std::string outputPlumeFile;
   std::string outputParticleDataFile;
 
 private:

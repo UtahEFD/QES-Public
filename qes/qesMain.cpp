@@ -30,9 +30,6 @@
 
 #include <iostream>
 
-#include "util/ParseException.h"
-#include "util/ParseInterface.h"
-
 #include "util/QESout.h"
 
 #include "util/QESNetCDFOutput.h"
@@ -102,7 +99,6 @@ int main(int argc, char *argv[])
                   + arguments.qesWindsParamFile);
   }
 
-
   if (arguments.terrainOut) {
     if (WID->simParams->DTE_heightField) {
       std::cout << "Creating terrain OBJ....\n";
@@ -141,7 +137,6 @@ int main(int argc, char *argv[])
 
   if (arguments.compPlume) {
     // Create instance of Plume model class
-
     PGD = new PLUMEGeneralData(arguments.plumeParameters, PID, WGD, TGD);
 
     // always supposed to output lagrToEulOutput data
@@ -151,12 +146,9 @@ int main(int argc, char *argv[])
     //}
   }
 
-  // //////////////////////////////////////////
-  //
-  // Run the QES-Winds Solver
-  //
-  // //////////////////////////////////////////
+  // Set the QES-Winds Solver
   Solver *solver = setSolver(arguments.solveType, WID, WGD);
+  if (!solver) { QESout::error("Invalid solver"); }
 
   for (int index = 0; index < WGD->totalTimeIncrements; index++) {
     // print time progress (time stamp and percentage)
@@ -183,8 +175,8 @@ int main(int argc, char *argv[])
     // Output the various files requested from the simulation run
     // (netcdf wind velocity, icell values, etc...
     // /////////////////////////////
-    for (auto outItr = outputVec.begin(); outItr != outputVec.end(); ++outItr) {
-      (*outItr)->save(WGD->timestamp[index]);
+    for (auto &out : outputVec) {
+      out->save(WGD->timestamp[index]);
     }
 
     // Run plume advection model
@@ -193,7 +185,7 @@ int main(int argc, char *argv[])
       if (WGD->totalTimeIncrements == 1) {
         endtime = WGD->timestamp[index] + PID->plumeParams->simDur;
       } else if (index == WGD->totalTimeIncrements - 1) {
-        endtime = WGD->timestamp[index] + (WGD->timestamp[index] - WGD->timestamp[index - 1]);
+        endtime = WGD->timestamp[index] + (float)(WGD->timestamp[index] - WGD->timestamp[index - 1]);
       } else {
         endtime = WGD->timestamp[index + 1];
       }
@@ -208,14 +200,14 @@ int main(int argc, char *argv[])
   delete WID;
   delete WGD;
   delete TGD;
+  for (auto p : outputVec) {
+    delete p;
+  }
 
   delete PID;
   delete PGD;
-  for (auto f : outputVec) {
-    delete f;
-  }
-  for (auto f : outputPlume) {
-    delete f;
+  for (auto p : outputPlume) {
+    delete p;
   }
 
   exit(EXIT_SUCCESS);
@@ -240,7 +232,7 @@ Solver *setSolver(const int solveType, WINDSInputData *WID, WINDSGeneralData *WG
     solver = new SharedMemory(WID, WGD);
 #endif
   } else {
-    QESout::error("Invalid solve type");
+    QESout::error("Invalid solver type");
   }
   return solver;
 }

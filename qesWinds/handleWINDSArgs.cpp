@@ -117,17 +117,8 @@ void WINDSArgs::processArguments(int argc, char *argv[])
       std::cout << "[WARNING]\t the wind fields are not being calculated" << std::endl;
   }
 
-  if (compTurb) {
-    std::cout << "Turbulence model:\t ON" << std::endl;
-  } else {
-    std::cout << "Turbulence model:\t OFF" << std::endl;
-  }
-
-  if (verbose) {
-    std::cout << "Verbose:\t\t ON" << std::endl;
-  } else {
-    std::cout << "Verbose:\t\t OFF" << std::endl;
-  }
+  std::cout << "Turbulence model:\t " << (compTurb ? "ON" : "OFF") << std::endl;
+  std::cout << "Verbose:\t\t " << (verbose ? "ON" : "OFF") << std::endl;
 
   std::cout << "----------------------------" << std::endl;
 
