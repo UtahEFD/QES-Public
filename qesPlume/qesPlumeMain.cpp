@@ -43,7 +43,7 @@
 #include "util/calcTime.h"
 
 
-#include "handlePlumeArgs.hpp"
+#include "handlePlumeArgs.h"
 #include "plume/PlumeInputData.hpp"
 #include "util/NetCDFInput.h"
 #include "util/QESout.h"
@@ -78,39 +78,40 @@ int main(int argc, char **argv)
   WINDSGeneralData *WGD = new WINDSGeneralData(arguments.inputWINDSFile);
   // Create instance of QES-Turb General data class
   TURBGeneralData *TGD = new TURBGeneralData(arguments.inputTURBFile, WGD);
-
-  // Create instance of Plume model class
+  // Create instance of QES-Plume General data class
   PLUMEGeneralData *PGD = new PLUMEGeneralData(arguments.plumeParameters, PID, WGD, TGD);
 
   // create output instance
   std::vector<QESNetCDFOutput *> outputVec;
   // always supposed to output lagrToEulOutput data
-  outputVec.push_back(new PlumeOutput(PID, PGD, arguments.outputFile));
-  if (arguments.doParticleDataOutput) {
+  outputVec.push_back(new PlumeOutput(PID, PGD, arguments.outputPlumeFile));
+  if (arguments.particleOutput) {
     // outputVec.push_back(new PlumeOutputParticleData(PID, PGD, arguments.outputParticleDataFile));
   }
 
   for (int index = 0; index < WGD->totalTimeIncrements; index++) {
-    // load data at
+    // Load data at current time index
     TGD->loadNetCDFData(index);
     WGD->loadNetCDFData(index);
 
-    // Run plume advection model
-    QEStime endtime;
+    // Determine the end time for advection
+    QEStime endTime;
     if (WGD->totalTimeIncrements == 1) {
-      endtime = WGD->timestamp[index] + PID->plumeParams->simDur;
+      endTime = WGD->timestamp[index] + PID->plumeParams->simDur;
     } else if (index == WGD->totalTimeIncrements - 1) {
-      endtime = WGD->timestamp[index] + (WGD->timestamp[index] - WGD->timestamp[index - 1]);
+      endTime = WGD->timestamp[index] + (float)(WGD->timestamp[index] - WGD->timestamp[index - 1]);
     } else {
-      endtime = WGD->timestamp[index + 1];
+      endTime = WGD->timestamp[index + 1];
     }
-    PGD->run(endtime, WGD, TGD, outputVec);
 
-    // compute run time information and print the elapsed execution time
+    // Run plume advection model
+    PGD->run(endTime, WGD, TGD, outputVec);
+
     std::cout << "[QES-Plume] \t Finished." << std::endl;
   }
 
   PGD->showCurrentStatus();
+
   std::cout << "##############################################################" << std::endl;
 
   delete WGD;

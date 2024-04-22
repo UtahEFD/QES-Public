@@ -30,7 +30,7 @@
 
 /** @file handlePlumeArgs.cpp */
 
-#include "handlePlumeArgs.hpp"
+#include "handlePlumeArgs.h"
 
 PlumeArgs::PlumeArgs()
   : verbose(false),
@@ -39,8 +39,7 @@ PlumeArgs::PlumeArgs()
 {
   reg("help", "help/usage information", ArgumentParsing::NONE, '?');
   reg("verbose", "turn on verbose output", ArgumentParsing::NONE, 'v');
-  // LA future work: this one should probably be replaced by cmake arguments at compiler time
-  // reg("debug", "should command line output include debug info", ArgumentParsing::NONE, 'd');
+
 
   reg("qesPlumeParamFile", "specifies input xml settings file", ArgumentParsing::STRING, 'q');
   // single name for all input/output files
@@ -48,11 +47,9 @@ PlumeArgs::PlumeArgs()
   // individual names for input/output files
   reg("inputWINDSFile", "specifies input qes-winds file", ArgumentParsing::STRING, 'w');
   reg("inputTURBFile", "specifies input qes-turb file", ArgumentParsing::STRING, 't');
-  reg("outbasename", "Specifies the basename for netcdf files", ArgumentParsing::STRING, 'o');
+  reg("outputbasename", "Specifies the basename for netcdf files", ArgumentParsing::STRING, 'o');
   // going to assume concentration is always output. So these next options are like choices for additional debug output
-  reg("doEulDataOutput", "should debug Eulerian data be output", ArgumentParsing::NONE, 'e');
-  reg("doParticleDataOutput", "should debug Lagrangian data be output", ArgumentParsing::NONE, 'l');
-  reg("doSimInfoFileOutput", "should debug simInfoFile be output", ArgumentParsing::NONE, 's');
+  reg("plumeOutput", "should debug Lagrangian data be output", ArgumentParsing::NONE, 'l');
 }
 
 void PlumeArgs::processArguments(int argc, char *argv[])
@@ -73,15 +70,12 @@ void PlumeArgs::processArguments(int argc, char *argv[])
   if (verbose) {
     QESout::setVerbose();
   }
-  doEulDataOutput = isSet("doEulDataOutput");
-  doParticleDataOutput = isSet("doParticleDataOutput");
-  doSimInfoFileOutput = isSet("doSimInfoFileOutput");
+  plumeOutput = isSet("plumeOutput");
 
   if (isSet("projectQESFiles", projectQESFiles)) {
     inputWINDSFile = projectQESFiles + "_windsWk.nc";
     inputTURBFile = projectQESFiles + "_turbOut.nc";
-    outputFile = projectQESFiles + "_plumeOut.nc";
-    outputEulerianFile = projectQESFiles + "_eulerianData.nc";
+    outputPlumeFile = projectQESFiles + "_plumeOut.nc";
     outputParticleDataFile = projectQESFiles + "_particleInfo.nc";
   } else {
     if (!isSet("inputWINDSFile", inputWINDSFile)) {
@@ -91,41 +85,36 @@ void PlumeArgs::processArguments(int argc, char *argv[])
       QESout::error("inputTURBFile not specified!");
     }
 
-    isSet("outbasename", netCDFFileBasename);
-    if (!netCDFFileBasename.empty()) {
+    isSet("outputbasename", outputFileBasename);
+    if (!outputFileBasename.empty()) {
       // setup specific output file variables for netcdf output
-      outputEulerianFile = netCDFFileBasename + "_eulerianData.nc";
-      outputFile = netCDFFileBasename + "_plumeOut.nc";
-      outputParticleDataFile = netCDFFileBasename + "_particleInfo.nc";
+      outputPlumeFile = outputFileBasename + "_plumeOut.nc";
+      outputParticleDataFile = outputFileBasename + "_particleInfo.nc";
     } else {
       QESout::error("No output basename set -> output turned off ");
     }
   }
 
-  plumeParameters.outputFileBasename = netCDFFileBasename;
-  plumeParameters.plumeOutput = true;
-  plumeParameters.particleOutput = doParticleDataOutput;
+  plumeParameters.outputFileBasename = outputFileBasename;
+  plumeParameters.plumeOutput = plumeOutput;
+  plumeParameters.particleOutput = particleOutput;
 
   std::cout << "Summary of QES PLUME options: " << std::endl;
   std::cout << "----------------------------" << std::endl;
   std::cout << "Plume model in stand alone mode" << std::endl;
-  if (verbose) {
-    std::cout << "Verbose:\t\t ON" << std::endl;
-  } else {
-    std::cout << "Verbose:\t\t OFF" << std::endl;
-  }
+  std::cout << "Verbose:\t\t " << (verbose ? "ON" : "OFF") << std::endl;
   std::cout << "----------------------------" << std::endl;
   std::cout << "qesPlumeParamFile set to " << qesPlumeParamFile << std::endl;
   std::cout << "----------------------------" << std::endl;
-  std::cout << "[INPUT]\t Winds NetCDF input file set:\t\t " << inputWINDSFile << std::endl;
-  std::cout << "[INPUT]\t Turbulence NetCDF input file set:\t " << inputTURBFile << std::endl;
+  std::cout << "Winds input file set:        " << inputWINDSFile << std::endl;
+  std::cout << "Turbulence input file set:   " << inputTURBFile << std::endl;
   std::cout << "----------------------------" << std::endl;
-  std::cout << "[PLUME]\t Plume NetCDF output file set:\t\t " << outputFile << std::endl;
-  if (doEulDataOutput) {
-    std::cout << "[PLUME]\t Eulerian NetCDF output file set:\t " << outputEulerianFile << std::endl;
+  if (!outputFileBasename.empty()) {
+    std::cout << "----------------------------" << std::endl;
+    std::cout << "Output file basename:        " << outputFileBasename << std::endl;
+    std::cout << "Plume output:                " << (plumeOutput ? "ON" : "OFF") << std::endl;
+    std::cout << "Plume particle output:       " << (particleOutput ? "ON" : "OFF") << std::endl;
   }
-  if (doEulDataOutput) {
-    std::cout << "[PLUME]\t Particle NetCDF output file set:\t " << outputParticleDataFile << std::endl;
-  }
+
   std::cout << "###################################################################" << std::endl;
 }

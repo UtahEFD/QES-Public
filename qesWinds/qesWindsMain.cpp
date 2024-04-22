@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
     solver = new SharedMemory(WID, WGD);
 #endif
   } else {
-    QESout::error("Invalid solve type");
+    QESout::error("Invalid solver type");
   }
 
   int numIterations = 1;
