@@ -404,12 +404,11 @@ add_subdirectory(src/winds)
 add_subdirectory(src/plume)
 
 add_subdirectory(scratch)
+add_subdirectory(examples)
 
 add_subdirectory(qesWinds)
 add_subdirectory(qesPlume)
 add_subdirectory(qes)
-
-add_subdirectory(examples)
 
 # ----------------------------------------------------------
 #  Testing Suite

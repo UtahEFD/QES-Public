@@ -1,27 +1,20 @@
-include_directories(${CMAKE_SOURCE_DIR}/src)
-include_directories(.)
-
-add_executable(util_output util_output.cpp)
+include_directories(${PROJECT_SOURCE_DIR}/src)
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
-
-   #cuda_add_executable(turbulence_derivative_CPU
-   #    turbulence_derivative_CPU.cpp)
-
+  cuda_add_executable(util_output util_output.cpp)
+  
   set(examples
           util_output)
 
 ELSE ($CACHE{HAS_CUDA_SUPPORT})
-
-   #add_executable(turbulence_derivative_CPU
-   #        turbulence_derivative_CPU.cpp)
+  add_executable(util_output util_output.cpp)
 
   set(examples
           util_output)
       
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
-foreach (examples ${example})
+foreach (example ${examples})
   
   target_link_libraries(${example} qesplumecore)
   target_link_libraries(${example} qeswindscore)
@@ -36,6 +29,4 @@ foreach (examples ${example})
 
   link_external_libraries(${example})
     
-endforeach(examples)
-
-#add_test(unitTest unitTest)
+endforeach(example)
