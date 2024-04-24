@@ -74,6 +74,7 @@ public:
     pBox.resize(nBoxesX * nBoxesY * nBoxesZ, 0);
     conc.resize(nBoxesX * nBoxesY * nBoxesZ, 0.0);
   }
+  ~Concentration() = default;
 
   void prepareDataAndPushToFile(QEStime t) override
   {
@@ -131,6 +132,8 @@ public:
     // initialization of the container
     sp.resize(nBoxesX * nBoxesY, 0.0);
   }
+
+  ~Spectra() = default;
 
   void prepareDataAndPushToFile(QEStime t) override
   {

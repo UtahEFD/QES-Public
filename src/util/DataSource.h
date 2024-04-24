@@ -49,7 +49,7 @@ class DataSourceInterface
    */
 public:
   DataSourceInterface() = default;
-  ~DataSourceInterface() = default;
+  virtual ~DataSourceInterface() = default;
 
   virtual void prepareDataAndPushToFile(QEStime) = 0;
 
@@ -62,18 +62,7 @@ protected:
   virtual void attachToFile(QESFileOutput_Interface *) = 0;
   virtual void pushToFile(QEStime) = 0;
   virtual void notifyOfNewTimeEntry() = 0;
-};
 
-class FileInterface
-{
-  /*
-   * This class is the subject/component interface
-   */
-public:
-  FileInterface() = default;
-  ~FileInterface() = default;
-
-protected:
   virtual void defineDimension(const std::string &, const std::string &, const std::string &, std::vector<int> *) = 0;
   virtual void defineDimension(const std::string &, const std::string &, const std::string &, std::vector<float> *) = 0;
   virtual void defineDimension(const std::string &, const std::string &, const std::string &, std::vector<double> *) = 0;
@@ -91,13 +80,11 @@ protected:
   virtual void defineVariable(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<double> *) = 0;
 };
 
-
 class DataSource : public DataSourceInterface
-  , public FileInterface
 {
 public:
   DataSource() = default;
-  ~DataSource() = default;
+  virtual ~DataSource() = default;
 
 protected:
   void pushToFile(QEStime t) override;
