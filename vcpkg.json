@@ -1,0 +1,8 @@
+{
+  "dependencies": [
+      "boost-program-options",
+      "netcdf-cxx4",
+      "gdal",
+      "nlohmann-json"
+  ]
+}
