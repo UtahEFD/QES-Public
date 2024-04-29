@@ -132,18 +132,9 @@ int main(int argc, char *argv[])
   }
 
   PLUMEGeneralData *PGD = nullptr;
-  // create output instance
-  // std::vector<QESNetCDFOutput *> outputPlume;
-
   if (arguments.compPlume) {
     // Create instance of Plume model class
     PGD = new PLUMEGeneralData(arguments.plumeParameters, PID, WGD, TGD);
-
-    // always supposed to output lagrToEulOutput data
-    // outputPlume.push_back(new PlumeOutput(PID, PGD, arguments.outputFileBasename + "_plumeOut.nc"));
-    // if (arguments.doParticleDataOutput) {
-    //  outputPlume.push_back(new PlumeOutputParticleData(PID, plume, arguments.outputParticleDataFile));
-    //}
   }
 
   // Set the QES-Winds Solver

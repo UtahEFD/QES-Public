@@ -78,15 +78,7 @@ int main(int argc, char **argv)
   TURBGeneralData *TGD = new TURBGeneralData(arguments.inputTURBFile, WGD);
   // Create instance of QES-Plume General data class
   PLUMEGeneralData *PGD = new PLUMEGeneralData(arguments.plumeParameters, PID, WGD, TGD);
-
-  // create output instance
-  // std::vector<QESNetCDFOutput *> outputVec;
-  // always supposed to output lagrToEulOutput data
-  // outputVec.push_back(new PlumeOutput(PID, PGD, arguments.outputPlumeFile));
-  // if (arguments.particleOutput) {
-  // outputVec.push_back(new PlumeOutputParticleData(PID, PGD, arguments.outputParticleDataFile));
-  //}
-
+  
   for (int index = 0; index < WGD->totalTimeIncrements; index++) {
     // Load data at current time index
     TGD->loadNetCDFData(index);
