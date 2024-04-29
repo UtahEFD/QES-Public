@@ -34,13 +34,47 @@
 #pragma once
 
 #include "util/QEStime.h"
-#include "PLUMEGeneralData.h"
+
+#include "PI_ParticleOutputParameters.hpp"
+#include "ParticleModel_Visitor.h"
+
+#include "TracerParticle_Model.h"
+#include "TracerParticle_Source.h"
+
+#include "HeavyParticle_Model.h"
+#include "HeavyParticle_Source.h"
+
+class PLUMEGeneralData;
 
 class ParticleOutput
 {
-  ParticleOutput() = default;
+public:
+  ParticleOutput(PI_ParticleOutputParameters *, PLUMEGeneralData *);
   ~ParticleOutput() = default;
 
-  void save(QEStime &t)
-  {}
+  void save(QEStime &, PLUMEGeneralData *);
+
+private:
+  // time to start output
+  QEStime outputStartTime;
+  // output frequency
+  float outputFrequency;
+  // next output time value that is updated each time save is called and there is output
+  QEStime nextOutputTime;
+};
+
+class ExportParticleData : public ParticleModel_Visitor
+{
+public:
+  ExportParticleData(QEStime &t, PLUMEGeneralData *);
+
+  ~ExportParticleData() = default;
+
+  void visit(TracerParticle_Model *element) override;
+  void visit(HeavyParticle_Model *element) override;
+
+private:
+  std::string fname_prefix, fname_suffix;
+  QEStime time;
+  std::string file_prologue;
 };

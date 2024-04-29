@@ -55,8 +55,7 @@
 #include "RandomSingleton.h"
 
 #include "util/QESNetCDFOutput.h"
-#include "PlumeOutput.h"
-#include "PlumeOutputParticleData.h"
+#include "ParticleOutput.h"
 
 #include "PlumeInputData.hpp"
 
@@ -97,8 +96,6 @@ public:
   bool plumeOutput = true;
   bool particleOutput = false;
 };
-
-class PlumeOutput;
 
 class PLUMEGeneralData
 {
@@ -166,6 +163,8 @@ public:
   Interp *interp = nullptr;
   // wall reflection method
   WallReflection *wallReflect = nullptr;
+
+  ParticleOutput *particleOutput = nullptr;
 
 private:
   // Deposition *deposition = nullptr;

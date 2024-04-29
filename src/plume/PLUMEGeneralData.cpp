@@ -196,6 +196,11 @@ PLUMEGeneralData::PLUMEGeneralData(const PlumeParameters &PP,
    * std::vector<TracerParticle_Source *> new_sources;
    * models[tag]->accept(new AddSource(new_sources));
    */
+
+  // output for particle data (using visitor)
+  if (plumeParameters.particleOutput) {
+    particleOutput = new ParticleOutput(PID->partOutParams, this);
+  }
 }
 
 PLUMEGeneralData::~PLUMEGeneralData()
@@ -281,14 +286,15 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd,
     simTimeCurr += timeRemainder;
     simTime = simTimeCurr - simTimeStart;
 
+    // process particle information of output
     for (const auto &pm : models) {
       pm.second->process(simTimeCurr, timeRemainder, WGD, TGD, this);
     }
 
-    // netcdf output for a given simulation timestep
-    // for (auto &id_out : outputVec) {
-    //  id_out->save(simTimeCurr);
-    //}
+    // output for particle data (using visitor)
+    if (particleOutput) {
+      particleOutput->save(simTimeCurr, this);
+    }
 
     // output the time, isRogueCount, and isNotActiveCount information for all
     // simulations, but only when the updateFrequency allows
@@ -403,7 +409,6 @@ double PLUMEGeneralData::calcCourantTimestep(const double &d,
 
   return std::min(timeRemainder, CN * min_ds / max_u);
 }
-
 
 void PLUMEGeneralData::GLE_solver(Particle *p, double &par_dt, TURBGeneralData *TGD)
 {
