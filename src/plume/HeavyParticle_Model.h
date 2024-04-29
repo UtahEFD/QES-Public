@@ -58,7 +58,7 @@ public:
 
   void accept(ParticleModel_Visitor *visitor) override
   {
-    visitor->visitHeavyParticle_Model(this);
+    visitor->visit(this);
   }
   void initialize(const PlumeInputData *PID,
                   WINDSGeneralData *WGD,
