@@ -90,7 +90,7 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
   auto *PGD = new PLUMEGeneralData(PP, PID, WGD, TGD);
 
   // create output instance
-  std::vector<QESNetCDFOutput *> outputVec;
+  // std::vector<QESNetCDFOutput *> outputVec;
   std::string outFile = QES_DIR;
   outFile.append("/scratch/UniformFlow_xDir_ContRelease_plumeOut.nc");
 
@@ -103,7 +103,7 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
   // Run plume advection model
   QEStime endtime = WGD->timestamp[0] + PID->plumeParams->simDur;
   // plume->run(endtime, WGD, TGD, outputVec);
-  PGD->run(endtime, WGD, TGD, outputVec);
+  PGD->run(endtime, WGD, TGD);
 
   // compute run time information and print the elapsed execution time
   std::cout << "[QES-Plume] \t Finished." << std::endl;

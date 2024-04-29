@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
 
   PLUMEGeneralData *PGD = nullptr;
   // create output instance
-  std::vector<QESNetCDFOutput *> outputPlume;
+  // std::vector<QESNetCDFOutput *> outputPlume;
 
   if (arguments.compPlume) {
     // Create instance of Plume model class
@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
     // Run plume advection model
     if (PGD != nullptr) {
       QEStime endTime = WGD->nextTimeInstance(index, PID->plumeParams->simDur);
-      PGD->run(endTime, WGD, TGD, outputPlume);
+      PGD->run(endTime, WGD, TGD);
     }
   }
 
@@ -199,9 +199,6 @@ int main(int argc, char *argv[])
 
   delete PID;
   delete PGD;
-  for (auto p : outputPlume) {
-    delete p;
-  }
 
   exit(EXIT_SUCCESS);
 }

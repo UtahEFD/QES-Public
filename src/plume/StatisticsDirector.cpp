@@ -45,15 +45,19 @@ StatisticsDirector::StatisticsDirector(const PlumeInputData *PID, PLUMEGeneralDa
   m_statsFile = outfile;
   m_statsFile->setStartTime(PGD->getSimTimeStart());
 }
+
 StatisticsDirector::~StatisticsDirector()
 {
+  for (const auto &ds : dataSources) {
+    delete ds.second;
+  }
   delete m_statsFile;
 }
 
 void StatisticsDirector::attach(const std::string &key, DataSource *s)
 {
-  if (elements.find(key) == elements.end()) {
-    elements.insert({ key, s });
+  if (dataSources.find(key) == dataSources.end()) {
+    dataSources.insert({ key, s });
     m_statsFile->attachDataSource(s);
   } else {
     std::cerr << "[!!!ERROR!!!]\tstat with key = " << key << " already exists" << std::endl;
@@ -65,16 +69,16 @@ void StatisticsDirector::compute(QEStime &timeIn, const float &timeStep)
 {
   if (timeIn > m_startCollectionTime) {
 
-    for (const auto &e : elements) {
-      e.second->collect(timeIn, timeStep);
+    for (const auto &ds : dataSources) {
+      ds.second->collect(timeIn, timeStep);
     }
 
     if (timeIn >= m_nextOutputTime) {
       // compute the stats
 
       m_statsFile->newTimeEntry(timeIn);
-      for (const auto &e : elements) {
-        e.second->prepareDataAndPushToFile(timeIn);
+      for (const auto &ds : dataSources) {
+        ds.second->prepareDataAndPushToFile(timeIn);
       }
 
       // set nest output time

@@ -140,7 +140,7 @@ TEST_CASE("Plume test inputs for multiple particle models with uniform winds and
   auto *PGD = new PLUMEGeneralData(PP, PID, WGD, TGD);
 
   // create output instance
-  std::vector<QESNetCDFOutput *> outputVec;
+  // std::vector<QESNetCDFOutput *> outputVec;
   // std::string outFile = QES_DIR;
   // outFile.append("/scratch/UniformFlow_xDir_ContRelease_plumeOut.nc");
 
@@ -150,7 +150,7 @@ TEST_CASE("Plume test inputs for multiple particle models with uniform winds and
 
   // Run plume advection model
   QEStime endtime = WGD->timestamp[0] + PID->plumeParams->simDur;
-  PGD->run(endtime, WGD, TGD, outputVec);
+  PGD->run(endtime, WGD, TGD);
 
   // compute run time information and print the elapsed execution time
   std::cout << "[QES-Plume] \t Finished." << std::endl;

@@ -33,7 +33,10 @@
 #include "PLUMEGeneralData.h"
 #include <queue>
 
-PLUMEGeneralData::PLUMEGeneralData(const PlumeParameters &PP, WINDSGeneralData *WGD, TURBGeneralData *TGD) : plumeParameters(PP)
+PLUMEGeneralData::PLUMEGeneralData(const PlumeParameters &PP,
+                                   WINDSGeneralData *WGD,
+                                   TURBGeneralData *TGD)
+  : plumeParameters(PP)
 {
   // copy debug information
   debug = false;// arguments->debug;
@@ -50,7 +53,10 @@ PLUMEGeneralData::PLUMEGeneralData(const PlumeParameters &PP, WINDSGeneralData *
   dxy = WGD->dxy;
 }
 
-PLUMEGeneralData::PLUMEGeneralData(const PlumeParameters &PP, PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
+PLUMEGeneralData::PLUMEGeneralData(const PlumeParameters &PP,
+                                   PlumeInputData *PID,
+                                   WINDSGeneralData *WGD,
+                                   TURBGeneralData *TGD)
   : plumeParameters(PP)
 {
   std::cout << "-------------------------------------------------------------------" << std::endl;
@@ -214,8 +220,7 @@ PLUMEGeneralData::~PLUMEGeneralData()
 
 void PLUMEGeneralData::run(QEStime loopTimeEnd,
                            WINDSGeneralData *WGD,
-                           TURBGeneralData *TGD,
-                           std::vector<QESNetCDFOutput *> outputVec)
+                           TURBGeneralData *TGD)
 {
   auto startTimeAdvec = std::chrono::high_resolution_clock::now();
 
@@ -281,9 +286,9 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd,
     }
 
     // netcdf output for a given simulation timestep
-    for (auto &id_out : outputVec) {
-      id_out->save(simTimeCurr);
-    }
+    // for (auto &id_out : outputVec) {
+    //  id_out->save(simTimeCurr);
+    //}
 
     // output the time, isRogueCount, and isNotActiveCount information for all
     // simulations, but only when the updateFrequency allows
@@ -541,7 +546,6 @@ void PLUMEGeneralData::initializeParticleValues(Particle *par_ptr,
                                                 WINDSGeneralData *WGD,
                                                 TURBGeneralData *TGD)
 {
-
   // set the positions to be used by the simulation to the initial positions
   par_ptr->xPos = par_ptr->xPos_init;
   par_ptr->yPos = par_ptr->yPos_init;

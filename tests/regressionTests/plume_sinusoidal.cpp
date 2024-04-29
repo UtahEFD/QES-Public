@@ -73,14 +73,14 @@ TEST_CASE("Regression test of QES-Plume: sinusoidal stress")
   PlumeParameters PP("", false, false);
   auto *PGD = new PLUMEGeneralData(PP, PID, WGD, TGD);
   // create output instance
-  std::vector<QESNetCDFOutput *> outputVec;
+  // std::vector<QESNetCDFOutput *> outputVec;
   // always supposed to output lagrToEulOutput data
   // outputVec.push_back(new PlumeOutput(PID, plume, "../testCases/Sinusoidal3D/QES-data/Sinusoidal3D_0.01_12_plumeOut.nc"));
   // outputVec.push_back(new PlumeOutputParticleData(PID, plume, "../testCases/Sinusoidal3D/QES-data/Sinusoidal3D_0.01_12_particleInfo.nc"));
 
   // Run plume advection model
   QEStime endtime = WGD->timestamp[0] + PID->plumeParams->simDur;
-  PGD->run(endtime, WGD, TGD, outputVec);
+  PGD->run(endtime, WGD, TGD);
 
   // compute run time information and print the elapsed execution time
   std::cout << "[QES-Plume] \t Finished." << std::endl;

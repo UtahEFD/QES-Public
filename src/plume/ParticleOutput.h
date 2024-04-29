@@ -28,56 +28,19 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file StatisticsDirector.h
- * @brief
+/** @file ParticleOutput.h
  */
 
 #pragma once
 
-#include <iostream>
-#include <fstream>
-#include <unordered_map>
-#include <cmath>
-#include <cstring>
-
 #include "util/QEStime.h"
-#include "util/QESOutputInterface.h"
+#include "PLUMEGeneralData.h"
 
-#include "util/QESFileOutput_v2.h"
-#include "util/DataSource.h"
-#include "util/QESNetCDFOutput_v2.h"
-
-#include "Statistics.h"
-
-class PlumeInputData;
-class PLUMEGeneralData;
-
-class StatisticsDirector
+class ParticleOutput
 {
-public:
-  StatisticsDirector(const PlumeInputData *, PLUMEGeneralData *, QESFileOutput_Interface *);
+  ParticleOutput() = default;
+  ~ParticleOutput() = default;
 
-  ~StatisticsDirector();
-
-  DataSource *get(const std::string &key) { return dataSources[key]; }
-  typename std::unordered_map<std::string, DataSource *>::iterator begin() { return dataSources.begin(); }
-  typename std::unordered_map<std::string, DataSource *>::iterator end() { return dataSources.end(); }
-
-  void attach(const std::string &key, DataSource *s);
-
-  void compute(QEStime &, const float &);
-
-  QESFileOutput_Interface *getOutputFile() { return m_statsFile; }
-
-protected:
-  std::unordered_map<std::string, DataSource *> dataSources;
-
-  QEStime m_startCollectionTime;
-  QEStime m_nextOutputTime;
-  float m_collectionPeriod = 0;
-
-  QESFileOutput_Interface *m_statsFile{};
-
-private:
-  StatisticsDirector() = default;
+  void save(QEStime &t)
+  {}
 };
