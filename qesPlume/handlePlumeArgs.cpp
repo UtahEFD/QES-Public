@@ -34,22 +34,21 @@
 
 PlumeArgs::PlumeArgs()
   : verbose(false),
-    qesPlumeParamFile(""), inputTURBFile("")
+    plumeOutput(false), particleOutput(false)
 
 {
-  reg("help", "help/usage information", ArgumentParsing::NONE, '?');
+  reg("help", "help/usage information", ArgumentParsing::NONE, 'h');
   reg("verbose", "turn on verbose output", ArgumentParsing::NONE, 'v');
 
-
-  reg("qesPlumeParamFile", "specifies input xml settings file", ArgumentParsing::STRING, 'q');
+  reg("qesPlumeParamFile", "specifies input xml settings file", ArgumentParsing::STRING, 'p');
   // single name for all input/output files
-  reg("projectQESFiles", "specifies input/output files name", ArgumentParsing::STRING, 'm');
+  reg("projectQESFiles", "specifies input/output files name", ArgumentParsing::STRING, 'f');
   // individual names for input/output files
   reg("inputWINDSFile", "specifies input qes-winds file", ArgumentParsing::STRING, 'w');
   reg("inputTURBFile", "specifies input qes-turb file", ArgumentParsing::STRING, 't');
   reg("outputbasename", "Specifies the basename for netcdf files", ArgumentParsing::STRING, 'o');
   // going to assume concentration is always output. So these next options are like choices for additional debug output
-  reg("plumeOutput", "should debug Lagrangian data be output", ArgumentParsing::NONE, 'l');
+  reg("particleOutput", "should debug Lagrangian data be output", ArgumentParsing::NONE, 'l');
 }
 
 void PlumeArgs::processArguments(int argc, char *argv[])
@@ -70,9 +69,12 @@ void PlumeArgs::processArguments(int argc, char *argv[])
   if (verbose) {
     QESout::setVerbose();
   }
-  plumeOutput = isSet("plumeOutput");
+
+  particleOutput = isSet("particleOutput");
 
   if (isSet("projectQESFiles", projectQESFiles)) {
+    outputFileBasename = projectQESFiles;
+    plumeOutput = true;
     inputWINDSFile = projectQESFiles + "_windsWk.nc";
     inputTURBFile = projectQESFiles + "_turbOut.nc";
     outputPlumeFile = projectQESFiles + "_plumeOut.nc";

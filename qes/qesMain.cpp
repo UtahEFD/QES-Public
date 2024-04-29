@@ -181,15 +181,8 @@ int main(int argc, char *argv[])
 
     // Run plume advection model
     if (PGD != nullptr) {
-      QEStime endtime;
-      if (WGD->totalTimeIncrements == 1) {
-        endtime = WGD->timestamp[index] + PID->plumeParams->simDur;
-      } else if (index == WGD->totalTimeIncrements - 1) {
-        endtime = WGD->timestamp[index] + (float)(WGD->timestamp[index] - WGD->timestamp[index - 1]);
-      } else {
-        endtime = WGD->timestamp[index + 1];
-      }
-      PGD->run(endtime, WGD, TGD, outputPlume);
+      QEStime endTime = WGD->nextTimeInstance(index, PID->plumeParams->simDur);
+      PGD->run(endTime, WGD, TGD, outputPlume);
     }
   }
 

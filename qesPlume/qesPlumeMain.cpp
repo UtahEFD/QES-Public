@@ -95,14 +95,7 @@ int main(int argc, char **argv)
     WGD->loadNetCDFData(index);
 
     // Determine the end time for advection
-    QEStime endTime;
-    if (WGD->totalTimeIncrements == 1) {
-      endTime = WGD->timestamp[index] + PID->plumeParams->simDur;
-    } else if (index == WGD->totalTimeIncrements - 1) {
-      endTime = WGD->timestamp[index] + (float)(WGD->timestamp[index] - WGD->timestamp[index - 1]);
-    } else {
-      endTime = WGD->timestamp[index + 1];
-    }
+    QEStime endTime = WGD->nextTimeInstance(index, PID->plumeParams->simDur);
 
     // Run plume advection model
     PGD->run(endTime, WGD, TGD, outputVec);

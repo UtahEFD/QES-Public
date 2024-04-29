@@ -1370,6 +1370,19 @@ void WINDSGeneralData::resetICellFlag()
   return;
 }
 
+QEStime WINDSGeneralData::nextTimeInstance(const int &index, const float &duration)
+{
+  QEStime endTime = timestamp[index];
+  if (totalTimeIncrements == 1) {
+    endTime = timestamp[index] + duration;
+  } else if (index == totalTimeIncrements - 1) {
+    endTime = timestamp[index] + (float)(timestamp[index] - timestamp[index - 1]);
+  } else {
+    endTime = timestamp[index + 1];
+  }
+  return endTime;
+}
+
 void WINDSGeneralData::printTimeProgress(int index)
 {
   float percentage = (float)(index + 1) / (float)totalTimeIncrements;

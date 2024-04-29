@@ -54,7 +54,7 @@ class WINDSArgs : public ArgumentParsing
 public:
   WINDSArgs();
 
-  ~WINDSArgs() {}
+  ~WINDSArgs() = default;
 
   /**
    * Takes in the commandline arguments and places
@@ -69,9 +69,9 @@ public:
   bool verbose;
 
 
-  std::string qesWindsParamFile = ""; /**< Input files (from cmd line) */
+  std::string qesWindsParamFile; /**< Input files (from cmd line) */
 
-  std::string netCDFFileBasename = ""; /**< Base name for all NetCDF output files */
+  std::string netCDFFileBasename; /**< Base name for all NetCDF output files */
 
   ///@{
   /** Flag to turn on/off different modules */
@@ -80,10 +80,10 @@ public:
   bool visuOutput, wkspOutput, turbOutput, terrainOut;
   ///@}
 
-  std::string netCDFFileVisu = ""; /**< netCDFFile for standard cell-center visualization file */
-  std::string netCDFFileWksp = ""; /**< netCDFFile for working field used by Plume */
-  std::string netCDFFileTurb = ""; /**< netCDFFile for turbulence field used by Plume */
-  std::string filenameTerrain = ""; /**< Filename for terrain output */
+  std::string netCDFFileVisu; /**< netCDFFile for standard cell-center visualization file */
+  std::string netCDFFileWksp; /**< netCDFFile for working field used by Plume */
+  std::string netCDFFileTurb; /**< netCDFFile for turbulence field used by Plume */
+  std::string filenameTerrain; /**< Filename for terrain output */
 
   bool fireMode; /**< Boolean to treat WRF input in fire mode */
 
