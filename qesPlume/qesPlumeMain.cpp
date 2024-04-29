@@ -54,8 +54,6 @@
 #include "plume/PLUMEGeneralData.h"
 
 #include "util/QESNetCDFOutput.h"
-#include "plume/PlumeOutput.h"
-#include "plume/PlumeOutputParticleData.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -82,12 +80,12 @@ int main(int argc, char **argv)
   PLUMEGeneralData *PGD = new PLUMEGeneralData(arguments.plumeParameters, PID, WGD, TGD);
 
   // create output instance
-  std::vector<QESNetCDFOutput *> outputVec;
+  // std::vector<QESNetCDFOutput *> outputVec;
   // always supposed to output lagrToEulOutput data
-  outputVec.push_back(new PlumeOutput(PID, PGD, arguments.outputPlumeFile));
-  if (arguments.particleOutput) {
-    // outputVec.push_back(new PlumeOutputParticleData(PID, PGD, arguments.outputParticleDataFile));
-  }
+  // outputVec.push_back(new PlumeOutput(PID, PGD, arguments.outputPlumeFile));
+  // if (arguments.particleOutput) {
+  // outputVec.push_back(new PlumeOutputParticleData(PID, PGD, arguments.outputParticleDataFile));
+  //}
 
   for (int index = 0; index < WGD->totalTimeIncrements; index++) {
     // Load data at current time index
@@ -98,7 +96,7 @@ int main(int argc, char **argv)
     QEStime endTime = WGD->nextTimeInstance(index, PID->plumeParams->simDur);
 
     // Run plume advection model
-    PGD->run(endTime, WGD, TGD, outputVec);
+    PGD->run(endTime, WGD, TGD);
 
     std::cout << "[QES-Plume] \t Finished." << std::endl;
   }

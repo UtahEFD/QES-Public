@@ -17,9 +17,7 @@ SET( qesPlumeCoreSources
     StatisticsDirector.cpp
 
     PLUMEGeneralData.cpp
-
-    PlumeOutput.cpp
-    PlumeOutputParticleData.cpp
+    ParticleOutput.cpp
 
     PI_BoundaryConditions.hpp
     DomainBoundaryConditions.cpp
