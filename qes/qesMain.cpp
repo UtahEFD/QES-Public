@@ -58,8 +58,6 @@
 // #include "Args.hpp"
 #include "plume/PlumeInputData.hpp"
 #include "plume/PLUMEGeneralData.h"
-#include "plume/PlumeOutput.h"
-#include "plume/PlumeOutputParticleData.h"
 
 
 Solver *setSolver(const int, WINDSInputData *, WINDSGeneralData *);

@@ -17,10 +17,6 @@
 
 #include "plume/PLUMEGeneralData.h"
 
-#include "util/QESNetCDFOutput.h"
-#include "plume/PlumeOutput.h"
-#include "plume/PlumeOutputParticleData.h"
-
 float calcEntropy(int nbrBins, ManagedContainer<TracerParticle> *particles);
 void calcRMSE_wFluct(int nbrBins, ManagedContainer<TracerParticle> *particles, std::map<std::string, float> &rmse);
 void calcRMSE_delta_wFluct(int nbrBins, ManagedContainer<TracerParticle> *particles, double delta_t, std::map<std::string, float> &rmse);
@@ -72,7 +68,7 @@ TEST_CASE("Regression test of QES-Plume: sinusoidal stress")
   // auto *plume = new Plume(PID, WGD, TGD);
   PlumeParameters PP("", false, false);
   auto *PGD = new PLUMEGeneralData(PP, PID, WGD, TGD);
-  
+
   // Run plume advection model
   QEStime endtime = WGD->timestamp[0] + PID->plumeParams->simDur;
   PGD->run(endtime, WGD, TGD);

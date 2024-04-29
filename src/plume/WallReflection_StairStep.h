@@ -47,12 +47,6 @@
 // #include "Matrix3.h"
 #include "Random.h"
 
-#include "util/QESNetCDFOutput.h"
-#include "PlumeOutput.h"
-#include "PlumeOutputParticleData.h"
-
-#include "PlumeInputData.hpp"
-
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
 
