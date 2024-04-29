@@ -99,6 +99,8 @@ public:
   void applyParametrizations(const WINDSInputData *);
   // void applyParametrizations(const WINDSInputData*);
 
+  QEStime nextTimeInstance(const int &, const float &);
+
   void printTimeProgress(int);
 
   void resetICellFlag();
