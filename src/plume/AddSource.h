@@ -62,11 +62,11 @@ public:
 
   ~AddSource() = default;
 
-  void visitTracerParticle_Model(TracerParticle_Model *element) override
+  void visit(TracerParticle_Model *element) override
   {
     element->addSources(m_tracerParticle_sources);
   }
-  void visitHeavyParticle_Model(HeavyParticle_Model *element) override
+  void visit(HeavyParticle_Model *element) override
   {
     element->addSources(m_heavyParticle_sources);
   }

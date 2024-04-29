@@ -59,7 +59,7 @@ public:
 
   void accept(ParticleModel_Visitor *visitor) override
   {
-    visitor->visitTracerParticle_Model(this);
+    visitor->visit(this);
   }
 
   void initialize(const PlumeInputData *PID,
