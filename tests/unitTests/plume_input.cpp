@@ -15,7 +15,6 @@
 
 #include "plume/PlumeInputData.hpp"
 #include "plume/PLUMEGeneralData.h"
-#include "plume/PlumeOutput.h"
 
 #include "plume/TracerParticle_Model.h"
 #include "plume/HeavyParticle_Model.h"
@@ -138,7 +137,7 @@ TEST_CASE("Plume test inputs for multiple particle models with uniform winds and
   // Create instance of Plume model class
   PlumeParameters PP("plume_input", false, false);
   auto *PGD = new PLUMEGeneralData(PP, PID, WGD, TGD);
-  
+
   // Run plume advection model
   QEStime endtime = WGD->timestamp[0] + PID->plumeParams->simDur;
   PGD->run(endtime, WGD, TGD);

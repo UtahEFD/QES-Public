@@ -20,10 +20,6 @@
 
 #include "plume/TracerParticle_Concentration.h"
 
-#include "util/QESNetCDFOutput.h"
-#include "plume/PlumeOutput.h"
-#include "plume/PlumeOutputParticleData.h"
-
 // float calcEntropy(int nbrBins, Plume *plume);
 // void calcRMSE_wFluct(int nbrBins, Plume *plume, std::map<std::string, float> &rmse);
 // void calcRMSE_delta_wFluct(int nbrBins, Plume *plume, double delta_t, std::map<std::string, float> &rmse);
@@ -88,7 +84,7 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
   // auto *plume = new Plume(PID, WGD, TGD);
   PlumeParameters PP("", false, false);
   auto *PGD = new PLUMEGeneralData(PP, PID, WGD, TGD);
-  
+
   // Run plume advection model
   QEStime endtime = WGD->timestamp[0] + PID->plumeParams->simDur;
   // plume->run(endtime, WGD, TGD, outputVec);
