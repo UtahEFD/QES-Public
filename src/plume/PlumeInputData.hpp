@@ -1,19 +1,46 @@
-//
-//  PlumeInputData.hpp
-//
-//  This class represents all xml settings
-//
-//  Created by Jeremy Gibbs on 03/28/19.
-//
+/****************************************************************************
+ * Copyright (c) 2022 University of Utah
+ * Copyright (c) 2022 University of Minnesota Duluth
+ *
+ * Copyright (c) 2022 Behnam Bozorgmehr
+ * Copyright (c) 2022 Jeremy A. Gibbs
+ * Copyright (c) 2022 Fabien Margairaz
+ * Copyright (c) 2022 Eric R. Pardyjak
+ * Copyright (c) 2022 Zachary Patterson
+ * Copyright (c) 2022 Rob Stoll
+ * Copyright (c) 2022 Lucas Ulmer
+ * Copyright (c) 2022 Pete Willemsen
+ *
+ * This file is part of QES-Plume
+ *
+ * GPL-3.0 License
+ *
+ * QES-Plume is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Plume is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
 
-#ifndef PLUMEINPUTDATA_HPP
-#define PLUMEINPUTDATA_HPP
+/** @file SourceFullDomain.hpp
+ * @brief This class represents a specific source type.
+ *
+ * @note Child of SourceType
+ * @sa SourceType
+ */
 
+#pragma once
 
 #include "PlumeParameters.hpp"
 #include "CollectionParameters.hpp"
 #include "ParticleOutputParameters.hpp"
-#include "Sources.hpp"
+#include "SourceParameters.hpp"
 #include "BoundaryConditions.hpp"
 
 #include "util/ParseInterface.h"
@@ -29,7 +56,7 @@ public:
   PlumeParameters *plumeParams = nullptr;
   CollectionParameters *colParams = nullptr;
   ParticleOutputParameters *partOutParams = nullptr;
-  Sources *sources = nullptr;
+  SourceParameters *sourceParams = nullptr;
   BoundaryConditions *BCs = nullptr;
 
 
@@ -38,7 +65,7 @@ public:
     plumeParams = 0;
     colParams = 0;
     partOutParams = 0;
-    sources = 0;
+    sourceParams = 0;
   }
 
   PlumeInputData(const std::string fileName)
@@ -46,7 +73,7 @@ public:
     plumeParams = 0;
     colParams = 0;
     partOutParams = 0;
-    sources = 0;
+    sourceParams = 0;
 
     // read and parse the XML
     parseXML(fileName, "QESPlumeParameters");
@@ -57,8 +84,7 @@ public:
     parseElement<PlumeParameters>(true, plumeParams, "plumeParameters");
     parseElement<CollectionParameters>(true, colParams, "collectionParameters");
     parseElement<ParticleOutputParameters>(false, partOutParams, "particleOutputParameters");
-    parseElement<Sources>(false, sources, "sources");
+    parseElement<SourceParameters>(false, sourceParams, "sourceParameters");
     parseElement<BoundaryConditions>(true, BCs, "boundaryConditions");
   }
 };
-#endif

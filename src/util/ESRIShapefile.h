@@ -41,6 +41,7 @@
 #include "ogrsf_frmts.h"
 #include "ogr_spatialref.h"
 #include <limits>
+#include <chrono>
 
 #include "PolygonVertex.h"
 
@@ -122,7 +123,7 @@ private:
    */
   // void loadVectorData(std::vector<std::vector<polyVert>> &polygons, std::vector<float> &building_height, float heightFactor);
 #endif
-  
+
   /**
    * :document this:
    *

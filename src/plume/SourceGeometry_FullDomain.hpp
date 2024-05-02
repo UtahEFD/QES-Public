@@ -29,7 +29,7 @@
  ****************************************************************************/
 
 /** @file SourceFullDomain.hpp
- * @brief This class represents a specific source type. 
+ * @brief This class represents a specific source type.
  *
  * @note Child of SourceType
  * @sa SourceType
@@ -38,11 +38,11 @@
 #pragma once
 
 
-#include "SourceType.hpp"
+#include "SourceGeometry.hpp"
 #include "winds/WINDSGeneralData.h"
-//#include "Particles.hpp"
+// #include "Particles.hpp"
 
-class SourceFullDomain : public SourceType
+class SourceGeometry_FullDomain : public SourceGeometry
 {
 private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
@@ -51,48 +51,40 @@ private:
   // this source is a bit weird because the domain size has to be obtained after the input parser.
   //  this would mean either doing a function call unique to this source to supply the required data during the dispersion constructor
   //  or by using checkPosInfo() differently than it is normally intended to set the domain size variables
-  double xDomainStart;
-  double yDomainStart;
-  double zDomainStart;
-  double xDomainEnd;
-  double yDomainEnd;
-  double zDomainEnd;
-  double sourceStrength = 0.0;// total mass released (g)
+  double xDomainStart = -1.0;
+  double yDomainStart = -1.0;
+  double zDomainStart = -1.0;
+  double xDomainEnd = -1.0;
+  double yDomainEnd = -1.0;
+  double zDomainEnd = -1.0;
+
+  std::random_device rd;// Will be used to obtain a seed for the random number engine
+  std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
+  std::uniform_real_distribution<> uniformDistribution;
+
 protected:
 public:
   // Default constructor
-  SourceFullDomain()
+  SourceGeometry_FullDomain() : SourceGeometry(SourceShape::fullDomain)
   {
+    prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
+    uniformDistribution = std::uniform_real_distribution<>(0.0, 1.0);
   }
 
   // destructor
-  ~SourceFullDomain()
+  ~SourceGeometry_FullDomain() = default;
+
+  void parseValues() override
   {
+    // no paramter
   }
 
+  void checkPosInfo(const double &domainXstart,
+                    const double &domainXend,
+                    const double &domainYstart,
+                    const double &domainYend,
+                    const double &domainZstart,
+                    const double &domainZend) override;
 
-  virtual void parseValues()
-  {
-    m_sShape = SourceShape::fullDomain;
-
-    setReleaseType();
-    setParticleType();
-    //Create particle factories
-    registerParticles();
-    /*
-    // Create a generic particle with attributes read from XML
-    Particles * particles;
-    particles->setParticleValues();
-*/
-    //std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
-
-
-    parsePrimitive<double>(false, sourceStrength, "sourceStrength");
-  }
-
-
-  void checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend);
-
-
-  int emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles);
+  void setInitialPosition(Particle *ptr) override;
 };

@@ -43,7 +43,7 @@
 #include "util/calcTime.h"
 
 
-#include "plume/handlePlumeArgs.hpp"
+#include "handlePlumeArgs.hpp"
 #include "plume/PlumeInputData.hpp"
 #include "util/NetCDFInput.h"
 #include "util/QESout.h"
@@ -94,12 +94,12 @@ int main(int argc, char **argv)
   std::vector<QESNetCDFOutput *> outputVec;
   // always supposed to output lagrToEulOutput data
   outputVec.push_back(new PlumeOutput(PID, plume, arguments.outputFile));
-  if (arguments.doParticleDataOutput == true) {
+  if (arguments.doParticleDataOutput) {
     outputVec.push_back(new PlumeOutputParticleData(PID, plume, arguments.outputParticleDataFile));
   }
 
   for (int index = 0; index < WGD->totalTimeIncrements; index++) {
-    //load data at
+    // load data at
     TGD->loadNetCDFData(index);
     WGD->loadNetCDFData(index);
 

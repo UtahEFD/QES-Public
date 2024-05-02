@@ -250,10 +250,7 @@ public:
       // In the current setup, grid may NOT be set... be careful
       // may need to initialize it here if nullptr is true for grid
 
-      // utilize the wrf information to construct a
-      // DTE_heightfield
-      std::cout << "Constructing the DTE from WRF input heighfield..." << std::endl;
-
+      // utilize the wrf information to construct a DTE_heightfield
       DTE_heightField = new DTEHeightField(wrfInputData->fmHeight,
                                            std::tuple<int, int, int>(wrfInputData->fm_nx, wrfInputData->fm_ny, wrfInputData->fm_nz),
                                            std::tuple<float, float, float>(wrfInputData->fm_dx, wrfInputData->fm_dy, wrfInputData->fm_dz),
@@ -292,10 +289,9 @@ public:
       std::cout << "Reading DEM and processing WRF data for met param sensors from " << wrfFile << std::endl;
 
       // First read DEM as usual
-      std::cout << "Extracting Digital Elevation Data from " << demFile << std::endl;
-
       std::cout << "Domain: " << domain[0] << ", " << domain[1] << ", " << domain[2] << std::endl;
       std::cout << "Grid: " << grid[0] << ", " << grid[1] << ", " << grid[2] << std::endl;
+      // Extracting Digital Elevation Data from: demFile
       DTE_heightField = new DTEHeightField(demFile,
                                            std::tuple<int, int, int>(domain[0], domain[1], domain[2]),
                                            std::tuple<float, float, float>(grid[0], grid[1], grid[2]),
@@ -344,7 +340,7 @@ public:
     }
 
     else if (m_domIType == DEMOnly) {
-      std::cout << "Extracting Digital Elevation Data from " << demFile << std::endl;
+      // Extracting Digital Elevation Data from: demFile
       DTE_heightField = new DTEHeightField(demFile,
                                            std::tuple<int, int, int>(domain[0], domain[1], domain[2]),
                                            std::tuple<float, float, float>(grid[0], grid[1], grid[2]),
@@ -354,19 +350,15 @@ public:
                                            DEMDistancex,
                                            DEMDistancey);
       assert(DTE_heightField);
-
-      TimerTool timer_mesh("mesh setup");
-
-      std::cout << "Forming triangle mesh...\n";
+      
+      // Forming triangle mesh...
       DTE_heightField->setDomain(domain, grid);
       DTE_mesh = new Mesh(DTE_heightField->getTris());
 
-      //for (auto it = DTE_mesh->optixTris.begin(); it != DTE_mesh->optixTris.end(); ++it) {
-      //  if ((*it)->n[2] < 0)
-      //    std::cerr << "[WARNING] triangle definition " << (*it)->n << std::endl;
-      //}
-      std::cout << "Mesh complete\n";
-      timer_mesh.stop();
+      // for (auto it = DTE_mesh->optixTris.begin(); it != DTE_mesh->optixTris.end(); ++it) {
+      //   if ((*it)->n[2] < 0)
+      //     std::cerr << "[WARNING] triangle definition " << (*it)->n << std::endl;
+      // }
 
     } else {
       // No DEM, so make sure these are null

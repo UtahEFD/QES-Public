@@ -29,7 +29,7 @@
  ****************************************************************************/
 
 /** @file SourcePoint.hpp
- * @brief This class represents a specific source type. 
+ * @brief This class represents a specific source type.
  *
  * @note Child of SourceType
  * @sa SourceType
@@ -38,64 +38,45 @@
 #pragma once
 
 
-#include "SourceType.hpp"
+#include "SourceGeometry.hpp"
 #include "winds/WINDSGeneralData.h"
-//#include "Particles.hpp"
+// #include "Particles.hpp"
 
-class SourcePoint : public SourceType
+class SourceGeometry_Point : public SourceGeometry
 {
 private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
   // guidelines for how to set these variables within an inherited source are given in SourceType.
 
-  double posX;
-  double posY;
-  double posZ;
-  //  double pRho = 0.0; // particle density (kg/m^3), variable read in from XML // LDU commented 11/16
-  //  double pD = 0.0; // particle diameter (microns), variable read in from XML // LDU commented 11/16
-  double sourceStrength = 0.0;// total mass released (g)
-  //  bool sourceDepFlag = true; // deposition flag (1 for on, 0 for off)
+  double posX = -1.0;
+  double posY = -1.0;
+  double posZ = -1.0;
+
 protected:
 public:
   // Default constructor
-  SourcePoint()
+  SourceGeometry_Point() : SourceGeometry(SourceShape::point)
   {
   }
 
   // destructor
-  ~SourcePoint()
+  ~SourceGeometry_Point() = default;
+
+
+  void parseValues() override
   {
-  }
-
-
-  virtual void parseValues()
-  {
-    m_sShape = SourceShape::point;
-
-    setReleaseType();
-    setParticleType();
-    // Create particle factories
-    registerParticles();
-
-    /* 
-    // Create a generic particle with attributes read from XML
-    Particles * particles;
-    particles->setParticleValues();
-*/
-    //std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
     parsePrimitive<double>(true, posX, "posX");
     parsePrimitive<double>(true, posY, "posY");
     parsePrimitive<double>(true, posZ, "posZ");
-
-    //    parsePrimitive<double>(false, pRho, "particleDensity"); // LDU commented 11/16
-    //    parsePrimitive<double>(false, pD, "particleDiameter"); // LDU commented 11/16
-    parsePrimitive<double>(false, sourceStrength, "sourceStrength");
-    //    parsePrimitive<bool>(false, sourceDepFlag, "depositionFlag"); // LDU commented 11/16
   }
 
 
-  void checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend);
+  void checkPosInfo(const double &domainXstart,
+                    const double &domainXend,
+                    const double &domainYstart,
+                    const double &domainYend,
+                    const double &domainZstart,
+                    const double &domainZend) override;
 
-  //template <class parType>
-  int emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles);
+  void setInitialPosition(Particle *ptr) override;
 };

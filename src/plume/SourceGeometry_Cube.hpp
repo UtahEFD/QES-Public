@@ -28,8 +28,8 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file SourceCube.cpp 
- * @brief This class represents a specific source type. 
+/** @file SourceCube.cpp
+ * @brief This class represents a specific source type.
  *
  * @note Child of SourceType
  * @sa SourceType
@@ -38,52 +38,42 @@
 #pragma once
 
 
-#include "SourceType.hpp"
+#include "SourceGeometry.hpp"
 #include "winds/WINDSGeneralData.h"
-//#include "Particles.hpp"
+// #include "Particles.hpp"
 
-class SourceCube : public SourceType
+class SourceGeometry_Cube : public SourceGeometry
 {
 private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
   // guidelines for how to set these variables within an inherited source are given in SourceType.
 
-  double m_minX;
-  double m_minY;
-  double m_minZ;
-  double m_maxX;
-  double m_maxY;
-  double m_maxZ;
+  double m_minX = -1.0;
+  double m_minY = -1.0;
+  double m_minZ = -1.0;
+  double m_maxX = -1.0;
+  double m_maxY = -1.0;
+  double m_maxZ = -1.0;
   double sourceStrength = 0.0;// total mass released (g)
+
+  std::random_device rd;// Will be used to obtain a seed for the random number engine
+  std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
+  std::uniform_real_distribution<> uniformDistribution;
+
 protected:
 public:
   // Default constructor
-  SourceCube()
+  SourceGeometry_Cube() : SourceGeometry(SourceShape::cube)
   {
+    prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
+    uniformDistribution = std::uniform_real_distribution<>(0.0, 1.0);
   }
 
   // destructor
-  ~SourceCube()
+  ~SourceGeometry_Cube() = default;
+
+  void parseValues() override
   {
-  }
-
-
-  virtual void parseValues()
-  {
-    m_sShape = SourceShape::cube;
-
-    setReleaseType();
-    setParticleType();
-    // Create particle factories
-    registerParticles();
-    /*
-    // Create a generic particle with attributes read from XML
-    Particles * particles;
-    particles->setParticleValues();
-*/
-    //std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
-
-
     parsePrimitive<double>(true, m_minX, "minX");
     parsePrimitive<double>(true, m_minY, "minY");
     parsePrimitive<double>(true, m_minZ, "minZ");
@@ -95,8 +85,12 @@ public:
   }
 
 
-  void checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend);
+  void checkPosInfo(const double &domainXstart,
+                    const double &domainXend,
+                    const double &domainYstart,
+                    const double &domainYend,
+                    const double &domainZstart,
+                    const double &domainZend) override;
 
-
-  int emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles);
+  void setInitialPosition(Particle *ptr) override;
 };
