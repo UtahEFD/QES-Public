@@ -28,8 +28,8 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file ReleaseType_continuous.hpp 
- * @brief This class represents a specific release type. 
+/** @file ReleaseType_continuous.hpp
+ * @brief This class represents a specific release type.
  *
  * @note Child of ReleaseType
  * @sa ReleaseType
@@ -42,41 +42,36 @@
 class ReleaseType_continuous : public ReleaseType
 {
 private:
-  // note that this also inherits data members ParticleReleaseType m_rType, int m_parPerTimestep, double m_releaseStartTime,
+  // note that this also inherits data members:
+  // ParticleReleaseType m_rType, int m_parPerTimestep, double m_releaseStartTime,
   //  double m_releaseEndTime, and int m_numPar from ReleaseType.
   // guidelines for how to set these variables within an inherited ReleaseType are given in ReleaseType.hpp.
-
-  int parPerTimestep;
 
 
 protected:
 public:
   // Default constructor
-  ReleaseType_continuous()
+  ReleaseType_continuous() : ReleaseType(ParticleReleaseType::continuous)
   {
   }
 
   // destructor
-  ~ReleaseType_continuous()
+  ~ReleaseType_continuous() = default;
+
+  void parseValues() override
   {
-  }
-
-
-  virtual void parseValues()
-  {
-    parReleaseType = ParticleReleaseType::continuous;
-
+    int parPerTimestep;
     parsePrimitive<int>(true, parPerTimestep, "parPerTimestep");
+    m_parPerTimestep = parPerTimestep;
   }
 
 
-  void calcReleaseInfo(const double &timestep, const double &simDur)
+  void calcReleaseInfo(const double &timestep, const double &simDur) override
   {
     // set the overall releaseType variables from the variables found in this class
-    m_parPerTimestep = parPerTimestep;
     m_releaseStartTime = 0;
     m_releaseEndTime = simDur;
     int nReleaseTimes = std::ceil(simDur / timestep);
-    m_numPar = parPerTimestep * nReleaseTimes;
+    m_numPar = m_parPerTimestep * nReleaseTimes;
   }
 };

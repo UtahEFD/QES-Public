@@ -46,7 +46,7 @@ PlumeOutput::PlumeOutput(const PlumeInputData *PID, Plume *plume_ptr, std::strin
   : QESNetCDFOutput(output_file)
 {
 
-  std::cout << "[PlumeOutput] set up NetCDF file " << output_file << std::endl;
+  std::cout << "[PlumeOutput]\t Setting NetCDF file: " << output_file << std::endl;
 
   // setup copy of plume pointer so output data can be grabbed directly
   m_plume = plume_ptr;

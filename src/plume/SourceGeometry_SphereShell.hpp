@@ -28,8 +28,8 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file SourceCircle.hpp 
- * @brief This class represents a specific source type. 
+/** @file SourceCircle.hpp
+ * @brief This class represents a specific source type.
  *
  * @note Child of SourceType
  * @sa SourceType
@@ -38,59 +38,53 @@
 #pragma once
 
 
-#include "SourceType.hpp"
+#include "SourceGeometry.hpp"
 #include "winds/WINDSGeneralData.h"
-//#include "Particles.hpp"
+// #include "Particles.hpp"
 
-class SourceCircle : public SourceType
+class SourceGeometry_SphereShell : public SourceGeometry
 {
 private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
   // guidelines for how to set these variables within an inherited source are given in SourceType.
 
-  double posX;
-  double posY;
-  double posZ;
-  double radius;
-  double sourceStrength = 0.0;// total mass released (g)
+  std::random_device rd;// Will be used to obtain a seed for the random number engine
+  std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
+  std::normal_distribution<> normalDistribution;
+
+  double posX = -1.0;
+  double posY = -1.0;
+  double posZ = -1.0;
+  double radius = -1.0;
+
 protected:
 public:
   // Default constructor
-  SourceCircle()
+  SourceGeometry_SphereShell() : SourceGeometry(SourceShape::sphereShell)
   {
+    prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
+    normalDistribution = std::normal_distribution<>(0.0, 1.0);
   }
 
   // destructor
-  ~SourceCircle()
+  ~SourceGeometry_SphereShell() = default;
+
+
+  void parseValues() override
   {
-  }
-
-
-  virtual void parseValues()
-  {
-    m_sShape = SourceShape::circle;
-
-    setReleaseType();
-    setParticleType();
-    // Create particle factories
-    registerParticles();
-    /*
-    // Create a generic particle with attributes read from XML
-    Particles * particles;
-    particles->setParticleValues();
-*/
-
     parsePrimitive<double>(true, posX, "posX");
     parsePrimitive<double>(true, posY, "posY");
     parsePrimitive<double>(true, posZ, "posZ");
     parsePrimitive<double>(true, radius, "radius");
-
-    parsePrimitive<double>(false, sourceStrength, "sourceStrength");
   }
 
 
-  void checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend);
+  void checkPosInfo(const double &domainXstart,
+                    const double &domainXend,
+                    const double &domainYstart,
+                    const double &domainYend,
+                    const double &domainZstart,
+                    const double &domainZend) override;
 
-
-  int emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles);
+  void setInitialPosition(Particle *ptr) override;
 };

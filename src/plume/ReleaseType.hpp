@@ -28,11 +28,13 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file ReleaseType.hpp 
- * @brief This class represents a generic particle release type. The idea is to make other classes that inherit from this class
- *  that are the specific release types, that make it easy to set the desired particle information for a given release type
+/** @file ReleaseType.hpp
+ * @brief This class represents a generic particle release type.
+ * The idea is to make other classes that inherit from this class
+ * that are the specific release types, that make it easy to set the desired particle
+ * information for a given release type
  *
- * @note Pure virtual child of ParseInterface 
+ * @note Pure virtual child of ParseInterface
  * @sa ParseInterface
  */
 
@@ -48,33 +50,34 @@ enum ParticleReleaseType {
   duration
 };
 
-
 class ReleaseType : public ParseInterface
 {
+private:
+  // default constructor
+  ReleaseType() = default;
+
 protected:
 public:
-  // this is a description variable for determining the source release type. May or may not be used.
-  // !!! this needs set by parseValues() in each source generated from input files.
+  // Description variable for source release type.
+  // set by the constructor of the derived classes.
   ParticleReleaseType parReleaseType;
 
-  // LA-future work: might need to add another variable for the total number of available particles,
-  //  or have a checking function that compares numParticles with totalNumParticles.
+  // Number of particles to release each timestep
+  int m_parPerTimestep = -1;
+  // Time the source starts releasing particles
+  double m_releaseStartTime = -1.0;
+  // Time the source ends releasing particles
+  double m_releaseEndTime = -1.0;
+  // Total number of particles expected to be released by the source over
+  // the entire simulation
+  int m_numPar = -1;
 
-  int m_parPerTimestep;// this is the number of particles a given source needs to release each timestep
-  double m_releaseStartTime;// this is the time a given source should start releasing particles
-  double m_releaseEndTime;// this is the time a given source should end releasing particles
-  int m_numPar;// this is the total number of particles expected to be released by a given source over the entire simulation
-
-
-  // default constructor
-  ReleaseType()
+  explicit ReleaseType(const ParticleReleaseType &type) : parReleaseType(type)
   {
   }
 
   // destructor
-  virtual ~ReleaseType()
-  {
-  }
+  virtual ~ReleaseType() = default;
 
 
   // this function is used to parse all the variables for each release type in a given source from the input .xml file

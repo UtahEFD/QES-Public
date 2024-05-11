@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Sources.hpp 
+/** @file Sources.hpp
  * @brief This class contains data and variables that set flags and
  * settngs read from the xml.
  *
@@ -38,30 +38,26 @@
 
 #pragma once
 
-#include "SourceType.hpp"
-#include "SourcePoint.hpp"
-#include "SourceLine.hpp"
-#include "SourceCircle.hpp"
-#include "SourceCube.hpp"
-#include "SourceFullDomain.hpp"
+#include "Source.hpp"
+#include "SourceGeometry_Cube.hpp"
+#include "SourceGeometry_FullDomain.hpp"
+#include "SourceGeometry_Line.hpp"
+#include "SourceGeometry_Point.hpp"
+#include "SourceGeometry_SphereShell.hpp"
 
 #include "util/ParseInterface.h"
 
 
-class Sources : public ParseInterface
+class SourceParameters : public ParseInterface
 {
 private:
 public:
   int numSources;// number of sources, you fill in source information for each source next
-  std::vector<SourceType *> sources;// source type and the collection of all the different sources from input
+  std::vector<ParseSource *> sources;// source type and the collection of all the different sources from input
 
   virtual void parseValues()
   {
-    parsePrimitive<int>(true, numSources, "numSources");
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourcePoint>("SourcePoint"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceLine>("SourceLine"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceCircle>("SourceCircle"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceCube>("SourceCube"));
-    parseMultiPolymorphs(false, sources, Polymorph<SourceType, SourceFullDomain>("SourceFullDomain"));
+    parsePrimitive<int>(false, numSources, "numSources");
+    parseMultiElements(false, sources, "source");
   }
 };

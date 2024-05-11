@@ -74,6 +74,8 @@ public:
   SharedMemory(const WINDSInputData *WID, WINDSGeneralData *WGD)
     : Solver(WID, WGD)
   {
+    std::cout << "-------------------------------------------------------------------" << std::endl;
+    std::cout << "[Solver]\t Initializing Shared Memory Solver (GPU) ..." << std::endl;
   }
 
 protected:

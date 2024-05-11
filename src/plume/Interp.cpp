@@ -35,7 +35,7 @@
 
 Interp::Interp(WINDSGeneralData *WGD)
 {
-  std::cout << "[Interp] \t Setting Interp fields " << std::endl;
+  // std::cout << "[Interp] \t Setting Interp fields " << std::endl;
 
   // copy WGD grid information
   nz = WGD->nz;
