@@ -58,7 +58,7 @@
 #include "LocalMixingSerial.h"
 
 #include "DTEHeightField.h"
-#include "Cut_cell.h"
+#include "CutCell.h"
 #include "Wall.h"
 
 // #include "util/Mesh.h"
@@ -284,7 +284,7 @@ public:
 
   Cell *cells; /**< :document this: */
   // bool DTEHFExists = false;
-  Cut_cell *cut_cell; /**< :document this: */
+  CutCell *cut_cell; /**< :document this: */
   Wall *wall; /**< :document this: */
 
   // NetCDFInput* NCDFInput;     /**< :document this: */

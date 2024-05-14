@@ -40,7 +40,7 @@
 #include "util/ParseInterface.h"
 
 #include "Building.h"
-
+#include "CutBuilding.h"
 
 using namespace std;
 using std::cerr;
@@ -102,6 +102,8 @@ protected:
   ///@}
 
   std::vector<float> upwind_rel_dir; /**< :document this: */
+
+  CutBuilding *cutBuilding;
 
 public:
   PolyBuilding()
@@ -271,33 +273,6 @@ public:
    * @param WGD :document this:
    */
   // void poisson (const WINDSInputData* WID, WINDSGeneralData* WGD);
-
-  /**
-   * :document this:
-   *
-   * @param face_points :document this:
-   * @param index :document this:
-   */
-  void reorderPoints(std::vector<cutVert> &face_points, int index);
-
-  /**
-   * :document this:
-   *
-   * @param angle :document this:
-   * @param face_points :document this:
-   */
-  void mergeSort(std::vector<float> &angle, std::vector<cutVert> &face_points);
-
-
-  /**
-   * :document this:
-   *
-   * @param WGD :document this:
-   * @param face_points :document this:
-   * @param cutcell_index :document this:
-   * @param index :document this:
-   */
-  float calculateArea(WINDSGeneralData *WGD, std::vector<cutVert> &face_points, int cutcell_index, int index);
 
 
   /**

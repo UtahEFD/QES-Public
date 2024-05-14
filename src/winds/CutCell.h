@@ -28,7 +28,7 @@
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Cut_cell.h */
+/** @file CutCell.h */
 
 #pragma once
 
@@ -43,14 +43,14 @@ class WINDSInputData;
 class WINDSGeneralData;
 
 /**
- * @class Cut_cell
+ * @class CutCell
  * @brief Designed to store and handle information related to the Cut_cells.
  *
  * :explain what distinguishes a cut_cell from a cell here:
  *
  * @sa Cell
  */
-class Cut_cell
+class CutCell
 {
 private:
   const float pi = 4.0f * atan(1.0); /**< pi constant */
