@@ -32,11 +32,8 @@
  * @file CutBuilding.cpp
  * @brief Designed for applying the cut-cell method to the general building shape (polygons).
  *
- * It's an inheritance of the PolyBuilding class (has all the features defined in that class).
- * In this class, the cut-cell method to the polygone buildings. 
+ * In this class, the cut-cell method to the polygon buildings. 
  *
- * @sa PolyBuilding
- * @sa ParseInterface
  */
 
 #include "CutBuilding.h"
@@ -44,17 +41,15 @@
 // These take care of the circular reference
 #include "WINDSInputData.h"
 #include "WINDSGeneralData.h"
+#include "PolyBuilding.h"
 
 
 /**
  *
- * This function defines bounds of the polygon building and sets the icellflag values
- * for building cells. It applies the Stair-step method to define building bounds.
+ * This function applies the cut-cell method to buildings.
  *
  */
-void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, float x_min, float x_max, float y_min,
-				  float y_max, int i_start, int i_end, int j_start, int j_end, int k_start, int k_end,
-				  int k_cut_end, float base_height, float height_eff, std::vector<polyVert> polygonVertices)
+void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, const PolyBuilding *PolyB, int building_number)
 {
   
   float ray_intersect;
@@ -90,29 +85,29 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
   float y_face, x_face;
   int icell_cent, icell_face;
 
-  i_face_start.resize(polygonVertices.size(), 1);
-  i_face_end.resize(polygonVertices.size(), 1);
-  j_face_start.resize(polygonVertices.size(), 1);
-  j_face_end.resize(polygonVertices.size(), 1);
-  x_min_face.resize(polygonVertices.size(), 0.0);
-  x_max_face.resize(polygonVertices.size(), 0.0);
-  y_min_face.resize(polygonVertices.size(), 0.0);
-  y_max_face.resize(polygonVertices.size(), 0.0);
-  slope.resize(polygonVertices.size(), 0.0);
-  i_face_first.resize(polygonVertices.size(), 1);
-  j_face_first.resize(polygonVertices.size(), 1);
-  i_face_second.resize(polygonVertices.size(), 1);
-  j_face_second.resize(polygonVertices.size(), 1);
+  i_face_start.resize(PolyB->polygonVertices.size(), 1);
+  i_face_end.resize(PolyB->polygonVertices.size(), 1);
+  j_face_start.resize(PolyB->polygonVertices.size(), 1);
+  j_face_end.resize(PolyB->polygonVertices.size(), 1);
+  x_min_face.resize(PolyB->polygonVertices.size(), 0.0);
+  x_max_face.resize(PolyB->polygonVertices.size(), 0.0);
+  y_min_face.resize(PolyB->polygonVertices.size(), 0.0);
+  y_max_face.resize(PolyB->polygonVertices.size(), 0.0);
+  slope.resize(PolyB->polygonVertices.size(), 0.0);
+  i_face_first.resize(PolyB->polygonVertices.size(), 1);
+  j_face_first.resize(PolyB->polygonVertices.size(), 1);
+  i_face_second.resize(PolyB->polygonVertices.size(), 1);
+  j_face_second.resize(PolyB->polygonVertices.size(), 1);
 
   // Loop to find the maximum and minimum in x and y directions and calculate slope of the line between each two points of polygon
-  for (auto id = 0u; id < polygonVertices.size() - 1; id++) {
+  for (auto id = 0u; id < PolyB->polygonVertices.size() - 1; id++) {
     // Find the maximum and minimum in x direction of each line of the polygon
-    if (polygonVertices[id].x_poly < polygonVertices[id + 1].x_poly) {
-      x_min_face[id] = polygonVertices[id].x_poly;
-      x_max_face[id] = polygonVertices[id + 1].x_poly;
+    if (PolyB->polygonVertices[id].x_poly < PolyB->polygonVertices[id + 1].x_poly) {
+      x_min_face[id] = PolyB->polygonVertices[id].x_poly;
+      x_max_face[id] = PolyB->polygonVertices[id + 1].x_poly;
     } else {
-      x_min_face[id] = polygonVertices[id + 1].x_poly;
-      x_max_face[id] = polygonVertices[id].x_poly;
+      x_min_face[id] = PolyB->polygonVertices[id + 1].x_poly;
+      x_max_face[id] = PolyB->polygonVertices[id].x_poly;
     }
 
     // Calculate the start and end indices for each line of polygon in x direction
@@ -120,12 +115,12 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
     i_face_end[id] = std::floor(x_max_face[id] / WGD->dx);
 
     // Find the maximum and minimum in y direction of each line of the polygon
-    if (polygonVertices[id].y_poly < polygonVertices[id + 1].y_poly) {
-      y_min_face[id] = polygonVertices[id].y_poly;
-      y_max_face[id] = polygonVertices[id + 1].y_poly;
+    if (PolyB->polygonVertices[id].y_poly < PolyB->polygonVertices[id + 1].y_poly) {
+      y_min_face[id] = PolyB->polygonVertices[id].y_poly;
+      y_max_face[id] = PolyB->polygonVertices[id + 1].y_poly;
     } else {
-      y_min_face[id] = polygonVertices[id + 1].y_poly;
-      y_max_face[id] = polygonVertices[id].y_poly;
+      y_min_face[id] = PolyB->polygonVertices[id + 1].y_poly;
+      y_max_face[id] = PolyB->polygonVertices[id].y_poly;
     }
 
     // Calculate the start and end indices for each line of polygon in y direction
@@ -133,17 +128,17 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
     j_face_end[id] = std::floor(y_max_face[id] / WGD->dy);
 
     // Calculate the slope for each line of polygon in x direction
-    if (polygonVertices[id + 1].x_poly != polygonVertices[id].x_poly) {
-      slope[id] = (polygonVertices[id + 1].y_poly - polygonVertices[id].y_poly) / (polygonVertices[id + 1].x_poly - polygonVertices[id].x_poly);
+    if (PolyB->polygonVertices[id + 1].x_poly != PolyB->polygonVertices[id].x_poly) {
+      slope[id] = (PolyB->polygonVertices[id + 1].y_poly - PolyB->polygonVertices[id].y_poly) / (PolyB->polygonVertices[id + 1].x_poly - PolyB->polygonVertices[id].x_poly);
     } else {
-      slope[id] = (polygonVertices[id + 1].y_poly - polygonVertices[id].y_poly) / (polygonVertices[id + 1].x_poly - polygonVertices[id].x_poly + 0.000001);
+      slope[id] = (PolyB->polygonVertices[id + 1].y_poly - PolyB->polygonVertices[id].y_poly) / (PolyB->polygonVertices[id + 1].x_poly - PolyB->polygonVertices[id].x_poly + 0.000001);
     }
   }
-
+  
   unsigned int number = 0;
 
   // The main loop going through all points in polygon and processing cut-cells
-  for (auto id = 0u; id < polygonVertices.size() - 1; id++) {
+  for (auto id = 0u; id < PolyB->polygonVertices.size() - 1; id++) {
     if (skip_id.size() != 0) {
       if (id == skip_id[number]) {
 	if (number < skip_id.size()) {
@@ -170,10 +165,10 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	// y values of intersection points with 1 and 2 lines of the cell in y-direction
 	y1j = j * WGD->dy;
 	y2j = (j + 1) * WGD->dy;
-	i_face_first[id] = polygonVertices[id].x_poly / WGD->dx;
-	j_face_first[id] = polygonVertices[id].y_poly / WGD->dy;
-	i_face_second[id] = polygonVertices[id + 1].x_poly / WGD->dx;
-	j_face_second[id] = polygonVertices[id + 1].y_poly / WGD->dy;
+	i_face_first[id] = PolyB->polygonVertices[id].x_poly / WGD->dx;
+	j_face_first[id] = PolyB->polygonVertices[id].y_poly / WGD->dy;
+	i_face_second[id] = PolyB->polygonVertices[id + 1].x_poly / WGD->dx;
+	j_face_second[id] = PolyB->polygonVertices[id + 1].y_poly / WGD->dy;
 
 	// If the first and second points of line are not in the same cell, ignore processing the first point cells
 	// Since it has been processed as the second point of previous line
@@ -182,17 +177,17 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	}
 
 	// If the second point is in bounds of the current cell
-	if (x2i >= polygonVertices[id + 1].x_poly && x1i <= polygonVertices[id + 1].x_poly && y2j >= polygonVertices[id + 1].y_poly && y1j <= polygonVertices[id + 1].y_poly) {
+	if (x2i >= PolyB->polygonVertices[id + 1].x_poly && x1i <= PolyB->polygonVertices[id + 1].x_poly && y2j >= PolyB->polygonVertices[id + 1].y_poly && y1j <= PolyB->polygonVertices[id + 1].y_poly) {
 	  x1i_intersect = x2i_intersect = 0.0;
 	  y1i_intersect = y2i_intersect = 0.0;
 	  x1j_intersect = x2j_intersect = 0.0;
 	  y1j_intersect = y2j_intersect = 0.0;
 	  // Add the second point to solid points in the cell
-	  face_intersect.push_back(cutVert(polygonVertices[id + 1].x_poly, polygonVertices[id + 1].y_poly, 0.0));
+	  face_intersect.push_back(cutVert(PolyB->polygonVertices[id + 1].x_poly, PolyB->polygonVertices[id + 1].y_poly, 0.0));
 	  // If the first line of the cell in x-direction is in range of the line
-	  if (x1i >= x_min_face[id] && x1i <= x_max_face[id] && x1i != polygonVertices[id + 1].x_poly && x1i != polygonVertices[id].x_poly) {
+	  if (x1i >= x_min_face[id] && x1i <= x_max_face[id] && x1i != PolyB->polygonVertices[id + 1].x_poly && x1i != PolyB->polygonVertices[id].x_poly) {
 	    // Calculate intersection of two lines in y-direction
-	    y1i_intersect = slope[id] * (x1i - polygonVertices[id].x_poly) + polygonVertices[id].y_poly;
+	    y1i_intersect = slope[id] * (x1i - PolyB->polygonVertices[id].x_poly) + PolyB->polygonVertices[id].y_poly;
 	    // If the intersection is outside of the cell bounds
 	    if (y1i_intersect > y2j || y1i_intersect < y1j) {
 	      y1i_intersect = 0.0;
@@ -200,9 +195,9 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	    x1i_intersect = x1i;
 	  }
 	  // If the second line of the cell in x-direction is in range of the line
-	  if (x2i >= x_min_face[id] && x2i <= x_max_face[id] && x2i != polygonVertices[id + 1].x_poly && x2i != polygonVertices[id].x_poly) {
+	  if (x2i >= x_min_face[id] && x2i <= x_max_face[id] && x2i != PolyB->polygonVertices[id + 1].x_poly && x2i != PolyB->polygonVertices[id].x_poly) {
 	    // Calculate intersection of two lines in y-direction
-	    y1i_intersect = slope[id] * (x2i - polygonVertices[id].x_poly) + polygonVertices[id].y_poly;
+	    y1i_intersect = slope[id] * (x2i - PolyB->polygonVertices[id].x_poly) + PolyB->polygonVertices[id].y_poly;
 	    // If the intersection is outside of the cell bounds
 	    if (y1i_intersect > y2j || y1i_intersect < y1j) {
 	      y1i_intersect = 0.0;
@@ -210,9 +205,9 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	    x1i_intersect = x2i;
 	  }
 	  // If the first line of the cell in y-direction is in range of the line
-	  if (y1j >= y_min_face[id] && y1j <= y_max_face[id] && y1j != polygonVertices[id + 1].y_poly && y1j != polygonVertices[id].y_poly) {
+	  if (y1j >= y_min_face[id] && y1j <= y_max_face[id] && y1j != PolyB->polygonVertices[id + 1].y_poly && y1j != PolyB->polygonVertices[id].y_poly) {
 	    // Calculate intersection of two lines in x-direction
-	    x1j_intersect = ((y1j - polygonVertices[id].y_poly) / slope[id]) + polygonVertices[id].x_poly;
+	    x1j_intersect = ((y1j - PolyB->polygonVertices[id].y_poly) / slope[id]) + PolyB->polygonVertices[id].x_poly;
 	    // If the intersection is outside of the cell bounds
 	    if (x1j_intersect > x2i || x1j_intersect < x1i) {
 	      x1j_intersect = 0.0;
@@ -220,9 +215,9 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	    y1j_intersect = y1j;
 	  }
 	  // If the second line of the cell in y-direction is in range of the line
-	  if (y2j >= y_min_face[id] && y2j <= y_max_face[id] && y2j != polygonVertices[id + 1].y_poly && y2j != polygonVertices[id].y_poly) {
+	  if (y2j >= y_min_face[id] && y2j <= y_max_face[id] && y2j != PolyB->polygonVertices[id + 1].y_poly && y2j != PolyB->polygonVertices[id].y_poly) {
 	    // Calculate intersection of two lines in x-direction
-	    x1j_intersect = ((y2j - polygonVertices[id].y_poly) / slope[id]) + polygonVertices[id].x_poly;
+	    x1j_intersect = ((y2j - PolyB->polygonVertices[id].y_poly) / slope[id]) + PolyB->polygonVertices[id].x_poly;
 	    // If the intersection is outside of the cell bounds
 	    if (x1j_intersect > x2i || x1j_intersect < x1i) {
 	      x1j_intersect = 0.0;
@@ -231,12 +226,12 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	  }
 
 	  // Index of the next line of polygon
-	  index_next = (id + 1) % (polygonVertices.size() - 1);
+	  index_next = (id + 1) % (PolyB->polygonVertices.size() - 1);
 
 	  // If the first line of the cell in x-direction is in range of the next line
-	  if (x1i >= x_min_face[index_next] && x1i <= x_max_face[index_next] && x1i != polygonVertices[index_next].x_poly) {
+	  if (x1i >= x_min_face[index_next] && x1i <= x_max_face[index_next] && x1i != PolyB->polygonVertices[index_next].x_poly) {
 	    // Calculate intersection of two lines in y-direction
-	    y2i_intersect = slope[index_next] * (x1i - polygonVertices[index_next].x_poly) + polygonVertices[index_next].y_poly;
+	    y2i_intersect = slope[index_next] * (x1i - PolyB->polygonVertices[index_next].x_poly) + PolyB->polygonVertices[index_next].y_poly;
 	    // If the intersection is outside of the cell bounds
 	    if (y2i_intersect > y2j || y2i_intersect < y1j) {
 	      y2i_intersect = 0.0;
@@ -244,9 +239,9 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	    x2i_intersect = x1i;
 	  }
 	  // If the second line of the cell in x-direction is in range of the next line
-	  if (x2i >= x_min_face[index_next] && x2i <= x_max_face[index_next] && x2i != polygonVertices[index_next].x_poly) {
+	  if (x2i >= x_min_face[index_next] && x2i <= x_max_face[index_next] && x2i != PolyB->polygonVertices[index_next].x_poly) {
 	    // Calculate intersection of two lines in y-direction
-	    y2i_intersect = slope[index_next] * (x2i - polygonVertices[index_next].x_poly) + polygonVertices[index_next].y_poly;
+	    y2i_intersect = slope[index_next] * (x2i - PolyB->polygonVertices[index_next].x_poly) + PolyB->polygonVertices[index_next].y_poly;
 	    // If the intersection is outside of the cell bounds
 	    if (y2i_intersect > y2j || y2i_intersect < y1j) {
 	      y2i_intersect = 0.0;
@@ -254,9 +249,9 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	    x2i_intersect = x2i;
 	  }
 	  // If the first line of the cell in y-direction is in range of the next line
-	  if (y1j >= y_min_face[index_next] && y1j <= y_max_face[index_next] && y1j != polygonVertices[index_next].y_poly) {
+	  if (y1j >= y_min_face[index_next] && y1j <= y_max_face[index_next] && y1j != PolyB->polygonVertices[index_next].y_poly) {
 	    // Calculate intersection of two lines in x-direction
-	    x2j_intersect = ((y1j - polygonVertices[index_next].y_poly) / slope[index_next]) + polygonVertices[index_next].x_poly;
+	    x2j_intersect = ((y1j - PolyB->polygonVertices[index_next].y_poly) / slope[index_next]) + PolyB->polygonVertices[index_next].x_poly;
 	    // If the intersection is outside of the cell bounds
 	    if (x2j_intersect > x2i || x2j_intersect < x1i) {
 	      x2j_intersect = 0.0;
@@ -264,9 +259,9 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	    y2j_intersect = y1j;
 	  }
 	  // If the second line of the cell in y-direction is in range of the next line
-	  if (y2j >= y_min_face[index_next] && y2j <= y_max_face[index_next] && y2j != polygonVertices[index_next].y_poly) {
+	  if (y2j >= y_min_face[index_next] && y2j <= y_max_face[index_next] && y2j != PolyB->polygonVertices[index_next].y_poly) {
 	    // Calculate intersection of two lines in x-direction
-	    x2j_intersect = ((y2j - polygonVertices[index_next].y_poly) / slope[index_next]) + polygonVertices[index_next].x_poly;
+	    x2j_intersect = ((y2j - PolyB->polygonVertices[index_next].y_poly) / slope[index_next]) + PolyB->polygonVertices[index_next].x_poly;
 	    // If the intersection is outside of the cell bounds
 	    if (x2j_intersect > x2i || x2j_intersect < x1i) {
 	      x2j_intersect = 0.0;
@@ -277,43 +272,43 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	  unsigned int count = 0;
 	  // Loop to calculate all the intersection points in case the next line is in the current cell
 	  // The loop is complete once the second point of a line is outside of the cell
-	  while (x2i >= polygonVertices[index_next + 1].x_poly && x1i <= polygonVertices[index_next + 1].x_poly
-		 && count != polygonVertices.size() - 2
-		 && y2j >= polygonVertices[index_next + 1].y_poly && y1j <= polygonVertices[index_next + 1].y_poly
-		 && index_next != polygonVertices.size() - 1) {
+	  while (x2i >= PolyB->polygonVertices[index_next + 1].x_poly && x1i <= PolyB->polygonVertices[index_next + 1].x_poly
+		 && count != PolyB->polygonVertices.size() - 2
+		 && y2j >= PolyB->polygonVertices[index_next + 1].y_poly && y1j <= PolyB->polygonVertices[index_next + 1].y_poly
+		 && index_next != PolyB->polygonVertices.size() - 1) {
 	    // Add the second point to solid points in the cell
-	    face_intersect.push_back(cutVert(polygonVertices[index_next + 1].x_poly, polygonVertices[index_next + 1].y_poly, 0.0));
+	    face_intersect.push_back(cutVert(PolyB->polygonVertices[index_next + 1].x_poly, PolyB->polygonVertices[index_next + 1].y_poly, 0.0));
 	    // Add the ID to the list to skip it in the process
 	    skip_id.push_back(index_next);
 
 	    // Index of the next line of polygon
-	    index_next = (index_next + 1) % (polygonVertices.size() - 1);
+	    index_next = (index_next + 1) % (PolyB->polygonVertices.size() - 1);
 	    //////////////////////////////////////////////////////////////////
 	    ////////    Finding intersection points for the next line  ///////
 	    //////////////////////////////////////////////////////////////////
-	    if (x1i >= x_min_face[index_next] && x1i <= x_max_face[index_next] && x1i != polygonVertices[index_next].x_poly) {
-	      y2i_intersect = slope[index_next] * (x1i - polygonVertices[index_next].x_poly) + polygonVertices[index_next].y_poly;
+	    if (x1i >= x_min_face[index_next] && x1i <= x_max_face[index_next] && x1i != PolyB->polygonVertices[index_next].x_poly) {
+	      y2i_intersect = slope[index_next] * (x1i - PolyB->polygonVertices[index_next].x_poly) + PolyB->polygonVertices[index_next].y_poly;
 	      if (y2i_intersect > y2j || y2i_intersect < y1j) {
 		y2i_intersect = 0.0;
 	      }
 	      x2i_intersect = x1i;
 	    }
-	    if (x2i >= x_min_face[index_next] && x2i <= x_max_face[index_next] && x2i != polygonVertices[index_next].x_poly) {
-	      y2i_intersect = slope[index_next] * (x2i - polygonVertices[index_next].x_poly) + polygonVertices[index_next].y_poly;
+	    if (x2i >= x_min_face[index_next] && x2i <= x_max_face[index_next] && x2i != PolyB->polygonVertices[index_next].x_poly) {
+	      y2i_intersect = slope[index_next] * (x2i - PolyB->polygonVertices[index_next].x_poly) + PolyB->polygonVertices[index_next].y_poly;
 	      if (y2i_intersect > y2j || y2i_intersect < y1j) {
 		y2i_intersect = 0.0;
 	      }
 	      x2i_intersect = x2i;
 	    }
-	    if (y1j >= y_min_face[index_next] && y1j <= y_max_face[index_next] && y1j != polygonVertices[index_next].y_poly) {
-	      x2j_intersect = ((y1j - polygonVertices[index_next].y_poly) / slope[index_next]) + polygonVertices[index_next].x_poly;
+	    if (y1j >= y_min_face[index_next] && y1j <= y_max_face[index_next] && y1j != PolyB->polygonVertices[index_next].y_poly) {
+	      x2j_intersect = ((y1j - PolyB->polygonVertices[index_next].y_poly) / slope[index_next]) + PolyB->polygonVertices[index_next].x_poly;
 	      if (x2j_intersect > x2i || x2j_intersect < x1i) {
 		x2j_intersect = 0.0;
 	      }
 	      y2j_intersect = y1j;
 	    }
-	    if (y2j >= y_min_face[index_next] && y2j <= y_max_face[index_next] && y2j != polygonVertices[index_next].y_poly) {
-	      x2j_intersect = ((y2j - polygonVertices[index_next].y_poly) / slope[index_next]) + polygonVertices[index_next].x_poly;
+	    if (y2j >= y_min_face[index_next] && y2j <= y_max_face[index_next] && y2j != PolyB->polygonVertices[index_next].y_poly) {
+	      x2j_intersect = ((y2j - PolyB->polygonVertices[index_next].y_poly) / slope[index_next]) + PolyB->polygonVertices[index_next].x_poly;
 	      if (x2j_intersect > x2i || x2j_intersect < x1i) {
 		x2j_intersect = 0.0;
 	      }
@@ -335,7 +330,7 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	    }
 	  }
 
-	  if (y1j == polygonVertices[id + 1].y_poly && x1i == polygonVertices[id + 1].x_poly) {
+	  if (y1j == PolyB->polygonVertices[id + 1].y_poly && x1i == PolyB->polygonVertices[id + 1].x_poly) {
 	    if ((x1i_intersect == x2i && y1i_intersect == y1j) || (x1j_intersect == x2i && y1j_intersect == y1j) || (x2i_intersect == x2i && y2i_intersect == y1j) || (x2j_intersect == x2i && y2j_intersect == y1j)) {
 	      continue;
 	    }
@@ -344,7 +339,7 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	    }
 	  }
 
-	  if (y2j == polygonVertices[id + 1].y_poly && x1i == polygonVertices[id + 1].x_poly) {
+	  if (y2j == PolyB->polygonVertices[id + 1].y_poly && x1i == PolyB->polygonVertices[id + 1].x_poly) {
 	    if ((x1i_intersect == x2i && y1i_intersect == y2j) || (x1j_intersect == x2i && y1j_intersect == y2j) || (x2i_intersect == x2i && y2i_intersect == y2j) || (x2j_intersect == x2i && y2j_intersect == y2j)) {
 
 	      continue;
@@ -354,7 +349,7 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	    }
 	  }
 
-	  if (y1j == polygonVertices[id + 1].y_poly && x2i == polygonVertices[id + 1].x_poly) {
+	  if (y1j == PolyB->polygonVertices[id + 1].y_poly && x2i == PolyB->polygonVertices[id + 1].x_poly) {
 	    if ((x1i_intersect == x2i && y1i_intersect == y2j) || (x1j_intersect == x2i && y1j_intersect == y2j) || (x2i_intersect == x2i && y2i_intersect == y2j) || (x2j_intersect == x2i && y2j_intersect == y2j)) {
 
 	      continue;
@@ -364,7 +359,7 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	    }
 	  }
 
-	  if (y2j == polygonVertices[id + 1].y_poly && x2i == polygonVertices[id + 1].x_poly) {
+	  if (y2j == PolyB->polygonVertices[id + 1].y_poly && x2i == PolyB->polygonVertices[id + 1].x_poly) {
 	    if ((x1i_intersect == x2i && y1i_intersect == y1j) || (x1j_intersect == x2i && y1j_intersect == y1j) || (x2i_intersect == x2i && y2i_intersect == y1j) || (x2j_intersect == x2i && y2j_intersect == y1j)) {
 	      continue;
 	    }
@@ -378,17 +373,18 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	  }
 
 
-	  for (auto k = k_start; k <= k_cut_end; k++) {
+	  for (auto k = PolyB->k_start; k <= PolyB->k_cut_end; k++) {
 	    icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
 	    // If the cell is not in the terrain
 	    if (WGD->icellflag[icell_cent] != 2) {
 	      // If the cell is not marked as the cut-cell before, create one
-	      if (WGD->icellflag[icell_cent] != 7) {
+	      if ((WGD->icellflag[icell_cent] != 7 && WGD->ibuilding_flag[icell_cent] == building_number) ||
+	      WGD->icellflag[icell_cent] == 1){
 		WGD->icellflag[icell_cent] = 7;
 		cut_points.push_back(cutCell(icell_cent));
 		cut_cell_id.push_back(icell_cent);
 		counter = cut_cell_id.size() - 1;
-	      } else { // If the cell is already marked as a cut-cell, add to the points
+	      }else if (WGD->icellflag[icell_cent] == 7){ // If the cell is already marked as a cut-cell, add to the points
 		it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
 		counter = std::distance(cut_cell_id.begin(), it);
 		if (counter == cut_cell_id.size()) {
@@ -396,16 +392,19 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 		  cut_cell_id.push_back(icell_cent);
 		  counter = cut_cell_id.size() - 1;
 		}
+	      }else{
+	      	continue;
 	      }
 	    }
+
 	    // If it is a cut-cell, find the solid points and push them to the list
 	    if (WGD->icellflag[icell_cent] == 7) {
 	      height_flag = 1;
 	      cut_points[counter].z_solid = WGD->dz_array[k];
-	      if (k == k_cut_end) {
-		if (height_eff - WGD->z_face[k_cut_end] < WGD->dz_array[k]) {
+	      if (k == PolyB->k_cut_end) {
+		if (PolyB->height_eff - WGD->z_face[PolyB->k_cut_end] < WGD->dz_array[k]) {
 		  height_flag = 0;
-		  cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end];
+		  cut_points[counter].z_solid = PolyB->height_eff - WGD->z_face[PolyB->k_cut_end];
 		}
 	      }
 	      for (auto ii = 0u; ii < face_intersect.size(); ii++) {
@@ -599,16 +598,16 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	  }
 	  // Calculate intersection of two lines in x and y directions
 	  if (x1i >= x_min_face[id] && x1i <= x_max_face[id]) {
-	    y1i = slope[id] * (x1i - polygonVertices[id].x_poly) + polygonVertices[id].y_poly;
+	    y1i = slope[id] * (x1i - PolyB->polygonVertices[id].x_poly) + PolyB->polygonVertices[id].y_poly;
 	  }
 	  if (x2i >= x_min_face[id] && x2i <= x_max_face[id]) {
-	    y2i = slope[id] * (x2i - polygonVertices[id].x_poly) + polygonVertices[id].y_poly;
+	    y2i = slope[id] * (x2i - PolyB->polygonVertices[id].x_poly) + PolyB->polygonVertices[id].y_poly;
 	  }
 	  if (y1j >= y_min_face[id] && y1j <= y_max_face[id]) {
-	    x1j = ((y1j - polygonVertices[id].y_poly) / slope[id]) + polygonVertices[id].x_poly;
+	    x1j = ((y1j - PolyB->polygonVertices[id].y_poly) / slope[id]) + PolyB->polygonVertices[id].x_poly;
 	  }
 	  if (y2j >= y_min_face[id] && y2j <= y_max_face[id]) {
-	    x2j = ((y2j - polygonVertices[id].y_poly) / slope[id]) + polygonVertices[id].x_poly;
+	    x2j = ((y2j - PolyB->polygonVertices[id].y_poly) / slope[id]) + PolyB->polygonVertices[id].x_poly;
 	  }
 	  // If intersection points are outside of cell bound, skip the cell
 	  if (x1j == 0.0 && x2j == 0.0 && y1i == 0.0 && y2i == 0.0) {
@@ -632,17 +631,18 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	  //////                          is in y bounds of cell.                             ////////
 	  ////////////////////////////////////////////////////////////////////////////////////////////
 	  if (y2i >= j * WGD->dy && y2i <= (j + 1) * WGD->dy) {
-	    for (auto k = k_start; k <= k_cut_end; k++) {
-
+	    
+	    for (auto k = PolyB->k_start; k <= PolyB->k_cut_end; k++) {
 	      icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
 	      if (WGD->icellflag[icell_cent] != 2) {// If the cell is not terrain
 		// Check to see if the cell is already a cut-cell
-		if (WGD->icellflag[icell_cent] != 7) {
+		if ((WGD->icellflag[icell_cent] != 7 && WGD->ibuilding_flag[icell_cent] == building_number) ||
+		    WGD->icellflag[icell_cent] == 1){
 		  WGD->icellflag[icell_cent] = 7;
 		  cut_points.push_back(cutCell(icell_cent));
 		  cut_cell_id.push_back(icell_cent);
 		  counter = cut_cell_id.size() - 1;
-		}else { // If the cell is cut-cell, find the index
+		}else if (WGD->icellflag[icell_cent] == 7){ // If the cell is already marked as a cut-cell, add to the points
 		  it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
 		  counter = std::distance(cut_cell_id.begin(), it);
 		  if (counter == cut_cell_id.size()) {
@@ -650,6 +650,8 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 		    cut_cell_id.push_back(icell_cent);
 		    counter = cut_cell_id.size() - 1;
 		  }
+		}else{
+		  continue;
 		}
 	      }
 
@@ -658,12 +660,12 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 		cut_points[counter].intersect.push_back(cutVert((x1i - i * WGD->dx), (y1i - j * WGD->dy), 0.0));
 		cut_points[counter].intersect.push_back(cutVert((x2i - i * WGD->dx), (y2i - j * WGD->dy), 0.0));
 		cut_points[counter].z_solid = WGD->dz_array[k];
-		if (k == k_cut_end) {
-		  if (height_eff - WGD->z_face[k_cut_end] < WGD->dz_array[k]) {
+		if (k == PolyB->k_cut_end) {
+		  if (PolyB->height_eff - WGD->z_face[PolyB->k_cut_end] < WGD->dz_array[k]) {
 		    // Define corner points
 		    cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
 		    // Define solid height of the cell
-		    cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end];
+		    cut_points[counter].z_solid = PolyB->height_eff - WGD->z_face[PolyB->k_cut_end];
 		  }
 		}
 		// Define solid points on each face
@@ -690,16 +692,17 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	  //////                          is lower than cell's y bound                        ////////
 	  ////////////////////////////////////////////////////////////////////////////////////////////
 	  else if (y2i < j * WGD->dy) {
-	    for (auto k = k_start; k <= k_cut_end; k++) {
+	    for (auto k = PolyB->k_start; k <= PolyB->k_cut_end; k++) {
 	      icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
 	      if (WGD->icellflag[icell_cent] != 2) { // If the cell is not terrain
 		// Check to see if the cell is already a cut-cell
-		if (WGD->icellflag[icell_cent] != 7) { 
+		if ((WGD->icellflag[icell_cent] != 7 && WGD->ibuilding_flag[icell_cent] == building_number) ||
+		    WGD->icellflag[icell_cent] == 1){
 		  WGD->icellflag[icell_cent] = 7;
 		  cut_points.push_back(cutCell(icell_cent));
 		  cut_cell_id.push_back(icell_cent);
 		  counter = cut_cell_id.size() - 1;
-		} else { // If the cell is cut-cell, find the index
+		}else if (WGD->icellflag[icell_cent] == 7){ // If the cell is already marked as a cut-cell, add to the points
 		  it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
 		  counter = std::distance(cut_cell_id.begin(), it);
 		  if (counter == cut_cell_id.size()) {
@@ -707,6 +710,8 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 		    cut_cell_id.push_back(icell_cent);
 		    counter = cut_cell_id.size() - 1;
 		  }
+		}else{
+		  continue;
 		}
 	      }
 	      if (WGD->icellflag[icell_cent] == 7) {
@@ -714,12 +719,12 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 		cut_points[counter].intersect.push_back(cutVert((x1i - i * WGD->dx), (y1i - j * WGD->dy), 0.0));
 		cut_points[counter].z_solid = WGD->dz_array[k];
 
-		if (k == k_cut_end) {
-		  if (height_eff - WGD->z_face[k_cut_end] < WGD->dz_array[k]) {
+		if (k == PolyB->k_cut_end) {
+		  if (PolyB->height_eff - WGD->z_face[PolyB->k_cut_end] < WGD->dz_array[k]) {
 		    // Define corner point
 		    cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
 		    // Define solid height of the cell
-		    cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end];
+		    cut_points[counter].z_solid = PolyB->height_eff - WGD->z_face[PolyB->k_cut_end];
 		  }
 		}
 
@@ -747,16 +752,17 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	  //////                          is greater than cell's y bound                        ////////
 	  ////////////////////////////////////////////////////////////////////////////////////////////
 	  else if (y2i > (j + 1) * WGD->dy) {
-	    for (auto k = k_start; k <= k_cut_end; k++) {
+	    for (auto k = PolyB->k_start; k <= PolyB->k_cut_end; k++) {
 	      icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
 	      if (WGD->icellflag[icell_cent] != 2) { // If the cell is not terrain
 		// Check to see if the cell is already a cut-cell
-		if (WGD->icellflag[icell_cent] != 7) {
+		if ((WGD->icellflag[icell_cent] != 7 && WGD->ibuilding_flag[icell_cent] == building_number) ||
+		    WGD->icellflag[icell_cent] == 1){
 		  WGD->icellflag[icell_cent] = 7;
 		  cut_points.push_back(cutCell(icell_cent));
 		  cut_cell_id.push_back(icell_cent);
 		  counter = cut_cell_id.size() - 1;
-		} else { // If the cell is cut-cell, find the index
+		}else if (WGD->icellflag[icell_cent] == 7){ // If the cell is already marked as a cut-cell, add to the points
 		  it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
 		  counter = std::distance(cut_cell_id.begin(), it);
 		  if (counter == cut_cell_id.size()) {
@@ -764,6 +770,8 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 		    cut_cell_id.push_back(icell_cent);
 		    counter = cut_cell_id.size() - 1;
 		  }
+		}else{
+		  continue;
 		}
 	      }
 
@@ -772,12 +780,12 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 		cut_points[counter].intersect.push_back(cutVert((x1i - i * WGD->dx), (y1i - j * WGD->dy), 0.0));
 
 		cut_points[counter].z_solid = WGD->dz_array[k];
-		if (k == k_cut_end) {
-		  if (height_eff - WGD->z_face[k_cut_end] < WGD->dz_array[k]) {
+		if (k == PolyB->k_cut_end) {
+		  if (PolyB->height_eff - WGD->z_face[PolyB->k_cut_end] < WGD->dz_array[k]) {
 		    // Define corner points
 		    cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
 		    // Define solid height of the cell
-		    cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end];
+		    cut_points[counter].z_solid = PolyB->height_eff - WGD->z_face[PolyB->k_cut_end];
 		  }
 		}
 		// Define solid points on each face
@@ -811,24 +819,27 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	  //////                        is lower than cell's y bound.                         ////////
 	  ////////////////////////////////////////////////////////////////////////////////////////////
 	  if (y1i <= j * WGD->dy) {
-	    for (auto k = k_start; k <= k_cut_end; k++) {
+	    for (auto k = PolyB->k_start; k <= PolyB->k_cut_end; k++) {
 	      icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
 	      if (WGD->icellflag[icell_cent] != 2) { // If the cell is not terrain
 		// Check to see if the cell is already a cut-cell
-		if (WGD->icellflag[icell_cent] != 7) {
-		  WGD->icellflag[icell_cent] = 7;
+		if ((WGD->icellflag[icell_cent] != 7 && WGD->ibuilding_flag[icell_cent] == building_number) ||
+	      WGD->icellflag[icell_cent] == 1){
+		WGD->icellflag[icell_cent] = 7;
+		cut_points.push_back(cutCell(icell_cent));
+		cut_cell_id.push_back(icell_cent);
+		counter = cut_cell_id.size() - 1;
+	      }else if (WGD->icellflag[icell_cent] == 7){ // If the cell is already marked as a cut-cell, add to the points
+		it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
+		counter = std::distance(cut_cell_id.begin(), it);
+		if (counter == cut_cell_id.size()) {
 		  cut_points.push_back(cutCell(icell_cent));
 		  cut_cell_id.push_back(icell_cent);
 		  counter = cut_cell_id.size() - 1;
-		} else { // If the cell is cut-cell, find the index
-		  it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
-		  counter = std::distance(cut_cell_id.begin(), it);
-		  if (counter == cut_cell_id.size()) {
-		    cut_points.push_back(cutCell(icell_cent));
-		    cut_cell_id.push_back(icell_cent);
-		    counter = cut_cell_id.size() - 1;
-		  }
 		}
+	      }else{
+	      	continue;
+	      }
 	      }
 
 	      if (WGD->icellflag[icell_cent] == 7) {
@@ -836,12 +847,12 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 		cut_points[counter].intersect.push_back(cutVert((x2i - i * WGD->dx), (y2i - j * WGD->dy), 0.0));
 
 		cut_points[counter].z_solid = WGD->dz_array[k];
-		if (k == k_cut_end) {
-		  if (height_eff - WGD->z_face[k_cut_end] < WGD->dz_array[k]) {
+		if (k == PolyB->k_cut_end) {
+		  if (PolyB->height_eff - WGD->z_face[PolyB->k_cut_end] < WGD->dz_array[k]) {
 		    // Define corner points
 		    cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
 		    // Define solid height of the cell
-		    cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end];
+		    cut_points[counter].z_solid = PolyB->height_eff - WGD->z_face[PolyB->k_cut_end];
 		  }
 		}
 
@@ -870,16 +881,17 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	  //////                        is greater than cell's y bound.                       ////////
 	  ////////////////////////////////////////////////////////////////////////////////////////////
 	  if (y1i >= (j + 1) * WGD->dy) {
-	    for (auto k = k_start; k <= k_cut_end; k++) {
+	    for (auto k = PolyB->k_start; k <= PolyB->k_cut_end; k++) {
 	      icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
 	      if (WGD->icellflag[icell_cent] != 2) { // If the cell is not terrain
 		// Check to see if the cell is already a cut-cell
-		if (WGD->icellflag[icell_cent] != 7) {
+		if ((WGD->icellflag[icell_cent] != 7 && WGD->ibuilding_flag[icell_cent] == building_number) ||
+		    WGD->icellflag[icell_cent] == 1){
 		  WGD->icellflag[icell_cent] = 7;
 		  cut_points.push_back(cutCell(icell_cent));
 		  cut_cell_id.push_back(icell_cent);
 		  counter = cut_cell_id.size() - 1;
-		} else { // If the cell is cut-cell, find the index
+		}else if (WGD->icellflag[icell_cent] == 7){ // If the cell is already marked as a cut-cell, add to the points
 		  it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
 		  counter = std::distance(cut_cell_id.begin(), it);
 		  if (counter == cut_cell_id.size()) {
@@ -887,6 +899,8 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 		    cut_cell_id.push_back(icell_cent);
 		    counter = cut_cell_id.size() - 1;
 		  }
+		}else{
+		  continue;
 		}
 	      }
 
@@ -895,12 +909,12 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 		cut_points[counter].intersect.push_back(cutVert((x2i - i * WGD->dx), (y2i - j * WGD->dy), 0.0));
 
 		cut_points[counter].z_solid = WGD->dz_array[k];
-		if (k == k_cut_end) {
-		  if (height_eff - WGD->z_face[k_cut_end] < WGD->dz_array[k]) {
+		if (k == PolyB->k_cut_end) {
+		  if (PolyB->height_eff - WGD->z_face[PolyB->k_cut_end] < WGD->dz_array[k]) {
 		    // Define corner points
 		    cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
 		    // Define solid height of the cell
-		    cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end];
+		    cut_points[counter].z_solid = PolyB->height_eff - WGD->z_face[PolyB->k_cut_end];
 		  }
 		}
 
@@ -932,16 +946,17 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	/////////////////////////////////////////////////////////////////////////////////////////////
 	if (y1i == j * WGD->dy && y2i == (j + 1) * WGD->dy) {
 	  if (x1j == i * WGD->dx && x2j == (i + 1) * WGD->dx) {
-	    for (auto k = k_start; k <= k_cut_end; k++) {
+	    for (auto k = PolyB->k_start; k <= PolyB->k_cut_end; k++) {
 	      icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
 	      if (WGD->icellflag[icell_cent] != 2) { // If the cell is not terrain
 		// Check to see if the cell is already a cut-cell
-		if (WGD->icellflag[icell_cent] != 7) {
+		if ((WGD->icellflag[icell_cent] != 7 && WGD->ibuilding_flag[icell_cent] == building_number) ||
+		    WGD->icellflag[icell_cent] == 1){
 		  WGD->icellflag[icell_cent] = 7;
 		  cut_points.push_back(cutCell(icell_cent));
 		  cut_cell_id.push_back(icell_cent);
 		  counter = cut_cell_id.size() - 1;
-		} else { // If the cell is cut-cell, find the index
+		}else if (WGD->icellflag[icell_cent] == 7){ // If the cell is already marked as a cut-cell, add to the points
 		  it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
 		  counter = std::distance(cut_cell_id.begin(), it);
 		  if (counter == cut_cell_id.size()) {
@@ -949,18 +964,20 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 		    cut_cell_id.push_back(icell_cent);
 		    counter = cut_cell_id.size() - 1;
 		  }
+		}else{
+		  continue;
 		}
 	      }
 
 	      if (WGD->icellflag[icell_cent] == 7) {
 		// Add to the intersect points
 		cut_points[counter].intersect.push_back(cutVert((x1i - i * WGD->dx), (y1i - j * WGD->dy), 0.0));
-		if (k == k_cut_end) {
-		  if (height_eff - WGD->z_face[k_cut_end] < WGD->dz_array[k]) {
+		if (k == PolyB->k_cut_end) {
+		  if (PolyB->height_eff - WGD->z_face[PolyB->k_cut_end] < WGD->dz_array[k]) {
 		    // Define corner points
 		    cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
 		    // Define solid height of the cell
-		    cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end];
+		    cut_points[counter].z_solid = PolyB->height_eff - WGD->z_face[PolyB->k_cut_end];
 		  }
 		}
 	      }
@@ -975,16 +992,17 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	/////////////////////////////////////////////////////////////////////////////////////////////
 	if (y1i == (j + 1) * WGD->dy && y2i == j * WGD->dy) {
 	  if (x1j == (i + 1) * WGD->dx && x2j == i * WGD->dx) {
-	    for (auto k = k_start; k <= k_cut_end; k++) {
+	    for (auto k = PolyB->k_start; k <= PolyB->k_cut_end; k++) {
 	      icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
 	      if (WGD->icellflag[icell_cent] != 2) { // If the cell is not terrain
 		// Check to see if the cell is already a cut-cell
-		if (WGD->icellflag[icell_cent] != 7) {
+		if ((WGD->icellflag[icell_cent] != 7 && WGD->ibuilding_flag[icell_cent] == building_number) ||
+		    WGD->icellflag[icell_cent] == 1){
 		  WGD->icellflag[icell_cent] = 7;
 		  cut_points.push_back(cutCell(icell_cent));
 		  cut_cell_id.push_back(icell_cent);
 		  counter = cut_cell_id.size() - 1;
-		} else { // If the cell is cut-cell, find the index
+		}else if (WGD->icellflag[icell_cent] == 7){ // If the cell is already marked as a cut-cell, add to the points
 		  it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
 		  counter = std::distance(cut_cell_id.begin(), it);
 		  if (counter == cut_cell_id.size()) {
@@ -992,18 +1010,20 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 		    cut_cell_id.push_back(icell_cent);
 		    counter = cut_cell_id.size() - 1;
 		  }
+		}else{
+		  continue;
 		}
 	      }
 
 	      if (WGD->icellflag[icell_cent] == 7) {
 		// Add to the intersect points
 		cut_points[counter].intersect.push_back(cutVert((x1i - i * WGD->dx), (y1i - j * WGD->dy), 0.0));
-		if (k == k_cut_end) {
-		  if (height_eff - WGD->z_face[k_cut_end] < WGD->dz_array[k]) {
+		if (k == PolyB->k_cut_end) {
+		  if (PolyB->height_eff - WGD->z_face[PolyB->k_cut_end] < WGD->dz_array[k]) {
 		    // Define corner points
 		    cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
 		    // Define solid height of the cell
-		    cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end];
+		    cut_points[counter].z_solid = PolyB->height_eff - WGD->z_face[PolyB->k_cut_end];
 		  }
 		}
 	      }
@@ -1017,16 +1037,17 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	/////////////////////////////////////////////////////////////////////////////////////////////
 	if ((y1i > (j + 1) * WGD->dy || y1i < j * WGD->dy) && (y2i > (j + 1) * WGD->dy || y2i < j * WGD->dy)) {
 	  if (x1j > i * WGD->dx && x1j < (i + 1) * WGD->dx && x2j > i * WGD->dx && x2j < (i + 1) * WGD->dx) {
-	    for (auto k = k_start; k <= k_cut_end; k++) {
+	    for (auto k = PolyB->k_start; k <= PolyB->k_cut_end; k++) {
 	      icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
 	      if (WGD->icellflag[icell_cent] != 2) { // If the cell is not terrain
 		// Check to see if the cell is already a cut-cell
-		if (WGD->icellflag[icell_cent] != 7) {
+		if ((WGD->icellflag[icell_cent] != 7 && WGD->ibuilding_flag[icell_cent] == building_number) ||
+		    WGD->icellflag[icell_cent] == 1){
 		  WGD->icellflag[icell_cent] = 7;
 		  cut_points.push_back(cutCell(icell_cent));
 		  cut_cell_id.push_back(icell_cent);
 		  counter = cut_cell_id.size() - 1;
-		} else { // If the cell is cut-cell, find the index
+		}else if (WGD->icellflag[icell_cent] == 7){ // If the cell is already marked as a cut-cell, add to the points
 		  it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
 		  counter = std::distance(cut_cell_id.begin(), it);
 		  if (counter == cut_cell_id.size()) {
@@ -1034,6 +1055,8 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 		    cut_cell_id.push_back(icell_cent);
 		    counter = cut_cell_id.size() - 1;
 		  }
+		}else{
+		  continue;
 		}
 	      }
 
@@ -1042,12 +1065,12 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 		cut_points[counter].intersect.push_back(cutVert((x1j - i * WGD->dx), (y1j - j * WGD->dy), 0.0));
 
 		cut_points[counter].z_solid = WGD->dz_array[k];
-		if (k == k_cut_end) {
-		  if (height_eff - WGD->z_face[k_cut_end] < WGD->dz_array[k]) {
+		if (k == PolyB->k_cut_end) {
+		  if (PolyB->height_eff - WGD->z_face[PolyB->k_cut_end] < WGD->dz_array[k]) {
 		    // Define corner points
 		    cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
 		    // Define solid height of the cell
-		    cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end];
+		    cut_points[counter].z_solid = PolyB->height_eff - WGD->z_face[PolyB->k_cut_end];
 		  }
 		}
 
@@ -1089,15 +1112,15 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	  vert_id = 0;// Node index
 	  start_poly = vert_id;
 	  num_crossing = 0;
-	  while (vert_id < polygonVertices.size() - 1) {
-	    if ((polygonVertices[vert_id].y_poly <= y_face && polygonVertices[vert_id + 1].y_poly > y_face) || (polygonVertices[vert_id].y_poly > y_face && polygonVertices[vert_id + 1].y_poly <= y_face)) {
-	      ray_intersect = (y_face - polygonVertices[vert_id].y_poly) / (polygonVertices[vert_id + 1].y_poly - polygonVertices[vert_id].y_poly);
-	      if (x_face < (polygonVertices[vert_id].x_poly + ray_intersect * (polygonVertices[vert_id + 1].x_poly - polygonVertices[vert_id].x_poly))) {
+	  while (vert_id < PolyB->polygonVertices.size() - 1) {
+	    if ((PolyB->polygonVertices[vert_id].y_poly <= y_face && PolyB->polygonVertices[vert_id + 1].y_poly > y_face) || (PolyB->polygonVertices[vert_id].y_poly > y_face && PolyB->polygonVertices[vert_id + 1].y_poly <= y_face)) {
+	      ray_intersect = (y_face - PolyB->polygonVertices[vert_id].y_poly) / (PolyB->polygonVertices[vert_id + 1].y_poly - PolyB->polygonVertices[vert_id].y_poly);
+	      if (x_face < (PolyB->polygonVertices[vert_id].x_poly + ray_intersect * (PolyB->polygonVertices[vert_id + 1].x_poly - PolyB->polygonVertices[vert_id].x_poly))) {
 		num_crossing += 1;
 	      }
 	    }
 	    vert_id += 1;
-	    if (polygonVertices[vert_id].x_poly == polygonVertices[start_poly].x_poly && polygonVertices[vert_id].y_poly == polygonVertices[start_poly].y_poly) {
+	    if (PolyB->polygonVertices[vert_id].x_poly == PolyB->polygonVertices[start_poly].x_poly && PolyB->polygonVertices[vert_id].y_poly == PolyB->polygonVertices[start_poly].y_poly) {
 	      vert_id += 1;
 	      start_poly = vert_id;
 	    }
@@ -1142,36 +1165,36 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
               }
 
 	    if (ii == 1 && jj == 0)// Right bottom corner of the cell
-              {
-                cut_points[id].face_below.push_back(cutVert(WGD->dx, 0.0, 0.0));
-                cut_points[id].face_front.push_back(cutVert(WGD->dx, 0.0, 0.0));
-                cut_points[id].face_front.push_back(cutVert(WGD->dx, 0.0, cut_points[id].z_solid));
-                cut_points[id].face_right.push_back(cutVert(WGD->dx, 0.0, 0.0));
-                cut_points[id].face_right.push_back(cutVert(WGD->dx, 0.0, cut_points[id].z_solid));
-                if (cut_points[id].corner_id[7] == 1) {
-                  cut_points[id].face_above.push_back(cutVert(WGD->dx, 0.0, cut_points[id].z_solid));
-                }
-              }
+            {
+	      cut_points[id].face_below.push_back(cutVert(WGD->dx, 0.0, 0.0));
+	      cut_points[id].face_front.push_back(cutVert(WGD->dx, 0.0, 0.0));
+	      cut_points[id].face_front.push_back(cutVert(WGD->dx, 0.0, cut_points[id].z_solid));
+	      cut_points[id].face_right.push_back(cutVert(WGD->dx, 0.0, 0.0));
+	      cut_points[id].face_right.push_back(cutVert(WGD->dx, 0.0, cut_points[id].z_solid));
+	      if (cut_points[id].corner_id[7] == 1) {
+		cut_points[id].face_above.push_back(cutVert(WGD->dx, 0.0, cut_points[id].z_solid));
+	      }
+	    }
 	  }
 	}
       }
     }
   }
 
-  int k = k_cut_end; // Cell at the top of the column
+  int k = PolyB->k_cut_end; // Cell at the top of the column
   
-  if (height_eff - WGD->z_face[k] < WGD->dz_array[k]) {
-    for (auto j = j_start; j <= j_end; j++) {
-      for (auto i = i_start; i <= i_end; i++) {
+  if (PolyB->height_eff - WGD->z_face[k] < WGD->dz_array[k]) {
+    for (auto j = PolyB->j_start; j <= PolyB->j_end; j++) {
+      for (auto i = PolyB->i_start; i <= PolyB->i_end; i++) {
 	icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
 	if (WGD->icellflag[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] == 0 && WGD->icellflag[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] != 7 && WGD->ibuilding_flag[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] == building_number) { // If not a solid cell and belong to the same building
 	  // Check to see if the cell is already a cut-cell
-	  if (WGD->icellflag[icell_cent] != 7) {
+	  if (WGD->icellflag[icell_cent] != 7  || WGD->icellflag[icell_cent] == 1){
 	    WGD->icellflag[icell_cent] = 7;
 	    cut_points.push_back(cutCell(icell_cent));
 	    cut_cell_id.push_back(icell_cent);
 	    counter = cut_cell_id.size() - 1;
-	  } else { // If the cell is cut-cell, find the index
+	  }else if (WGD->icellflag[icell_cent] == 7){ // If the cell is already marked as a cut-cell, add to the points
 	    it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
 	    counter = std::distance(cut_cell_id.begin(), it);
 	    if (counter == cut_cell_id.size()) {
@@ -1179,11 +1202,13 @@ void CutBuilding::setCutCellFlags(WINDSGeneralData *WGD, int building_number, fl
 	      cut_cell_id.push_back(icell_cent);
 	      counter = cut_cell_id.size() - 1;
 	    }
+	  }else{
+	    continue;
 	  }
 
 	  // Define corner points
 	  cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-	  cut_points[counter].z_solid = height_eff - WGD->z_face[k]; // Define solid height of the cell
+	  cut_points[counter].z_solid = PolyB->height_eff - WGD->z_face[k]; // Define solid height of the cell
 	  if (WGD->icellflag[icell_cent] == 7) {
 	    cut_points[counter].intersect.push_back(cutVert(WGD->dx, WGD->dy, cut_points[counter].z_solid)); // Add to the intersect points
 
@@ -1472,7 +1497,8 @@ float CutBuilding::calculateArea(WINDSGeneralData *WGD, std::vector<cutVert> &fa
   }
 
   // Set the related solver coefficient values to the solid area fraction of the face
-  
+
+  // Behind face
   if (index == 0) {
     S = (1.0 - coeff) * (WGD->dy * WGD->dz_array[k]);
     if (WGD->f[cutcell_index] == 1.0) {
@@ -1485,7 +1511,7 @@ float CutBuilding::calculateArea(WINDSGeneralData *WGD, std::vector<cutVert> &fa
     }
   }
 
-
+  // Front face
   if (index == 1) {
     S = (1.0 - coeff) * (WGD->dy * WGD->dz_array[k]);
     if (WGD->e[cutcell_index] == 1.0) {
@@ -1498,7 +1524,7 @@ float CutBuilding::calculateArea(WINDSGeneralData *WGD, std::vector<cutVert> &fa
     }
   }
 
-
+  // Right face
   if (index == 2) {
     S = (1.0 - coeff) * (WGD->dx * WGD->dz_array[k]);
     if (WGD->h[cutcell_index] == 1.0) {
@@ -1510,6 +1536,8 @@ float CutBuilding::calculateArea(WINDSGeneralData *WGD, std::vector<cutVert> &fa
       }
     }
   }
+
+  // Left face
   if (index == 3) {
     S = (1.0 - coeff) * (WGD->dx * WGD->dz_array[k]);
     if (WGD->g[cutcell_index] == 1.0) {
@@ -1522,6 +1550,8 @@ float CutBuilding::calculateArea(WINDSGeneralData *WGD, std::vector<cutVert> &fa
       }
     }
   }
+
+  // Below face
   if (index == 4) {
     S = (1.0 - coeff) * (WGD->dx * WGD->dy);
     if (WGD->n[cutcell_index] == 1.0) {
@@ -1533,6 +1563,8 @@ float CutBuilding::calculateArea(WINDSGeneralData *WGD, std::vector<cutVert> &fa
       }
     }
   }
+
+  // Above face
   if (index == 5) {
     S = (1.0 - coeff) * (WGD->dx * WGD->dy);
     if (WGD->m[cutcell_index] == 1.0) {

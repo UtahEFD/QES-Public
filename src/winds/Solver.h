@@ -71,7 +71,7 @@ protected:
   const float B; /**< :document this: */
 
   float tol; /**< Error tolerance */
-  const float omega = 1.0f; /**< Over-relaxation factor */
+  const float omega = 1.78f; /**< Over-relaxation factor */
 
   int itermax; /**< Maximum number of iterations */
 

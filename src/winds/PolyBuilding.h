@@ -38,9 +38,9 @@
 #include <algorithm>
 
 #include "util/ParseInterface.h"
-
 #include "Building.h"
-#include "CutBuilding.h"
+
+class CutBuilding;
 
 using namespace std;
 using std::cerr;
@@ -55,9 +55,8 @@ using std::cout;
  * @brief Designed for the general building shape (polygons).
  *
  * It's an inheritance of the building class (has all the features defined in that class).
- * In this class, first, the polygone buildings will be defined and then different
- * parameterizations related to each building will be applied. For now, it only includes
- * wake behind the building parameterization.
+ * In this class, first, the polygon buildings will be defined and then different
+ * parameterizations related to each building will be applied. For now, 
  *
  * @sa Building
  * @sa ParseInterface
@@ -117,6 +116,7 @@ public:
   {
   }
 
+  //friend class CutBuilding;
 
   /**
    * Creates a polygon type building.

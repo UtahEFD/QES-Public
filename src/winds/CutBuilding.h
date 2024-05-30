@@ -38,7 +38,10 @@
 #include <algorithm>
 
 #include "util/ParseInterface.h"
-#include "Building.h"
+#include "WINDSInputData.h"
+#include "WINDSGeneralData.h"
+
+class PolyBuilding;
 
 
 using namespace std;
@@ -53,13 +56,10 @@ using std::cout;
  * @class CutBuliding
  * @brief Designed for applying the cut-cell method to the general building shape (polygons).
  *
- * It's an inheritance of the Building class (has all the features defined in that class).
- * In this class, the cut-cell method to the polygone buildings. 
+ * In this class, the cut-cell method to the polygon buildings. 
  *
- * @sa Building
- * @sa ParseInterface
  */
-class CutBuilding : public Building
+class CutBuilding
 {
 private:
 protected:
@@ -77,7 +77,6 @@ protected:
 public:
   
   CutBuilding()
-    : Building()
   {
   }
 
@@ -85,34 +84,40 @@ public:
   {
   }
 
-  void setCutCellFlags(WINDSGeneralData *WGD, int building_number, float x_min, float x_max, float y_min,
-		       float y_max, int i_start, int i_end, int j_start, int j_end, int k_start, int k_end,
-		       int k_cut_end, float base_height, float height_eff, std::vector<polyVert> polygonVertices);
+  /**
+   * This function calculates the cut-cell area fraction coefficients, the building volume fraction,
+   * and the cut face normal unit vectors, and sets up the solver coefficients of each face of the cell.
+   *
+   * @param WGD Winds general data class pointer
+   * @param PolyB polygon building class pointer
+   * @param building_number number of the building processing
+   */
+  void setCutCellFlags(WINDSGeneralData *WGD, const PolyBuilding *PolyB, int building_number);
 
   /**
-   * :document this:
+   * This function reorders the solid points of a face (passed to it) in a counter-clock wise order. 
    *
-   * @param face_points :document this:
-   * @param index :document this:
+   * @param face_points list of solid points on a face
+   * @param index index of the face that the points belong to
    */
   void reorderPoints(std::vector<cutVert> &face_points, int index);
 
   /**
-   * :document this:
+   * This function sorts (based on a merge sort algorithm) the solid points of a face (passed to it) based on their angles.
    *
-   * @param angle :document this:
-   * @param face_points :document this:
+   * @param angle list of angles of each point on a face
+   * @param face_points list of solid points on a face
    */
   void mergeSort(std::vector<float> &angle, std::vector<cutVert> &face_points);
 
 
   /**
-   * :document this:
+   * This calculates the area fraction coefficients of a face and sets up the solver coefficient related to the face.
    *
-   * @param WGD :document this:
-   * @param face_points :document this:
-   * @param cutcell_index :document this:
-   * @param index :document this:
+   * @param WGD Winds general data class pointer
+   * @param face_points list of solid points on a face
+   * @param cutcell_index index of the cut-cell
+   * @param index index of the face that the points belong to 
    */
   float calculateArea(WINDSGeneralData *WGD, std::vector<cutVert> &face_points, int cutcell_index, int index);
 

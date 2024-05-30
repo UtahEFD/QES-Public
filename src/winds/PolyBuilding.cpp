@@ -33,15 +33,15 @@
  * @brief Designed for the general building shape (polygons).
  *
  * It's an inheritance of the building class (has all the features defined in that class).
- * In this class, first, the polygone buildings will be defined and then different
- * parameterizations related to each building will be applied. For now, it only includes
- * wake behind the building parameterization.
+ * In this class, first, the polygon buildings will be defined and then different
+ * parameterizations related to each building will be applied.
  *
  * @sa Building
  * @sa ParseInterface
  */
 
 #include "PolyBuilding.h"
+#include "CutBuilding.h"
 
 // These take care of the circular reference
 #include "WINDSInputData.h"
@@ -195,6 +195,7 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
       vert_id = 0;// Node index
       start_poly = vert_id;
       num_crossing = 0;
+      
       while (vert_id < polygonVertices.size() - 1) {
         if ((polygonVertices[vert_id].y_poly <= y_cent && polygonVertices[vert_id + 1].y_poly > y_cent)
             || (polygonVertices[vert_id].y_poly > y_cent && polygonVertices[vert_id + 1].y_poly <= y_cent)) {
@@ -217,10 +218,12 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
       if ((num_crossing % 2) != 0) {
         for (auto k = k_start; k < k_end; k++) {
           int icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-          if (WID->simParams->readCoefficientsFlag == 0) {
+          if (WID->simParams->readCoefficientsFlag == 0 && WGD->icellflag[icell_cent] != 7) {
             WGD->icellflag[icell_cent] = 0;
           }
-          WGD->ibuilding_flag[icell_cent] = building_number;
+	  if (WGD->ibuilding_flag[icell_cent] == -1){
+            WGD->ibuilding_flag[icell_cent] = building_number;
+	  }
         }
         WGD->icellflag_footprint[i + j * (WGD->nx - 1)] = 0;
       }
@@ -229,7 +232,6 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
 
   if (mesh_type_flag == 1 && WID->simParams->readCoefficientsFlag == 0)// Cut-cell method for buildings
   {
-    cutBuilding->setCutCellFlags(WGD, building_number, x_min, x_max, y_min, y_max, i_start, i_end, j_start,
-				 j_end, k_start, k_end, k_cut_end, base_height, height_eff, polygonVertices);
+    cutBuilding->setCutCellFlags(WGD, this, building_number);
   }
 }
