@@ -375,6 +375,8 @@ void ESRIShapefile::loadVectorData(std::vector<std::vector<polyVert>> &polygons,
         exit(1);
       }
     }
+    
+    
     OGRGeometry *poGeometry;
     poGeometry = feature->GetGeometryRef();
     if (poGeometry != nullptr
@@ -398,6 +400,7 @@ void ESRIShapefile::loadVectorData(std::vector<std::vector<polyVert>> &polygons,
       pLinearRing = ((OGRPolygon *)poGeometry)->getExteriorRing();
       int vertexCount = pLinearRing->getNumPoints();
       // std::cout << "Building Poly #" << polyCount << " (" << vertexCount << " vertices):" << std::endl;
+      
 
       std::vector<polyVert> vertexList(vertexCount);
 
@@ -416,8 +419,6 @@ void ESRIShapefile::loadVectorData(std::vector<std::vector<polyVert>> &polygons,
         // std::endl;
         vertexList[vidx] = polyVert(x, y);
       }
-
-
       polyCount++;
       polygons.push_back(vertexList);
 

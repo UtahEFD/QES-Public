@@ -777,9 +777,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
           }
         }
         allBuildingsV[j]->base_height = min_height;
-      } else {
-        // allBuildingsV[j]->base_height = 0.0;
       }
+      
       allBuildingsV[j]->ID = j;
       allBuildingsV[j]->setPolyBuilding(this);
       allBuildingsV[j]->setCellFlags(WID, this, j);

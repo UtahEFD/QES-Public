@@ -5,8 +5,8 @@
   	<halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
 
-  	<domain> 250 200 750 </domain>					<!-- Number of cells in x,y and z directions-->
-  	<cellSize> 20.0 20.0 1.0 </cellSize> 				<!-- Mesh resolution (meters)-->
+  	<domain> 200 160 750 </domain>					<!-- Number of cells in x,y and z directions-->
+  	<cellSize> 25.0 25.0 1.0 </cellSize> 				<!-- Mesh resolution (meters)-->
 	<verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-costum grid)-->
 
 	<totalTimeIncrements> 67 </totalTimeIncrements> 			<!-- Number of time steps-->
@@ -19,7 +19,7 @@
 	<logLawFlag> 0 </logLawFlag> 					<!-- Log Law flag to apply the log law (0-off (default), 1-on) -->
 	<maxIterations> 500 </maxIterations> 				<!-- Maximum number of iterations (default = 500) -->
 	<tolerance> 1e-9 </tolerance> 					<!-- Convergence criteria (default = 1e-9) -->
-	<meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (original QES) (default), 1-Cut-cell method -->
+	<meshTypeFlag> 1 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (original QES) (default), 1-Cut-cell method -->
 	<domainRotation> 0 </domainRotation>  				<!-- Rotation angle of domain relative to true north -->
 	<originFlag> 0 </originFlag>					<!-- Origin flag (0- DEM coordinates (default), 1- UTM coordinates) -->
 	<DEMDistancex> 0.0 </DEMDistancex> 				<!-- x component (m) of origin in DEM coordinates (if originFlag = 0) -->

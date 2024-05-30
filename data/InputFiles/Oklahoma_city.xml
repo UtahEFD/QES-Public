@@ -4,8 +4,8 @@
     <halo_x> 30.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
     <halo_y> 30.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
 
-    <domain> 118 121 100</domain>                                    <!-- Number of cells in x,y and z directions-->
-    <cellSize> 10.0 10.0 2.0 </cellSize>                            <!-- Mesh resolution (meters)-->
+    <domain> 1180 1210 100</domain>                                    <!-- Number of cells in x,y and z directions-->
+    <cellSize> 1.0 1.0 2.0 </cellSize>                            <!-- Mesh resolution (meters)-->
 
     <verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-costum grid)-->
 
@@ -14,9 +14,9 @@
     <logLawFlag> 0 </logLawFlag> 					<!-- Log Law flag to apply the log law (0-off (default), 1-on) -->
     <maxIterations> 500 </maxIterations> 				<!-- Maximum number of iterations (default = 500) -->
     <tolerance> 1e-9 </tolerance> 					<!-- Convergence criteria, error threshold (default = 1e-9) -->
-    <meshTypeFlag> 1 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (original QES) (default), 1-Cut-cell method -->
+    <meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (original QES) (default), 1-Cut-cell method -->
     <domainRotation> 0 </domainRotation>  				<!-- Rotation angle of domain relative to true north -->
-    <UTMx> 634174 </UTMx> 						<!-- x component (m) in UTM -->
+    <UTMx> 634173.2 </UTMx> 						<!-- x component (m) in UTM -->
     <UTMy> 3925360.4 </UTMy> 						<!-- y component (m) in UTM -->
     <UTMZone> 1 </UTMZone> 						<!-- UTM zone that domain located -->
     <UTMZoneLetter> 17 </UTMZoneLetter>
@@ -26,19 +26,19 @@
 
   <metParams>
     <z0_domain_flag> 0 </z0_domain_flag>           			<!-- Distribution of sueface roughness for domain (0-uniform (default), 1-custom -->
-    <sensorName>sensor1.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+    <sensorName>sensor_OKC.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
 
   </metParams>								<!-- End of meteorological parameters -->
 
   <buildingsParams>
     <wallRoughness>0.01</wallRoughness>                                   <!-- Building wall roughness-->
-    <rooftopFlag> 1 </rooftopFlag> 					<!-- Rooftop flag (0-none, 1-log profile (default), 2-vortex) -->
-    <upwindCavityFlag> 2 </upwindCavityFlag> 			<!-- Upwind cavity flag (0-none, 1-Rockle, 2-MVP (default), 3-HMVP) -->
-    <streetCanyonFlag> 1 </streetCanyonFlag> 			<!-- Street canyon flag (0-none, 1-Roeckle w/ Fackrel (default)) -->
+    <rooftopFlag> 0 </rooftopFlag> 					<!-- Rooftop flag (0-none, 1-log profile (default), 2-vortex) -->
+    <upwindCavityFlag> 0 </upwindCavityFlag> 			<!-- Upwind cavity flag (0-none, 1-Rockle, 2-MVP (default), 3-HMVP) -->
+    <streetCanyonFlag> 0 </streetCanyonFlag> 			<!-- Street canyon flag (0-none, 1-Roeckle w/ Fackrel (default)) -->
     <streetIntersectionFlag> 0 </streetIntersectionFlag> 		<!--Street intersection flag (0-off, 1-on) -->
-    <wakeFlag> 2 </wakeFlag> 					<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle (default) -->
+    <wakeFlag> 0 </wakeFlag> 					<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle (default) -->
     <highRiseFlag> 0 </highRiseFlag>                            <!-- High-rise flag (0-off (default), 1-on) -->
-    <sidewallFlag> 1 </sidewallFlag> 				<!-- Sidewall flag (0-off, 1-on (default)) -->
+    <sidewallFlag> 0 </sidewallFlag> 				<!-- Sidewall flag (0-off, 1-on (default)) -->
 
     <SHPFile>../../scratch/OKCSmallDomain/OKCSmallDomainJU2003.shp</SHPFile>      <!-- Address to shapefile location-->
     <SHPBuildingLayer>OKCSmallDomainJU2003</SHPBuildingLayer>             <!-- Name of building layer in shapefile-->
