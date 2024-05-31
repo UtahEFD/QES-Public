@@ -427,7 +427,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         id = ii + jj * nx;
         for (size_t k = 0; k < z.size() - 1; k++) {
           terrain_face_id[id] = k;
-          if (terrain[idx] < z_face[k]) {
+          if (terrain[idx] <= z_face[k+1]) {
             break;
           }
         }
