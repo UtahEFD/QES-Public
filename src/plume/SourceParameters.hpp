@@ -46,6 +46,13 @@
 #include "SourceGeometry_SphereShell.hpp"
 
 #include "util/ParseInterface.h"
+#include "util/QESFileSystemHandler.h"
+
+#include <string>
+#include <netcdf>
+using namespace std;
+using namespace netCDF;
+using namespace netCDF::exceptions;
 
 
 class SourceParameters : public ParseInterface
@@ -54,10 +61,21 @@ private:
 public:
   int numSources;// number of sources, you fill in source information for each source next
   std::vector<ParseSource *> sources;// source type and the collection of all the different sources from input
+  std::string HRRRFile; /**< HRRR file name */
+  std::vector<std::string> inputFields; /**< HRRR input fields */
 
   virtual void parseValues()
   {
     parsePrimitive<int>(false, numSources, "numSources");
     parseMultiElements(false, sources, "source");
+    HRRRFile = "";
+    parsePrimitive<std::string>(false, HRRRFile, "HRRRFile");
+    std::cout << HRRRFile <<std::endl;
+    /*if (HRRRFile != ""){
+      HRRRFile = QESfs::get_absolute_path(HRRRFile);
+      }*/
+    std::cout << HRRRFile <<std::endl;
+    parseMultiPrimitives<std::string>(false, inputFields, "inputFields");
   }
+  
 };

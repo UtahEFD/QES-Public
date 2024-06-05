@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
     outputVec.push_back(new WINDSOutputVisualization(WGD, WID, arguments.netCDFFileVisu));
   }
   if (arguments.wkspOutput) {
-    outputVec.push_back(new WINDSOutputWorkspace(WGD, arguments.netCDFFileWksp));
+    outputVec.push_back(new WINDSOutputWorkspace(WID, WGD, arguments.netCDFFileWksp));
   }
 
   // Generate the general TURB data from WINDS data

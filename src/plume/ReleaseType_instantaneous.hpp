@@ -38,6 +38,7 @@
 #pragma once
 
 #include "ReleaseType.hpp"
+#include "winds/WINDSGeneralData.h"
 
 class ReleaseType_instantaneous : public ReleaseType
 {
@@ -54,13 +55,34 @@ public:
   {
   }
 
+  ReleaseType_instantaneous(HRRRData *hrrrInputData, int sid) : ReleaseType(ParticleReleaseType::instantaneous)
+  {
+    float hrrrDx = 3000;
+    float hrrrDy = 3000;
+    float hrrrDz = 2;
+    float QESdx = 100;
+    float QESdy = 100;
+    float QESdz = 5;
+    float particleMass = 1.8*pow(10, -12);
+    
+    if (hrrrInputData->hrrrC[sid] > 0){
+      m_numPar = ((hrrrInputData->hrrrC[sid]/pow(10, 9)))/particleMass;
+    }else{
+      m_numPar = 0;
+    }
+
+    /*std::cout << "sid:    " << sid << std::endl;
+    std::cout << "hrrrInputData->hrrrC[sid]:  " << hrrrInputData->hrrrC[sid] << std::endl;
+    std::cout << "m_numPar:  " << m_numPar << std::endl;*/
+  }
+
   // destructor
   ~ReleaseType_instantaneous() = default;
 
 
   void parseValues() override
   {
-    parsePrimitive<int>(true, m_numPar, "numPar");
+    parsePrimitive<int>(false, m_numPar, "numPar");
   }
 
   void calcReleaseInfo(const double &timestep, const double &simDur) override

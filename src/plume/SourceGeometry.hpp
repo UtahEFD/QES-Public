@@ -68,8 +68,8 @@ enum SourceShape {
 class SourceGeometry : public ParseInterface
 {
 private:
-  SourceGeometry() = default;
 
+  SourceGeometry() = default;
 protected:
   // ParticleTypeFactory *m_particleTypeFactory = nullptr;
   // ParseParticle *m_protoParticle = nullptr;
@@ -78,6 +78,8 @@ public:
   // this is a description variable for determining the source shape. May or may not be used.
   // !!! this needs set by parseValues() in each source generated from input files.
   SourceShape m_sGeom;
+
+  
   
   // constructor
   explicit SourceGeometry(const SourceShape &type) : m_sGeom(type)

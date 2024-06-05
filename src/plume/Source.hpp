@@ -63,20 +63,24 @@
 // #include "Interp.h"
 #include "util/ParseInterface.h"
 #include "winds/WINDSGeneralData.h"
+#include "util/HRRRData.h"
+//#include "PlumeInputData.hpp"
 
 class Source;
+class PlumeInputData;
 
 class ParseSource : public ParseInterface
 {
 private:
 protected:
-  ParseParticle *m_protoParticle{};
-  SourceGeometry *m_sourceGeometry{};
-  ReleaseType *m_releaseType{};
 
   double sourceStrength = 0.0;// total mass released (g)
 
 public:
+
+  ParseParticle *m_protoParticle{};
+  SourceGeometry *m_sourceGeometry{};
+  ReleaseType *m_releaseType{};
   // this is the index of the source in the dispersion class overall list of sources
   // this is used to set the source ID for a given particle, to know from which source each particle comes from
   // !!! this will only be set correctly if a call to setSourceIdx() is done by the class that sets up a vector of this class.
@@ -159,6 +163,7 @@ protected:
 
   ParticleTypeFactory *m_particleTypeFactory;
   ParseParticle *m_protoParticle;
+  Particle *m_particle;
   SourceGeometry *m_sourceGeometry;
   ReleaseType *m_releaseType;
 
@@ -230,6 +235,22 @@ public:
     m_particleTypeFactory = new ParticleTypeFactory();
   }
 
+
+  Source(HRRRData *hrrrInputData, WINDSGeneralData *WGD, int sid)
+  {
+    sourceIdx = sid;
+    //m_particle = new ParticleTracer();
+    m_sourceGeometry = new SourceGeometry_Point(hrrrInputData, WGD, sid);
+    m_releaseType = new ReleaseType_instantaneous(hrrrInputData, sid);
+
+    // set types
+    //m_pType = m_protoParticle->particleType;
+    m_sGeom = m_sourceGeometry->m_sGeom;
+    m_rType = m_releaseType->parReleaseType;
+
+    //m_particleTypeFactory = new ParticleTypeFactory();
+  }
+
   // destructor
   virtual ~Source() = default;
 
@@ -247,7 +268,14 @@ public:
   // !!! Because the input vector is never empty if there is more than one source,
   //   the size of the vector should NOT be used for output for this function!
   //  In order to make this function work correctly, the number of particles to release per timestep needs to be the output
-  virtual int emitParticles(const float &dt,
+  /*virtual int emitParticles(const float &dt,
+                            const float &currTime,
+                            std::list<Particle *> &emittedParticles);*/
+
+  virtual int emitParticles(const PlumeInputData *PID, const float &dt,
                             const float &currTime,
                             std::list<Particle *> &emittedParticles);
+
+  void checkReleaseInfo(const double &timestep, const double &simDur);
 };
+

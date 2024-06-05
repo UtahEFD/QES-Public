@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
     outputVec.push_back(new WINDSOutputVisualization(WGD, WID, arguments.netCDFFileVisu));
   }
   if (arguments.wkspOutput) {
-    outputVec.push_back(new WINDSOutputWorkspace(WGD, arguments.netCDFFileWksp));
+    outputVec.push_back(new WINDSOutputWorkspace(WID, WGD, arguments.netCDFFileWksp));
   }
 
 
@@ -197,7 +197,7 @@ int main(int argc, char *argv[])
       } else {
         endtime = WGD->timestamp[index + 1];
       }
-      plume->run(endtime, WGD, TGD, outputPlume);
+      plume->run(endtime, PID, WGD, TGD, outputPlume);
     }
   }
 

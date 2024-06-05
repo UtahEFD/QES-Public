@@ -53,6 +53,9 @@ Plume::Plume(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   dy = WGD->dy;
   dz = WGD->dz;
   dxy = WGD->dxy;
+  WGD->UTMx = 658000;
+  WGD->UTMy = 5190000;
+  WGD->UTMZone = 10;
 }
 
 Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
@@ -79,6 +82,12 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   dy = WGD->dy;
   dz = WGD->dz;
   dxy = WGD->dxy;
+
+  std::cout << "WGD->UTMx:  " << WGD->UTMx << std::endl;
+
+  WGD->UTMx = 658000;
+  WGD->UTMy = 5110000;
+  WGD->UTMZone = 10;
 
   // Create instance of Interpolation class
   std::cout << "[QES-Plume] \t Interpolation Method set to: "
@@ -155,7 +164,7 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   // !!! totalParsToRelease needs calculated very carefully here using
   // information from each of the sources
   if (PID->sourceParams) {
-    getInputSources(PID);
+    getInputSources(PID, WGD);
   } else {
     std::cout << "[WARNING]\t no source parameters" << std::endl;
   }
@@ -194,7 +203,7 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   deposition = new Deposition(WGD);
 }
 
-void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD, std::vector<QESNetCDFOutput *> outputVec)
+void Plume::run(QEStime loopTimeEnd, PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD, std::vector<QESNetCDFOutput *> outputVec)
 {
   auto startTimeAdvec = std::chrono::high_resolution_clock::now();
 
@@ -246,7 +255,7 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
   // FMargairaz -> need clean-up
   while (simTimeCurr < loopTimeEnd) {
     // need to release new particles -> add new particles to the number to move
-    int nParsToRelease = generateParticleList(simTime, WGD, TGD);
+    int nParsToRelease = generateParticleList(simTime, PID, WGD, TGD);
     if (debug) {
       std::cout << "Time = " << simTime << " s (iteration = " << simTimeIdx
                 << "). Finished emitting particles "
@@ -458,28 +467,56 @@ double Plume::calcCourantTimestep(const double &d,
   return std::min(timeRemainder, CN * min_ds / max_u);
 }
 
-void Plume::getInputSources(PlumeInputData *PID)
+void Plume::getInputSources(PlumeInputData *PID, WINDSGeneralData *WGD)
 {
-  int numSources_Input = PID->sourceParams->sources.size();
+  if (PID->sourceParams->HRRRFile != ""){
+      std::cout << "Processing HRRR data..." << std::flush;
+      hrrrInputData = new HRRRData(PID->sourceParams->HRRRFile, PID->sourceParams->inputFields);
+      hrrrInputData->findHRRRSources(PID, WGD);
 
-  if (numSources_Input == 0) {
-    std::cerr << "[ERROR]\t Plume::getInputSources: \n\t\t there are no sources in the input file!" << std::endl;
-    exit(1);
-  }
+      /*std::cout << "hrrrInputData->hrrrTime.size(): " << hrrrInputData->hrrrTime.size() << std::endl;
+      QEStime* hrrrTime;
+      for (size_t t = 0; t < hrrrInputData->hrrrTime.size(); t++) {
+	hrrrTime = new QEStime(hrrrInputData->hrrrTimeTrans[t]);
+	QEStime tmp(hrrrTime->getTimestamp());
+	sourceTime.push_back(tmp);
+	}*/
+      
+      hrrrInputData->readSourceData(0);
 
-  // start at zero particles to release and increment as the number per source
-  // totalParsToRelease = 0;
+      for (size_t i = 0; i < hrrrInputData->hrrrSourceID.size(); i++) {
+        // Create new sensor object
+        allSources.push_back(new Source(hrrrInputData, WGD, i));
+	allSources[i]->checkReleaseInfo(PID->plumeParams->timeStep, PID->plumeParams->simDur);
+	totalParsToRelease += allSources[i]->getNumParticles();
+      }
+      
+      std::cout << "[done]" << std::endl;
 
-  for (auto s : PID->sourceParams->sources) {
-    // now do anything that is needed to the source via the pointer
-    s->checkReleaseInfo(PID->plumeParams->timeStep, PID->plumeParams->simDur);
-    s->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
+      std::cout << "allSources.size():   "  << allSources.size() << std::endl; 
+      
+  }else{
+    int numSources_Input = PID->sourceParams->sources.size();
 
-    // now determine the number of particles to release for the source and update the overall count
-    totalParsToRelease += s->getNumParticles();
+    if (numSources_Input == 0) {
+      std::cerr << "[ERROR]\t Plume::getInputSources: \n\t\t there are no sources in the input file!" << std::endl;
+      exit(1);
+    }
 
-    // add source into the vector of sources
-    allSources.push_back(new Source((int)allSources.size(), s));
+    // start at zero particles to release and increment as the number per source
+    // totalParsToRelease = 0;
+
+    for (auto s : PID->sourceParams->sources) {
+      // now do anything that is needed to the source via the pointer
+      s->checkReleaseInfo(PID->plumeParams->timeStep, PID->plumeParams->simDur);
+      s->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
+      
+      // now determine the number of particles to release for the source and update the overall count
+      totalParsToRelease += s->getNumParticles();
+
+      // add source into the vector of sources
+      allSources.push_back(new Source((int)allSources.size(), s));
+    }
   }
 }
 
@@ -489,7 +526,7 @@ void Plume::addSources(std::vector<Source *> &newSources)
 }
 
 
-int Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBGeneralData *TGD)
+int Plume::generateParticleList(float currentTime, PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
 
   // Add new particles now
@@ -498,7 +535,7 @@ int Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBGe
   std::list<Particle *> nextSetOfParticles;
   int numNewParticles = 0;
   for (auto source : allSources) {
-    numNewParticles += source->emitParticles((float)sim_dt, currentTime, nextSetOfParticles);
+    numNewParticles += source->emitParticles(PID, (float)sim_dt, currentTime, nextSetOfParticles);
   }
 
   setParticleVals(WGD, TGD, nextSetOfParticles);

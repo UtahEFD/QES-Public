@@ -230,12 +230,6 @@ void WindProfilerHRRR::biLinearInterpolation(const WINDSInputData *WID, WINDSGen
   site3_id = WGD->closest_site_ids[id][2];
   site4_id = WGD->closest_site_ids[id][3];
 
-  /*if (i == 175 && j == 477 && k < 2){
-    std::cout << "site1_id:  " << site1_id << std::endl;
-    std::cout << "site2_id:  " << site2_id << std::endl;
-    std::cout << "site3_id:  " << site3_id << std::endl;
-    std::cout << "site4_id:  " << site4_id << std::endl;
-    }*/
 
   x1 = WID->metParams->sensors[site1_id]->site_xcoord;
   x2 = WID->metParams->sensors[site2_id]->site_xcoord;
@@ -250,24 +244,9 @@ void WindProfilerHRRR::biLinearInterpolation(const WINDSInputData *WID, WINDSGen
   r1 = ((xi-x1)*(y2-y1)/(x2-x1)) + y1;
   r2 = ((xi-x4)*(y3-y4)/(x3-x4)) + y4;
 
-  /*if (i == 175 && j == 477 && k < 2){
-    std::cout << "x1:  " << x1 << std::endl;
-    std::cout << "x2:  " << x2 << std::endl;
-    std::cout << "x3:  " << x3 << std::endl;
-    std::cout << "x4:  " << x4 << std::endl;
-    std::cout << "y1:  " << y1 << std::endl;
-    std::cout << "y2:  " << y2 << std::endl;
-    std::cout << "y3:  " << y3 << std::endl;
-    std::cout << "y4:  " << y4 << std::endl;
-    std::cout << "xi:  " << xi << std::endl;
-    std::cout << "yj:  " << yj << std::endl;
-    std::cout << "r1:  " << r1 << std::endl;
-    std::cout << "r2:  " << r2 << std::endl;
-    }*/
-
   float z_terrain;
   int jj;
-  //std::cout << "WGD->closest_site_ids[id].size():  " << WGD->closest_site_ids[id].size() << std::endl;
+  
   for (auto ii = 0; ii < WGD->closest_site_ids[id].size(); ii++){
     jj = WGD->closest_site_ids[id][ii];
     
@@ -320,32 +299,12 @@ void WindProfilerHRRR::biLinearInterpolation(const WINDSInputData *WID, WINDSGen
       u[ii] = u_prof[jj * WGD->nz + k + WGD->terrain_face_id[site_id[jj]]-1];
       v[ii] = v_prof[jj * WGD->nz + k + WGD->terrain_face_id[site_id[jj]]-1];
     }
-
-    /*if (i == 175 && j == 477 && k < 3){
-      std::cout << "ii:  " << ii << std::endl;
-      std::cout << "jj:  " << jj << std::endl;
-      std::cout << "k:  " << k << std::endl;
-      std::cout << "k_mod:  " << k_mod << std::endl;
-      std::cout << "site_i[jj]:  " << site_i[jj] << std::endl;
-      std::cout << "site_j[jj]:  " << site_j[jj] << std::endl;
-      std::cout << "WGD->z[WGD->terrain_face_id[idx]]:  " << WGD->z[WGD->terrain_face_id[idx]] << std::endl;
-      std::cout << "z_terrain:  " << z_terrain << std::endl;
-      std::cout << "abl_height[jj]:  " << abl_height[jj] << std::endl;
-      std::cout << "surf_layer_height:  " << surf_layer_height << std::endl;
-      std::cout << "u[ii]:  " << u[ii] << std::endl;
-      std::cout << "v[ii]:  " << v[ii] << std::endl;
-      }*/
   }
 
   WGD->u0[icell_face] = ( (r2-yj) * ( (u[0]*(x2-xi)/(x2-x1)) + (u[1]*(xi-x1)/(x2-x1))) / (r2-r1) ) +
     ( (yj-r1) * ( (u[3]*(x3-xi)/(x3-x4)) + (u[2]*(xi-x4)/(x3-x4))) / (r2-r1) );
   WGD->v0[icell_face] = ( (r2-yj) * ( (v[0]*(x2-xi)/(x2-x1)) + (v[1]*(xi-x1)/(x2-x1))) / (r2-r1) ) +
     ( (yj-r1) * ( (v[3]*(x3-xi)/(x3-x4)) + (v[2]*(xi-x4)/(x3-x4))) / (r2-r1) );
-
-  /*if (i == 175 && j == 477 && k < 3){
-      std::cout << "WGD->u0[icell_face]:  " << WGD->u0[icell_face] << std::endl;
-      std::cout << "WGD->v0[icell_face]:  " << WGD->v0[icell_face] << std::endl;
-      }*/
   
   return;
 }

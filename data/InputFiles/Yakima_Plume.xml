@@ -1,52 +1,30 @@
 <QESPlumeParameters>
   <plumeParameters>
     <CourantNumber> 0.25 </CourantNumber>
-    <simDur> 27000.0 </simDur><!-- this is the amount of time to run the simulation -->
-    <timeStep> 10.0 </timeStep><!-- this is the overall integration timestep -->
+    <simDur> 3600.0 </simDur><!-- this is the amount of time to run the simulation -->
+    <timeStep> 60.0 </timeStep><!-- this is the overall integration timestep -->
     <invarianceTol> 1e-5 </invarianceTol>     <!-- tolerance in makeRealizeable on the stress tensor -->
     <C_0> 1 </C_0>
     <interpolationMethod>triLinear</interpolationMethod> 
     <updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop> <!-- Only used in debug mode. -->
-    <updateFrequency_timeLoop> 120 </updateFrequency_timeLoop> <!-- frequency to print out information during the time integration loop of the solver -->
+    <updateFrequency_timeLoop> 10 </updateFrequency_timeLoop> <!-- frequency to print out information during the time integration loop of the solver -->
   </plumeParameters>
   <collectionParameters><!-- collecting output parameters -->
     <timeAvgStart> 000.0 </timeAvgStart>   <!-- time to start concentration averaging -->
-    <timeAvgFreq> 120.0 </timeAvgFreq>   <!-- time averaging frequency and output frequency -->
+    <timeAvgFreq> 60.0 </timeAvgFreq>   <!-- time averaging frequency and output frequency -->
     <boxBoundsX1> 0 </boxBoundsX1>
     <boxBoundsX2> 70000 </boxBoundsX2>
     <boxBoundsY1> 0 </boxBoundsY1>
     <boxBoundsY2> 80000 </boxBoundsY2>
-    <boxBoundsZ1> 0.0 </boxBoundsZ1>
+    <boxBoundsZ1> 0 </boxBoundsZ1>
     <boxBoundsZ2> 1600 </boxBoundsZ2>
     <nBoxesX> 700 </nBoxesX>
     <nBoxesY> 800 </nBoxesY>
     <nBoxesZ> 320 </nBoxesZ>
   </collectionParameters>
   <sourceParameters>
-    <source>
-      <releaseType_duration>
-	<releaseStartTime> 0 </releaseStartTime>
-	<releaseEndTime> 27000 </releaseEndTime>
-	<parPerTimestep> 500 </parPerTimestep>
-      </releaseType_duration>
-      <sourceGeometry_Point>
-	<posX> 20000 </posX>
-	<posY> 40000 </posY>
-	<posZ> 340. </posZ>
-      </sourceGeometry_Point>
-    </source>
-    <source>
-      <releaseType_duration>
-	<releaseStartTime> 10000 </releaseStartTime>
-	<releaseEndTime> 27000 </releaseEndTime>
-	<parPerTimestep> 1000 </parPerTimestep>
-      </releaseType_duration>
-      <sourceGeometry_Point>
-	<posX> 50000 </posX>
-	<posY> 40000 </posY>
-	<posZ> 210. </posZ>
-      </sourceGeometry_Point>
-    </source>
+    <HRRRFile>/uufs/chpc.utah.edu/common/home/stoll-group4/behnam/HRRR_branch/QES-Winds/scratch/Sep_2020_smoke.nc</HRRRFile>
+    <inputFields>MASSDEN_8maboveground</inputFields>
   </sourceParameters>
   <boundaryConditions>
     <xBCtype>exiting</xBCtype>
@@ -55,4 +33,5 @@
     <wallReflection>stairstepReflection</wallReflection>  <!-- type of wall reflection: doNothing; setInactive; stairstepReflection -->
     <doDepositions>false</doDepositions>
   </boundaryConditions>
+
 </QESPlumeParameters>

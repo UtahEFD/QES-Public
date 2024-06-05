@@ -76,8 +76,10 @@
 
 #include "Particle.hpp"
 #include "Source.hpp"
+#include "util/HRRRData.h"
 
 #include "SourceGeometry.hpp"
+#include "SourceGeometry_Point.hpp"
 
 class Plume
 {
@@ -105,7 +107,7 @@ public:
   // LA future work: Need to add a CFL condition where the user specifies a courant number that varies from 0 to 1
   //  that is used to do an additional time remainder time integration loop for each particle, forcing particles to only
   //  move one cell at a time.
-  void run(QEStime, WINDSGeneralData *, TURBGeneralData *, std::vector<QESNetCDFOutput *>);
+  void run(QEStime, PlumeInputData *, WINDSGeneralData *, TURBGeneralData *, std::vector<QESNetCDFOutput *>);
 
   void addSources(std::vector<Source *> &newSources);
 
@@ -212,6 +214,11 @@ protected:
   bool debug = false;
   bool verbose = false;
 
+  // HRRR Input class
+  HRRRData *hrrrInputData;
+
+  std::vector<QEStime> sourceTime; /**< :document this: */
+
 private:
   void setParticleVals(WINDSGeneralData *, TURBGeneralData *, std::list<Particle *>);
   // this function gets sources from input data and adds them to the allSources vector
@@ -219,10 +226,10 @@ private:
   // !!! note that these check and calc functions have to be called here
   //  because each source requires extra data not found in the individual source data
   // !!! totalParsToRelease needs calculated very carefully here using information from each of the sources
-  void getInputSources(PlumeInputData *);
+  void getInputSources(PlumeInputData *, WINDSGeneralData *);
 
   // this function generates the list of particle to be released at a given time
-  int generateParticleList(float, WINDSGeneralData *, TURBGeneralData *);
+  int generateParticleList(float, PlumeInputData *, WINDSGeneralData *, TURBGeneralData *);
 
   // this function scrubs the inactive particle for the particle list (particleList)
   void scrubParticleList();

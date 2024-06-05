@@ -84,6 +84,7 @@ int main(int argc, char **argv)
 
   // Create instance of QES-winds General data class
   WINDSGeneralData *WGD = new WINDSGeneralData(arguments.inputWINDSFile);
+  std::cout << "WGD->UTMx:   " <<  WGD->UTMx << std::endl;
   // Create instance of QES-Turb General data class
   TURBGeneralData *TGD = new TURBGeneralData(arguments.inputTURBFile, WGD);
 
@@ -112,7 +113,7 @@ int main(int argc, char **argv)
     } else {
       endtime = WGD->timestamp[index + 1];
     }
-    plume->run(endtime, WGD, TGD, outputVec);
+    plume->run(endtime, PID, WGD, TGD, outputVec);
 
     // compute run time information and print the elapsed execution time
     std::cout << "[QES-Plume] \t Finished." << std::endl;

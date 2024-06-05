@@ -35,6 +35,7 @@
 #include <string>
 
 #include "WINDSGeneralData.h"
+#include "WINDSInputData.h"
 #include "util/QESNetCDFOutput.h"
 #include "util/QEStime.h"
 
@@ -49,7 +50,7 @@ private:
   WINDSOutputWorkspace() {}
 
 public:
-  WINDSOutputWorkspace(WINDSGeneralData *, std::string);
+  WINDSOutputWorkspace(WINDSInputData *, WINDSGeneralData *, std::string);
   ~WINDSOutputWorkspace()
   {}
 
@@ -66,6 +67,8 @@ private:
   std::vector<float> m_x, m_y, m_z;
   std::vector<float> m_x_face, m_y_face, m_z_face;
   std::vector<float> m_dz_array;
+
+  float m_utmx, m_utmy, m_utmzone;
 
   WINDSGeneralData *m_WGD;
 

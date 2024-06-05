@@ -76,6 +76,10 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   numcell_cout_2d = (nx - 1) * (ny - 1);// Total number of horizontal cell-centered values in domain
   numcell_cent = (nx - 1) * (ny - 1) * (nz - 1);// Total number of cell-centered values in domain
   numcell_face = nx * ny * nz;// Total number of face-centered values in domain
+
+  UTMx = WID->simParams->UTMx;
+  UTMy = WID->simParams->UTMy;
+  UTMZone = WID->simParams->UTMZone;
     
 
   //////////////////////////////////////////////////////////////////////////////////
@@ -623,6 +627,9 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         jj = j + halo_index_y;
         idx = ii + jj * (nx - 1);
         terrain[idx] = WID->simParams->DTE_mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
+	if (ii == 12 && jj == 320){
+	  std::cout << "terrain[idx]:   " << terrain[idx] << std::endl;
+	}
         if (terrain[idx] < 0.0) {
           terrain[idx] = 0.0;
         }

@@ -36,7 +36,7 @@
 
 #include "WINDSOutputWorkspace.h"
 
-WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, std::string output_file)
+WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSInputData *WID, WINDSGeneralData *WGD, std::string output_file)
   : QESNetCDFOutput(output_file)
 {
   std::cout << "[Output] \t Setting fields of workspace file" << std::endl;
@@ -90,6 +90,19 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, std::string ou
   for (auto k = 0; k < nz; ++k) {
     m_z_face[k] = m_WGD->z_face[k];
   }
+
+  m_utmx = m_WGD->UTMx;
+  std::cout << "m_utmx:   " << m_utmx << std::endl;
+  
+  // set UTM dimensions
+  NcDim NcDim_utm_x = addDimension("UTMx", 1);
+  //NcDim NcDim_utm_y = addDimension("UTMy", 1);
+  //NcDim NcDim_utm_zone = addDimension("UTMzone", 1);
+
+  // create attributes UTM dimensions
+  std::vector<NcDim> dim_utm_x;
+  dim_utm_x.push_back(NcDim_utm_x);
+  createAttScalar("UTMx", "UTMx", "m", dim_utm_x, &m_utmx);
 
   // set face-centered data dimensions
   // space dimensions
@@ -296,7 +309,8 @@ void WINDSOutputWorkspace::setAllOutputFields()
 {
   all_output_fields.clear();
   // all possible output fields need to be add to this list
-  all_output_fields = { "x",
+  all_output_fields = { "UTMx",
+		        "x",
                         "y",
                         "z",
                         "x_face",

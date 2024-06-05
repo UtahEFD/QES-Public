@@ -41,12 +41,16 @@ namespace btime = boost::posix_time;
 #include "HRRRData.h"
 #include "winds/WINDSGeneralData.h"
 #include "winds/WINDSInputData.h"
+#include "plume/PlumeInputData.hpp"
 
 
 
 HRRRData::HRRRData(std::string fileName, std::vector<std::string> HRRRFields)
 {
   netcdf = new  NetCDFInput(fileName);
+
+  std::cout << "fileName:   " << fileName << std::endl;
+  std::cout << "HRRRFields:   " << HRRRFields[0] << std::endl;
     
   netcdf->getDimension("time", timeDim);
   netcdf->getDimensionSize("time", timeSize);
@@ -121,6 +125,50 @@ void HRRRData::findHRRRSensors(const WINDSInputData *WID, WINDSGeneralData *WGD)
 	hrrrSensorUTMy.push_back(double(siteUTMy[id]));
 	hrrrSensorUTMzone.push_back(siteUTMzone[id]);
 	hrrrSensorID.push_back(id);
+      }
+    }
+  }
+
+}
+
+
+void HRRRData::findHRRRSources(const PlumeInputData *PID, WINDSGeneralData *WGD){
+  siteUTMx.resize( xSize * ySize );
+  siteUTMy.resize( xSize * ySize );
+  siteUTMzone.resize( xSize * ySize );
+  float temp_utmx, temp_utmy;
+  //float hrrr_x = 6000.0;
+  //float hrrr_y = 6000.0;
+  temp_utmx = float(WGD->UTMx);
+  temp_utmy = float(WGD->UTMy);
+  float lat_south, lat_north, lon_east, lon_west;
+  GIStool::UTMConverter(lon_west,lat_south,temp_utmx,temp_utmy,WGD->UTMZone,true,1);
+  temp_utmx = float(WGD->UTMx) + float((WGD->nx-1) * WGD->dx);
+  temp_utmy = float(WGD->UTMy) + float((WGD->ny-1) * WGD->dy);
+  GIStool::UTMConverter(lon_east,lat_north,temp_utmx,temp_utmy,WGD->UTMZone,true,1);
+    
+  for (auto i = 0; i < xSize; i++){
+    for (auto j = 0; j < ySize; j++){
+      int id = i + j * xSize;
+      if (siteLat[id] >= lat_south && siteLat[id] <= lat_north
+	  && siteLon[id] >= lon_west && siteLon[id] <= lon_east){
+	
+	float temp_lat, temp_lon;
+	temp_lat = float(siteLat[id]);
+	temp_lon = float(siteLon[id]);
+	GIStool::UTMConverter(temp_lon,temp_lat,siteUTMx[id],siteUTMy[id],siteUTMzone[id] ,true,0);
+	hrrrSourceUTMx.push_back(double(siteUTMx[id]));
+	hrrrSourceUTMy.push_back(double(siteUTMy[id]));
+	hrrrSourceUTMzone.push_back(siteUTMzone[id]);
+	hrrrSourceID.push_back(id);
+	if (i == 301 && j == 900){
+	  std::cout << "i:   " << i << std::endl;
+	  std::cout << "j:   " << j << std::endl;
+	  std::cout << "hrrrSourceID.size():   " << hrrrSourceID.size() << std::endl;
+	  std::cout << "id:   " << id << std::endl;
+	  std::cout << "siteLat[id]:   " << siteLat[id] << std::endl;
+	  std::cout << "siteLon[id]:   " << siteLon[id] << std::endl;
+	}
       }
     }
   }
@@ -230,3 +278,19 @@ void HRRRData::readAloftData(int t){
 }
  
 
+void HRRRData::readSourceData(int t){
+  
+  std::vector<size_t> stepStartIdx = {t,0,0};
+  std::vector<size_t> stepCounts = {1,static_cast<unsigned long>(ySize),static_cast<unsigned long>(xSize)};
+  hrrrCon.resize( xSize * ySize );
+  netcdf->getVariableData("MASSDEN_8maboveground", stepStartIdx, stepCounts, hrrrCon);
+
+  hrrrC.clear();
+  for (size_t i = 0; i < hrrrSourceID.size(); i++) {
+    //std::cout << "hrrrSourceID[i]:  " << hrrrSourceID[i] << std::endl;
+    //std::cout << "hrrrCon[hrrrSourceID[i]]:  " << hrrrCon[hrrrSourceID[i]] << std::endl;
+    hrrrC.push_back(hrrrCon[hrrrSourceID[i]]);
+      
+  }
+  
+}

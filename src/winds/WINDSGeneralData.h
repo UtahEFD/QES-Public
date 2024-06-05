@@ -155,6 +155,9 @@ public:
 
   int wrf_nx, wrf_ny;
 
+  float UTMx, UTMy;
+  int UTMZone;
+
   float halo_x, halo_y;
   int halo_index_x, halo_index_y;
 

@@ -36,6 +36,7 @@
  */
 
 #include "Source.hpp"
+#include "PlumeInputData.hpp"
 
 void ParseSource::setReleaseType()
 {
@@ -98,6 +99,7 @@ void ParseSource::setSourceGeometry()
 
   // the number of release types is 1, so now set the public release type to be the one that we have
   m_sourceGeometry = sGeom_tmp.at(0);
+  std::cout << " sGeom_tmp.at(0):   " << sGeom_tmp.at(0) << std::endl;
 }
 
 void ParseSource::setParticleType()
@@ -139,7 +141,14 @@ void ParseSource::checkPosInfo(const double &domainXstart,
   m_sourceGeometry->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
 }
 
-int Source::emitParticles(const float &dt,
+
+void Source::checkReleaseInfo(const double &timestep, const double &simDur)
+{
+  m_releaseType->calcReleaseInfo(timestep, simDur);
+  m_releaseType->checkReleaseInfo(timestep, simDur);
+}
+
+/*int Source::emitParticles(const float &dt,
                           const float &currTime,
                           std::list<Particle *> &emittedParticles)
 {
@@ -169,4 +178,69 @@ int Source::emitParticles(const float &dt,
   }
 
   return emittedParticles.size();// m_rType->m_parPerTimestep;
+}*/
+
+
+int Source::emitParticles(const PlumeInputData *PID, const float &dt,
+                          const float &currTime,
+                          std::list<Particle *> &emittedParticles)
+{
+  if (PID->sourceParams->HRRRFile != ""){
+    // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
+    if (currTime >= m_releaseType->m_releaseStartTime && currTime <= m_releaseType->m_releaseEndTime) {
+
+      for (int pidx = 0; pidx < m_releaseType->m_parPerTimestep; pidx++) {
+
+	// Particle *cPar = new Particle();
+	Particle *cPar = new Particle(0.0, 0.0, 0.0);
+	//m_particle->setParticleParameters(cPar);
+	m_sourceGeometry->setInitialPosition(cPar);
+
+	//cPar->m = sourceStrength / m_releaseType->m_numPar;
+	//cPar->m_kg = cPar->m * (1.0E-3);
+	//cPar->m_o = cPar->m;
+	//cPar->m_kg_o = cPar->m * (1.0E-3);
+	// std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
+
+	//cPar->xPos_init = 
+
+	cPar->tStrt = currTime;
+
+	cPar->sourceIdx = sourceIdx;
+
+	emittedParticles.push_front(cPar);
+      }
+    }
+
+    //return emittedParticles.size();// m_rType->m_parPerTimestep;
+  }else{
+    // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
+    if (currTime >= m_releaseType->m_releaseStartTime && currTime <= m_releaseType->m_releaseEndTime) {
+
+      for (int pidx = 0; pidx < m_releaseType->m_parPerTimestep; pidx++) {
+
+	// Particle *cPar = new Particle();
+	Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
+	m_protoParticle->setParticleParameters(cPar);
+	m_sourceGeometry->setInitialPosition(cPar);
+
+	cPar->m = sourceStrength / m_releaseType->m_numPar;
+	cPar->m_kg = cPar->m * (1.0E-3);
+	cPar->m_o = cPar->m;
+	cPar->m_kg_o = cPar->m * (1.0E-3);
+	// std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
+
+
+	cPar->tStrt = currTime;
+
+	cPar->sourceIdx = sourceIdx;
+
+	emittedParticles.push_front(cPar);
+      }
+    }
+  }
+
+  return emittedParticles.size();// m_rType->m_parPerTimestep;
+      
+  
 }
