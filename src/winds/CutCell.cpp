@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -29,19 +29,19 @@
  ****************************************************************************/
 
 /**
- * @file Cut_cell.cpp
+ * @file CutCell.cpp
  * @brief Designed to store and handle information related to the Cut_cells.
  *
  * @sa Cell
  */
 
-#include "Cut_cell.h"
+#include "CutCell.h"
 
 #include "WINDSInputData.h"
 #include "WINDSGeneralData.h"
 
 
-void Cut_cell::reorderPoints(std::vector<Vector3> &cut_points, int index, float pi)
+void CutCell::reorderPoints(std::vector<Vector3> &cut_points, int index, float pi)
 {
 
   Vector3 centroid;
@@ -80,7 +80,7 @@ void Cut_cell::reorderPoints(std::vector<Vector3> &cut_points, int index, float 
 }
 
 
-void Cut_cell::mergeSort(std::vector<float> &angle, std::vector<Vector3> &cutPoints)
+void CutCell::mergeSort(std::vector<float> &angle, std::vector<Vector3> &cutPoints)
 {
   // if the size of the array is 1, it is already sorted
   if (angle.size() == 1)
@@ -126,7 +126,7 @@ void Cut_cell::mergeSort(std::vector<float> &angle, std::vector<Vector3> &cutPoi
   return;
 }
 
-float Cut_cell::calculateArea(std::vector<Vector3> &cut_points, int cutcell_index, float dx, float dy, float dz, std::vector<float> &n, std::vector<float> &m, std::vector<float> &f, std::vector<float> &e, std::vector<float> &h, std::vector<float> &g, int index)
+float CutCell::calculateArea(std::vector<Vector3> &cut_points, int cutcell_index, float dx, float dy, float dz, std::vector<float> &n, std::vector<float> &m, std::vector<float> &f, std::vector<float> &e, std::vector<float> &h, std::vector<float> &g, int index)
 {
   float S = 0.0;
   float coeff = 0;
@@ -173,7 +173,7 @@ float Cut_cell::calculateArea(std::vector<Vector3> &cut_points, int cutcell_inde
 }
 
 
-float Cut_cell::calculateAreaTopBot(std::vector<Vector3> &terrainPoints,
+float CutCell::calculateAreaTopBot(std::vector<Vector3> &terrainPoints,
                                     const std::vector<Edge<int>> &terrainEdges,
                                     const int cellIndex,
                                     const float dx,
