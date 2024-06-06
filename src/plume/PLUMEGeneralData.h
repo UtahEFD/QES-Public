@@ -50,6 +50,7 @@
 #include "util/QEStime.h"
 #include "util/calcTime.h"
 #include "util/Vector3.h"
+#include "util/VectorMath.h"
 // #include "Matrix3.h"
 #include "Random.h"
 #include "RandomSingleton.h"
@@ -66,6 +67,8 @@
 #include "InterpNearestCell.h"
 #include "InterpPowerLaw.h"
 #include "InterpTriLinear.h"
+
+#include "GLE_Solver.h"
 
 #include "DomainBoundaryConditions.h"
 
@@ -151,6 +154,8 @@ public:
   // ALL Sources that will be used
   // std::vector<Source *> allSources;
 
+  GLE_Solver *GLE_solver;
+
 #ifdef _OPENMP
   // if using openmp the RNG is not thread safe, use an array of RNG (one per thread)
   std::vector<Random *> threadRNG;
@@ -165,6 +170,7 @@ public:
   WallReflection *wallReflect = nullptr;
 
   ParticleOutput *particleOutput = nullptr;
+
 
 private:
   // Deposition *deposition = nullptr;
@@ -207,6 +213,7 @@ private:
   int isActiveCount = 0;
   int isReleasedCount = 0;
 
+public:
   // important time variables not copied from dispersion
   // the Courant number, used to know how to divide up the simulation timestep into smaller per particle timesteps.
   double CourantNum = 0.0;
@@ -269,9 +276,7 @@ public:
                   double &par_dt);
  */
 
-  void GLE_solver(Particle *p,
-                  double &par_dt,
-                  TURBGeneralData *TGD);
+  void GLE_solver_func(Particle *p, double &par_dt, TURBGeneralData *TGD);
 
   void depositParticle(const double &xPos,
                        const double &yPos,
@@ -321,8 +326,8 @@ public:
                              const double &w,
                              const double &timeRemainder);
 
-private:
-  // utility functions for the plume solver
+  // private:
+  //  utility functions for the plume solver
   static void calcInvariants(const double &txx,
                              const double &txy,
                              const double &txz,

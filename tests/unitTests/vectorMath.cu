@@ -33,7 +33,7 @@
  * @brief :document this:
  */
 
-#include "vectorMath.h"
+#include "util/VectorMath.h"
 
 __device__ void calcInvariants(const mat3sym &tau, vec3 &invar)
 {
@@ -47,7 +47,7 @@ __device__ void calcInvariants(const mat3sym &tau, vec3 &invar)
              + tau._13 * (tau._12 * tau._23 - tau._22 * tau._13);
 }
 
-__device__ void makeRealizable(float invarianceTol, mat3sym &tau)
+__device__ void makeRealizable(const float &invarianceTol, mat3sym &tau)
 {
   // first calculate the invariants and see if they are already realizable
   vec3 invar = { 0.0, 0.0, 0.0 };
@@ -107,8 +107,8 @@ __device__ void makeRealizable(float invarianceTol, mat3sym &tau)
   }
 
   if (iter == 999) {
-    //std::cout << "WARNING (Plume::makeRealizable): unable to make stress "
-    //             "tensor realizble.";
+    // std::cout << "WARNING (Plume::makeRealizable): unable to make stress "
+    //              "tensor realizble.";
   }
 
   // now set the output actual stress tensor using the separate temporary stress

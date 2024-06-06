@@ -157,7 +157,7 @@ void HeavyParticle_Model::advect(const double &total_time_interval,
       //  update the par_time, useful for debugging
       // par_time = par_time + par_dt;
 
-      PGD->GLE_solver(p, par_dt, TGD);
+      PGD->GLE_solver_func(p, par_dt, TGD);
 
       if (p->isRogue) {
         p->isActive = false;

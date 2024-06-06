@@ -37,6 +37,7 @@
 #include <cmath>
 #include <utility>
 
+#include "util/VectorMath.h"
 #include "util/ParseInterface.h"
 
 enum ParticleType {
@@ -132,6 +133,7 @@ public:
   double xPos_init{};// the initial x component of position for the particle
   double yPos_init{};// the initial y component of position for the particle
   double zPos_init{};// the initial z component of position for the particle
+  vec3 pos_init;
 
   double tStrt{};// the time of release for the particle
   unsigned long int particleID{};// id of particle (for tracking purposes)
@@ -143,17 +145,20 @@ public:
   double xPos{};// x component of position for the particle.
   double yPos{};// y component of position for the particle.
   double zPos{};// z component of position for the particle.
+  vec3 pos;
 
   // The velocit for a particle for a given iteration.
   double uMean{};// u component
   double vMean{};// v component
   double wMean{};// w component
+  vec3 velMean;
 
   // The velocity fluctuation for a particle for a given iteration.
   // Starts out as the initial value until a particle is "released" into the domain
   double uFluct{};// u component
   double vFluct{};// v component
   double wFluct{};// w component
+  vec3 velFluct;
 
   // Particle displacements for each time step (not used)
   // double disX{};
@@ -172,6 +177,7 @@ public:
   double uFluct_old{};// u component
   double vFluct_old{};// v component
   double wFluct_old{};// w component
+  vec3 velFluct_old;
 
   // stress tensor from the last iteration (6 component because stress tensor is symmetric)
   double txx{};// this is the stress in the x direction on the x face from the last iteration
@@ -180,10 +186,12 @@ public:
   double tyy{};// this is the stress in the y direction on the y face from the last iteration
   double tyz{};// this is the stress in the z direction on the y face from the last iteration
   double tzz{};// this is the stress in the z direction on the z face from the last iteration
+  mat3sym tau;
 
   double delta_uFluct{};// this is the difference between the current and last iteration of the uFluct variable
   double delta_vFluct{};// this is the difference between the current and last iteration of the vFluct variable
   double delta_wFluct{};// this is the difference between the current and last iteration of the wFluct variable
+  vec3 delta_velFluct;
 
   bool isRogue = false;// this is false until it becomes true. Should not go true.
   bool isActive = false;// this is true until it becomes false.

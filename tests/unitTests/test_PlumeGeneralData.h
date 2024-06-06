@@ -9,7 +9,7 @@
 #include "winds/TURBGeneralData.h"
 #include "plume/PLUMEGeneralData.h"
 
-#include "vectorMath.h"
+#include "util/VectorMath.h"
 
 class test_PlumeGeneralData : public PLUMEGeneralData
 {

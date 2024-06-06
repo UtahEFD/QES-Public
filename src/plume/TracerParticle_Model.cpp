@@ -158,7 +158,7 @@ void TracerParticle_Model::advect(const double &total_time_interval,
       //  update the par_time, useful for debugging
       // par_time = par_time + par_dt;
 
-      PGD->GLE_solver(p, par_dt, TGD);
+      PGD->GLE_solver->solve(p, par_dt, TGD, PGD);
 
       if (p->isRogue) {
         p->isActive = false;
@@ -174,13 +174,25 @@ void TracerParticle_Model::advect(const double &total_time_interval,
       double disY = (p->vMean + p->vFluct) * par_dt;
       double disZ = (p->wMean + p->wFluct) * par_dt;
 
+      vec3 dist((p->velMean._1 + p->velFluct._1) * par_dt,
+                (p->velMean._2 + p->velFluct._2) * par_dt,
+                (p->velMean._3 + p->velFluct._3) * par_dt);
+
       p->xPos = p->xPos + disX;
       p->yPos = p->yPos + disY;
       p->zPos = p->zPos + disZ;
 
+      p->pos._1 = p->pos._1 + dist._1;
+      p->pos._2 = p->pos._2 + dist._2;
+      p->pos._3 = p->pos._3 + dist._3;
+
       double uTot = p->uMean + p->uFluct;
       double vTot = p->vMean + p->vFluct;
       double wTot = p->wMean + p->wFluct;
+
+      vec3 velTot(p->velMean._1 + p->velFluct._1,
+                  p->velMean._2 + p->velFluct._2,
+                  p->velMean._3 + p->velFluct._3);
 
       // Deposit mass (vegetation only right now)
       if (p->depFlag && p->isActive) {
@@ -205,6 +217,8 @@ void TracerParticle_Model::advect(const double &total_time_interval,
       p->uFluct_old = p->uFluct;
       p->vFluct_old = p->vFluct;
       p->wFluct_old = p->wFluct;
+
+      p->velFluct_old = p->velFluct;
 
       // now set the time remainder for the next loop
       // if the par_dt calculated from the Courant Number is greater than the timeRemainder,

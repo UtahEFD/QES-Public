@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Martix3 
+/** @file Martix3
  * @brief This class handles calulation of matrix in R3
  */
 
@@ -53,14 +53,14 @@ std::ostream &operator<<(std::ostream &, const Matrix3sym<T> &);
 
 /* --------------------------------------------------------------------------------------
  *
- * MATRIX 3 
+ * MATRIX 3
  *
  * -------------------------------------------------------------------------------------- */
 
 template<class T>
 class Matrix3
 {
-  friend std::ostream &operator<<<T>(std::ostream &, const Matrix3<T> &);
+  friend std::ostream &operator<< <T>(std::ostream &, const Matrix3<T> &);
 
 protected:
   T m_val[9];
@@ -271,7 +271,10 @@ public:
   Matrix3<T> invert()
   {
     // now calculate the determinant
-    T det = m_val[0] * (m_val[4] * m_val[8] - m_val[5] * m_val[7]) - m_val[1] * (m_val[3] * m_val[8] - m_val[5] * m_val[6]) + m_val[2] * (m_val[1] * m_val[7] - m_val[4] * m_val[6]);
+    T det = m_val[0] * (m_val[4] * m_val[8] - m_val[5] * m_val[7])
+            - m_val[1] * (m_val[3] * m_val[8] - m_val[5] * m_val[6])
+            + m_val[2] * (m_val[1] * m_val[7] - m_val[4] * m_val[6]);
+
     // check for near zero value determinants
     if (std::abs(det) < 1e-10) {
       std::cout << "WARNING (Plume::invert3): matrix nearly singular" << std::endl;
@@ -330,7 +333,7 @@ std::ostream &operator<<(std::ostream &out, const Matrix3<T> &M)
 template<class T>
 class Matrix3sym
 {
-  friend std::ostream &operator<<<T>(std::ostream &, const Matrix3sym<T> &);
+  friend std::ostream &operator<< <T>(std::ostream &, const Matrix3sym<T> &);
 
 protected:
   T m_val[6];

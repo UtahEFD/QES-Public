@@ -16,6 +16,7 @@ SET( qesPlumeCoreSources
     Deposition.cpp
     StatisticsDirector.cpp
 
+    GLE_Solver.cpp
     PLUMEGeneralData.cpp
     ParticleOutput.cpp
 

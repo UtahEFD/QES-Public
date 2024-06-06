@@ -146,6 +146,8 @@ PLUMEGeneralData::PLUMEGeneralData(const PlumeParameters &PP,
   RNG = RandomSingleton::getInstance();
 #endif
 
+  // set GLE Solver
+  GLE_solver = new GLE_Solver_CPU();
 
   // Need dz for ground deposition
   double lBndz = PID->colParams->boxBoundsZ1;
@@ -410,7 +412,7 @@ double PLUMEGeneralData::calcCourantTimestep(const double &d,
   return std::min(timeRemainder, CN * min_ds / max_u);
 }
 
-void PLUMEGeneralData::GLE_solver(Particle *p, double &par_dt, TURBGeneralData *TGD)
+void PLUMEGeneralData::GLE_solver_func(Particle *p, double &par_dt, TURBGeneralData *TGD)
 {
   double txx = 0.0, txy = 0.0, txz = 0.0, tyy = 0.0, tyz = 0.0, tzz = 0.0;
   double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;

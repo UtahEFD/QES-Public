@@ -28,8 +28,8 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file vectorMath.h
- * @brief This class handles the random number generation
+/** @file VectorMath.h
+ * @brief
  */
 
 #pragma once
@@ -38,7 +38,30 @@
 #include <cstdlib>
 #include <cmath>
 
-typedef struct
+typedef struct mat3sym
+{
+  float _11;
+  float _12;
+  float _13;
+  float _22;
+  float _23;
+  float _33;
+
+  mat3sym()
+    : _11(0.0), _12(0.0), _13(0.0),
+      _22(0.0), _23(0.0),
+      _33(0.0)
+  {}
+  mat3sym(const float &a11, const float &a12, const float &a13, const float &a22, const float &a23, const float &a33)
+    : _11(a11), _12(a12), _13(a13),
+      _22(a22), _23(a23),
+      _33(a33)
+  {}
+
+} mat3sym;
+
+
+typedef struct mat3
 {
   float _11;
   float _12;
@@ -49,40 +72,54 @@ typedef struct
   float _31;
   float _32;
   float _33;
+
+  mat3()
+    : _11(0.0), _12(0.0), _13(0.0),
+      _21(0.0), _22(0.0), _23(0.0),
+      _31(0.0), _32(0.0), _33(0.0)
+  {}
+  mat3(const float &a11, const float &a12, const float &a13, const float &a21, const float &a22, const float &a23, const float &a31, const float &a32, const float &a33)
+    : _11(a11), _12(a12), _13(a13),
+      _21(a21), _22(a22), _23(a23),
+      _31(a31), _32(a32), _33(a33)
+  {}
+  explicit mat3(const mat3sym &s)
+    : _11(s._11), _12(s._12), _13(s._13),
+      _21(s._12), _22(s._22), _23(s._23),
+      _31(s._13), _32(s._23), _33(s._33)
+  {}
 } mat3;
 
-typedef struct
-{
-  float _11;
-  float _12;
-  float _13;
-  float _22;
-  float _23;
-  float _33;
-} mat3sym;
 
-
-typedef struct
+typedef struct vec3
 {
   float _1;
   float _2;
   float _3;
+
+  vec3()
+    : _1(0.0), _2(0.0), _3(0.0)
+  {}
+  vec3(const float &a1, const float &a2, const float &a3)
+    : _1(a1), _2(a2), _3(a3)
+  {}
+
 } vec3;
 
 
-class vectorMath
+class VectorMath
 {
 private:
-  vectorMath() = default;
-public:
+  VectorMath() = default;
 
+public:
   static void calcInvariants(const mat3sym &, vec3 &);
   static void makeRealizable(const float &, mat3sym &);
   static bool invert(mat3 &);
   static void multiply(const mat3 &, const vec3 &, vec3 &);
 };
 
-inline void vectorMath::calcInvariants(const mat3sym &tau, vec3 &invar)
+inline void VectorMath::calcInvariants(const mat3sym &tau, vec3 &invar)
 {
   // since the x doesn't depend on itself, can just set the output without doing
   // any temporary variables (copied from Bailey's code)
@@ -94,7 +131,7 @@ inline void vectorMath::calcInvariants(const mat3sym &tau, vec3 &invar)
              + tau._13 * (tau._12 * tau._23 - tau._22 * tau._13);
 }
 
-inline void vectorMath::makeRealizable(const float &invarianceTol, mat3sym &tau)
+inline void VectorMath::makeRealizable(const float &invarianceTol, mat3sym &tau)
 {
   // first calculate the invariants and see if they are already realizable
   vec3 invar = { 0.0, 0.0, 0.0 };
@@ -170,7 +207,7 @@ inline void vectorMath::makeRealizable(const float &invarianceTol, mat3sym &tau)
 }
 
 
-inline bool vectorMath::invert(mat3 &A)
+inline bool VectorMath::invert(mat3 &A)
 {
 
   // calculate the determinant
@@ -214,7 +251,7 @@ inline bool vectorMath::invert(mat3 &A)
   }
 }
 
-inline void vectorMath::multiply(const mat3 &A, const vec3 &b, vec3 &x)
+inline void VectorMath::multiply(const mat3 &A, const vec3 &b, vec3 &x)
 {
   // now calculate the x=Ab
   x._1 = b._1 * A._11 + b._2 * A._12 + b._3 * A._13;
