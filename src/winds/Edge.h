@@ -32,7 +32,7 @@
 
 #pragma once
 
-#include "util/Vector3.h"
+#include "util/Vector3Float.h"
 #include <vector>
 
 /**
@@ -44,8 +44,6 @@ template<class T>
 class Edge
 {
 private:
-
-
 public:
   std::vector<T> values;
   /**

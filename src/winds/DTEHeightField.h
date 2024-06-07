@@ -35,7 +35,7 @@
 
 #include <string>
 #include "util/Triangle.h"
-#include "util/Vector3.h"
+#include "util/Vector3Float.h"
 #include "util/Vector3Int.h"
 
 
@@ -61,7 +61,7 @@ class WINDSInputData;
  * @sa Cell
  * @sa Edge
  * @sa Triangle
- * @sa Vector3
+ * @sa Vector3Float
  */
 class DTEHeightField
 {
@@ -69,7 +69,7 @@ public:
   friend class test_DTEHeightField;
 
   DTEHeightField();// this is not likely to produce anything
-    // useful -- Pete
+                   // useful -- Pete
 
   /**
    * Constructs a GIS Digital Elevation Model for use with QES.
@@ -125,7 +125,7 @@ public:
    * @param domain Domain that will be changed to match the dem file
    * @param grid Size of each cell in the domain space.
    */
-  void setDomain(Vector3Int &domain, Vector3 &grid);
+  void setDomain(Vector3Int &domain, Vector3Float &grid);
 
 
   /**
@@ -154,7 +154,7 @@ public:
    * @param halo_y :document this:
    * @return List of ID values for all cut cells.
    */
-  //void setCells(Cell *cells, WINDSGeneralData *WGD, const WINDSInputData *WID);
+  // void setCells(Cell *cells, WINDSGeneralData *WGD, const WINDSInputData *WID);
   void setCells(WINDSGeneralData *WGD, const WINDSInputData *WID);
 
   /**
@@ -201,11 +201,11 @@ public:
   double adfMinMax[2]; /**< :document this: */
 
 private:
-  std::vector<Vector3> terrainPoints; /**< List of terrain points */
+  std::vector<Vector3Float> terrainPoints; /**< List of terrain points */
   std::vector<Edge<int>> terrainEdges; /**< List of edges that connect the terrain points */
-  std::vector<Vector3> fluidFacePoints[6]; /**< :document this: */
-  Vector3 location; /**< XYZ location of the cell */
-  Vector3 dimensions; /**< Size of the cell in xyz directions */
+  std::vector<Vector3Float> fluidFacePoints[6]; /**< :document this: */
+  Vector3Float location; /**< XYZ location of the cell */
+  Vector3Float dimensions; /**< Size of the cell in xyz directions */
   int count = 0;
 
   /**
@@ -224,8 +224,8 @@ private:
    * @param corners Array containing the points that representing the DEM elevation at each of the cells corners
    * @param cutCells List of all cells which the terrain goes through
    */
-  //void setCellPoints(Cell *cells, int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3 corners[], std::vector<int> &cutCells, WINDSGeneralData *WGD);
-  void setCellPoints(int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3 corners[], std::vector<int> &cutCells, WINDSGeneralData *WGD);
+  // void setCellPoints(Cell *cells, int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3Float corners[], std::vector<int> &cutCells, WINDSGeneralData *WGD);
+  void setCellPoints(int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3Float corners[], std::vector<int> &cutCells, WINDSGeneralData *WGD);
 
   /**
    * :document this:
@@ -306,7 +306,7 @@ private:
    * @param height The height at which the third point will be created
    * @return An intermediate point existing on the line from a to b at z value height
    */
-  Vector3 getIntermediate(Vector3 a, Vector3 b, float height) const;
+  Vector3Float getIntermediate(Vector3Float a, Vector3Float b, float height) const;
 
 
   std::string m_filename; /**< :document this: */

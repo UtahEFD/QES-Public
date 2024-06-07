@@ -34,7 +34,7 @@
 
 #include <math.h>
 #include <algorithm>
-#include "util/Vector3.h"
+#include "util/Vector3Float.h"
 #include "Edge.h"
 #include "Cell.h"
 #include "DTEHeightField.h"
@@ -69,7 +69,7 @@ public:
    * @param index :document this:
    * @param pi :document this:
    */
-  void reorderPoints(std::vector<Vector3> &cut_points, int index, float pi);
+  void reorderPoints(std::vector<Vector3Float> &cut_points, int index, float pi);
 
   /**
    * This function takes in points and their calculated angles and sort them from lowest to
@@ -78,7 +78,7 @@ public:
    * @param angle :document this:
    * @param cutPoints :document this:
    */
-  void mergeSort(std::vector<float> &angle, std::vector<Vector3> &cutPoints);
+  void mergeSort(std::vector<float> &angle, std::vector<Vector3Float> &cutPoints);
 
 private:
   /**
@@ -98,7 +98,7 @@ private:
    * @param g  :document this:
    * @param index :document this:
    */
-  float calculateArea(std::vector<Vector3> &cut_points, int cutcell_index, float dx, float dy, float dz, std::vector<float> &n, std::vector<float> &m, std::vector<float> &f, std::vector<float> &e, std::vector<float> &h, std::vector<float> &g, int index);
+  float calculateArea(std::vector<Vector3Float> &cut_points, int cutcell_index, float dx, float dy, float dz, std::vector<float> &n, std::vector<float> &m, std::vector<float> &f, std::vector<float> &e, std::vector<float> &h, std::vector<float> &g, int index);
 
   /**
    * This function uses the edges that form triangles that lie on either the top or bottom of the cell to
@@ -114,13 +114,13 @@ private:
    * @param coef the coefficient that should be updated
    * @param isBot states if the area for the bottom or top of the cell should be calculated
    */
-  float calculateAreaTopBot(std::vector<Vector3> &terrainPoints,
-    const std::vector<Edge<int>> &terrainEdges,
-    const int cellIndex,
-    const float dx,
-    const float dy,
-    const float dz,
-    Vector3 location,
-    std::vector<float> &coef,
-    const bool isBot);
+  float calculateAreaTopBot(std::vector<Vector3Float> &terrainPoints,
+                            const std::vector<Edge<int>> &terrainEdges,
+                            const int cellIndex,
+                            const float dx,
+                            const float dy,
+                            const float dz,
+                            Vector3Float location,
+                            std::vector<float> &coef,
+                            const bool isBot);
 };

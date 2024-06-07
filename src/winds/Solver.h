@@ -43,7 +43,7 @@
 #include "WINDSInputData.h"
 #include "WINDSGeneralData.h"
 
-#include "util/Vector3.h"
+#include "util/Vector3Float.h"
 
 using namespace std;
 

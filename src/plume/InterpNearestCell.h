@@ -43,7 +43,7 @@
 
 #include "util/calcTime.h"
 #include "Random.h"
-#include "util/Vector3.h"
+#include "util/Vector3Float.h"
 
 #include "Interp.h"
 

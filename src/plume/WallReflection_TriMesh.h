@@ -43,7 +43,7 @@
 
 #include "util/QEStime.h"
 #include "util/calcTime.h"
-#include "util/Vector3.h"
+#include "util/Vector3Float.h"
 
 #include "util/HitRecord.h"
 #include "util/Ray.h"
@@ -84,5 +84,5 @@ public:
                        double &wFluct);
 
 private:
-  void rayTraceReflect(Mesh *, Vector3 &, Vector3 &, Vector3 &, Vector3 &);
+  void rayTraceReflect(Mesh *, Vector3Float &, Vector3Float &, Vector3Float &, Vector3Float &);
 };

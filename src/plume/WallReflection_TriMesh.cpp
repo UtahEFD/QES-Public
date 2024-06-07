@@ -82,13 +82,13 @@ bool WallReflection_TriMesh::reflect(const WINDSGeneralData *WGD,
     // particle end trajectory outside solide -> no need for reflection
   } else {
 
-    Vector3 X = { static_cast<float>(xPos - disX), static_cast<float>(yPos - disY), static_cast<float>(zPos - disZ) };
+    Vector3Float X = { static_cast<float>(xPos - disX), static_cast<float>(yPos - disY), static_cast<float>(zPos - disZ) };
     // vector of the trajectory
-    Vector3 U = { static_cast<float>(disX), static_cast<float>(disY), static_cast<float>(disZ) };
+    Vector3Float U = { static_cast<float>(disX), static_cast<float>(disY), static_cast<float>(disZ) };
     // postion of the particle end of trajectory
-    Vector3 Xnew = X + U;
+    Vector3Float Xnew = X + U;
 
-    Vector3 vecFluct = { static_cast<float>(uFluct), static_cast<float>(vFluct), static_cast<float>(wFluct) };
+    Vector3Float vecFluct = { static_cast<float>(uFluct), static_cast<float>(vFluct), static_cast<float>(wFluct) };
 
     rayTraceReflect(WGD->mesh, X, Xnew, U, vecFluct);
 
@@ -103,7 +103,7 @@ bool WallReflection_TriMesh::reflect(const WINDSGeneralData *WGD,
   return true;
 }
 
-void WallReflection_TriMesh::rayTraceReflect(Mesh *mesh, Vector3 &X, Vector3 &Xnew, Vector3 &U, Vector3 &vecFluct)
+void WallReflection_TriMesh::rayTraceReflect(Mesh *mesh, Vector3Float &X, Vector3Float &Xnew, Vector3Float &U, Vector3Float &vecFluct)
 {
   Ray test_ray(X, U);
   HitRecord hit;
@@ -115,8 +115,8 @@ void WallReflection_TriMesh::rayTraceReflect(Mesh *mesh, Vector3 &X, Vector3 &Xn
       // std::cout << "A\thit dist " << hit.getHitDist() << "/" << U.length() << "=" << hit.getHitDist() / U.length() << std::endl;
       // std::cout << "hit normal " << hit.n << std::endl;
 
-      Vector3 P, S, V2;
-      Vector3 R, N;
+      Vector3Float P, S, V2;
+      Vector3Float R, N;
       float r;
 
       N = hit.n;

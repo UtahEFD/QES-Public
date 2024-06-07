@@ -36,7 +36,7 @@
 #include <cfloat>
 #include <random>
 
-#include "Vector3.h"
+#include "Vector3Float.h"
 
 /**
  * @class SphereDirections
@@ -56,7 +56,7 @@ private:
   float upperPhiBound;
   ///@}
 
-  // std::vector< Vector3 > nextList; // [6];  //holds vectors of the 6
+  // std::vector< Vector3Float > nextList; // [6];  //holds vectors of the 6
 
   /**
    * Constructor for the Mitchell's Best Candidate Algorithm test.
@@ -66,15 +66,15 @@ private:
       lowerThetaBound(0.0), upperThetaBound(0.0),
       lowerPhiBound(0.0), upperPhiBound(0.0)
   {
-    nextList = new Vector3[6];
+    nextList = new Vector3Float[6];
 
     // default cardinal directions for now
-    nextList[0] = Vector3(1, 0, 0);// front
-    nextList[1] = Vector3(-1, 0, 0);// back
-    nextList[2] = Vector3(0, 1, 0);// left
-    nextList[3] = Vector3(0, -1, 0);// right
-    nextList[4] = Vector3(0, 0, 1);// top
-    nextList[5] = Vector3(0, 0, -1);// bottom
+    nextList[0] = Vector3Float(1, 0, 0);// front
+    nextList[1] = Vector3Float(-1, 0, 0);// back
+    nextList[2] = Vector3Float(0, 1, 0);// left
+    nextList[3] = Vector3Float(0, -1, 0);// right
+    nextList[4] = Vector3Float(0, 0, 1);// top
+    nextList[5] = Vector3Float(0, 0, -1);// bottom
   }
 
   /**
@@ -85,23 +85,22 @@ private:
       lowerThetaBound(0.0), upperThetaBound(0.0),
       lowerPhiBound(0.0), upperPhiBound(0.0)
   {
-    nextList = new Vector3[6];
+    nextList = new Vector3Float[6];
 
     // default cardinal directions for now
-    nextList[0] = Vector3(1, 0, 0);// front
-    nextList[1] = Vector3(-1, 0, 0);// back
-    nextList[2] = Vector3(0, 1, 0);// left
-    nextList[3] = Vector3(0, -1, 0);// right
-    nextList[4] = Vector3(0, 0, 1);// top
-    nextList[5] = Vector3(0, 0, -1);// bottom
+    nextList[0] = Vector3Float(1, 0, 0);// front
+    nextList[1] = Vector3Float(-1, 0, 0);// back
+    nextList[2] = Vector3Float(0, 1, 0);// left
+    nextList[3] = Vector3Float(0, -1, 0);// right
+    nextList[4] = Vector3Float(0, 0, 1);// top
+    nextList[5] = Vector3Float(0, 0, -1);// bottom
 
     numDirs = 6;
   }
 
-  Vector3 *nextList; /**< :document this: */
+  Vector3Float *nextList; /**< :document this: */
 
 public:
-
   /**
    * Constuctor for the random version.
    *
@@ -127,7 +126,7 @@ public:
     std::uniform_real_distribution<float> phi(lowerPhiBound, upperPhiBound);
 
     numDirs = numDV + 5;
-    nextList = new Vector3[numDirs];
+    nextList = new Vector3Float[numDirs];
 
     // for (int i=0; i<numDV; i++) {
     int i = 0;
@@ -144,23 +143,23 @@ public:
       /* FM CLEANUP - NOT USED
       // only send rays mostly down but a little up... can use
       // dot product between (0, 0, 1) and vector
-      Vector3 dirVec(dx / magnitude, dy / magnitude, dz / magnitude);
+      Vector3Float dirVec(dx / magnitude, dy / magnitude, dz / magnitude);
       float dotProd = dirVec[0] * 0.0f + dirVec[1] * 0.0f + dirVec[2] * 1.0f;
       */
 
       // if (dotProd < 0.20) {
-      nextList[i] = Vector3(dx / magnitude, dy / magnitude, dz / magnitude);
+      nextList[i] = Vector3Float(dx / magnitude, dy / magnitude, dz / magnitude);
       i++;
       // }
     }
 
     // Then make sure the cardinal directions that may matter are
     // added -- up is unlikely at this point
-    nextList[numDV] = Vector3(1, 0, 0);// front
-    nextList[numDV + 1] = Vector3(-1, 0, 0);// back
-    nextList[numDV + 2] = Vector3(0, 1, 0);// left
-    nextList[numDV + 3] = Vector3(0, -1, 0);// right
-    nextList[numDV + 4] = Vector3(0, 0, -1);// bottom
+    nextList[numDV] = Vector3Float(1, 0, 0);// front
+    nextList[numDV + 1] = Vector3Float(-1, 0, 0);// back
+    nextList[numDV + 2] = Vector3Float(0, 1, 0);// left
+    nextList[numDV + 3] = Vector3Float(0, -1, 0);// right
+    nextList[numDV + 4] = Vector3Float(0, 0, -1);// bottom
 
     //        std::cout << "Generated " << nextList.size() << " sphere directions." << std::endl;
     //        std::cout << "sd = [" << std::endl;
@@ -185,7 +184,7 @@ public:
   /*
    * @return the next cardinal directional vector or NULL if the vecCount > numDirVec
    */
-  //   Vector3 getNextDirCardinal();
+  //   Vector3Float getNextDirCardinal();
 
   /**
    * Gets a randomly generated directional vector based on theta and
@@ -193,10 +192,10 @@ public:
    *
    * @return the next randomly generated directional vector
    */
-  //   Vector3 getNextDir();
-  Vector3 getNextDir()
+  //   Vector3Float getNextDir();
+  Vector3Float getNextDir()
   {
-    Vector3 retVal = nextList[vecCount];
+    Vector3Float retVal = nextList[vecCount];
 
     vecCount++;
     if (vecCount > numDirs)
@@ -210,5 +209,5 @@ public:
    *Gets the next unique direction
    *@return the next non-repeated directional vector
    */
-  //   Vector3 getNextDir2();
+  //   Vector3Float getNextDir2();
 };

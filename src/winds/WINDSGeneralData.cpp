@@ -65,7 +65,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   ny += 1;// +1 for Staggered grid
   nz += 2;// +2 for staggered grid and ghost cell
 
-  // Vector3 gridInfo;
+  // Vector3Float gridInfo;
   // gridInfo = *(WID->simParams->grid);
   dx = WID->simParams->grid[0];// Grid resolution in x-direction
   dy = WID->simParams->grid[1];// Grid resolution in y-direction

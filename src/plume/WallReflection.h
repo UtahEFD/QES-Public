@@ -43,7 +43,7 @@
 
 #include "util/QEStime.h"
 #include "util/calcTime.h"
-#include "util/Vector3.h"
+#include "util/Vector3Float.h"
 // #include "Matrix3.h"
 #include "Random.h"
 

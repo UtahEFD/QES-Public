@@ -44,7 +44,7 @@
 #include "util/calcTime.h"
 #include "Random.h"
 #include "util/Vector3Int.h"
-#include "util/Vector3.h"
+#include "util/Vector3Float.h"
 #include "util/Vector3Double.h"
 
 #include "winds/WINDSGeneralData.h"
