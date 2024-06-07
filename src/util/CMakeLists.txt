@@ -21,7 +21,8 @@ add_library (qesutil ${LIB_TYPE}
   Triangle.cpp
   Ray.cpp Ray.h
   SphereDirections.cpp SphereDirections.h
-  Vector3Float.h
+
+  Matrix3.h
 
   ManagedContainer.h
 

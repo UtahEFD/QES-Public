@@ -34,6 +34,9 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
    target_link_libraries(test_CUDARandomGen ${CUDA_LIBRARIES})
    target_link_libraries(test_CUDARandomGen ${CUDA_curand_LIBRARY})
 
+  cuda_add_executable(util_vector_classes_CPU
+          util_vector_classes_CPU.cpp)
+
    cuda_add_executable(winds_terrain
      test_DTEHeightField.h test_DTEHeightField.cpp
      winds_terrain.cpp)
@@ -44,9 +47,6 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
    cuda_add_executable(plume_interpolation_CPU
            plume_interpolation_CPU.cpp)
 
-   cuda_add_executable(plume_vector_classes_CPU
-     plume_vector_classes_CPU.cpp)
-
   cuda_add_executable(plume_input
           plume_input.cpp)
 
@@ -56,15 +56,19 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
   set(UNITTESTS
     util_time
     util_output
+    util_vector_classes_CPU
     winds_terrain
     turbulence_derivative_CPU
     plume_interpolation_CPU
-    plume_vector_classes_CPU
+
     plume_input
     plume_particle_buffer
     test_CUDARandomGen)
 
 ELSE ($CACHE{HAS_CUDA_SUPPORT})
+
+   add_executable(util_vector_classes_CPU
+           util_vector_classes_CPU.cpp)
 
    add_executable(winds_terrain
      test_DTEHeightField.h test_DTEHeightField.cpp
@@ -76,9 +80,6 @@ ELSE ($CACHE{HAS_CUDA_SUPPORT})
    add_executable(plume_interpolation_CPU
            plume_interpolation_CPU.cpp)
 
-   add_executable(plume_vector_classes_CPU
-           plume_vector_classes_CPU.cpp)
-
    add_executable(plume_input
            plume_input.cpp)
 
@@ -88,10 +89,10 @@ ELSE ($CACHE{HAS_CUDA_SUPPORT})
   set(UNITTESTS
       util_time
       util_output
+      util_vector_classes_CPU
       winds_terrain
       turbulence_derivative_CPU
       plume_interpolation_CPU
-      plume_vector_classes_CPU
       plume_input
       plume_particle_buffer)
       

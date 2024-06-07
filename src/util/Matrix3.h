@@ -28,13 +28,16 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Martix3
- * @brief This class handles calulation of matrix in R3
+/** @file Matrix3
+ * @brief This class handles calculation of matrix in R3
  */
 
 #pragma once
 
+#define FLOATS_ARE_EQUAL(x, y) (((x) - (y)) < 0.000001 && ((x) - (y)) > -0.000001)
+
 #include <type_traits>
+#include <cmath>
 #include <iostream>
 
 /* --------------------------------------------------------------------------------------
@@ -43,17 +46,11 @@
 template<class T>
 class Vector3;
 
-template<typename T>
-std::ostream &operator<<(std::ostream &, const Vector3<T> &);
-
 /* --------------------------------------------------------------------------------------
  * MATRIX 3
  * -------------------------------------------------------------------------------------- */
 template<class T>
 class Matrix3;
-
-template<typename T>
-std::ostream &operator<<(std::ostream &, const Matrix3<T> &);
 
 /* --------------------------------------------------------------------------------------
  * MATRIX 3 SYMETRIC
@@ -61,9 +58,6 @@ std::ostream &operator<<(std::ostream &, const Matrix3<T> &);
 
 template<class T>
 class Matrix3sym;
-
-template<typename T>
-std::ostream &operator<<(std::ostream &, const Matrix3sym<T> &);
 
 /* --------------------------------------------------------------------------------------
  * MATRIX 3
@@ -87,69 +81,62 @@ public:
     : m_val{ a1, a2, a3 }
   {
   }
-  /*
-   * accesses the value at position i
-   *
-   * @param i -the index of the value to return
-   * @return a reference to the value stored at i
-   */
-  double &operator[](const int i)
+
+  T &operator[](const int &i)
   {
     // do a sanity check to make sure indices are OK!
     assert(i >= 0 && i < 3);
     return m_val[i];
   }
 
-
-  /*
-   * returns if two Vector3Float values of the same type are equal
-   *
-   * @param v -the vector3 to compare with this
-   * @return if values at index 0,1,2 are all equal with their counterparts
-   */
-  bool operator==(const Vector3 &v)
+  bool operator==(const Vector3<T> &v) const
   {
-    return v.m_val[0] == m_val[0] && v.m_val[1] == m_val[1] && v.m_val[2] == m_val[2];
+    if (std::is_same<T, float>::value || std::is_same<T, double>::value) {
+      return FLOATS_ARE_EQUAL(m_val[0], v.m_val[0])
+             && FLOATS_ARE_EQUAL(m_val[1], v.m_val[1])
+             && FLOATS_ARE_EQUAL(m_val[2], v.m_val[2]);
+    } else {
+      return v.m_val[0] == m_val[0] && v.m_val[1] == m_val[1] && v.m_val[2] == m_val[2];
+    }
   }
 
   // assignment operator
-  Vector3 &operator=(const Vector3 &v)
+  Vector3<T> &operator=(const Vector3<T> &v)
   {
-    m_val[0] = v.m_val[0];
-    m_val[1] = v.m_val[1];
-    m_val[2] = v.m_val[2];
+    if (this != &v) {
+      m_val[0] = v.m_val[0];
+      m_val[1] = v.m_val[1];
+      m_val[2] = v.m_val[2];
+    }
     return *this;
   }
 
   // scalar addition (assignment)
-  Vector3 &operator+=(const Vector3 &v)
+  Vector3<T> &operator+=(const Vector3<T> &v)
   {
     m_val[0] += v.m_val[0];
     m_val[1] += v.m_val[1];
     m_val[2] += v.m_val[2];
     return *this;
   }
-
   // scalar subtraction (assignment)
-  Vector3 &operator-=(const Vector3 &v)
+  Vector3<T> &operator-=(const Vector3<T> &v)
   {
     m_val[0] -= v.m_val[0];
     m_val[1] -= v.m_val[1];
     m_val[2] -= v.m_val[2];
     return *this;
   }
-
   // scalar multiplication (assignment)
-  Vector3 &operator*=(const T &a)
+  Vector3<T> &operator*=(const T &a)
   {
     m_val[0] *= a;
     m_val[1] *= a;
     m_val[2] *= a;
     return *this;
   }
-
   // scalar division (assignment)
-  Vector3 &operator/=(const double &a)
+  Vector3<T> &operator/=(const T &a)
   {
     m_val[0] /= a;
     m_val[1] /= a;
@@ -158,84 +145,69 @@ public:
   }
 
   // addition operator
-  Vector3 operator-(const Vector3 &v1)
+  Vector3<T> operator-(const Vector3<T> &v1) const
   {
     return { m_val[0] - v1.m_val[0], m_val[1] - v1.m_val[1], m_val[2] - v1.m_val[2] };
   }
-
   // subtraction operator
-  Vector3 operator+(const Vector3 &v1)
+  Vector3<T> operator+(const Vector3<T> &v1) const
   {
     return { m_val[0] + v1.m_val[0], m_val[1] + v1.m_val[1], m_val[2] + v1.m_val[2] };
   }
 
   // scalar product (dot product)
-  double dot(const Vector3 &v1) const
+  T operator*(const Vector3<T> &v1) const
   {
     return (m_val[0] * v1.m_val[0] + m_val[1] * v1.m_val[1] + m_val[2] * v1.m_val[2]);
   }
-
   // scalar product (dot product)
-  double operator*(const Vector3 &v1) const
+  T dot(const Vector3<T> &v1) const
   {
     return (m_val[0] * v1.m_val[0] + m_val[1] * v1.m_val[1] + m_val[2] * v1.m_val[2]);
   }
-
 
   // multiplication by scalar
-  Vector3 operator*(const double &a)
+  Vector3<T> operator*(const T &a) const
   {
     return { a * m_val[0], a * m_val[1], a * m_val[2] };
   }
 
+  // multiplication by scalar
+  friend Vector3<T> operator*(const T &a, const Vector3<T> &v1)
+  {
+    return { a * v1.m_val[0], a * v1.m_val[1], a * v1.m_val[2] };
+  }
+  // division by scalar
+  Vector3<T> operator/(const T &a) const
+  {
+    return { m_val[0] / a, m_val[1] / a, m_val[2] / a };
+  }
   // return the length of the vector
-  double length() const
+  T length() const
   {
     return sqrt(m_val[0] * m_val[0] + m_val[1] * m_val[1] + m_val[2] * m_val[2]);
   }
 
-  // multiplication by scalar
-  friend Vector3 operator*(const double &a, const Vector3 &v1)
-  {
-    return { a * v1.m_val[0], a * v1.m_val[1], a * v1.m_val[2] };
-  }
-
-  // division by scalar
-  Vector3 operator/(const double &a)
-  {
-    return { m_val[0] / a, m_val[1] / a, m_val[2] / a };
-  }
-
   // reflection v.reflect(n) = v - 2*(v*n)*n
-  Vector3 reflect(const Vector3 &n)
+  Vector3<T> reflect(const Vector3<T> &n) const
   {
     return *this - 2.0 * (*this * n) * n;
   }
 
   // distance with other vector where this is extremity (ie v1.distance(v2) = |v1 - v2|)
-  double distance(Vector3 &v2)
+  double distance(Vector3<T> &v2) const
   {
     return (sqrt((m_val[0] - v2[0]) * (m_val[0] - v2[0]) + (m_val[1] - v2[1]) * (m_val[1] - v2[1]) + (m_val[2] - v2[2]) * (m_val[2] - v2[2])));
   }
 
-
-  friend std::istream &operator>>(std::istream &is, Vector3 &v)
+  friend std::istream &operator>>(std::istream &is, Vector3<T> &v)
   {
     is >> v.m_val[0] >> v.m_val[1] >> v.m_val[2];
     return is;
   }
-
-  friend Vector3 operator-(const Vector3 &v1, const Vector3 &v2)
-  {
-    return { v1.m_val[0] - v2.m_val[0], v1.m_val[1] - v2.m_val[1], v1.m_val[2] - v2.m_val[2] };
-  }
-
   friend std::ostream &operator<<(std::ostream &out, const Vector3 &v)
   {
-    out << "[";
-    for (int i(0); i < 2; i++)
-      out << v.m_val[i] << ", ";
-    out << v.m_val[2] << "]";
+    out << "[" << v.m_val[0] << ", " << v.m_val[1] << ", " << v.m_val[2] << "]";
     return out;
   }
 };
@@ -247,7 +219,6 @@ public:
 template<class T>
 class Matrix3
 {
-  friend std::ostream &operator<< <T>(std::ostream &, const Matrix3<T> &);
 
 protected:
   T m_val[9];
@@ -255,8 +226,8 @@ protected:
 public:
   Matrix3()
   {
-    for (int k = 0; k < 9; k++)
-      m_val[k] = (0);
+    for (auto &k : m_val)
+      k = (0);
   }
 
   template<typename X>
@@ -282,37 +253,45 @@ public:
   }
 
   // accesses the value at position i,j
-  T &operator()(const int i, const int j) const
+  T &operator()(const int &i, const int &j) const
   {
     // do a sanity check to make sure indices are OK!
     assert(i >= 0 && i < 3 && j >= 0 && j < 3);
     return m_val[3 * i + j];
   }
-
-  // accesses the value at position i,j
-  T &operator()(const int i, const int j)
-  {
-    // do a sanity check to make sure indices are OK!
-    assert(i >= 0 && i < 3 && j >= 0 && j < 3);
-    return m_val[3 * i + j];
-  }
-
 
   // returns if two Vector3 values of the same type are equal
-  bool operator==(const Matrix3<T> &v)
+  bool operator==(const Matrix3<T> &v) const
   {
     if (std::is_same<T, float>::value || std::is_same<T, double>::value)
       return FLOATS_ARE_EQUAL(m_val[0], v.m_val[0])
-             && FLOATS_ARE_EQUAL(m_val[1], v.m_val[1]) && FLOATS_ARE_EQUAL(m_val[2], v.m_val[2]) && FLOATS_ARE_EQUAL(m_val[3], v.m_val[3]) && FLOATS_ARE_EQUAL(m_val[4], v.m_val[4]) && FLOATS_ARE_EQUAL(m_val[5], v.m_val[5]) && FLOATS_ARE_EQUAL(m_val[6], v.m_val[6]) && FLOATS_ARE_EQUAL(m_val[7], v.m_val[7]) && FLOATS_ARE_EQUAL(m_val[8], v.m_val[8]);
+             && FLOATS_ARE_EQUAL(m_val[1], v.m_val[1])
+             && FLOATS_ARE_EQUAL(m_val[2], v.m_val[2])
+             && FLOATS_ARE_EQUAL(m_val[3], v.m_val[3])
+             && FLOATS_ARE_EQUAL(m_val[4], v.m_val[4])
+             && FLOATS_ARE_EQUAL(m_val[5], v.m_val[5])
+             && FLOATS_ARE_EQUAL(m_val[6], v.m_val[6])
+             && FLOATS_ARE_EQUAL(m_val[7], v.m_val[7])
+             && FLOATS_ARE_EQUAL(m_val[8], v.m_val[8]);
     else
-      return v.m_val[0] == m_val[0] && v.m_val[1] == m_val[1] && v.m_val[2] == m_val[2] && v.m_val[3] == m_val[3] && v.m_val[4] == m_val[4] && v.m_val[5] == m_val[5] && v.m_val[6] == m_val[6] && v.m_val[7] == m_val[7] && v.m_val[8] == m_val[8];
+      return v.m_val[0] == m_val[0]
+             && v.m_val[1] == m_val[1]
+             && v.m_val[2] == m_val[2]
+             && v.m_val[3] == m_val[3]
+             && v.m_val[4] == m_val[4]
+             && v.m_val[5] == m_val[5]
+             && v.m_val[6] == m_val[6]
+             && v.m_val[7] == m_val[7]
+             && v.m_val[8] == m_val[8];
   }
 
   // assignment operator
   Matrix3<T> &operator=(const Matrix3<T> &M)
   {
-    for (int k = 0; k < 9; k++)
-      m_val[k] = M.m_val[k];
+    if (this != &M) {
+      for (int k = 0; k < 9; k++)
+        m_val[k] = M.m_val[k];
+    }
     return *this;
   }
 
@@ -339,7 +318,7 @@ public:
     return *this;
   }
 
-  // assignmment substartion operator
+  // assignment substation operator
   Matrix3<T> &operator-=(const Matrix3<T> &M)
   {
     for (int k = 0; k < 9; k++)
@@ -347,24 +326,24 @@ public:
     return *this;
   }
 
-  // assignmment multiplication operator
+  // assignment multiplication operator
   Matrix3<T> &operator*=(const T &a)
   {
-    for (int k = 0; k < 9; k++)
-      m_val[k] *= a;
+    for (auto &k : m_val)
+      k *= a;
     return *this;
   }
 
   // assignment division operator
   Matrix3<T> &operator/=(const T &a)
   {
-    for (int k = 0; k < 9; k++)
-      m_val[k] /= a;
+    for (auto &k : m_val)
+      k /= a;
     return *this;
   }
 
   // addition operator
-  Matrix3<T> operator+(const Matrix3<T> &M)
+  Matrix3<T> operator+(const Matrix3<T> &M) const
   {
     Matrix3<T> R;
     for (int k = 0; k < 9; k++)
@@ -373,7 +352,7 @@ public:
     return R;
   }
 
-  // substraction operator
+  // subtraction operator
   Matrix3<T> operator-(const Matrix3<T> &M)
   {
     Matrix3<T> R;
@@ -387,18 +366,18 @@ public:
   {
     Matrix3<T> R(0);
     for (int i(0); i < 3; i++)// line
-      for (int j(0); j < 3; j++)// colunm
+      for (int j(0); j < 3; j++)// column
         for (int k(0); k < 3; k++)
           R.m_val[i + 3 * j] += m_val[i + 3 * k] * M.m_val[k + 3 * j];
     return R;
   }
 
-  // matrix multiplication (with symetric matrix)
+  // matrix multiplication (with symmetric matrix)
   Matrix3<T> operator*(const Matrix3sym<T> &M) const
   {
     Matrix3<T> R(0);
     for (int i(0); i < 3; i++)// line
-      for (int j(0); j < 3; j++)// colunm
+      for (int j(0); j < 3; j++)// column
         for (int k(0); k < 3; k++)
           R.m_val[i + 3 * j] += m_val[i + 3 * k] * M.m_val[k + 3 * j];
     return R;
@@ -414,7 +393,7 @@ public:
     return R;
   }
 
-  // multiplication by scaler
+  // multiplication by scalar
   friend Matrix3<T> operator*(const T &a, const Matrix3<T> &M)
   {
     Matrix3<T> R;
@@ -424,7 +403,7 @@ public:
   }
 
   // division by scalar
-  Matrix3<T> operator/(const T &a)
+  Matrix3<T> operator/(const T &a) const
   {
     Matrix3<T> R;
     for (int k = 0; k < 9; k++)
@@ -487,20 +466,19 @@ public:
     is >> M.m_val[0] >> M.m_val[1] >> M.val[2] >> M.m_val[3] >> M.m_val[4] >> M.val[5] >> M.m_val[6] >> M.m_val[7] >> M.val[8];
     return is;
   }
+  friend std::ostream &operator<<(std::ostream &out, const Matrix3<T> &M)
+  {
+    out << "[";
+    out << "[" << M.m_val[0] << ", " << M.m_val[1] << ", " << M.m_val[2] << "]";
+    out << "[" << M.m_val[3] << ", " << M.m_val[4] << ", " << M.m_val[5] << "]";
+    out << "[" << M.m_val[6] << ", " << M.m_val[7] << ", " << M.m_val[8] << "]";
+    out << "]";
+    out << "[";
+    return out;
+  }
 };
 
 // output to ostream
-template<typename T>
-std::ostream &operator<<(std::ostream &out, const Matrix3<T> &M)
-{
-  out << "[";
-  out << "[" << M.m_val[0] << ", " << M.m_val[1] << ", " << M.m_val[2] << "]";
-  out << "[" << M.m_val[3] << ", " << M.m_val[4] << ", " << M.m_val[5] << "]";
-  out << "[" << M.m_val[6] << ", " << M.m_val[7] << ", " << M.m_val[8] << "]";
-  out << "]";
-  out << "[";
-  return out;
-}
 
 
 /* --------------------------------------------------------------------------------------
@@ -510,7 +488,6 @@ std::ostream &operator<<(std::ostream &out, const Matrix3<T> &M)
 template<class T>
 class Matrix3sym
 {
-  friend std::ostream &operator<< <T>(std::ostream &, const Matrix3sym<T> &);
 
 protected:
   T m_val[6];
@@ -518,8 +495,8 @@ protected:
 public:
   Matrix3sym()
   {
-    for (int k = 0; k < 6; k++)
-      m_val[k] = (0);
+    for (auto &k : m_val)
+      k = (0);
   }
 
   template<typename X>
@@ -569,16 +546,28 @@ public:
   bool operator==(const Matrix3<T> &v)
   {
     if (std::is_same<T, float>::value || std::is_same<T, double>::value)
-      return FLOATS_ARE_EQUAL(m_val[0], v.m_val[0]) && FLOATS_ARE_EQUAL(m_val[1], v.m_val[1]) && FLOATS_ARE_EQUAL(m_val[2], v.m_val[2]) && FLOATS_ARE_EQUAL(m_val[3], v.m_val[3]) && FLOATS_ARE_EQUAL(m_val[4], v.m_val[4]) && FLOATS_ARE_EQUAL(m_val[5], v.m_val[5]);
+      return FLOATS_ARE_EQUAL(m_val[0], v.m_val[0])
+             && FLOATS_ARE_EQUAL(m_val[1], v.m_val[1])
+             && FLOATS_ARE_EQUAL(m_val[2], v.m_val[2])
+             && FLOATS_ARE_EQUAL(m_val[3], v.m_val[3])
+             && FLOATS_ARE_EQUAL(m_val[4], v.m_val[4])
+             && FLOATS_ARE_EQUAL(m_val[5], v.m_val[5]);
     else
-      return v.m_val[0] == m_val[0] && v.m_val[1] == m_val[1] && v.m_val[2] == m_val[2] && v.m_val[3] == m_val[3] && v.m_val[4] == m_val[4] && v.m_val[5] == m_val[5];
+      return v.m_val[0] == m_val[0]
+             && v.m_val[1] == m_val[1]
+             && v.m_val[2] == m_val[2]
+             && v.m_val[3] == m_val[3]
+             && v.m_val[4] == m_val[4]
+             && v.m_val[5] == m_val[5];
   }
 
   // assignment operator
   Matrix3sym<T> &operator=(const Matrix3sym<T> &M)
   {
-    for (int k = 0; k < 6; k++)
-      m_val[k] = M.m_val[k];
+    if (this != &M) {
+      for (int k = 0; k < 6; k++)
+        m_val[k] = M.m_val[k];
+    }
     return *this;
   }
 
@@ -615,7 +604,7 @@ public:
   }
 
   // addition operator
-  Matrix3sym<T> operator+(const Matrix3sym<T> &M)
+  Matrix3sym<T> operator+(const Matrix3sym<T> &M) const
   {
     Matrix3sym<T> R;
     for (int k = 0; k < 6; k++)
@@ -623,8 +612,8 @@ public:
     return R;
   }
 
-  // substraction operator
-  Matrix3sym<T> operator-(const Matrix3sym<T> &M)
+  // subtraction operator
+  Matrix3sym<T> operator-(const Matrix3sym<T> &M) const
   {
     Matrix3sym<T> R;
     for (int k = 0; k < 6; k++)
@@ -632,7 +621,7 @@ public:
     return R;
   }
 
-  // multiplication by scaler
+  // multiplication by scalar
   friend Matrix3sym<T> operator*(const T &a, const Matrix3sym<T> &M)
   {
     Matrix3sym<T> R;
@@ -642,7 +631,7 @@ public:
   }
 
   // division by scalar
-  Matrix3sym<T> operator/(const T &a)
+  Matrix3sym<T> operator/(const T &a) const
   {
     Matrix3sym<T> R;
     for (int k = 0; k < 6; k++)
@@ -666,7 +655,9 @@ public:
     Vector3<T> invar;
     invar[0] = m_val[0] + m_val[3] + m_val[5];
     invar[1] = m_val[0] * m_val[3] + m_val[0] * m_val[5] + m_val[3] * m_val[5] - m_val[1] * m_val[1] - m_val[2] * m_val[2] - m_val[4] * m_val[4];
-    invar[3] = m_val[0] * (m_val[3] * m_val[5] - m_val[4] * m_val[4]) - m_val[1] * (m_val[1] * m_val[5] - m_val[4] * m_val[2]) + m_val[2] * (m_val[1] * m_val[4] - m_val[3] * m_val[2]);
+    invar[3] = m_val[0] * (m_val[3] * m_val[5] - m_val[4] * m_val[4])
+               - m_val[1] * (m_val[1] * m_val[5] - m_val[4] * m_val[2])
+               + m_val[2] * (m_val[1] * m_val[4] - m_val[3] * m_val[2]);
     return invar;
   }
 
@@ -674,20 +665,20 @@ public:
   Matrix3sym<T> &makeRealizable(const T &invarianceTol)
   {
     // first calculate the invariants and see if they are already realizable
-    Vector3<T> invar = this.calcInvariants();
+    Vector3<T> invar = this->calcInvariants();
 
     if (invar[0] > invarianceTol && invar[1] > invarianceTol && invar[2] > invarianceTol) {
       return *this;// is already realizable -> what should be return here??? -Pete
     }
 
-    // since tau is not already realizable, need to make it realizeable
-    // start by making a guess of ks, the subfilter scale tke
-    // I keep wondering if we can use the input Turb->tke for this or if we should leave it as is
+    // since tau is not already realizable, need to make it realizable
+    // start by making a guess of ks, the sub-filter scale tke
+    // I keep wondering if we can use the input TURB->tke for this or if we should leave it as is
     T b = 4.0 / 3.0 * invar[0];
     T c = invar[1];
     T ks = 1.01 * (-b + std::sqrt(b * b - 16.0 / 3.0 * c)) / (8.0 / 3.0);
 
-    // if the initial guess is bad, use the straight up invar_xx value
+    // if the initial guess is bad, use the straight-up invar_xx value
     if (ks < invarianceTol || isnan(ks)) {
       ks = 0.5 * std::abs(invar[0]);// also 0.5*abs(invar_xx)
     }
@@ -719,7 +710,7 @@ public:
     }
 
     if (iter == 999) {
-      std::cout << "WARNING (Plume::makeRealizable): unable to make stress tensor realizble.";
+      std::cout << "WARNING (Plume::makeRealizable): unable to make stress tensor realizable.";
     }
 
     for (int k = 0; k < 6; k++)
@@ -734,16 +725,14 @@ public:
     is >> M.m_val[0] >> M.m_val[1] >> M.val[2] >> M.m_val[3] >> M.val[4] >> M.val[5];
     return is;
   }
-};
 
-// write to ostream
-template<typename T>
-std::ostream &operator<<(std::ostream &out, const Matrix3sym<T> &M)
-{
-  out << "[";
-  out << "[" << M.m_val[0] << ", " << M.m_val[1] << ", " << M.m_val[2] << "]";
-  out << "[" << M.m_val[1] << ", " << M.m_val[3] << ", " << M.m_val[4] << "]";
-  out << "[" << M.m_val[2] << ", " << M.m_val[4] << ", " << M.m_val[5] << "]";
-  out << "]";
-  return out;
-}
+  friend std::ostream &operator<<(std::ostream &out, const Matrix3sym<T> &M)
+  {
+    out << "[";
+    out << "[" << M.m_val[0] << ", " << M.m_val[1] << ", " << M.m_val[2] << "]";
+    out << "[" << M.m_val[1] << ", " << M.m_val[3] << ", " << M.m_val[4] << "]";
+    out << "[" << M.m_val[2] << ", " << M.m_val[4] << ", " << M.m_val[5] << "]";
+    out << "]";
+    return out;
+  }
+};

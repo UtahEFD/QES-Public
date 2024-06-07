@@ -5,44 +5,46 @@
 #include <algorithm>
 #include <vector>
 
-#include "test_functions.h"
-#include "test_WINDSGeneralData.h"
-#include "test_TURBGeneralData.h"
-#include "test_PlumeGeneralData.h"
+#include "util/Matrix3.h"
 
-TEST_CASE("vector math")
+TEST_CASE("vector math class test")
 {
 
   printf("======================================\n");
   printf("testing vector math\n");
   printf("--------------------------------------\n");
-  std::string results = "";
 
-  int gridSize[3] = { 10, 10, 10 };
-  float gridRes[3] = { 0.1, 0.1, 0.1 };
+  Vector3<float> a(1.0f, 2.0f, 3.0f);
+  Vector3<float> b(1.0f, 2.0f, 3.0f);
+  REQUIRE(a == b);
 
-  auto *WGD = new test_WINDSGeneralData(gridSize, gridRes);
-  auto *TGD = new test_TURBGeneralData(WGD);
-  PlumeParameters PP("", false, false);
-  auto *PGD = new test_PlumeGeneralData(PP, WGD, TGD);
+  Vector3<float> c = a + b;
+  REQUIRE(c[0] == 2.0f);
+  REQUIRE(c[1] == 4.0f);
+  REQUIRE(c[2] == 6.0f);
 
-  printf("--------------------------------------\n");
-  printf("starting PLUME vector math CPU...\n");
-  // PGD->testCPU(1000000);
+  c += a;
+  REQUIRE(c[0] == 3.0f);
+  REQUIRE(c[1] == 6.0f);
+  REQUIRE(c[2] == 9.0f);
 
-  printf("--------------------------------------\n");
+  c /= 3;
+  REQUIRE(c == a);
 
-  REQUIRE(results == "");
-#ifdef HAS_CUDA
-  printf("--------------------------------------\n");
-  printf("starting PLUME vector math CUDA...\n");
-  // PGD->testGPU(100000);
-  // PGD->testGPU_struct(1000000);
-#endif
-  
-  delete WGD;
-  delete TGD;
-  delete PGD;
+  c *= 3;
+  REQUIRE(c == 3*a);
+  REQUIRE(c == a*3);
+
+  c = a - b;
+  REQUIRE(c[0] == 0.0f);
+  REQUIRE(c[1] == 0.0f);
+  REQUIRE(c[2] == 0.0f);
+
+  REQUIRE(a * b == 14);
+  REQUIRE(a.dot(b) == 14);
+
+  Vector3<float> d = { 1.0f, 1.0f, 1.0f };
+  REQUIRE(d.length() == sqrt(3.0f));
 }
 
 #if 0

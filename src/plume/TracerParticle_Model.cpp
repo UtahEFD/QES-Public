@@ -139,13 +139,19 @@ void TracerParticle_Model::advect(const double &total_time_interval,
       */
 
       PGD->interp->interpValues(WGD, p->xPos, p->yPos, p->zPos, p->uMean, p->vMean, p->wMean);
+      PGD->interp->interpValues(WGD, p->pos._1, p->pos._2, p->pos._3, p->uMean, p->vMean, p->wMean);
+
+      p->velMean = { p->uMean, p->vMean, p->wMean };
 
       // adjusting mean vertical velocity for settling velocity
       p->wMean -= vs;
 
+      p->velMean._3 -= vs;
+
       // now calculate the particle timestep using the courant number, the velocity fluctuation from the last time,
       // and the grid sizes. Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
-      int cellId = PGD->interp->getCellId(p->xPos, p->yPos, p->zPos);
+      // int cellId = PGD->interp->getCellId(p->xPos, p->yPos, p->zPos);
+      int cellId = PGD->interp->getCellId(p->pos._1, p->pos._2, p->pos._3);
 
       double dWall = WGD->mixingLengths[cellId];
       double par_dt = PGD->calcCourantTimestep(dWall,
@@ -159,6 +165,10 @@ void TracerParticle_Model::advect(const double &total_time_interval,
       // par_time = par_time + par_dt;
 
       PGD->GLE_solver->solve(p, par_dt, TGD, PGD);
+
+      p->uFluct = p->velFluct._1;
+      p->vFluct = p->velFluct._2;
+      p->wFluct = p->velFluct._3;
 
       if (p->isRogue) {
         p->isActive = false;
@@ -214,11 +224,17 @@ void TracerParticle_Model::advect(const double &total_time_interval,
       p->delta_vFluct = p->vFluct - p->vFluct_old;
       p->delta_wFluct = p->wFluct - p->wFluct_old;
 
+      p->delta_velFluct._1 = p->velFluct._1 - p->velFluct_old._1;
+      p->delta_velFluct._2 = p->velFluct._2 - p->velFluct_old._2;
+      p->delta_velFluct._3 = p->velFluct._3 - p->velFluct_old._3;
+
       p->uFluct_old = p->uFluct;
       p->vFluct_old = p->vFluct;
       p->wFluct_old = p->wFluct;
 
       p->velFluct_old = p->velFluct;
+
+      p->pos = { p->xPos, p->yPos, p->zPos };
 
       // now set the time remainder for the next loop
       // if the par_dt calculated from the Courant Number is greater than the timeRemainder,

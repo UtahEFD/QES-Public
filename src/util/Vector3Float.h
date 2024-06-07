@@ -34,7 +34,7 @@
 
 #include <type_traits>
 #include <iostream>
-#include <math.h>
+#include <cmath>
 
 #define FLOATS_ARE_EQUAL(x, y) (((x) - (y)) < 0.000001 && ((x) - (y)) > -0.000001)
 
