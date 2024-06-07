@@ -45,7 +45,7 @@ TEST_CASE("vector math class test")
   REQUIRE(a.dot(b) == 14);
 
   Vector3<float> d = { 1.0f, 1.0f, 1.0f };
-  REQUIRE(d.length() == sqrt(3.0f));
+  REQUIRE(std::abs(d.length() - sqrt(3.0f)) < 1E-6);
 }
 
 TEST_CASE("vector math class speed test")

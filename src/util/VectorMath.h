@@ -179,7 +179,7 @@ inline void VectorMath::makeRealizable(const float &invarianceTol, mat3sym &tau)
   float ks = 1.01f * (-b + std::sqrt(b * b - 16.0f / 3.0f * c)) / (8.0f / 3.0f);
 
   // if the initial guess is bad, use the straight up invar_xx value
-  if (ks < invarianceTol || isnan(ks)) {
+  if (ks < invarianceTol || std::isnan(ks)) {
     ks = 0.5f * std::abs(invar._1);// also 0.5*abs(invar_xx)
   }
 
