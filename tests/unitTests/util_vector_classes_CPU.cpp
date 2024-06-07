@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "util/Matrix3.h"
+#include "util/VectorMath.h"
 
 TEST_CASE("vector math class test")
 {
@@ -32,8 +33,8 @@ TEST_CASE("vector math class test")
   REQUIRE(c == a);
 
   c *= 3;
-  REQUIRE(c == 3*a);
-  REQUIRE(c == a*3);
+  REQUIRE(c == 3 * a);
+  REQUIRE(c == a * 3);
 
   c = a - b;
   REQUIRE(c[0] == 0.0f);
@@ -45,6 +46,54 @@ TEST_CASE("vector math class test")
 
   Vector3<float> d = { 1.0f, 1.0f, 1.0f };
   REQUIRE(d.length() == sqrt(3.0f));
+}
+
+TEST_CASE("vector math class speed test")
+{
+  size_t test_length = 2E9;
+  float l = 0;
+
+  Vector3<float> a(1.0f, 2.0f, 3.0f);
+  Vector3<float> b(1.0f, 2.0f, 3.0f);
+  Vector3<float> c;
+
+  auto cpuStartTime = std::chrono::high_resolution_clock::now();
+  for (auto it = 0; it < test_length; ++it) {
+    c = a + b;
+    c = 3.0f * a + b;
+    c = a;
+
+    l = c.length();
+    c /= l;
+  }
+  auto cpuEndTime = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> cpuElapsed = cpuEndTime - cpuStartTime;
+  std::cout << "CPU  elapsed time: " << cpuElapsed.count() << " s\n";
+
+  vec3 x, y, z;
+  x = { 1.0f, 2.0f, 3.0f };
+  y = { 1.0f, 2.0f, 3.0f };
+
+  cpuStartTime = std::chrono::high_resolution_clock::now();
+  for (auto it = 0; it < test_length; ++it) {
+    z._1 = x._1 + y._1;
+    z._2 = x._2 + y._2;
+    z._3 = x._3 + y._3;
+
+    z._1 = 3.0f * x._1 + y._1;
+    z._2 = 3.0f * x._2 + y._2;
+    z._3 = 3.0f * x._3 + y._3;
+
+    z = x;
+
+    l = sqrt(x._1 * x._1 + x._2 * x._2 + x._3 * x._3);
+    z._1 = z._1 / l;
+    z._2 = z._2 / l;
+    z._3 = z._3 / l;
+  }
+  cpuEndTime = std::chrono::high_resolution_clock::now();
+  cpuElapsed = cpuEndTime - cpuStartTime;
+  std::cout << "CPU  elapsed time: " << cpuElapsed.count() << " s\n";
 }
 
 #if 0

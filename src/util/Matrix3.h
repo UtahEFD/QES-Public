@@ -53,7 +53,7 @@ template<class T>
 class Matrix3;
 
 /* --------------------------------------------------------------------------------------
- * MATRIX 3 SYMETRIC
+ * MATRIX 3 SYMMETRIC
  * -------------------------------------------------------------------------------------- */
 
 template<class T>
@@ -295,7 +295,7 @@ public:
     return *this;
   }
 
-  // assignment operator (from a symetric matrix)
+  // assignment operator (from a symmetric matrix)
   Matrix3<T> &operator=(Matrix3sym<T> &M)
   {
     m_val[0] = M[0];
@@ -482,7 +482,7 @@ public:
 
 
 /* --------------------------------------------------------------------------------------
- * MATRIX 3 SYMETRIC
+ * MATRIX 3 SYMMETRIC
  * -------------------------------------------------------------------------------------- */
 
 template<class T>
@@ -590,16 +590,16 @@ public:
   // assignment operator
   Matrix3sym<T> &operator*=(const T &a)
   {
-    for (int k = 0; k < 6; k++)
-      m_val[k] *= a;
+    for (auto &k : m_val)
+      k *= a;
     return *this;
   }
 
   // assignment operator
   Matrix3sym<T> &operator/=(const T &a)
   {
-    for (int k = 0; k < 6; k++)
-      m_val[k] /= a;
+    for (auto &k : m_val)
+      k /= a;
     return *this;
   }
 
