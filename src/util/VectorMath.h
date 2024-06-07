@@ -113,11 +113,41 @@ private:
   VectorMath() = default;
 
 public:
+  static float length(const vec3 &);
+  static float dot(const vec3 &, const vec3 &);
+  static void reflect(const vec3 &, vec3 &);
+  static float distance(const vec3 &, const vec3 &);
+
   static void calcInvariants(const mat3sym &, vec3 &);
   static void makeRealizable(const float &, mat3sym &);
   static bool invert(mat3 &);
   static void multiply(const mat3 &, const vec3 &, vec3 &);
 };
+
+inline float VectorMath::length(const vec3 &x)
+{
+  return sqrt(x._1 * x._1 + x._2 * x._2 + x._3 * x._3);
+}
+
+inline float VectorMath::dot(const vec3 &a, const vec3 &b)
+{
+  return a._1 * b._1 + a._2 * b._2 + a._3 * b._3;
+}
+
+inline void VectorMath::reflect(const vec3 &n, vec3 &v)
+{
+  float s = dot(n, v);
+  v._1 = v._1 - 2.0f * s * n._1;
+  v._2 = v._2 - 2.0f * s * n._2;
+  v._3 = v._3 - 2.0f * s * n._3;
+}
+
+inline float VectorMath::distance(const vec3 &a, const vec3 &b)
+{
+  return (sqrt((a._1 - b._1) * (a._1 - b._1)
+               + (a._2 - b._2) * (a._2 - b._2)
+               + (a._3 - b._3) * (a._3 - b._3)));
+}
 
 inline void VectorMath::calcInvariants(const mat3sym &tau, vec3 &invar)
 {

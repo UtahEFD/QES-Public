@@ -86,7 +86,8 @@ TEST_CASE("vector math class speed test")
 
     z = x;
 
-    l = sqrt(x._1 * x._1 + x._2 * x._2 + x._3 * x._3);
+    l = VectorMath::length(z);
+
     z._1 = z._1 / l;
     z._2 = z._2 / l;
     z._3 = z._3 / l;
