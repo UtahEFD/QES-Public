@@ -70,7 +70,7 @@ void GLE_Solver_CPU::solve(Particle *p, double &par_dt, TURBGeneralData *TGD, PL
 
   // now need to calculate the inverse values for tau
   // directly modifies the values of tau
-  mat3 L(tau);
+  mat3 L = { tau._11, tau._12, tau._13, tau._12, tau._22, tau._23, tau._13, tau._23, tau._33 };
 
   p->isRogue = !VectorMath::invert(L);
   if (p->isRogue) {
@@ -79,35 +79,36 @@ void GLE_Solver_CPU::solve(Particle *p, double &par_dt, TURBGeneralData *TGD, PL
     p->isActive = false;
   }
 
-// these are the random numbers for each direction
+  // these are the random numbers for each direction
+
 #ifdef _OPENMP
-  vec3 vRandn(PGD->threadRNG[omp_get_thread_num()]->norRan(),
-              PGD->threadRNG[omp_get_thread_num()]->norRan(),
-              PGD->threadRNG[omp_get_thread_num()]->norRan());
+  vec3 vRandn = { PGD->threadRNG[omp_get_thread_num()]->norRan(),
+                  PGD->threadRNG[omp_get_thread_num()]->norRan(),
+                  PGD->threadRNG[omp_get_thread_num()]->norRan() };
 #else
-  vec3 vRandn(PGD->RNG->norRan(), PGD->RNG->norRan(), PGD->RNG->norRan());
+  vec3 vRandn = { PGD->RNG->norRan(), PGD->RNG->norRan(), PGD->RNG->norRan() };
 #endif
 
   // now calculate a bunch of values for the current particle
   // calculate the time derivative of the stress tensor: (tau_current - tau_old)/dt
-  mat3sym tau_ddt((tau._11 - p->tau._11) / par_dt,
-                  (tau._12 - p->tau._12) / par_dt,
-                  (tau._13 - p->tau._13) / par_dt,
-                  (tau._22 - p->tau._22) / par_dt,
-                  (tau._23 - p->tau._23) / par_dt,
-                  (tau._33 - p->tau._33) / par_dt);
+  mat3sym tau_ddt = { (tau._11 - p->tau._11) / par_dt,
+                      (tau._12 - p->tau._12) / par_dt,
+                      (tau._13 - p->tau._13) / par_dt,
+                      (tau._22 - p->tau._22) / par_dt,
+                      (tau._23 - p->tau._23) / par_dt,
+                      (tau._33 - p->tau._33) / par_dt };
 
   // now calculate and set the A and b matrices for an Ax = b
   // A = -I + 0.5*(-CoEps*L + dTdt*L )*par_dt;
-  mat3 A(-1.0 + 0.50 * (-p->CoEps * L._11 + L._11 * tau_ddt._11 + L._12 * tau_ddt._12 + L._13 * tau_ddt._13) * par_dt,
-         -0.0 + 0.50 * (-p->CoEps * L._12 + L._12 * tau_ddt._11 + L._22 * tau_ddt._12 + L._23 * tau_ddt._13) * par_dt,
-         -0.0 + 0.50 * (-p->CoEps * L._13 + L._13 * tau_ddt._11 + L._23 * tau_ddt._12 + L._33 * tau_ddt._13) * par_dt,
-         -0.0 + 0.50 * (-p->CoEps * L._12 + L._11 * tau_ddt._12 + L._12 * tau_ddt._22 + L._13 * tau_ddt._23) * par_dt,
-         -1.0 + 0.50 * (-p->CoEps * L._22 + L._12 * tau_ddt._12 + L._22 * tau_ddt._22 + L._23 * tau_ddt._23) * par_dt,
-         -0.0 + 0.50 * (-p->CoEps * L._23 + L._13 * tau_ddt._12 + L._23 * tau_ddt._22 + L._33 * tau_ddt._23) * par_dt,
-         -0.0 + 0.50 * (-p->CoEps * L._13 + L._11 * tau_ddt._13 + L._12 * tau_ddt._23 + L._13 * tau_ddt._33) * par_dt,
-         -0.0 + 0.50 * (-p->CoEps * L._23 + L._12 * tau_ddt._13 + L._22 * tau_ddt._23 + L._23 * tau_ddt._33) * par_dt,
-         -1.0 + 0.50 * (-p->CoEps * L._33 + L._13 * tau_ddt._13 + L._23 * tau_ddt._23 + L._33 * tau_ddt._33) * par_dt);
+  mat3 A = { -1.0 + 0.50 * (-p->CoEps * L._11 + L._11 * tau_ddt._11 + L._12 * tau_ddt._12 + L._13 * tau_ddt._13) * par_dt,
+             -0.0 + 0.50 * (-p->CoEps * L._12 + L._12 * tau_ddt._11 + L._22 * tau_ddt._12 + L._23 * tau_ddt._13) * par_dt,
+             -0.0 + 0.50 * (-p->CoEps * L._13 + L._13 * tau_ddt._11 + L._23 * tau_ddt._12 + L._33 * tau_ddt._13) * par_dt,
+             -0.0 + 0.50 * (-p->CoEps * L._12 + L._11 * tau_ddt._12 + L._12 * tau_ddt._22 + L._13 * tau_ddt._23) * par_dt,
+             -1.0 + 0.50 * (-p->CoEps * L._22 + L._12 * tau_ddt._12 + L._22 * tau_ddt._22 + L._23 * tau_ddt._23) * par_dt,
+             -0.0 + 0.50 * (-p->CoEps * L._23 + L._13 * tau_ddt._12 + L._23 * tau_ddt._22 + L._33 * tau_ddt._23) * par_dt,
+             -0.0 + 0.50 * (-p->CoEps * L._13 + L._11 * tau_ddt._13 + L._12 * tau_ddt._23 + L._13 * tau_ddt._33) * par_dt,
+             -0.0 + 0.50 * (-p->CoEps * L._23 + L._12 * tau_ddt._13 + L._22 * tau_ddt._23 + L._23 * tau_ddt._33) * par_dt,
+             -1.0 + 0.50 * (-p->CoEps * L._33 + L._13 * tau_ddt._13 + L._23 * tau_ddt._23 + L._33 * tau_ddt._33) * par_dt };
 
   /*double A_11 = -1.0 + 0.50 * (-p->CoEps * lxx + lxx * dtxxdt + lxy * dtxydt + lxz * dtxzdt) * par_dt;
   double A_12 = 0.50 * (-p->CoEps * lxy + lxy * dtxxdt + lyy * dtxydt + lyz * dtxzdt) * par_dt;
@@ -122,9 +123,9 @@ void GLE_Solver_CPU::solve(Particle *p, double &par_dt, TURBGeneralData *TGD, PL
   double A_33 = -1.0 + 0.50 * (-p->CoEps * lzz + lxz * dtxzdt + lyz * dtyzdt + lzz * dtzzdt) * par_dt;*/
 
   // b = -vectFluct - 0.5*vecFluxDiv*par_dt - sqrt(CoEps*par_dt)*vecRandn;
-  vec3 b(-p->velFluct_old._1 - 0.50 * flux_div._1 * par_dt - std::sqrt(p->CoEps * par_dt) * vRandn._1,
-         -p->velFluct_old._2 - 0.50 * flux_div._2 * par_dt - std::sqrt(p->CoEps * par_dt) * vRandn._2,
-         -p->velFluct_old._3 - 0.50 * flux_div._3 * par_dt - std::sqrt(p->CoEps * par_dt) * vRandn._3);
+  vec3 b = { -p->velFluct_old._1 - 0.50 * flux_div._1 * par_dt - std::sqrt(p->CoEps * par_dt) * vRandn._1,
+             -p->velFluct_old._2 - 0.50 * flux_div._2 * par_dt - std::sqrt(p->CoEps * par_dt) * vRandn._2,
+             -p->velFluct_old._3 - 0.50 * flux_div._3 * par_dt - std::sqrt(p->CoEps * par_dt) * vRandn._3 };
 
   /*double b_11 = -p->uFluct_old - 0.50 * flux_div_x * par_dt - std::sqrt(p->CoEps * par_dt) * xRandn;
   double b_21 = -p->vFluct_old - 0.50 * flux_div_y * par_dt - std::sqrt(p->CoEps * par_dt) * yRandn;

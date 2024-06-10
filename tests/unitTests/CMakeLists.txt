@@ -24,6 +24,7 @@ link_external_libraries(unit_test_example_t00)
 target_link_libraries(unit_test_example_t00 Catch2::Catch2WithMain)
 
 add_executable(util_time util_time.cpp)
+add_executable(util_vector_classes_CPU util_vector_classes_CPU.cpp)
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
 
@@ -34,8 +35,9 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
    target_link_libraries(test_CUDARandomGen ${CUDA_LIBRARIES})
    target_link_libraries(test_CUDARandomGen ${CUDA_curand_LIBRARY})
 
-  cuda_add_executable(util_vector_classes_CPU
-          util_vector_classes_CPU.cpp)
+   cuda_add_executable(util_vector_classes_GPU
+     CUDA_vector_testkernel.cu CUDA_vector_testkernel.h
+     util_vector_classes_GPU.cpp)
 
    cuda_add_executable(winds_terrain
      test_DTEHeightField.h test_DTEHeightField.cpp
@@ -57,6 +59,7 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
     util_time
     util_output
     util_vector_classes_CPU
+    util_vector_classes_GPU
     winds_terrain
     turbulence_derivative_CPU
     plume_interpolation_CPU
@@ -66,9 +69,6 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
     test_CUDARandomGen)
 
 ELSE ($CACHE{HAS_CUDA_SUPPORT})
-
-   add_executable(util_vector_classes_CPU
-           util_vector_classes_CPU.cpp)
 
    add_executable(winds_terrain
      test_DTEHeightField.h test_DTEHeightField.cpp
@@ -107,7 +107,10 @@ foreach (unittest ${UNITTESTS})
     target_link_libraries(${unittest} qeswindsgpu)
   ENDIF()
   target_link_libraries(${unittest} qeswindscore)
-  target_link_libraries(${unittest} qesutil)  
+  IF ($CACHE{HAS_CUDA_SUPPORT})
+    target_link_libraries(${unittest} qesutilgpu)
+  ENDIF()
+  target_link_libraries(${unittest} qesutil)
   IF($CACHE{HAS_OPTIX_SUPPORT})
     target_link_libraries(${unittest} qesOptix)
   ENDIF()

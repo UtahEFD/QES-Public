@@ -184,9 +184,9 @@ void TracerParticle_Model::advect(const double &total_time_interval,
       double disY = (p->vMean + p->vFluct) * par_dt;
       double disZ = (p->wMean + p->wFluct) * par_dt;
 
-      vec3 dist((p->velMean._1 + p->velFluct._1) * par_dt,
-                (p->velMean._2 + p->velFluct._2) * par_dt,
-                (p->velMean._3 + p->velFluct._3) * par_dt);
+      vec3 dist{ (p->velMean._1 + p->velFluct._1) * par_dt,
+                 (p->velMean._2 + p->velFluct._2) * par_dt,
+                 (p->velMean._3 + p->velFluct._3) * par_dt };
 
       p->xPos = p->xPos + disX;
       p->yPos = p->yPos + disY;
@@ -200,9 +200,9 @@ void TracerParticle_Model::advect(const double &total_time_interval,
       double vTot = p->vMean + p->vFluct;
       double wTot = p->wMean + p->wFluct;
 
-      vec3 velTot(p->velMean._1 + p->velFluct._1,
-                  p->velMean._2 + p->velFluct._2,
-                  p->velMean._3 + p->velFluct._3);
+      vec3 velTot{ p->velMean._1 + p->velFluct._1,
+                   p->velMean._2 + p->velFluct._2,
+                   p->velMean._3 + p->velFluct._3 };
 
       // Deposit mass (vegetation only right now)
       if (p->depFlag && p->isActive) {

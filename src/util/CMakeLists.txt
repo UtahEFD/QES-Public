@@ -1,7 +1,7 @@
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library (qesutil ${LIB_TYPE}
+SET( qesUtilSources
   ArgumentParsing.cpp ArgumentParsing.h
   ParseInterface.h
   ParseException.h
@@ -37,6 +37,20 @@ add_library (qesutil ${LIB_TYPE}
 
   QEStime.cpp)
 
-FILE(GLOB files "*.h")
-INSTALL(FILES ${files} DESTINATION include/util)
-INSTALL(TARGETS qesutil LIBRARY ARCHIVE DESTINATION lib)
+IF ($CACHE{HAS_CUDA_SUPPORT})
+  CUDA_ADD_LIBRARY(qesutil ${LIB_TYPE} ${qesUtilSources})
+ELSE ($CACHE{HAS_CUDA_SUPPORT})
+  ADD_LIBRARY(qesutil ${LIB_TYPE} ${qesUtilSources})
+ENDIF ($CACHE{HAS_CUDA_SUPPORT})
+
+IF ($CACHE{HAS_CUDA_SUPPORT})
+  CUDA_ADD_LIBRARY(qesutilgpu ${LIB_TYPE}
+    VectorMath_CUDA.cuh
+    )
+ENDIF ($CACHE{HAS_CUDA_SUPPORT})
+
+
+
+#FILE(GLOB files "*.h")
+#INSTALL(FILES ${files} DESTINATION include/util)
+#INSTALL(TARGETS qesutil LIBRARY ARCHIVE DESTINATION lib)
