@@ -156,7 +156,7 @@ __device__ void makeRealizable(const float &invarianceTol, mat3sym &tau)
 }
 
 
-__device__ bool invert3(mat3 &A)
+__device__ bool invert(mat3 &A)
 {
 
   // calculate the determinant
@@ -190,7 +190,7 @@ __device__ bool invert3(mat3 &A)
   }
 }
 
-__device__ void matmult(const mat3 &A, const vec3 &b, vec3 &x)
+__device__ void multiply(const mat3 &A, const vec3 &b, vec3 &x)
 {
   // now calculate the Ax=b x value from the input inverse A matrix and b matrix
   x._1 = b._1 * A._11 + b._2 * A._12 + b._3 * A._13;

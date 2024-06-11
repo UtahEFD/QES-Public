@@ -11,9 +11,10 @@
 TEST_CASE("vector math class test")
 {
 
-  printf("======================================\n");
-  printf("testing vector math\n");
-  printf("--------------------------------------\n");
+  std::cout << "======================================\n"
+            << "testing vector math on CPU            \n"
+            << "--------------------------------------"
+            << std::endl;
 
   Vector3<float> a(1.0f, 2.0f, 3.0f);
   Vector3<float> b(1.0f, 2.0f, 3.0f);
@@ -46,10 +47,26 @@ TEST_CASE("vector math class test")
 
   Vector3<float> d = { 1.0f, 1.0f, 1.0f };
   REQUIRE(std::abs(d.length() - sqrt(3.0f)) < 1E-6);
+
+  Vector3<float> n = { 0.0f, 0.0f, 1.0f };
+  Vector3<float> x = { 2.0f, 2.0f, -2.0f };
+  x = x.reflect(n);
+  REQUIRE(x[0] == 2.0f);
+  REQUIRE(x[1] == 2.0f);
+  REQUIRE(x[2] == 2.0f);
+
+  std::cout << "testing iostream : " << x << std::endl;
+  std::cout << "======================================" << std::endl;
 }
 
 TEST_CASE("vector math class speed test")
 {
+  std::cout << "======================================\n"
+            << "speed test vector math on CPU         \n"
+            << "--------------------------------------"
+            << std::endl;
+
+
   size_t test_length = 2E9;
   float l = 0;
 
@@ -95,55 +112,10 @@ TEST_CASE("vector math class speed test")
   cpuEndTime = std::chrono::high_resolution_clock::now();
   cpuElapsed = cpuEndTime - cpuStartTime;
   std::cout << "CPU  elapsed time: " << cpuElapsed.count() << " s\n";
+
+  REQUIRE(c[0] == z._1);
+  REQUIRE(c[1] == z._2);
+  REQUIRE(c[2] == z._3);
+
+  std::cout << "======================================" << std::endl;
 }
-
-#if 0
-void test_PlumeGeneralData::testCPU(int length)
-{
-
-  mat3 tmp = { 1, 2, 3, 2, 1, 2, 3, 2, 1 };
-  std::vector<mat3> A;
-  A.resize(length, tmp);
-
-  std::vector<vec3> b;
-  b.resize(length, { 1.0, 1.0, 1.0 });
-
-  std::vector<vec3> x;
-  x.resize(length, { 0.0, 0.0, 0.0 });
-
-  std::vector<mat3sym> tau;
-  // tau.resize(length, { 1, 2, 3, 1, 2, 1 });
-  tau.resize(length, { 1, 0, 3, 0, 0, 1 });
-  std::vector<vec3> invar;
-  invar.resize(length, { 0.0, 0.0, 0.0 });
-
-  auto cpuStartTime = std::chrono::high_resolution_clock::now();
-  for (auto it = 0; it < length; ++it) {
-    bool tt = vectorMath::invert3(A[it]);
-    vectorMath::matmult(A[it], b[it], x[it]);
-  }
-
-  for (auto it = 0; it < length; ++it) {
-    vectorMath::makeRealizable(10e-4, tau[it]);
-    vectorMath::calcInvariants(tau[it], invar[it]);
-  }
-
-  auto cpuEndTime = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> cpuElapsed = cpuEndTime - cpuStartTime;
-  std::cout << "CPU  elapsed time: " << cpuElapsed.count() << " s\n";
-
-  std::cout << A[0]._11 << " " << A[0]._12 << " " << A[0]._13 << std::endl;
-  std::cout << A[0]._21 << " " << A[0]._22 << " " << A[0]._23 << std::endl;
-  std::cout << A[0]._31 << " " << A[0]._32 << " " << A[0]._33 << std::endl;
-  std::cout << x[0]._1 << " " << x[0]._2 << " " << x[0]._3 << std::endl;
-
-  std::cout << std::endl;
-
-  std::cout << tau[0]._11 << " " << tau[0]._12 << " " << tau[0]._13 << std::endl;
-  std::cout << tau[0]._12 << " " << tau[0]._22 << " " << tau[0]._23 << std::endl;
-  std::cout << tau[0]._13 << " " << tau[0]._23 << " " << tau[0]._33 << std::endl;
-  std::cout << invar[0]._1 << " " << invar[0]._2 << " " << invar[0]._3 << std::endl;
-
-  return;
-}
-#endif

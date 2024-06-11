@@ -1,22 +1,27 @@
 
 #pragma once
-#include "util/VectorMath_CUDA.h"
+
+#include "util/VectorMath.h"
+#include "util/VectorMath_CUDA.cuh"
 
 typedef struct
 {
   bool isRogue;
   bool isActive;
+
+  float CoEps;
+
   vec3 pos;
 
-  vec3 uMean;
-  vec3 uFluct;
-  vec3 uFluct_old;
-  vec3 uFluct_delta;
+  vec3 velMean;
+  vec3 velFluct;
+  vec3 velFluct_old;
+  vec3 delta_velFluct;
 
   mat3sym tau;
-  mat3sym tau_old;
-  mat3sym tau_ddt;
+  // mat3sym tau_old;
+  // mat3sym tau_ddt;
 
-  vec3 fluxDiv;
+  // vec3 fluxDiv;
 
 } particle;

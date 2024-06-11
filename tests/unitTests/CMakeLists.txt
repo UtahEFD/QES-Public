@@ -39,6 +39,10 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
      CUDA_vector_testkernel.cu CUDA_vector_testkernel.h
      util_vector_classes_GPU.cpp)
 
+   cuda_add_executable(util_advect_GPU
+     CUDA_advect_testkernel.cu CUDA_advect_testkernel.h
+     util_advect_GPU.cpp)
+   
    cuda_add_executable(winds_terrain
      test_DTEHeightField.h test_DTEHeightField.cpp
      winds_terrain.cpp)
@@ -60,10 +64,10 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
     util_output
     util_vector_classes_CPU
     util_vector_classes_GPU
+    util_advect_GPU
     winds_terrain
     turbulence_derivative_CPU
     plume_interpolation_CPU
-
     plume_input
     plume_particle_buffer
     test_CUDARandomGen)

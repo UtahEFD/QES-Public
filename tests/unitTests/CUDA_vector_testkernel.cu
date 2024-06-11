@@ -4,7 +4,7 @@
 
 __global__ void testCUDA_vectormath()
 {
-  int id = (blockDim.x * blockIdx.x) + threadIdx.x;
+  // int id = (blockDim.x * blockIdx.x) + threadIdx.x;
 
   vec3 x, y, z;
   x = { 1.0f, 2.0f, 3.0f };
@@ -28,8 +28,8 @@ __global__ void testCUDA_matmult(int length, mat3 *d_A, vec3 *d_b, vec3 *d_x)
   int index = blockIdx.x * blockDim.x + threadIdx.x;
   int stride = blockDim.x * gridDim.x;
   for (int it = index; it < length; it += stride) {
-    bool tt = invert3(d_A[it]);
-    matmult(d_A[it], d_b[it], d_x[it]);
+    bool tt = invert(d_A[it]);
+    multiply(d_A[it], d_b[it], d_x[it]);
   }
   return;
 }
