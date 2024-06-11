@@ -84,6 +84,15 @@ TEST_CASE("vector math class test")
   REQUIRE(x_array[0]._2 == -14.0);
   REQUIRE(x_array[0]._3 == 8.0);
 
+  sum = { 0.0, 0.0, 0.0 };
+  for (size_t k = 0; k < x_array.size(); ++k) {
+    sum._1 += x_array[k]._1;
+    sum._2 += x_array[k]._2;
+    sum._3 += x_array[k]._3;
+  }
+  REQUIRE(sum._1 == 3.0 * length);
+  REQUIRE(sum._2 == -14.0 * length);
+  REQUIRE(sum._3 == 8.0 * length);
   std::cout << "======================================" << std::endl;
 }
 
