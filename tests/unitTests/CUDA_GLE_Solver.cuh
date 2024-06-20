@@ -75,10 +75,12 @@ __device__ void solve(particle *p, float par_dt, float invarianceTol, float vel_
   // PGD->interp->interpValues(TGD,p->pos,tau,flux_div,p->nuT,p->CoEps);
 
   // now need to call makeRealizable on tau
+  // makeRealizable(invarianceTol, p->tau);
   makeRealizable(invarianceTol, tau);
 
   // now need to calculate the inverse values for tau
   // directly modifies the values of tau
+  // mat3 L = { p->tau._11, p->tau._12, p->tau._13, p->tau._12, p->tau._22, p->tau._23, p->tau._13, p->tau._23, p->tau._33 };
   mat3 L = { tau._11, tau._12, tau._13, tau._12, tau._22, tau._23, tau._13, tau._23, tau._33 };
 
   p->isRogue = !invert(L);
@@ -98,6 +100,13 @@ __device__ void solve(particle *p, float par_dt, float invarianceTol, float vel_
 
   // now calculate a bunch of values for the current particle
   // calculate the time derivative of the stress tensor: (tau_current - tau_old)/dt
+  /*mat3sym tau_ddt = { (p->tau._11 - p->tau_old._11) / par_dt,
+                      (p->tau._12 - p->tau_old._12) / par_dt,
+                      (p->tau._13 - p->tau_old._13) / par_dt,
+                      (p->tau._22 - p->tau_old._22) / par_dt,
+                      (p->tau._23 - p->tau_old._23) / par_dt,
+                      (p->tau._33 - p->tau_old._33) / par_dt };*/
+
   mat3sym tau_ddt = { (tau._11 - p->tau._11) / par_dt,
                       (tau._12 - p->tau._12) / par_dt,
                       (tau._13 - p->tau._13) / par_dt,
@@ -180,5 +189,6 @@ __device__ void solve(particle *p, float par_dt, float invarianceTol, float vel_
   p->tyz = tyz;
   p->tzz = tzz;*/
 
+  // p->tau_old = p->tau;
   p->tau = tau;
 }

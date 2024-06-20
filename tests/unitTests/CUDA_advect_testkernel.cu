@@ -28,6 +28,8 @@ __global__ void testCUDA_advection(int length, particle *d_particle_list)
   int index = blockIdx.x * blockDim.x + threadIdx.x;
   int stride = blockDim.x * gridDim.x;
   for (int it = index; it < length; it += stride) {
+    // PGD->interp->interpValues(TGD, p->pos, p->tau,p->flux_div, p->nuT, p->CoEps);
+    // d_particle_list[it].tau = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
     solve(&d_particle_list[it], 1.0f, 0.0000001f, 10.0f);
     advect(&d_particle_list[it], 1.0f);
   }
@@ -61,6 +63,8 @@ void test_gpu(const int &length)
   tmp.pos = { 1.0f, 1.0f, 1.0f };
   tmp.velMean = { 1.0f, 0.0f, 0.0f };
   tmp.velFluct = { 0.0f, 0.0f, 0.0f };
+  // tmp.tau = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
+  //  tmp.fluxDiv = { 0.0f, 0.0f, 0.0f };
 
   std::vector<particle> particle_list;
   particle_list.resize(length, tmp);
