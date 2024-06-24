@@ -6,4 +6,5 @@
 
 #include "util/VectorMath.h"
 
-void test_gpu(const int &);
+void test_gpu_AOS(const int &);
+void test_gpu_SOA(const int &);

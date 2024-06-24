@@ -16,9 +16,22 @@ TEST_CASE("vector math class test")
 
   std::cout << "======================================\n"
             << "testing advection on GPU              \n"
-            << "--------------------------------------" << std::endl;
+            << "--------------------------------------\n"
+            << std::endl;
 
-  test_gpu(1E5);
+  auto startTime = std::chrono::high_resolution_clock::now();
+  test_gpu_AOS(1E5);
+  auto endTime = std::chrono::high_resolution_clock::now();
 
+  std::chrono::duration<double> elapsed = endTime - startTime;
+  std::cout << "Total  elapsed time: " << elapsed.count() << " s\n";
+  std::cout << "======================================" << std::endl;
+
+  startTime = std::chrono::high_resolution_clock::now();
+  test_gpu_SOA(1E5);
+  endTime = std::chrono::high_resolution_clock::now();
+
+  elapsed = endTime - startTime;
+  std::cout << "Total  elapsed time: " << elapsed.count() << " s\n";
   std::cout << "======================================" << std::endl;
 }
