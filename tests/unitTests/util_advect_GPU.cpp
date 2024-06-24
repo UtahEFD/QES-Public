@@ -19,19 +19,21 @@ TEST_CASE("vector math class test")
             << "--------------------------------------\n"
             << std::endl;
 
+  std::cout << "TEST advection using AOS data structure" << std::endl;
   auto startTime = std::chrono::high_resolution_clock::now();
   test_gpu_AOS(1E5);
   auto endTime = std::chrono::high_resolution_clock::now();
 
   std::chrono::duration<double> elapsed = endTime - startTime;
-  std::cout << "Total  elapsed time: " << elapsed.count() << " s\n";
-  std::cout << "======================================" << std::endl;
+  std::cout << "Total  elapsed time: " << elapsed.count() << " s\n"
+            << "======================================" << std::endl;
 
+  std::cout << "TEST advection using SOA data structure" << std::endl;
   startTime = std::chrono::high_resolution_clock::now();
   test_gpu_SOA(1E5);
   endTime = std::chrono::high_resolution_clock::now();
 
   elapsed = endTime - startTime;
-  std::cout << "Total  elapsed time: " << elapsed.count() << " s\n";
-  std::cout << "======================================" << std::endl;
+  std::cout << "Total  elapsed time: " << elapsed.count() << " s\n"
+            << "======================================" << std::endl;
 }
