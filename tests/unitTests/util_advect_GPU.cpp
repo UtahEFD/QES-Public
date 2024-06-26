@@ -19,21 +19,38 @@ TEST_CASE("vector math class test")
             << "--------------------------------------\n"
             << std::endl;
 
-  std::cout << "TEST advection using AOS data structure" << std::endl;
+  double avgTime = 0.0;
   auto startTime = std::chrono::high_resolution_clock::now();
-  test_gpu_AOS(1E5);
   auto endTime = std::chrono::high_resolution_clock::now();
-
   std::chrono::duration<double> elapsed = endTime - startTime;
-  std::cout << "Total  elapsed time: " << elapsed.count() << " s\n"
-            << "======================================" << std::endl;
+      
+  std::cout << "TEST advection using AOS data structure" << std::endl;
+  for (auto lIdx=0; lIdx<3; ++lIdx) {
+      startTime = std::chrono::high_resolution_clock::now();
+      test_gpu_AOS(1E5);
+      endTime = std::chrono::high_resolution_clock::now();
 
+      elapsed = endTime - startTime;
+      std::cout << "Total  elapsed time: " << elapsed.count() << " s\n";
+
+      avgTime += elapsed.count();
+  }
+  std::cout << "Avg elapsed time: " << avgTime/3.0 << " s\n";
+  std::cout << "======================================" << std::endl;
+  
+
+  avgTime = 0.0;
   std::cout << "TEST advection using SOA data structure" << std::endl;
-  startTime = std::chrono::high_resolution_clock::now();
-  test_gpu_SOA(1E5);
-  endTime = std::chrono::high_resolution_clock::now();
+  for (auto lIdx=0; lIdx<3; ++lIdx) {
+      startTime = std::chrono::high_resolution_clock::now();
+      test_gpu_SOA(1E5);
+      endTime = std::chrono::high_resolution_clock::now();
 
-  elapsed = endTime - startTime;
-  std::cout << "Total  elapsed time: " << elapsed.count() << " s\n"
-            << "======================================" << std::endl;
+      elapsed = endTime - startTime;
+      std::cout << "Total  elapsed time: " << elapsed.count() << " s\n";
+
+      avgTime += elapsed.count();
+  }
+  std::cout << "Avg elapsed time: " << avgTime/3.0 << " s\n";
+  std::cout << "======================================" << std::endl;
 }
