@@ -39,6 +39,8 @@
 #include "winds/WINDSGeneralData.h"
 // #include "Interp.h"
 
+#include "Random.h"
+
 void SourceGeometry_Line::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
   if (posX_0 < domainXstart || posX_0 > domainXend) {
@@ -81,7 +83,10 @@ void SourceGeometry_Line::setInitialPosition(Particle *ptr)
   double diffX = posX_1 - posX_0;
   double diffY = posY_1 - posY_0;
   double diffZ = posZ_1 - posZ_0;
-  float t = drand48();
+
+  Random prng;
+  float t = prng.uniRan();
+  
   ptr->xPos_init = posX_0 + t * diffX;
   ptr->yPos_init = posY_0 + t * diffY;
   ptr->zPos_init = posZ_0 + t * diffZ;
