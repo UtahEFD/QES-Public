@@ -32,6 +32,8 @@
  * @brief
  */
 
+#include <numeric>
+
 #include "WallReflection_StairStep.h"
 #include "Plume.hpp"
 
