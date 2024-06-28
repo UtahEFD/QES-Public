@@ -287,8 +287,9 @@ void GIStool::UTMConverter(float &rlon, float &rlat, float &rx, float &ry, int &
 
 void GIStool::getConvergence(float &lon, float &lat, int &site_UTM_zone, float &convergence)
 {
+  double pi = 3.14159265359;
 
   float temp_lon;
   temp_lon = (6.0 * site_UTM_zone) - 183.0 - lon;
-  convergence = atan(atan(temp_lon * M_PI / 180.0) * asin(lat * M_PI / 180.0)) * (180.0 / M_PI);
+  convergence = atan(atan(temp_lon * pi / 180.0) * asin(lat * pi / 180.0)) * (180.0 / pi);
 }
