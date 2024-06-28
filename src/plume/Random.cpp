@@ -32,30 +32,25 @@
  * @brief This class handles the random number generation
  */
 
+#include <random>
+
 #include "Random.h"
 
 Random::Random()
-  : m_normal_value(false), m_remaining_value(0.0)
+  : m_normal_value(false), m_remaining_value(0.0), prng(), distribution(0.0, 1.0)
 {
-  // std::cout << "Set  RANDOM seed " << std::endl;
-  // std::srand(1);
-  // std::srand(std::time(0));
-  srand48(std::time(nullptr));
+  prng.seed(std::time(nullptr));
 }
 
 Random::Random(long seed)
-  : m_normal_value(false), m_remaining_value(0.0)
+  : m_normal_value(false), m_remaining_value(0.0), prng(), distribution(0.0, 1.0)
 {
-  // std::cout << "Set  RANDOM seed " << std::endl;
-  // std::srand(1);
-  // std::srand(std::time(0));
-  srand48(seed);
+  prng.seed(seed);
 }
 
 double Random::uniRan()
 {
-  // return std::rand() / (double)RAND_MAX;
-  return drand48();
+  return distribution(prng);
 }
 
 double Random::norRan()
