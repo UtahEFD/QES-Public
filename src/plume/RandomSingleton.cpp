@@ -33,6 +33,7 @@
  */
 
 #include "RandomSingleton.h"
+#include <ctime>
 
 RandomSingleton *RandomSingleton::m_the_instance = nullptr;
 
