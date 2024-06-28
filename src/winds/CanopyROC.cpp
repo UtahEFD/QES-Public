@@ -379,9 +379,11 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   float ld;// "local distance", the orthogonal distance from the current i,j point to the upwind edge of the closest row in the upwind direction
   int icell_2d, icell_2d_canopy;
   float a_exp;// a blending constant that smooths the transition from wake to upwind flow
-  float a_uwv[N_e + 1];// the attenuation due to one row (to be raised to N_e, where N_e is number of rows in entry region)
-  float tkeFacU_uwv[N_e + 1];
+  // float a_uwv[N_e + 1];// the attenuation due to one row (to be raised to N_e, where N_e is number of rows in entry region)
+  std::vector<float> a_uwv(N_e + 1, 0.0F);
 
+  // float tkeFacU_uwv[N_e + 1];
+  std::vector<float> tkeFacU_uwv(N_e + 1, 0.0F);
 
   int nx = WGD->nx;
   int ny = WGD->ny;
@@ -762,8 +764,8 @@ void CanopyROC::canopyWake(WINDSGeneralData *WGD, int building_id)
   float v0_uw = WGD->v0[icell_face];// v velocity at the centroid, 5 nodes from the top of domain
   float M0_uw, dwX, dwY;
   M0_uw = sqrt(pow(u0_uw, 2) + pow(v0_uw, 2));
-  float a_uwv[N_e + 1];// the attenuation due to one row (to be raised to N_e, where N_e is number of rows in entry region)
-  float tkeFacU_uwv[N_e + 1];
+  std::vector<float> a_uwv(N_e + 1,0.0F);// the attenuation due to one row (to be raised to N_e, where N_e is number of rows in entry region)
+  std::vector<float> tkeFacU_uwv(N_e + 1, 0.0F);
 
   // Find midpoint of each edge
   std::vector<bool> wakeEdges;
