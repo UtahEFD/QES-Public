@@ -1,10 +1,10 @@
 
 #include "CUDA_advect_testkernel.h"
 
+#include "util/VectorMath_CUDA.cuh"
+
 #include "CUDA_GLE_Solver.cuh"
 #include "Particle.cuh"
-
-#include "util/VectorMath_CUDA.cuh"
 
 __device__ void advect(particle_AOS *p, int tid, float par_dt)
 {
@@ -170,11 +170,11 @@ void test_gpu_SOA(const int &length)
   cudaDeviceGetAttribute(&blockCount, cudaDevAttrMultiProcessorCount, gpuID);
   // std::cout << blockCount << std::endl;
 
-  int threadsPerBlock = 32;
+  int threadsPerBlock = 128;
   cudaDeviceGetAttribute(&threadsPerBlock, cudaDevAttrMaxThreadsPerBlock, gpuID);
   // std::cout << threadsPerBlock << std::endl;
 
-  int blockSize = 1024;
+  int blockSize = threadsPerBlock;
   dim3 numberOfThreadsPerBlock(blockSize, 1, 1);
   dim3 numberOfBlocks(ceil(length / (float)(blockSize)), 1, 1);
 
