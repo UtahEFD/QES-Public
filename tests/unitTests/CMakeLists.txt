@@ -26,6 +26,8 @@ target_link_libraries(unit_test_example_t00 Catch2::Catch2WithMain)
 add_executable(util_time util_time.cpp)
 add_executable(util_vector_classes_CPU util_vector_classes_CPU.cpp)
 
+add_executable(plume_IDGenerator plume_IDGenerator.cpp)
+
 IF ($CACHE{HAS_CUDA_SUPPORT})
 
   cuda_add_executable(test_CUDARandomGen
@@ -40,8 +42,13 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
      util_vector_classes_GPU.cpp)
 
    cuda_add_executable(util_advect_GPU
-     CUDA_advect_testkernel.cu CUDA_advect_testkernel.h
+     CUDA_advect_testkernel.cu
      util_advect_GPU.cpp)
+
+   cuda_add_executable(util_buffer_GPU
+     CUDA_buffer_testkernel.cu
+     util_buffer_GPU.cpp)
+   
    
    cuda_add_executable(winds_terrain
      test_DTEHeightField.h test_DTEHeightField.cpp
@@ -65,8 +72,10 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
     util_vector_classes_CPU
     util_vector_classes_GPU
     util_advect_GPU
+    util_buffer_GPU
     winds_terrain
     turbulence_derivative_CPU
+    plume_IDGenerator
     plume_interpolation_CPU
     plume_input
     plume_particle_buffer
@@ -96,6 +105,7 @@ ELSE ($CACHE{HAS_CUDA_SUPPORT})
       util_vector_classes_CPU
       winds_terrain
       turbulence_derivative_CPU
+      plume_IDGenerator
       plume_interpolation_CPU
       plume_input
       plume_particle_buffer)
