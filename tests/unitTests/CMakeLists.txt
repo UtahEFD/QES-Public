@@ -49,7 +49,13 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
      CUDA_buffer_testkernel.cu
      util_buffer_GPU.cpp)
    
-   
+  cuda_add_executable(test_CUDAPartition
+    CUDAPartitionKernel.cu CUDAPartitionKernel.h
+    test_CUDAPartition.cpp
+    )
+   target_link_libraries(test_CUDAPartition ${CUDA_LIBRARIES})
+   target_link_libraries(test_CUDAPartition ${CUDA_curand_LIBRARY})
+
    cuda_add_executable(winds_terrain
      test_DTEHeightField.h test_DTEHeightField.cpp
      winds_terrain.cpp)
@@ -79,7 +85,8 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
     plume_interpolation_CPU
     plume_input
     plume_particle_buffer
-    test_CUDARandomGen)
+    test_CUDARandomGen
+    test_CUDAPartition)
 
 ELSE ($CACHE{HAS_CUDA_SUPPORT})
 
