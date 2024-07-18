@@ -4,17 +4,22 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <catch2/benchmark/catch_benchmark.hpp>
 
 #include "CUDAPartitionKernel.h"
 
-TEST_CASE("GPU Partitioning Tests")
+/**
+ *
+ */
+float generateRandomData(std::vector<float> &data)
 {
   std::default_random_engine prng;
   std::uniform_real_distribution<float> distribution(-1000.0f, 1000.0f);
   prng.seed(std::time(nullptr));
 
   const int N = 10000;
-  std::vector<float> data(N);
+  data.clear();
+  data.resize(N);
 
   float sum = 0.0;
   for (auto idx = 0; idx < N; ++idx) {
@@ -22,7 +27,13 @@ TEST_CASE("GPU Partitioning Tests")
     sum += data[idx];
   }
   // pick the mean of the data as the pivot
-  float pivotValue = sum / (float)data.size();
+  return sum / (float)data.size();
+}
+
+TEST_CASE("GPU Partitioning Tests")
+{
+  std::vector<float> data;
+  float pivotValue = generateRandomData(data);
 
   partitionData(data, pivotValue);
 
@@ -34,17 +45,20 @@ TEST_CASE("GPU Partitioning Tests")
       upperCount++;
   }
 
-  // std::cout << "lowerCount: " << lowerCount << ", upperCount: " << upperCount << std::endl;
-
+  // if the partition worked, then all values in the data array, from
+  // index 0 to lowerCount-1, should be less than the pivot.
   for (auto idx = 0; idx < lowerCount; ++idx) {
     REQUIRE(data[idx] <= pivotValue);
-    // std::cout << data[idx] << ' ';
   }
-  // std::cout << std::endl;
-  // std::cout << "\n******* Pivot: " << pivotValue << " *********\n" << std::endl;
+
   for (auto idx = lowerCount; idx < lowerCount + upperCount; ++idx) {
     REQUIRE(data[idx] > pivotValue);
-    // std::cout << data[idx] << ' ';
   }
-  // std::cout << std::endl;
+
+  BENCHMARK("Partition")
+  {
+    pivotValue = generateRandomData(data);
+    return partitionData(data, pivotValue);
+  };
+
 }
