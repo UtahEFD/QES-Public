@@ -45,6 +45,18 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
      CUDA_advect_testkernel.cu
      util_advect_GPU.cpp)
 
+   cuda_add_executable(test_particle_partition_GPU
+     CUDA_particle_partition_testkernel.cu
+     test_particle_partition_GPU.cpp)
+   target_link_libraries(test_particle_partition_GPU ${CUDA_LIBRARIES})
+   target_link_libraries(test_particle_partition_GPU ${CUDA_curand_LIBRARY})
+   
+   cuda_add_executable(test_advect_partition_GPU
+     CUDA_advect_partition_testkernel.cu
+     test_advect_partition_GPU.cpp)
+   target_link_libraries(test_advect_partition_GPU ${CUDA_LIBRARIES})
+   target_link_libraries(test_advect_partition_GPU ${CUDA_curand_LIBRARY})
+   
    cuda_add_executable(util_buffer_GPU
      CUDA_buffer_testkernel.cu
      util_buffer_GPU.cpp)
@@ -86,7 +98,9 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
     plume_input
     plume_particle_buffer
     test_CUDARandomGen
-    test_CUDAPartition)
+    test_CUDAPartition
+    test_particle_partition_GPU
+    test_advect_partition_GPU)
 
 ELSE ($CACHE{HAS_CUDA_SUPPORT})
 

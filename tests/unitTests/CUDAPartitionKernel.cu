@@ -36,6 +36,8 @@ void partitionData(std::vector<float> &data, float pivot)
 
   auto size = data.size();
 
+  auto gpuStartTime = std::chrono::high_resolution_clock::now();
+
   cudaMalloc(&d_data, size * sizeof(float));
 
   cudaMalloc(&d_lower, size * sizeof(float));
@@ -53,7 +55,10 @@ void partitionData(std::vector<float> &data, float pivot)
 
   int blockSize = 256;
   int numBlocks = (size + blockSize - 1) / blockSize;
+
+  auto kernelStartTime = std::chrono::high_resolution_clock::now();
   partitionKernel<<<numBlocks, blockSize>>>(d_data, d_lower, d_upper, d_lower_count, d_upper_count, size, pivot);
+  auto kernelEndTime = std::chrono::high_resolution_clock::now();
 
   int h_lower_count, h_upper_count;
   cudaMemcpy(&h_lower_count, d_lower_count, sizeof(int), cudaMemcpyDeviceToHost);
@@ -74,4 +79,11 @@ void partitionData(std::vector<float> &data, float pivot)
   cudaFree(d_upper);
   cudaFree(d_lower_count);
   cudaFree(d_upper_count);
+
+  auto gpuEndTime = std::chrono::high_resolution_clock::now();
+
+  std::chrono::duration<double> kernelElapsed = kernelEndTime - kernelStartTime;
+  std::cout << "kernel  elapsed time: " << kernelElapsed.count() << " s\n";
+  std::chrono::duration<double> gpuElapsed = gpuEndTime - gpuStartTime;
+  std::cout << "GPU  elapsed time: " << gpuElapsed.count() << " s\n";
 }
