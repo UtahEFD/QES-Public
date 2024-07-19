@@ -172,18 +172,19 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     auto gpuStartTime = std::chrono::high_resolution_clock::now();
 
     // Allocate particle array on the device ONLY
-    particle_array d_particle_list_odd;
-    allocate_device_particle_list(d_particle_list_odd, length);
-    particle_array d_particle_list_even;
-    allocate_device_particle_list(d_particle_list_even, length);
+    particle_array d_particle_list[2];
+    allocate_device_particle_list(d_particle_list[0], length);
+    allocate_device_particle_list(d_particle_list[1], length);
+
     particle_array d_new_particle_list;
     allocate_device_particle_list(d_new_particle_list, new_particle);
-    // initialize on the device
-    cudaMemset(d_particle_list_odd.state, INACTIVE, length * sizeof(int));
-    cudaMemset(d_particle_list_odd.ID, 0, length * sizeof(uint32_t));
 
-    cudaMemset(d_particle_list_odd.state, INACTIVE, length * sizeof(int));
-    cudaMemset(d_particle_list_odd.ID, 0, length * sizeof(uint32_t));
+    // initialize on the device
+    cudaMemset(d_particle_list[0].state, INACTIVE, length * sizeof(int));
+    cudaMemset(d_particle_list[0].ID, 0, length * sizeof(uint32_t));
+
+    cudaMemset(d_particle_list[1].state, INACTIVE, length * sizeof(int));
+    cudaMemset(d_particle_list[1].ID, 0, length * sizeof(uint32_t));
 
     // Allocate n floats on device to hold random numbers
     // Allocate numParticle * 3 floats on host
@@ -215,33 +216,27 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       int numBlocks_all_particle = (num_particle + blockSize - 1) / blockSize;
       int numBlocks_new_particle = (new_particle + blockSize - 1) / blockSize;
 
+      int idx = k % 2;
+      int alt_idx = (k + 1) % 2;
 
       curandGenerateUniform(gen, d_RNG_vals, num_particle);
-      if (k % 2 == 0) {
-        partition_particle<<<numBlocks_buffer, blockSize>>>(d_particle_list_even, d_particle_list_odd, d_lower_count, d_upper_count, length);
-        cudaDeviceSynchronize();
 
-        insert_particle<<<numBlocks_new_particle, blockSize>>>(length, new_particle, d_lower_count, d_new_particle_list, d_particle_list_even);
-        cudaDeviceSynchronize();
+      partition_particle<<<numBlocks_buffer, blockSize>>>(d_particle_list[ idx ], d_particle_list[ alt_idx ], d_lower_count, d_upper_count, length);
+      cudaDeviceSynchronize();
 
-        set_particle<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list_even, d_RNG_vals);
-        // set_particle<<<numBlocks1, blockSize>>>(length, d_particle_list_even, d_RNG_vals);
-      } else {
-        partition_particle<<<numBlocks_buffer, blockSize>>>(d_particle_list_odd, d_particle_list_even, d_lower_count, d_upper_count, length);
-        cudaDeviceSynchronize();
+      insert_particle<<<numBlocks_new_particle, blockSize>>>(length, new_particle, d_lower_count, d_new_particle_list, d_particle_list[ idx ]);
+      cudaDeviceSynchronize();
 
-        insert_particle<<<numBlocks_new_particle, blockSize>>>(length, new_particle, d_lower_count, d_new_particle_list, d_particle_list_odd);
-        cudaDeviceSynchronize();
+      set_particle<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[ idx ], d_RNG_vals);
+      // set_particle<<<numBlocks1, blockSize>>>(length, d_particle_list_even, d_RNG_vals);
 
-        set_particle<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list_odd, d_RNG_vals);
-        // set_particle<<<numBlocks1, blockSize>>>(length, d_particle_list_odd, d_RNG_vals);
-      }
       cudaMemcpy(&h_lower_count, d_lower_count, sizeof(int), cudaMemcpyDeviceToHost);
       cudaMemcpy(&h_upper_count, d_upper_count, sizeof(int), cudaMemcpyDeviceToHost);
       // std::cout << k << " " << h_lower_count << " " << h_upper_count << std::endl;
 
       cudaDeviceSynchronize();
     }
+    
     cudaMemcpy(&h_lower_count, d_lower_count, sizeof(int), cudaMemcpyDeviceToHost);
     cudaMemcpy(&h_upper_count, d_upper_count, sizeof(int), cudaMemcpyDeviceToHost);
     std::cout << ntest << " " << h_lower_count << " " << h_upper_count << std::endl;
@@ -256,11 +251,11 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     // cudamemcpy back to host
     // cudaMemcpy(isRogue.data(), d_particle_list.isRogue, length * sizeof(bool), cudaMemcpyDeviceToHost);
     // cudaMemcpy(isActive.data(), &d_particle_list.isActive, length * sizeof(bool), cudaMemcpyDeviceToHost);
-    cudaMemcpy(particle_state.data(), d_particle_list_odd.state, length * sizeof(int), cudaMemcpyDeviceToHost);
-    cudaMemcpy(particle_ID.data(), d_particle_list_odd.ID, length * sizeof(uint32_t), cudaMemcpyDeviceToHost);
+    cudaMemcpy(particle_state.data(), d_particle_list[0].state, length * sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(particle_ID.data(), d_particle_list[0].ID, length * sizeof(uint32_t), cudaMemcpyDeviceToHost);
 
     // cudaMemcpy(CoEps.data(), d_particle_list.CoEps, length * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(pos.data(), d_particle_list_odd.pos, length * sizeof(vec3), cudaMemcpyDeviceToHost);
+    cudaMemcpy(pos.data(), d_particle_list[0].pos, length * sizeof(vec3), cudaMemcpyDeviceToHost);
     // cudaMemcpy(velMean.data(), d_particle_list.velMean, length * sizeof(vec3), cudaMemcpyDeviceToHost);
     // cudaMemcpy(velFluct.data(), d_particle_list.velFluct, length * sizeof(vec3), cudaMemcpyDeviceToHost);
 
@@ -288,8 +283,8 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
 
     // cudafree
-    free_device_particle_list(d_particle_list_odd);
-    free_device_particle_list(d_particle_list_even);
+    free_device_particle_list(d_particle_list[0]);
+    free_device_particle_list(d_particle_list[1]);
     free_device_particle_list(d_new_particle_list);
 
     auto gpuEndTime = std::chrono::high_resolution_clock::now();
