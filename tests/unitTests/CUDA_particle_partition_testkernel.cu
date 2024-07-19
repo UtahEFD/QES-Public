@@ -64,6 +64,7 @@ __global__ void insert_particle(int length, int new_particle, int *lower, partic
   if (idx < new_particle && idx + (*lower) < length) {
     d_particle_list.state[idx + (*lower)] = d_new_particle_list.state[idx];
     d_particle_list.ID[idx + (*lower)] = d_new_particle_list.ID[idx];
+    d_particle_list.pos[idx + (*lower)] = { 0.0, 0.0, 0.0 };
   }
 }
 
@@ -162,87 +163,27 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
   IDGenerator *id_gen;
   id_gen = IDGenerator::getInstance();
 
-  particle tmp;
-
-  tmp.isRogue = false;
-  tmp.isActive = false;
-  tmp.CoEps = 0.1f;
-  tmp.pos = { 0.0f, 0.0f, 0.0f };
-  tmp.velMean = { 1.0f, 2.0f, -1.0f };
-  tmp.velFluct = { 0.0f, 0.0f, 0.0f };
-  tmp.tau = { 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f };
-  tmp.fluxDiv = { 0.0f, 0.0f, 0.0f };
-
-
-  std::vector<particle> particle_list;
-  particle_list.resize(length, tmp);
-
-  for (auto &p : particle_list) {
-    p.ID = id_gen->get();
-  }
-
-  /*std::vector<bool> isRogue(particle_list.size());
-  for (size_t k = 0; k < particle_list.size(); ++k) {
-    isRogue[k] = particle_list[k].isRogue;
-  }
-  std::vector<bool> isActive(particle_list.size());
-  for (size_t k = 0; k < particle_list.size(); ++k) {
-    isActive[k] = particle_list[k].isActive;
-  }*/
-  std::vector<int> particle_state(particle_list.size());
-  for (size_t k = 0; k < particle_list.size(); ++k) {
-    if (particle_list[k].isActive)
-      particle_state[k] = ACTIVE;
-    else if (particle_list[k].isActive && !particle_list[k].isRogue)
-      particle_state[k] = INACTIVE;
-    else
-      particle_state[k] = ROGUE;
-  }
-
-  std::vector<uint32_t> particle_ID(particle_list.size());
-  for (size_t k = 0; k < particle_list.size(); ++k) {
-    particle_ID[k] = particle_list[k].ID;
-  }
-
-  std::vector<float> CoEps(particle_list.size());
-  for (size_t k = 0; k < particle_list.size(); ++k) {
-    CoEps[k] = particle_list[k].CoEps;
-  }
-
-  std::vector<vec3> pos(particle_list.size());
-  for (size_t k = 0; k < particle_list.size(); ++k) {
-    pos[k] = particle_list[k].pos;
-  }
-  std::vector<vec3> velMean(particle_list.size());
-  for (size_t k = 0; k < particle_list.size(); ++k) {
-    velMean[k] = particle_list[k].velMean;
-  }
-  std::vector<vec3> velFluct(particle_list.size());
-  for (size_t k = 0; k < particle_list.size(); ++k) {
-    velFluct[k] = particle_list[k].velFluct;
-  }
-  std::vector<mat3sym> tau(particle_list.size());
-  for (size_t k = 0; k < particle_list.size(); ++k) {
-    tau[k] = particle_list[k].tau;
-  }
 
   int *d_lower_count, *d_upper_count;
 
   if (errorCheck == cudaSuccess) {
     // temp
-    print_particle(particle_list[2]);
+    // print_particle(particle_list[2]);
     auto gpuStartTime = std::chrono::high_resolution_clock::now();
 
+    // Allocate particle array on the device ONLY
     particle_array d_particle_list_odd;
     allocate_device_particle_list(d_particle_list_odd, length);
     particle_array d_particle_list_even;
     allocate_device_particle_list(d_particle_list_even, length);
     particle_array d_new_particle_list;
     allocate_device_particle_list(d_new_particle_list, new_particle);
+    // initialize on the device
+    cudaMemset(d_particle_list_odd.state, INACTIVE, length * sizeof(int));
+    cudaMemset(d_particle_list_odd.ID, 0, length * sizeof(uint32_t));
 
-
-    // cudaMalloc((void **)&d_particle_list.isRogue, length * sizeof(bool));
-    // cudaMalloc((void **)&d_particle_list.isActive, length * sizeof(bool));
+    cudaMemset(d_particle_list_odd.state, INACTIVE, length * sizeof(int));
+    cudaMemset(d_particle_list_odd.ID, 0, length * sizeof(uint32_t));
 
     // Allocate n floats on device to hold random numbers
     // Allocate numParticle * 3 floats on host
@@ -251,22 +192,6 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
     cudaMalloc(&d_lower_count, sizeof(int));
     cudaMalloc(&d_upper_count, sizeof(int));
-
-    // copy to the device
-    // cudaMemcpy(d_particle_list.isRogue, isRogue.data(), length * sizeof(bool), cudaMemcpyHostToDevice);
-    // cudaMemcpy(d_particle_list.isActive, isActive.data(), length * sizeof(bool), cudaMemcpyHostToDevice);
-    cudaMemset(d_particle_list_odd.state, INACTIVE, length * sizeof(int));
-    cudaMemset(d_particle_list_odd.ID, 0, length * sizeof(uint32_t));
-
-    cudaMemset(d_particle_list_odd.state, INACTIVE, length * sizeof(int));
-    cudaMemset(d_particle_list_odd.ID, 0, length * sizeof(uint32_t));
-
-    // cudaMemcpy(d_particle_list.CoEps, CoEps.data(), length * sizeof(float), cudaMemcpyHostToDevice);
-    // cudaMemcpy(d_particle_list.tau, tau.data(), length * sizeof(mat3sym), cudaMemcpyHostToDevice);
-
-    // cudaMemcpy(d_particle_list.pos, pos.data(), length * sizeof(vec3), cudaMemcpyHostToDevice);
-    // cudaMemcpy(d_particle_list.velMean, velMean.data(), length * sizeof(vec3), cudaMemcpyHostToDevice);
-
 
     // call kernel
     auto kernelStartTime = std::chrono::high_resolution_clock::now();
@@ -281,7 +206,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       cudaMemset(d_new_particle_list.state, ACTIVE, new_particle * sizeof(int));
       std::vector<uint32_t> new_ID(new_particle);
       id_gen->get(new_ID);
-      cudaMemcpy(d_new_particle_list.ID, particle_ID.data(), new_particle * sizeof(uint32_t), cudaMemcpyHostToDevice);
+      cudaMemcpy(d_new_particle_list.ID, new_ID.data(), new_particle * sizeof(uint32_t), cudaMemcpyHostToDevice);
 
       int num_particle = length;// h_lower_count + new_particle;
       // std::cout << num_particle << std::endl;
@@ -323,6 +248,10 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
     auto kernelEndTime = std::chrono::high_resolution_clock::now();
 
+    // copy relevant quantity back to host
+    std::vector<int> particle_state(length);
+    std::vector<uint32_t> particle_ID(length);
+    std::vector<vec3> pos(length);
 
     // cudamemcpy back to host
     // cudaMemcpy(isRogue.data(), d_particle_list.isRogue, length * sizeof(bool), cudaMemcpyDeviceToHost);
@@ -335,17 +264,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     // cudaMemcpy(velMean.data(), d_particle_list.velMean, length * sizeof(vec3), cudaMemcpyDeviceToHost);
     // cudaMemcpy(velFluct.data(), d_particle_list.velFluct, length * sizeof(vec3), cudaMemcpyDeviceToHost);
 
-
-    for (size_t k = 0; k < particle_list.size(); ++k) {
-      particle_list[k].pos = pos[k];
-    }
-    for (size_t k = 0; k < particle_list.size(); ++k) {
-      particle_list[k].velMean = velMean[k];
-    }
-    for (size_t k = 0; k < particle_list.size(); ++k) {
-      particle_list[k].velFluct = velFluct[k];
-    }
-
+    std::vector<particle> particle_list(length);
 
     for (size_t k = 0; k < particle_list.size(); ++k) {
       particle_list[k].ID = particle_ID[k];
@@ -363,6 +282,11 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       }
     }
 
+    for (size_t k = 0; k < particle_list.size(); ++k) {
+      particle_list[k].pos = pos[k];
+    }
+
+
     // cudafree
     free_device_particle_list(d_particle_list_odd);
     free_device_particle_list(d_particle_list_even);
@@ -376,6 +300,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     std::cout << "GPU  elapsed time: " << gpuElapsed.count() << " s\n";
 
     print_particle(particle_list[0]);
+
   } else {
     printf("CUDA ERROR!\n");
   }
