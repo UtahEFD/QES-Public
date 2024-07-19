@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <string>
+#include <iostream>
 #include <cstdio>
 #include <algorithm>
 #include <vector>
@@ -11,14 +12,13 @@
 #include <cuda.h>
 #include <curand.h>
 
-enum state : int { ACTIVE = 0,
-                   INACTIVE = 1,
-                   ROGUE = 2 };
+enum ParticleStates : int { ACTIVE,
+                            INACTIVE,
+                            ROGUE };
 
 typedef struct
 {
-  bool isRogue;
-  bool isActive;
+  int state;
   uint32_t ID;
 
   float CoEps;
@@ -61,4 +61,4 @@ typedef struct
 } particle_array;
 
 
-void test_gpu(const int &);
+void test_gpu(const int &, const int &, const int &);

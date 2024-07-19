@@ -10,7 +10,7 @@
 
 #include "CUDA_advect_partition_testkernel.h"
 
-TEST_CASE("test SOA")
+TEST_CASE("test")
 {
 
   std::cout << "======================================\n"
@@ -28,7 +28,7 @@ TEST_CASE("test SOA")
   // for (auto lIdx = 0; lIdx < 3; ++lIdx) {
 
   startTime = std::chrono::high_resolution_clock::now();
-  test_gpu(1E5);
+  test_gpu(2E1, 2E2, 1E4);
   endTime = std::chrono::high_resolution_clock::now();
 
   elapsed = endTime - startTime;
