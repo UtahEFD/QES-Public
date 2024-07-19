@@ -121,50 +121,135 @@ __device__ void advect(particle_array p, int tid, float par_dt)
   p.velFluct_old[tid] = p.velFluct[tid];
 }
 
-__global__ void partitionKernel(float *arr, float *lower, float *upper, int *lower_count, int *upper_count, int size, float pivot)
+__device__ void copy_particle(particle_array d_particle_list_left, int idx_left, particle_array d_particle_list_right, int idx_right)
+{
+  // some variables do not need to be copied as the copy is done at the very beginning of the timestep and
+  // they will be reset by the interpolation for example
+
+  d_particle_list_left.state[idx_left] = d_particle_list_right.state[idx_right];
+  d_particle_list_left.ID[idx_left] = d_particle_list_right.ID[idx_right];
+
+  d_particle_list_left.pos[idx_left] = d_particle_list_right.pos[idx_right];
+
+  // d_particle_list_left.velMean[idx_left] = d_particle_list_right.velMean[idx_right];
+
+  // d_particle_list_left.velFluct[idx_left] = d_particle_list_right.velFluct[idx_right];
+  d_particle_list_left.velFluct_old[idx_left] = d_particle_list_right.velFluct_old[idx_right];
+  d_particle_list_left.delta_velFluct[idx_left] = d_particle_list_right.delta_velFluct[idx_right];
+
+  // d_particle_list_left.CoEps[idx_left] = d_particle_list_right.CoEps[idx_right];
+  // d_particle_list_left.tau[idx_left] = d_particle_list_right.tau[idx_right];
+  d_particle_list_left.tau_old[idx_left] = d_particle_list_right.tau_old[idx_right];
+  // d_particle_list_left.flux_div[idx_left] = d_particle_list_right.flux_div[idx_right];
+}
+
+__global__ void partition_particle(particle_array d_particle_list_left, particle_array d_particle_list_right, int *lower_count, int *upper_count, int size)
 {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
   if (idx < size) {
-    // When the value at the idx <= the pivot value
-    // store that value in the first of the lower part array,
+    // resert the left particle state
+    d_particle_list_left.state[idx] = INACTIVE;
+
+    // When the state at the idx active
+    // copy the particle to the new array
     // have to use atomic adds to make sure the value of the
-    // otherwise in the upper part.  When done, these will be
-    // combined to form the partitioned array.
-    float value = arr[idx];
-    if (value <= pivot) {
+    // new index in the new array is correct
+    // otherwise ignore the particle.
+    int state = d_particle_list_right.state[idx];
+    if (state == ACTIVE) {
 
       // Update the count of the last index (lower_count or
       // upper_count) with atomic add since other threads
       // are doing the same thing. This is the position in the
       // data array to store the partitioned data
       int pos = atomicAdd(lower_count, 1);
-      lower[pos] = value;
+      copy_particle(d_particle_list_left, pos, d_particle_list_right, idx);
     } else {
       int pos = atomicAdd(upper_count, 1);
-      upper[pos] = value;
     }
   }
 }
 
-__global__ void testCUDA_advection(int length, particle_array d_particle_list, float *d_RNG_vals)
+__global__ void insert_particle(int length, int new_particle, int *lower, particle_array d_new_particle_list, particle_array d_particle_list)
 {
-  int index = blockIdx.x * blockDim.x + threadIdx.x;
-  int stride = blockDim.x * gridDim.x;
-  for (int tid = index; tid < length; tid += stride) {
+  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+  if (idx < new_particle && idx + (*lower) < length) {
+    d_particle_list.state[idx + (*lower)] = d_new_particle_list.state[idx];
+    d_particle_list.ID[idx + (*lower)] = d_new_particle_list.ID[idx];
+    d_particle_list.pos[idx + (*lower)] = { 0.0, 0.0, 0.0 };
+  }
+}
+
+__global__ void interpolate_particle(int length, particle_array d_particle_list)
+{
+
+  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+  if (idx < length) {
     // PGD[tid].interp[tid].interpValues(TGD, p[tid].pos, p[tid].tau,p[tid].flux_div, p[tid].nuT, p[tid].CoEps);
-    if (d_particle_list.state[tid] == ACTIVE) {
+    if (d_particle_list.state[idx] == ACTIVE) {
 
-      d_particle_list.tau[tid] = { 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f };
-      d_particle_list.flux_div[tid] = { 0.0f, 0.0f, 0.0f };
+      d_particle_list.velMean[idx] = { 1.0f, 2.0f, -1.0f };
 
-
-      solve(d_particle_list, tid, 1.0f, 0.0000001f, 10.0f, { d_RNG_vals[tid], d_RNG_vals[tid + length], d_RNG_vals[tid + 2 * length] });
-      advect(d_particle_list, tid, 1.0f);
+      d_particle_list.CoEps[idx] = 0.1f;
+      d_particle_list.tau[idx] = { 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f };
+      d_particle_list.flux_div[idx] = { 0.0f, 0.0f, 0.0f };
     }
   }
-  return;
 }
+
+__global__ void advect_particle(int length, particle_array d_particle_list, float *d_RNG_vals)
+{
+  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+  if (idx < length) {
+    // PGD[tid].interp[tid].interpValues(TGD, p[tid].pos, p[tid].tau,p[tid].flux_div, p[tid].nuT, p[tid].CoEps);
+    if (d_particle_list.state[idx] == ACTIVE) {
+
+      solve(d_particle_list, idx, 1.0f, 0.0000001f, 10.0f, { d_RNG_vals[idx], d_RNG_vals[idx + length], d_RNG_vals[idx + 2 * length] });
+      advect(d_particle_list, idx, 1.0f);
+    }
+  }
+}
+
+void allocate_device_particle_list(particle_array &d_particle_list, int length)
+{
+  cudaMalloc((void **)&d_particle_list.state, length * sizeof(int));
+  cudaMalloc((void **)&d_particle_list.ID, length * sizeof(uint32_t));
+
+  cudaMalloc((void **)&d_particle_list.pos, length * sizeof(vec3));
+  cudaMalloc((void **)&d_particle_list.velMean, length * sizeof(vec3));
+
+  cudaMalloc((void **)&d_particle_list.velFluct, length * sizeof(vec3));
+  cudaMalloc((void **)&d_particle_list.velFluct_old, length * sizeof(vec3));
+  cudaMalloc((void **)&d_particle_list.delta_velFluct, length * sizeof(vec3));
+
+  cudaMalloc((void **)&d_particle_list.CoEps, length * sizeof(float));
+  cudaMalloc((void **)&d_particle_list.tau, length * sizeof(mat3sym));
+  cudaMalloc((void **)&d_particle_list.tau_old, length * sizeof(mat3sym));
+
+  cudaMalloc((void **)&d_particle_list.flux_div, length * sizeof(vec3));
+}
+
+void free_device_particle_list(particle_array &d_particle_list)
+{
+  cudaFree(d_particle_list.state);
+  cudaFree(d_particle_list.ID);
+
+  cudaFree(d_particle_list.CoEps);
+
+  cudaFree(d_particle_list.pos);
+  cudaFree(d_particle_list.velMean);
+
+  cudaFree(d_particle_list.velFluct);
+  cudaFree(d_particle_list.velFluct_old);
+  cudaFree(d_particle_list.delta_velFluct);
+
+  cudaFree(d_particle_list.tau);
+  cudaFree(d_particle_list.tau_old);
+
+  cudaFree(d_particle_list.flux_div);
+}
+
 
 void print_particle(const particle &p)
 {
@@ -180,6 +265,9 @@ void print_particle(const particle &p)
 
 void test_gpu(const int &length)
 {
+  int ntest;
+  int new_particle;
+
   int gpuID = 0;
   cudaError_t errorCheck = cudaGetDevice(&gpuID);
 
@@ -205,84 +293,24 @@ void test_gpu(const int &length)
   IDGenerator *id_gen;
   id_gen = IDGenerator::getInstance();
 
-  int blockSize = threadsPerBlock;
-  dim3 numberOfThreadsPerBlock(blockSize, 1, 1);
-  dim3 numberOfBlocks(ceil(length / (float)(blockSize)), 1, 1);
-
-  particle tmp;
-
-  tmp.isRogue = false;
-  tmp.isActive = true;
-  tmp.CoEps = 0.1f;
-  tmp.pos = { 0.0f, 0.0f, 0.0f };
-  tmp.velMean = { 1.0f, 2.0f, -1.0f };
-  tmp.velFluct = { 0.0f, 0.0f, 0.0f };
-  tmp.tau = { 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f };
-  tmp.fluxDiv = { 0.0f, 0.0f, 0.0f };
-
-
-  std::vector<particle> particle_list;
-  particle_list.resize(length, tmp);
-
-  for (auto &p : particle_list) {
-    p.ID = id_gen->get();
-  }
-
-  /*std::vector<bool> isRogue(particle_list.size());
-  for (size_t k = 0; k < particle_list.size(); ++k) {
-    isRogue[k] = particle_list[k].isRogue;
-  }
-  std::vector<bool> isActive(particle_list.size());
-  for (size_t k = 0; k < particle_list.size(); ++k) {
-    isActive[k] = particle_list[k].isActive;
-  }*/
-  std::vector<int> particle_state(particle_list.size());
-  for (size_t k = 0; k < particle_list.size(); ++k) {
-    if (particle_list[k].isActive)
-      particle_state[k] = ACTIVE;
-    else if (particle_list[k].isActive && !particle_list[k].isRogue)
-      particle_state[k] = INACTIVE;
-    else
-      particle_state[k] = ROGUE;
-  }
-
-  std::vector<uint32_t> particle_ID(particle_list.size());
-  for (size_t k = 0; k < particle_list.size(); ++k) {
-    particle_ID[k] = particle_list[k].ID;
-  }
-
-  std::vector<float> CoEps(particle_list.size());
-  for (size_t k = 0; k < particle_list.size(); ++k) {
-    CoEps[k] = particle_list[k].CoEps;
-  }
-
-  std::vector<vec3> pos(particle_list.size());
-  for (size_t k = 0; k < particle_list.size(); ++k) {
-    pos[k] = particle_list[k].pos;
-  }
-  std::vector<vec3> velMean(particle_list.size());
-  for (size_t k = 0; k < particle_list.size(); ++k) {
-    velMean[k] = particle_list[k].velMean;
-  }
-  std::vector<vec3> velFluct(particle_list.size());
-  for (size_t k = 0; k < particle_list.size(); ++k) {
-    velFluct[k] = particle_list[k].velFluct;
-  }
-  std::vector<mat3sym> tau(particle_list.size());
-  for (size_t k = 0; k < particle_list.size(); ++k) {
-    tau[k] = particle_list[k].tau;
-  }
+  int h_lower_count = 0, h_upper_count;
 
   if (errorCheck == cudaSuccess) {
-    // temp
-    print_particle(particle_list[2]);
-
-    particle_array d_particle_list;
-
     auto gpuStartTime = std::chrono::high_resolution_clock::now();
 
-    // cudaMalloc((void **)&d_particle_list.isRogue, length * sizeof(bool));
-    // cudaMalloc((void **)&d_particle_list.isActive, length * sizeof(bool));
+    // Allocate particle array on the device ONLY
+    particle_array d_particle_list_odd;
+    allocate_device_particle_list(d_particle_list_odd, length);
+    particle_array d_particle_list_even;
+    allocate_device_particle_list(d_particle_list_even, length);
+    particle_array d_new_particle_list;
+    allocate_device_particle_list(d_new_particle_list, new_particle);
+    // initialize on the device
+    cudaMemset(d_particle_list_odd.state, INACTIVE, length * sizeof(int));
+    cudaMemset(d_particle_list_odd.ID, 0, length * sizeof(uint32_t));
+
+    cudaMemset(d_particle_list_odd.state, INACTIVE, length * sizeof(int));
+    cudaMemset(d_particle_list_odd.ID, 0, length * sizeof(uint32_t));
 
     // Allocate n floats on device to hold random numbers
     // Allocate numParticle * 3 floats on host
@@ -290,67 +318,38 @@ void test_gpu(const int &length)
     // CUDA_CALL();
     cudaMalloc((void **)&d_RNG_vals, n * sizeof(float));
 
-    // Allocate particle list on the GPU
-    cudaMalloc((void **)&d_particle_list.state, length * sizeof(int));
-    cudaMalloc((void **)&d_particle_list.ID, length * sizeof(uint32_t));
+    int *d_lower_count, *d_upper_count;
+    cudaMalloc(&d_lower_count, sizeof(int));
+    cudaMalloc(&d_upper_count, sizeof(int));
 
-    cudaMalloc((void **)&d_particle_list.pos, length * sizeof(vec3));
-    cudaMalloc((void **)&d_particle_list.velMean, length * sizeof(vec3));
-
-    cudaMalloc((void **)&d_particle_list.velFluct, length * sizeof(vec3));
-    cudaMalloc((void **)&d_particle_list.velFluct_old, length * sizeof(vec3));
-    cudaMalloc((void **)&d_particle_list.delta_velFluct, length * sizeof(vec3));
-
-    cudaMalloc((void **)&d_particle_list.CoEps, length * sizeof(float));
-    cudaMalloc((void **)&d_particle_list.tau, length * sizeof(mat3sym));
-    cudaMalloc((void **)&d_particle_list.tau_old, length * sizeof(mat3sym));
-
-    cudaMalloc((void **)&d_particle_list.flux_div, length * sizeof(vec3));
-
-    // copy to the device
-    // cudaMemcpy(d_particle_list.isRogue, isRogue.data(), length * sizeof(bool), cudaMemcpyHostToDevice);
-    // cudaMemcpy(d_particle_list.isActive, isActive.data(), length * sizeof(bool), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_particle_list.state, particle_state.data(), length * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_particle_list.ID, particle_ID.data(), length * sizeof(uint32_t), cudaMemcpyHostToDevice);
-
-    cudaMemcpy(d_particle_list.CoEps, CoEps.data(), length * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_particle_list.tau, tau.data(), length * sizeof(mat3sym), cudaMemcpyHostToDevice);
-
-    cudaMemcpy(d_particle_list.pos, pos.data(), length * sizeof(vec3), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_particle_list.velMean, velMean.data(), length * sizeof(vec3), cudaMemcpyHostToDevice);
-
+    int blockSize = 256;
 
     // call kernel
     auto kernelStartTime = std::chrono::high_resolution_clock::now();
-    for (int k = 0; k < 1E4; ++k) {
+    for (int k = 0; k < ntest; ++k) {
       curandGenerateNormal(gen, d_RNG_vals, n, 0.0, 1.0);
-      testCUDA_advection<<<numberOfBlocks, numberOfThreadsPerBlock>>>(length, d_particle_list, d_RNG_vals);
+      // testCUDA_advection<<<numberOfBlocks, numberOfThreadsPerBlock>>>(length, d_particle_list, d_RNG_vals);
       cudaDeviceSynchronize();
     }
     auto kernelEndTime = std::chrono::high_resolution_clock::now();
 
+    // copy relevant quantity back to host
+    std::vector<int> particle_state(length);
+    std::vector<uint32_t> particle_ID(length);
+    std::vector<vec3> pos(length);
+
     // cudamemcpy back to host
     // cudaMemcpy(isRogue.data(), d_particle_list.isRogue, length * sizeof(bool), cudaMemcpyDeviceToHost);
     // cudaMemcpy(isActive.data(), &d_particle_list.isActive, length * sizeof(bool), cudaMemcpyDeviceToHost);
-    cudaMemcpy(particle_state.data(), d_particle_list.state, length * sizeof(int), cudaMemcpyDeviceToHost);
-    cudaMemcpy(particle_ID.data(), d_particle_list.ID, length * sizeof(uint32_t), cudaMemcpyDeviceToHost);
+    cudaMemcpy(particle_state.data(), d_particle_list_odd.state, length * sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(particle_ID.data(), d_particle_list_odd.ID, length * sizeof(uint32_t), cudaMemcpyDeviceToHost);
 
     // cudaMemcpy(CoEps.data(), d_particle_list.CoEps, length * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(pos.data(), d_particle_list_odd.pos, length * sizeof(vec3), cudaMemcpyDeviceToHost);
+    // cudaMemcpy(velMean.data(), d_particle_list.velMean, length * sizeof(vec3), cudaMemcpyDeviceToHost);
+    // cudaMemcpy(velFluct.data(), d_particle_list.velFluct, length * sizeof(vec3), cudaMemcpyDeviceToHost);
 
-    cudaMemcpy(pos.data(), d_particle_list.pos, length * sizeof(vec3), cudaMemcpyDeviceToHost);
-    cudaMemcpy(velMean.data(), d_particle_list.velMean, length * sizeof(vec3), cudaMemcpyDeviceToHost);
-    cudaMemcpy(velFluct.data(), d_particle_list.velFluct, length * sizeof(vec3), cudaMemcpyDeviceToHost);
-
-
-    for (size_t k = 0; k < particle_list.size(); ++k) {
-      particle_list[k].pos = pos[k];
-    }
-    for (size_t k = 0; k < particle_list.size(); ++k) {
-      particle_list[k].velMean = velMean[k];
-    }
-    for (size_t k = 0; k < particle_list.size(); ++k) {
-      particle_list[k].velFluct = velFluct[k];
-    }
+    std::vector<particle> particle_list(length);
 
     for (size_t k = 0; k < particle_list.size(); ++k) {
       particle_list[k].ID = particle_ID[k];
@@ -368,22 +367,15 @@ void test_gpu(const int &length)
       }
     }
 
+    for (size_t k = 0; k < particle_list.size(); ++k) {
+      particle_list[k].pos = pos[k];
+    }
+
+
     // cudafree
-    cudaFree(d_particle_list.state);
-
-    cudaFree(d_particle_list.CoEps);
-
-    cudaFree(d_particle_list.pos);
-    cudaFree(d_particle_list.velMean);
-
-    cudaFree(d_particle_list.velFluct);
-    cudaFree(d_particle_list.velFluct_old);
-    cudaFree(d_particle_list.delta_velFluct);
-
-    cudaFree(d_particle_list.tau);
-    cudaFree(d_particle_list.tau_old);
-
-    cudaFree(d_particle_list.flux_div);
+    free_device_particle_list(d_particle_list_odd);
+    free_device_particle_list(d_particle_list_even);
+    free_device_particle_list(d_new_particle_list);
 
     auto gpuEndTime = std::chrono::high_resolution_clock::now();
 
