@@ -99,11 +99,11 @@ TEST_CASE("buffer", "[in progress]")
 
   start = std::chrono::high_resolution_clock::now();
   ManagedContainer<TracerParticle> tracers;
-
+  int new_tracers = 1E3;
   for (int k = 0; k < 10000; ++k) {
-    tracers.sweep(1000);
+    tracers.sweep(new_tracers);
 
-    for (int pidx = 0; pidx < 1000; ++pidx) {
+    for (int pidx = 0; pidx < new_tracers; ++pidx) {
       tracers.insert();
     }
     for (auto &tracer : tracers) {
@@ -120,7 +120,7 @@ TEST_CASE("buffer", "[in progress]")
   elapsed = finish - start;
   std::cout << "elapsed time: " << elapsed.count() << " s\n";
 
-  REQUIRE(tracers.last_added()->particleID == 10000 * 1000 - 1);
+  REQUIRE(tracers.last_added()->particleID == 10000 * new_tracers - 1);
   REQUIRE(tracers.size() == 6000);
 }
 
@@ -128,11 +128,11 @@ TEST_CASE("buffer large", "[in progress]")
 {
   auto start = std::chrono::high_resolution_clock::now();
 
-  ManagedContainer<TracerParticle> tracers(10000);
-  for (int k = 0; k < 10000; ++k) {
-    tracers.sweep(1000);
+  ManagedContainer<TracerParticle> tracers(1E5);
+  for (int k = 0; k < 1E4; ++k) {
+    tracers.sweep(2E3);
 
-    for (int pidx = 0; pidx < 1000; ++pidx) {
+    for (int pidx = 0; pidx < 2E3; ++pidx) {
       tracers.insert();
     }
     for (auto &tracer : tracers) {
