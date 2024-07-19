@@ -61,4 +61,4 @@ typedef struct
 } particle_array;
 
 
-void test_gpu(const int &, const int &);
+void test_gpu(const int &, const int &, const int &);
