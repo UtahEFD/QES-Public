@@ -171,6 +171,20 @@ __global__ void partition_particle(particle_array d_particle_list_left, particle
   }
 }
 
+__global__ void check_buffer(particle_array d_particle_list, int *lower_count, int *upper_count, int size)
+{
+  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if (idx < size) {
+    int state = d_particle_list.state[idx];
+    if (state == ACTIVE) {
+      int pos = atomicAdd(lower_count, 1);
+    } else {
+      int pos = atomicAdd(upper_count, 1);
+    }
+  }
+}
+
 __global__ void insert_particle(int length, int new_particle, int *lower, particle_array d_new_particle_list, particle_array d_particle_list)
 {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -282,7 +296,6 @@ void print_particle(const particle &p)
   std::cout << " position: " << p.pos._1 << ", " << p.pos._2 << ", " << p.pos._3 << std::endl;
   std::cout << " velocity: " << p.velMean._1 << ", " << p.velMean._2 << ", " << p.velMean._3 << std::endl;
   std::cout << " fluct   : " << p.velFluct._1 << ", " << p.velFluct._2 << ", " << p.velFluct._3 << std::endl;
-  std::cout << "--------------------------------------" << std::endl;
 }
 
 void test_gpu(const int &ntest, const int &new_particle, const int &length)
@@ -319,18 +332,19 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     auto gpuStartTime = std::chrono::high_resolution_clock::now();
 
     // Allocate particle array on the device ONLY
-    particle_array d_particle_list_odd;
-    allocate_device_particle_list(d_particle_list_odd, length);
-    particle_array d_particle_list_even;
-    allocate_device_particle_list(d_particle_list_even, length);
+    particle_array d_particle_list[2];
+    allocate_device_particle_list(d_particle_list[0], length);
+    allocate_device_particle_list(d_particle_list[1], length);
+
     particle_array d_new_particle_list;
     allocate_device_particle_list(d_new_particle_list, new_particle);
-    // initialize on the device
-    cudaMemset(d_particle_list_odd.state, INACTIVE, length * sizeof(int));
-    cudaMemset(d_particle_list_odd.ID, 0, length * sizeof(uint32_t));
 
-    cudaMemset(d_particle_list_even.state, INACTIVE, length * sizeof(int));
-    cudaMemset(d_particle_list_even.ID, 0, length * sizeof(uint32_t));
+    // initialize on the device
+    cudaMemset(d_particle_list[0].state, INACTIVE, length * sizeof(int));
+    cudaMemset(d_particle_list[0].ID, 0, length * sizeof(uint32_t));
+
+    cudaMemset(d_particle_list[1].state, INACTIVE, length * sizeof(int));
+    cudaMemset(d_particle_list[1].ID, 0, length * sizeof(uint32_t));
 
     // Allocate n floats on device to hold random numbers
     // Allocate numParticle * 3 floats on host
@@ -344,6 +358,8 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
     int blockSize = 256;
 
+    int idx = 0, alt_idx = 1;
+
     // call kernel
     auto kernelStartTime = std::chrono::high_resolution_clock::now();
     for (int k = 0; k < ntest; ++k) {
@@ -355,7 +371,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       std::vector<uint32_t> new_ID(new_particle);
       id_gen->get(new_ID);
       cudaMemcpy(d_new_particle_list.ID, new_ID.data(), new_particle * sizeof(uint32_t), cudaMemcpyHostToDevice);
-      std::vector<vec3> new_pos(new_particle, { 0.0, 10.0, 0.0 });
+      std::vector<vec3> new_pos(new_particle, { 0.0, 0.0, 0.0 });
       cudaMemcpy(d_new_particle_list.pos, new_pos.data(), new_particle * sizeof(vec3), cudaMemcpyHostToDevice);
 
       int num_particle = length;// h_lower_count + new_particle;
@@ -365,30 +381,21 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       int numBlocks_all_particle = (num_particle + blockSize - 1) / blockSize;
       int numBlocks_new_particle = (new_particle + blockSize - 1) / blockSize;
 
+      idx = k % 2;
+      alt_idx = (k + 1) % 2;
 
       curandGenerateNormal(gen, d_RNG_vals, 3 * length, 0.0, 1.0);
-      if (k % 2 == 0) {
-        partition_particle<<<numBlocks_buffer, blockSize>>>(d_particle_list_even, d_particle_list_odd, d_lower_count, d_upper_count, length);
-        cudaDeviceSynchronize();
 
-        insert_particle<<<numBlocks_new_particle, blockSize>>>(length, new_particle, d_lower_count, d_new_particle_list, d_particle_list_even);
-        cudaDeviceSynchronize();
+      partition_particle<<<numBlocks_buffer, blockSize>>>(d_particle_list[idx], d_particle_list[alt_idx], d_lower_count, d_upper_count, length);
+      cudaDeviceSynchronize();
 
-        interpolate_particle<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list_even);
-        advect_particle<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list_even, d_RNG_vals);
-        boundary_conditions<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list_even);
+      insert_particle<<<numBlocks_new_particle, blockSize>>>(length, new_particle, d_lower_count, d_new_particle_list, d_particle_list[idx]);
+      cudaDeviceSynchronize();
 
-      } else {
-        partition_particle<<<numBlocks_buffer, blockSize>>>(d_particle_list_odd, d_particle_list_even, d_lower_count, d_upper_count, length);
-        cudaDeviceSynchronize();
+      interpolate_particle<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx]);
+      advect_particle<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx], d_RNG_vals);
+      boundary_conditions<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx]);
 
-        insert_particle<<<numBlocks_new_particle, blockSize>>>(length, new_particle, d_lower_count, d_new_particle_list, d_particle_list_odd);
-        cudaDeviceSynchronize();
-
-        interpolate_particle<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list_odd);
-        advect_particle<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list_odd, d_RNG_vals);
-        boundary_conditions<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list_odd);
-      }
       cudaMemcpy(&h_lower_count, d_lower_count, sizeof(int), cudaMemcpyDeviceToHost);
       cudaMemcpy(&h_upper_count, d_upper_count, sizeof(int), cudaMemcpyDeviceToHost);
       // std::cout << k << " " << h_lower_count << " " << h_upper_count << std::endl;
@@ -396,27 +403,31 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       cudaDeviceSynchronize();
     }
 
+    int numBlocks_buffer = (length + blockSize - 1) / blockSize;
+    cudaMemset(d_lower_count, 0, sizeof(int));
+    cudaMemset(d_upper_count, 0, sizeof(int));
+    check_buffer<<<numBlocks_buffer, blockSize>>>(d_particle_list[idx], d_lower_count, d_upper_count, length);
+
     auto kernelEndTime = std::chrono::high_resolution_clock::now();
 
     cudaMemcpy(&h_lower_count, d_lower_count, sizeof(int), cudaMemcpyDeviceToHost);
     cudaMemcpy(&h_upper_count, d_upper_count, sizeof(int), cudaMemcpyDeviceToHost);
-    std::cout << ntest << " " << h_lower_count << " " << h_upper_count << std::endl;
 
     // cudamemcpy back to host
     std::vector<int> particle_state(length);
     std::vector<uint32_t> particle_ID(length);
     // cudaMemcpy(isRogue.data(), d_particle_list.isRogue, length * sizeof(bool), cudaMemcpyDeviceToHost);
     // cudaMemcpy(isActive.data(), &d_particle_list.isActive, length * sizeof(bool), cudaMemcpyDeviceToHost);
-    cudaMemcpy(particle_state.data(), d_particle_list_odd.state, length * sizeof(int), cudaMemcpyDeviceToHost);
-    cudaMemcpy(particle_ID.data(), d_particle_list_odd.ID, length * sizeof(uint32_t), cudaMemcpyDeviceToHost);
+    cudaMemcpy(particle_state.data(), d_particle_list[idx].state, length * sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(particle_ID.data(), d_particle_list[idx].ID, length * sizeof(uint32_t), cudaMemcpyDeviceToHost);
 
     std::vector<vec3> pos(length);
     std::vector<vec3> velMean(length);
     std::vector<vec3> velFluct(length);
     // cudaMemcpy(CoEps.data(), d_particle_list.CoEps, length * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(pos.data(), d_particle_list_odd.pos, length * sizeof(vec3), cudaMemcpyDeviceToHost);
-    cudaMemcpy(velMean.data(), d_particle_list_odd.velMean, length * sizeof(vec3), cudaMemcpyDeviceToHost);
-    cudaMemcpy(velFluct.data(), d_particle_list_odd.velFluct, length * sizeof(vec3), cudaMemcpyDeviceToHost);
+    cudaMemcpy(pos.data(), d_particle_list[idx].pos, length * sizeof(vec3), cudaMemcpyDeviceToHost);
+    cudaMemcpy(velMean.data(), d_particle_list[idx].velMean, length * sizeof(vec3), cudaMemcpyDeviceToHost);
+    cudaMemcpy(velFluct.data(), d_particle_list[idx].velFluct, length * sizeof(vec3), cudaMemcpyDeviceToHost);
 
     std::vector<particle> particle_list(length);
 
@@ -435,20 +446,30 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     }
 
     // cudafree
-    free_device_particle_list(d_particle_list_odd);
-    free_device_particle_list(d_particle_list_even);
+    free_device_particle_list(d_particle_list[0]);
+    free_device_particle_list(d_particle_list[1]);
     free_device_particle_list(d_new_particle_list);
 
     auto gpuEndTime = std::chrono::high_resolution_clock::now();
 
-    std::chrono::duration<double> kernelElapsed = kernelEndTime - kernelStartTime;
-    std::cout << "kernel  elapsed time: " << kernelElapsed.count() << " s\n";
-    std::chrono::duration<double> gpuElapsed = gpuEndTime - gpuStartTime;
-    std::cout << "GPU  elapsed time: " << gpuElapsed.count() << " s\n";
+
+    int count = 0;
+    for (auto &p : particle_list) {
+      if (p.state == ACTIVE) { count++; }
+    }
+    std::cout << "--------------------------------------" << std::endl;
+    std::cout << "buffer status: " << h_lower_count << " " << h_upper_count << std::endl;
+    std::cout << "--------------------------------------" << std::endl;
+    std::cout << "number of active particle: " << count << std::endl;
 
     print_particle(particle_list[0]);
     print_particle(particle_list[1]);
 
+    std::cout << "--------------------------------------" << std::endl;
+    std::chrono::duration<double> kernelElapsed = kernelEndTime - kernelStartTime;
+    std::cout << "kernel elapsed time: " << kernelElapsed.count() << " s\n";
+    std::chrono::duration<double> gpuElapsed = gpuEndTime - gpuStartTime;
+    std::cout << "GPU elapsed time:    " << gpuElapsed.count() << " s\n";
   } else {
     printf("CUDA ERROR!\n");
   }

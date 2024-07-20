@@ -15,7 +15,7 @@ TEST_CASE("test")
 
   std::cout << "======================================\n"
             << "testing advection on GPU              \n"
-            << "--------------------------------------\n"
+            << "======================================\n"
             << std::endl;
   double avgTime = 0.0;
   auto startTime = std::chrono::high_resolution_clock::now();
@@ -28,10 +28,10 @@ TEST_CASE("test")
   // for (auto lIdx = 0; lIdx < 3; ++lIdx) {
 
   startTime = std::chrono::high_resolution_clock::now();
-  test_gpu(2E1, 2E2, 1E4);
+  test_gpu(1E3, 5E2, 1E5);
   endTime = std::chrono::high_resolution_clock::now();
 
   elapsed = endTime - startTime;
-  std::cout << "Total  elapsed time: " << elapsed.count() << " s\n";
+  std::cout << "Total elapsed time:  " << elapsed.count() << " s\n";
   std::cout << "======================================" << std::endl;
 }
