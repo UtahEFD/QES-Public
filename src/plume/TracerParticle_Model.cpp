@@ -141,7 +141,9 @@ void TracerParticle_Model::advect(const double &total_time_interval,
       PGD->interp->interpValues(WGD, p->xPos, p->yPos, p->zPos, p->uMean, p->vMean, p->wMean);
       PGD->interp->interpValues(WGD, p->pos._1, p->pos._2, p->pos._3, p->uMean, p->vMean, p->wMean);
 
-      p->velMean = { p->uMean, p->vMean, p->wMean };
+      p->velMean = { static_cast<float>(p->uMean),
+                     static_cast<float>(p->vMean),
+                     static_cast<float>(p->wMean) };
 
       // adjusting mean vertical velocity for settling velocity
       p->wMean -= vs;
@@ -184,9 +186,9 @@ void TracerParticle_Model::advect(const double &total_time_interval,
       double disY = (p->vMean + p->vFluct) * par_dt;
       double disZ = (p->wMean + p->wFluct) * par_dt;
 
-      vec3 dist{ (p->velMean._1 + p->velFluct._1) * par_dt,
-                 (p->velMean._2 + p->velFluct._2) * par_dt,
-                 (p->velMean._3 + p->velFluct._3) * par_dt };
+      vec3 dist{ static_cast<float>((p->velMean._1 + p->velFluct._1) * par_dt),
+                 static_cast<float>((p->velMean._2 + p->velFluct._2) * par_dt),
+                 static_cast<float>((p->velMean._3 + p->velFluct._3) * par_dt) };
 
       p->xPos = p->xPos + disX;
       p->yPos = p->yPos + disY;
@@ -234,7 +236,9 @@ void TracerParticle_Model::advect(const double &total_time_interval,
 
       p->velFluct_old = p->velFluct;
 
-      p->pos = { p->xPos, p->yPos, p->zPos };
+      p->pos = { static_cast<float>(p->xPos),
+                 static_cast<float>(p->yPos),
+                 static_cast<float>(p->zPos) };
 
       // now set the time remainder for the next loop
       // if the par_dt calculated from the Courant Number is greater than the timeRemainder,
