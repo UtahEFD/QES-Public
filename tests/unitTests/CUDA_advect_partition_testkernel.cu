@@ -228,7 +228,8 @@ __global__ void boundary_conditions(int length, particle_array d_particle_list)
 {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
   if (idx < length) {
-    if (d_particle_list.pos[idx]._1 > 10) {
+    vec3 pos = d_particle_list.pos[idx];
+    if (pos._1 < 0 || pos._1 > 100) {
       d_particle_list.state[idx] = INACTIVE;
     }
   }
