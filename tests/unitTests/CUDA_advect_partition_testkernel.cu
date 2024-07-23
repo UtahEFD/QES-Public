@@ -8,6 +8,79 @@
 // #include "CUDA_GLE_Solver.cuh"
 //  #include "Particle.cuh"
 
+#define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
+#define PBWIDTH 60
+
+__device__ __managed__ BC_Params bc_param;
+
+void print_percentage(const float &percentage)
+{
+  int val = (int)(percentage * 100);
+  int lpad = (int)(percentage * PBWIDTH);
+  int rpad = PBWIDTH - lpad;
+  printf("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
+  fflush(stdout);
+}
+
+__device__ bool enforce_exiting(float &pos, const float &domainStart, const float &domainEnd)
+{
+  if (pos <= domainStart || pos >= domainEnd) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
+__device__ bool enforce_periodic(float &pos, const float &domainStart, const float &domainEnd)
+{
+  float domainSize = domainEnd - domainStart;
+
+  if (domainSize != 0) {
+    // before beginning of the domain => add domain length
+    while (pos < domainStart) {
+      pos = pos + domainSize;
+    }
+    // past end of domain => sub domain length
+    while (pos > domainEnd) {
+      pos = pos - domainSize;
+    }
+  }
+
+  return true;
+}
+
+bool enforce_reflection(double &pos, double &velFluct, const float &domainStart, const float &domainEnd)
+{
+
+  int reflectCount = 0;
+  const int maxReflectCount = 20;
+
+  while ((pos < domainStart || pos > domainEnd) && reflectCount < maxReflectCount) {
+    // past end of domain or before beginning of the domain
+    if (pos > domainEnd) {
+      pos = domainEnd - (pos - domainEnd);
+      velFluct = -velFluct;
+    } else if (pos < domainStart) {
+      pos = domainStart - (pos - domainStart);
+      velFluct = -velFluct;
+    }
+    reflectCount++;
+  }// while outside of domain
+
+  // if the velocity is so large that the particle would reflect more than 100
+  // times, the boundary condition could fail.
+  if (reflectCount == maxReflectCount) {
+    return false;
+    /*if (pos > domainEnd) {
+      return false;
+    } else if (pos < domainStart) {
+      return false;
+      }*/
+  }
+
+  return true;
+}
+
 __device__ void solve(particle_array p, int tid, float par_dt, float invarianceTol, float vel_threshold, vec3 vRandn)
 {
 
@@ -104,6 +177,20 @@ __device__ void solve(particle_array p, int tid, float par_dt, float invarianceT
   p.tau_old[tid] = p.tau[tid];
 }
 
+__device__ void boundary_conditions(particle_array p, int idx)
+{
+  vec3 pos = p.pos[idx];
+  if (!enforce_exiting(pos._1, bc_param.xStartDomain, bc_param.xEndDomain)) {
+    p.state[idx] = INACTIVE;
+  }
+  if (!enforce_exiting(pos._2, bc_param.yStartDomain, bc_param.yEndDomain)) {
+    p.state[idx] = INACTIVE;
+  }
+  if (!enforce_exiting(pos._3, bc_param.zStartDomain, bc_param.zEndDomain)) {
+    p.state[idx] = INACTIVE;
+  }
+}
+
 __device__ void advect(particle_array p, int tid, float par_dt)
 {
   vec3 dist{ (p.velMean[tid]._1 + p.velFluct[tid]._1) * par_dt,
@@ -113,6 +200,8 @@ __device__ void advect(particle_array p, int tid, float par_dt)
   p.pos[tid]._1 = p.pos[tid]._1 + dist._1;
   p.pos[tid]._2 = p.pos[tid]._2 + dist._2;
   p.pos[tid]._3 = p.pos[tid]._3 + dist._3;
+
+  boundary_conditions(p, tid);
 
   p.delta_velFluct[tid]._1 = p.velFluct[tid]._1 - p.velFluct_old[tid]._1;
   p.delta_velFluct[tid]._2 = p.velFluct[tid]._2 - p.velFluct_old[tid]._2;
@@ -224,16 +313,6 @@ __global__ void advect_particle(int length, particle_array d_particle_list, floa
     }
   }
 }
-__global__ void boundary_conditions(int length, particle_array d_particle_list)
-{
-  int idx = blockIdx.x * blockDim.x + threadIdx.x;
-  if (idx < length) {
-    vec3 pos = d_particle_list.pos[idx];
-    if (pos._1 < 0 || pos._1 > 100) {
-      d_particle_list.state[idx] = INACTIVE;
-    }
-  }
-}
 
 
 void allocate_device_particle_list(particle_array &d_particle_list, int length)
@@ -299,6 +378,7 @@ void print_particle(const particle &p)
   std::cout << " fluct   : " << p.velFluct._1 << ", " << p.velFluct._2 << ", " << p.velFluct._3 << std::endl;
 }
 
+
 void test_gpu(const int &ntest, const int &new_particle, const int &length)
 {
 
@@ -326,6 +406,15 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
   IDGenerator *id_gen;
   id_gen = IDGenerator::getInstance();
+
+  // set boundary condition
+  bc_param.xStartDomain = 0;
+  bc_param.yStartDomain = 0;
+  bc_param.zStartDomain = 0;
+
+  bc_param.xEndDomain = 200;
+  bc_param.yEndDomain = 100;
+  bc_param.zEndDomain = 140;
 
   int h_lower_count = 0, h_upper_count;
 
@@ -363,6 +452,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
     // call kernel
     auto kernelStartTime = std::chrono::high_resolution_clock::now();
+    std::cout << "buffer usage: " << std::endl;
     for (int k = 0; k < ntest; ++k) {
 
       cudaMemset(d_lower_count, 0, sizeof(int));
@@ -372,7 +462,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       std::vector<uint32_t> new_ID(new_particle);
       id_gen->get(new_ID);
       cudaMemcpy(d_new_particle_list.ID, new_ID.data(), new_particle * sizeof(uint32_t), cudaMemcpyHostToDevice);
-      std::vector<vec3> new_pos(new_particle, { 0.0, 0.0, 0.0 });
+      std::vector<vec3> new_pos(new_particle, { 20.0, 50.0, 70.0 });
       cudaMemcpy(d_new_particle_list.pos, new_pos.data(), new_particle * sizeof(vec3), cudaMemcpyHostToDevice);
 
       int num_particle = length;// h_lower_count + new_particle;
@@ -382,6 +472,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       int numBlocks_all_particle = (num_particle + blockSize - 1) / blockSize;
       int numBlocks_new_particle = (new_particle + blockSize - 1) / blockSize;
 
+      // these indeces are used to leap-frog the lists of the particles.
       idx = k % 2;
       alt_idx = (k + 1) % 2;
 
@@ -395,14 +486,18 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
       interpolate_particle<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx]);
       advect_particle<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx], d_RNG_vals);
-      boundary_conditions<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx]);
+      // boundary_conditions<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx]);
 
       cudaMemcpy(&h_lower_count, d_lower_count, sizeof(int), cudaMemcpyDeviceToHost);
       cudaMemcpy(&h_upper_count, d_upper_count, sizeof(int), cudaMemcpyDeviceToHost);
       // std::cout << k << " " << h_lower_count << " " << h_upper_count << std::endl;
 
       cudaDeviceSynchronize();
+
+      print_percentage((float)h_lower_count / (float)length);
     }
+    std::cout << std::endl;
+
 
     int numBlocks_buffer = (length + blockSize - 1) / blockSize;
     cudaMemset(d_lower_count, 0, sizeof(int));
@@ -459,7 +554,9 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       if (p.state == ACTIVE) { count++; }
     }
     std::cout << "--------------------------------------" << std::endl;
-    std::cout << "buffer status: " << h_lower_count << " " << h_upper_count << std::endl;
+    std::cout << "buffer status: " << h_lower_count << " " << h_upper_count << " " << length << std::endl;
+    print_percentage((float)h_lower_count / (float)length);
+    std::cout << std::endl;
     std::cout << "--------------------------------------" << std::endl;
     std::cout << "number of active particle: " << count << std::endl;
 

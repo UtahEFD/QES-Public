@@ -8,57 +8,10 @@
 #include <vector>
 
 #include "util/VectorMath.h"
+#include "Particle.h"
 
 #include <cuda.h>
 #include <curand.h>
-
-enum ParticleStates : int { ACTIVE,
-                            INACTIVE,
-                            ROGUE };
-
-typedef struct
-{
-  int state;
-  uint32_t ID;
-
-  float CoEps;
-
-  vec3 pos;
-
-  vec3 velMean;
-
-  vec3 velFluct;
-  vec3 velFluct_old;
-  vec3 delta_velFluct;
-
-  mat3sym tau;
-  mat3sym tau_old;
-
-  vec3 fluxDiv;
-
-} particle;
-
-typedef struct
-{
-  int *state;
-  uint32_t *ID;
-
-  float *CoEps;
-
-  vec3 *pos;
-
-  vec3 *velMean;
-
-  vec3 *velFluct;
-  vec3 *velFluct_old;
-  vec3 *delta_velFluct;
-
-  mat3sym *tau;
-  mat3sym *tau_old;
-
-  vec3 *flux_div;
-
-} particle_array;
 
 
 void test_gpu(const int &, const int &, const int &);
