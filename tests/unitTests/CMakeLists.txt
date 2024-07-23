@@ -56,6 +56,12 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
      test_advect_partition_GPU.cpp)
    target_link_libraries(test_advect_partition_GPU ${CUDA_LIBRARIES})
    target_link_libraries(test_advect_partition_GPU ${CUDA_curand_LIBRARY})
+
+   cuda_add_executable(test_interpolation_GPU
+     CUDA_interpolation_testkernel.cu
+     test_interpolation_GPU.cpp)
+   target_link_libraries(test_interpolation_GPU ${CUDA_LIBRARIES})
+   target_link_libraries(test_interpolation_GPU ${CUDA_curand_LIBRARY})
    
    cuda_add_executable(util_buffer_GPU
      CUDA_buffer_testkernel.cu
@@ -100,7 +106,8 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
     test_CUDARandomGen
     test_CUDAPartition
     test_particle_partition_GPU
-    test_advect_partition_GPU)
+    test_advect_partition_GPU
+    test_interpolation_GPU)
 
 ELSE ($CACHE{HAS_CUDA_SUPPORT})
 
