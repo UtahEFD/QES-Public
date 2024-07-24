@@ -103,9 +103,9 @@ __device__ void interp3D_faceVar(const float *data,
   float cube[2][2][2] = { 0.0 };
 
   // now set the cube values
-  for (int kkk = 0; kkk <= 1; kkk++) {
-    for (int jjj = 0; jjj <= 1; jjj++) {
-      for (int iii = 0; iii <= 1; iii++) {
+  for (int kkk = 0; kkk <= 1; ++kkk) {
+    for (int jjj = 0; jjj <= 1; ++jjj) {
+      for (int iii = 0; iii <= 1; ++iii) {
         // set the actual indices to use for the linearized Euler data
         int idx = (wgt.kk + kkk) * (qes_grid.ny * qes_grid.nx) + (wgt.jj + jjj) * (qes_grid.nx) + (wgt.ii + iii);
         cube[iii][jjj][kkk] = data[idx];
@@ -153,16 +153,16 @@ __device__ void setInterp3Dindex_cellVar(const vec3 &pos, interpWeight &wgt)
 // always call this after setting the interpolation indices with the setInterp3Dindexing() function!
 __device__ void interp3D_cellVar(const float *data,
                                  const interpWeight &wgt,
-                                 double &out)
+                                 float &out)
 {
 
   // now set the cube to zero, then fill it using the indices and the counters from the indices
   float cube[2][2][2] = { 0.0 };
 
   // now set the cube values
-  for (int kkk = 0; kkk <= 1; kkk++) {
-    for (int jjj = 0; jjj <= 1; jjj++) {
-      for (int iii = 0; iii <= 1; iii++) {
+  for (int kkk = 0; kkk <= 1; ++kkk) {
+    for (int jjj = 0; jjj <= 1; ++jjj) {
+      for (int iii = 0; iii <= 1; ++iii) {
         // set the actual indices to use for the linearized Euler data
         int idx = (wgt.kk + kkk) * (qes_grid.ny - 1) * (qes_grid.nx - 1) + (wgt.jj + jjj) * (qes_grid.nx - 1) + (wgt.ii + iii);
         cube[iii][jjj][kkk] = data[idx];
@@ -184,33 +184,106 @@ __device__ void interp3D_cellVar(const float *data,
   out = (u_high - u_low) * wgt.kw + u_low;
 }
 
-__global__ void interpolate_particle(int length, particle_array d_particle_list, const QESWindsData data)
+__global__ void interpolate(int length, particle_array d_particle_list, const QESWindsData data)
 {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
   if (idx < length) {
-    if (d_particle_list.state[idx] == ACTIVE) {
-      interpWeight wgt{ 0, 0, 0, 0.0, 0.0, 0.0 };
+    interpWeight wgt{ 0, 0, 0, 0.0, 0.0, 0.0 };
 
-      float u, v, w;
+    float u, v, w;
 
-      // set interpolation indexing variables for uFace variables
-      setInterp3Dindex_uFace(d_particle_list.pos[idx], wgt);
-      // interpolation of variables on uFace
-      interp3D_faceVar(data.u, wgt, u);
+    // set interpolation indexing variables for uFace variables
+    setInterp3Dindex_uFace(d_particle_list.pos[idx], wgt);
+    // interpolation of variables on uFace
+    interp3D_faceVar(data.u, wgt, u);
 
-      // set interpolation indexing variables for vFace variables
-      setInterp3Dindex_vFace(d_particle_list.pos[idx], wgt);
-      // interpolation of variables on vFace
-      interp3D_faceVar(data.v, wgt, v);
+    // set interpolation indexing variables for vFace variables
+    setInterp3Dindex_vFace(d_particle_list.pos[idx], wgt);
+    // interpolation of variables on vFace
+    interp3D_faceVar(data.v, wgt, v);
 
-      // set interpolation indexing variables for wFace variables
-      setInterp3Dindex_wFace(d_particle_list.pos[idx], wgt);
-      // interpolation of variables on wFace
-      interp3D_faceVar(data.w, wgt, w);
+    // set interpolation indexing variables for wFace variables
+    setInterp3Dindex_wFace(d_particle_list.pos[idx], wgt);
+    // interpolation of variables on wFace
+    interp3D_faceVar(data.w, wgt, w);
 
-      d_particle_list.velMean[idx] = { u, v, w };
+    d_particle_list.velMean[idx] = { u, v, w };
+  }
+}
+
+__global__ void interpolate(int length, const vec3 *pos, mat3sym *tau, vec3 *sigma, const QESTurbData data)
+{
+  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if (idx < length) {
+    // these are the current interp3D variables, as they are used for multiple interpolations for each particle
+    interpWeight wgt{ 0, 0, 0, 0.0, 0.0, 0.0 };
+
+    setInterp3Dindex_cellVar(pos[idx], wgt);
+
+    // this is the current reynolds stress tensor
+    float txx_out, txy_out, txz_out, tyy_out, tyz_out, tzz_out;
+    interp3D_cellVar(data.txx, wgt, txx_out);
+    interp3D_cellVar(data.txy, wgt, txy_out);
+    interp3D_cellVar(data.txz, wgt, txz_out);
+    interp3D_cellVar(data.tyy, wgt, tyy_out);
+    interp3D_cellVar(data.tyz, wgt, tyz_out);
+    interp3D_cellVar(data.tzz, wgt, tzz_out);
+    tau[idx] = { txx_out, txy_out, txz_out, tyy_out, tyz_out, tzz_out };
+
+    float sig_x_out, sig_y_out, sig_z_out;
+    sig_x_out = std::sqrt(std::abs(txx_out));
+    if (sig_x_out == 0.0)
+      sig_x_out = 1e-8;
+    sig_y_out = std::sqrt(std::abs(tyy_out));
+    if (sig_y_out == 0.0)
+      sig_y_out = 1e-8;
+    sig_z_out = std::sqrt(std::abs(tzz_out));
+    if (sig_z_out == 0.0)
+      sig_z_out = 1e-8;
+    sigma[idx] = { sig_x_out, sig_y_out, sig_z_out };
+  }
+}
+
+__global__ void interpolate(int length, particle_array d_particle_list, const QESTurbData data)
+{
+  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if (idx < length) {
+    // these are the current interp3D variables, as they are used for multiple interpolations for each particle
+    interpWeight wgt{ 0, 0, 0, 0.0, 0.0, 0.0 };
+
+    setInterp3Dindex_cellVar(d_particle_list.pos[idx], wgt);
+
+    // this is the CoEps for the particle
+    float CoEps_out;
+    interp3D_cellVar(data.CoEps, wgt, CoEps_out);
+    // make sure CoEps is always bigger than zero
+    if (CoEps_out <= 1e-6) {
+      CoEps_out = 1e-6;
     }
+    d_particle_list.CoEps[idx] = CoEps_out;
+
+    // this is the current reynolds stress tensor
+    float txx_out, txy_out, txz_out, tyy_out, tyz_out, tzz_out;
+    interp3D_cellVar(data.txx, wgt, txx_out);
+    interp3D_cellVar(data.txy, wgt, txy_out);
+    interp3D_cellVar(data.txz, wgt, txz_out);
+    interp3D_cellVar(data.tyy, wgt, tyy_out);
+    interp3D_cellVar(data.tyz, wgt, tyz_out);
+    interp3D_cellVar(data.tzz, wgt, tzz_out);
+    d_particle_list.tau[idx] = { txx_out, txy_out, txz_out, tyy_out, tyz_out, tzz_out };
+
+    float flux_div_x_out, flux_div_y_out, flux_div_z_out;
+    interp3D_cellVar(data.div_tau_x, wgt, flux_div_x_out);
+    interp3D_cellVar(data.div_tau_y, wgt, flux_div_y_out);
+    interp3D_cellVar(data.div_tau_z, wgt, flux_div_z_out);
+    d_particle_list.flux_div[idx] = { flux_div_x_out, flux_div_y_out, flux_div_z_out };
+
+    float nuT_out;
+    interp3D_cellVar(data.nuT, wgt, nuT_out);
+    d_particle_list.nuT[idx] = nuT_out;
   }
 }
 
@@ -332,6 +405,33 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     cudaMalloc((void **)&d_qes_winds_data.w, num_cell * sizeof(float));
     cudaMemcpy(d_qes_winds_data.w, data.data(), num_cell * sizeof(float), cudaMemcpyHostToDevice);
 
+    QESTurbData d_qes_turb_data;
+    std::fill(data.begin(), data.end(), 0.1);
+    cudaMalloc((void **)&d_qes_turb_data.txx, num_cell * sizeof(float));
+    cudaMemcpy(d_qes_turb_data.txx, data.data(), num_cell * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMalloc((void **)&d_qes_turb_data.txy, num_cell * sizeof(float));
+    cudaMemcpy(d_qes_turb_data.txy, data.data(), num_cell * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMalloc((void **)&d_qes_turb_data.txz, num_cell * sizeof(float));
+    cudaMemcpy(d_qes_turb_data.txz, data.data(), num_cell * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMalloc((void **)&d_qes_turb_data.tyy, num_cell * sizeof(float));
+    cudaMemcpy(d_qes_turb_data.tyy, data.data(), num_cell * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMalloc((void **)&d_qes_turb_data.tyz, num_cell * sizeof(float));
+    cudaMemcpy(d_qes_turb_data.tyz, data.data(), num_cell * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMalloc((void **)&d_qes_turb_data.tzz, num_cell * sizeof(float));
+    cudaMemcpy(d_qes_turb_data.tzz, data.data(), num_cell * sizeof(float), cudaMemcpyHostToDevice);
+
+    cudaMalloc((void **)&d_qes_turb_data.div_tau_x, num_cell * sizeof(float));
+    cudaMemcpy(d_qes_turb_data.div_tau_x, data.data(), num_cell * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMalloc((void **)&d_qes_turb_data.div_tau_y, num_cell * sizeof(float));
+    cudaMemcpy(d_qes_turb_data.div_tau_y, data.data(), num_cell * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMalloc((void **)&d_qes_turb_data.div_tau_z, num_cell * sizeof(float));
+    cudaMemcpy(d_qes_turb_data.div_tau_z, data.data(), num_cell * sizeof(float), cudaMemcpyHostToDevice);
+
+    cudaMalloc((void **)&d_qes_turb_data.CoEps, num_cell * sizeof(float));
+    cudaMemcpy(d_qes_turb_data.CoEps, data.data(), num_cell * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMalloc((void **)&d_qes_turb_data.nuT, num_cell * sizeof(float));
+    cudaMemcpy(d_qes_turb_data.nuT, data.data(), num_cell * sizeof(float), cudaMemcpyHostToDevice);
+
     int blockSize = 256;
 
     int idx = 0, alt_idx = 1;
@@ -356,8 +456,8 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       // idx = k % 2;
       // alt_idx = (k + 1) % 2;
 
-      interpolate_particle<<<numBlocks_buffer, blockSize>>>(length, d_particle_list[idx], d_qes_winds_data);
-      //  boundary_conditions<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx]);
+      interpolate<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx], d_qes_winds_data);
+      interpolate<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx], d_qes_turb_data);
 
       cudaDeviceSynchronize();
     }

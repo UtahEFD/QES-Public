@@ -46,6 +46,7 @@ typedef struct
   uint32_t *ID;
 
   float *CoEps;
+  float *nuT;
 
   vec3 *pos;
 

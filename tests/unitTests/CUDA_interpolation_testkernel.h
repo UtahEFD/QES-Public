@@ -31,4 +31,22 @@ struct QESWindsData
   float *w;
 };
 
+struct QESTurbData
+{
+  float *txx;
+  float *txy;
+  float *txz;
+  float *tyy;
+  float *tyz;
+  float *tzz;
+
+  float *div_tau_x;
+  float *div_tau_y;
+  float *div_tau_z;
+
+  float *CoEps;
+  float *nuT;
+};
+
+
 void test_gpu(const int &, const int &, const int &);
