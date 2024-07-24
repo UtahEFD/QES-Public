@@ -30,6 +30,11 @@ add_executable(plume_IDGenerator plume_IDGenerator.cpp)
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
 
+  cuda_add_executable(test_GPU
+    test_GPU.cpp
+    )
+   target_link_libraries(test_GPU ${CUDA_LIBRARIES})
+
   cuda_add_executable(test_CUDARandomGen
     CUDARandomKernel.cu CUDARandomKernel.h
     test_CUDARandomGen.cpp
@@ -103,6 +108,7 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
     plume_interpolation_CPU
     plume_input
     plume_particle_buffer
+    test_GPU
     test_CUDARandomGen
     test_CUDAPartition
     test_particle_partition_GPU
