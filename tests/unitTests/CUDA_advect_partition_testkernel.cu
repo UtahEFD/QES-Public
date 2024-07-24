@@ -305,11 +305,29 @@ __global__ void advect_particle(int length, particle_array d_particle_list, floa
 {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
   if (idx < length) {
-    // PGD[tid].interp[tid].interpValues(TGD, p[tid].pos, p[tid].tau,p[tid].flux_div, p[tid].nuT, p[tid].CoEps);
     if (d_particle_list.state[idx] == ACTIVE) {
 
       solve(d_particle_list, idx, 1.0f, 0.0000001f, 10.0f, { d_RNG_vals[idx], d_RNG_vals[idx + length], d_RNG_vals[idx + 2 * length] });
       advect(d_particle_list, idx, 1.0f);
+    }
+  }
+}
+
+
+// test boundary conditon as kernel vs device function
+__global__ void boundary_conditions(int length, particle_array p)
+{
+  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+  if (idx < length) {
+    vec3 pos = p.pos[idx];
+    if (!enforce_exiting(pos._1, bc_param.xStartDomain, bc_param.xEndDomain)) {
+      p.state[idx] = INACTIVE;
+    }
+    if (!enforce_exiting(pos._2, bc_param.yStartDomain, bc_param.yEndDomain)) {
+      p.state[idx] = INACTIVE;
+    }
+    if (!enforce_exiting(pos._3, bc_param.zStartDomain, bc_param.zEndDomain)) {
+      p.state[idx] = INACTIVE;
     }
   }
 }
@@ -486,6 +504,8 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
       interpolate_particle<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx]);
       advect_particle<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx], d_RNG_vals);
+
+      // this is slower that calling devive function bc in the kernel
       // boundary_conditions<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx]);
 
       cudaMemcpy(&h_lower_count, d_lower_count, sizeof(int), cudaMemcpyDeviceToHost);
