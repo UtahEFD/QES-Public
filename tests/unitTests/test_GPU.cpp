@@ -8,11 +8,13 @@
 
 TEST_CASE("Verify GPU Accessibility")
 {
+    // only will work if CUDA's been compiled into the code
+#ifdef HAS_CUDA
+    std::cout << "\t* CUDA support available!" << std::endl;
+
   int deviceCount = 0;
   cudaError_t error_id = cudaGetDeviceCount(&deviceCount);
-
   REQUIRE( error_id == cudaSuccess );
-  
   REQUIRE( deviceCount >= 1 );
 
   int dev, driverVersion = 0, runtimeVersion = 0;
@@ -66,9 +68,9 @@ TEST_CASE("Verify GPU Accessibility")
               << "DomainID=" << deviceProp.pciDomainID << std::endl;
   }
   cudaSetDevice(0);
-
-
-  std::cout << "Version: " << QES_VERSION_INFO << std::endl;// QES_VERSION_INFO comes from CMakeLists.txt
+#endif
+  
+//  std::cout << "Version: " << QES_VERSION_INFO << std::endl;// QES_VERSION_INFO comes from CMakeLists.txt
 #ifdef HAS_CUDA
   std::cout << "\t* CUDA support available!" << std::endl;
 #else
@@ -82,7 +84,3 @@ TEST_CASE("Verify GPU Accessibility")
 
 }
 
-TEST_CASE("Test VectorMath GPU")
-{
-  
-}
