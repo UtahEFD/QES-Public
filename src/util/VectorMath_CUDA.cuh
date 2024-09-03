@@ -38,7 +38,7 @@
 
 #include "VectorMath.h"
 
-/*__device__ float length(const vec3 &)
+/*__device__ float length(const vec3 &);
 __device__ float dot(const vec3 &, const vec3 &);
 __device__ void reflect(const vec3 &, vec3 &);
 __device__ float distance(const vec3 &, const vec3 &);

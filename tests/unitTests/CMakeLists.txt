@@ -63,10 +63,13 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
    target_link_libraries(test_advect_partition_GPU ${CUDA_curand_LIBRARY})
 
    cuda_add_executable(test_interpolation_GPU
+     CUDA_QES_Data.cu
+     CUDA_interpolation.cu
      CUDA_interpolation_testkernel.cu
      test_interpolation_GPU.cpp)
    target_link_libraries(test_interpolation_GPU ${CUDA_LIBRARIES})
    target_link_libraries(test_interpolation_GPU ${CUDA_curand_LIBRARY})
+
    
    cuda_add_executable(util_buffer_GPU
      CUDA_buffer_testkernel.cu
