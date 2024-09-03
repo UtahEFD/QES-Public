@@ -49,7 +49,7 @@ __device__ bool enforce_periodic(float &pos, const float &domainStart, const flo
   return true;
 }
 
-bool enforce_reflection(double &pos, double &velFluct, const float &domainStart, const float &domainEnd)
+__device__ bool enforce_reflection(float &pos, float &velFluct, const float &domainStart, const float &domainEnd)
 {
 
   int reflectCount = 0;
@@ -76,9 +76,9 @@ bool enforce_reflection(double &pos, double &velFluct, const float &domainStart,
     } else if (pos < domainStart) {
       return false;
       }*/
+  } else {
+    return true;
   }
-
-  return true;
 }
 
 __device__ void solve(particle_array p, int tid, float par_dt, float invarianceTol, float vel_threshold, vec3 vRandn)

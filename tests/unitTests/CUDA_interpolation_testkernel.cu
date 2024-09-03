@@ -300,6 +300,7 @@ void allocate_device_particle_list(particle_array &d_particle_list, int length)
   cudaMalloc((void **)&d_particle_list.delta_velFluct, length * sizeof(vec3));
 
   cudaMalloc((void **)&d_particle_list.CoEps, length * sizeof(float));
+  cudaMalloc((void **)&d_particle_list.nuT, length * sizeof(float));
   cudaMalloc((void **)&d_particle_list.tau, length * sizeof(mat3sym));
   cudaMalloc((void **)&d_particle_list.tau_old, length * sizeof(mat3sym));
 
@@ -348,6 +349,7 @@ void print_particle(const particle &p)
   std::cout << " position: " << p.pos._1 << ", " << p.pos._2 << ", " << p.pos._3 << std::endl;
   std::cout << " velocity: " << p.velMean._1 << ", " << p.velMean._2 << ", " << p.velMean._3 << std::endl;
   std::cout << " fluct   : " << p.velFluct._1 << ", " << p.velFluct._2 << ", " << p.velFluct._3 << std::endl;
+  // std::cout << " tau_ii  : " << p.tau._11 << ", " << p.tau._22 << ", " << p.tau._33 << std::endl;
 }
 
 
@@ -371,9 +373,9 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
   qes_grid.dy = 1;
   qes_grid.dz = 1;
 
-  qes_grid.nx = 100;
-  qes_grid.ny = 100;
-  qes_grid.nz = 100;
+  qes_grid.nx = 400;
+  qes_grid.ny = 400;
+  qes_grid.nz = 400;
 
   int num_cell = qes_grid.nx * qes_grid.ny * qes_grid.nz;
   std::vector<float> data;
@@ -458,7 +460,6 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
       interpolate<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx], d_qes_winds_data);
       interpolate<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx], d_qes_turb_data);
-
       cudaDeviceSynchronize();
     }
 

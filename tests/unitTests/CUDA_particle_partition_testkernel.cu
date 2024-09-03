@@ -71,7 +71,6 @@ __global__ void insert_particle(int length, int new_particle, int *lower, partic
 __global__ void set_particle(int length, particle_array d_particle_list, float *d_RNG_vals)
 {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
-
   if (idx < length) {
     int state = d_particle_list.state[idx];
     if (state == ACTIVE) {
@@ -221,13 +220,13 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
       curandGenerateUniform(gen, d_RNG_vals, num_particle);
 
-      partition_particle<<<numBlocks_buffer, blockSize>>>(d_particle_list[ idx ], d_particle_list[ alt_idx ], d_lower_count, d_upper_count, length);
+      partition_particle<<<numBlocks_buffer, blockSize>>>(d_particle_list[idx], d_particle_list[alt_idx], d_lower_count, d_upper_count, length);
       cudaDeviceSynchronize();
 
-      insert_particle<<<numBlocks_new_particle, blockSize>>>(length, new_particle, d_lower_count, d_new_particle_list, d_particle_list[ idx ]);
+      insert_particle<<<numBlocks_new_particle, blockSize>>>(length, new_particle, d_lower_count, d_new_particle_list, d_particle_list[idx]);
       cudaDeviceSynchronize();
 
-      set_particle<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[ idx ], d_RNG_vals);
+      set_particle<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx], d_RNG_vals);
       // set_particle<<<numBlocks1, blockSize>>>(length, d_particle_list_even, d_RNG_vals);
 
       cudaMemcpy(&h_lower_count, d_lower_count, sizeof(int), cudaMemcpyDeviceToHost);
@@ -236,7 +235,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
       cudaDeviceSynchronize();
     }
-    
+
     cudaMemcpy(&h_lower_count, d_lower_count, sizeof(int), cudaMemcpyDeviceToHost);
     cudaMemcpy(&h_upper_count, d_upper_count, sizeof(int), cudaMemcpyDeviceToHost);
     std::cout << ntest << " " << h_lower_count << " " << h_upper_count << std::endl;
@@ -273,7 +272,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
         particle_list[k].isRogue = true;
         particle_list[k].isActive = false;
       } else {
-        // unknown state -> should not happend
+        // unknown state -> should not happen
       }
     }
 
