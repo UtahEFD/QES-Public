@@ -13,6 +13,8 @@ void allocate_device_particle_list(particle_array &d_particle_list, int length)
   cudaMalloc((void **)&d_particle_list.delta_velFluct, length * sizeof(vec3));
 
   cudaMalloc((void **)&d_particle_list.CoEps, length * sizeof(float));
+  cudaMalloc((void **)&d_particle_list.nuT, length * sizeof(float));
+
   cudaMalloc((void **)&d_particle_list.tau, length * sizeof(mat3sym));
   cudaMalloc((void **)&d_particle_list.tau_old, length * sizeof(mat3sym));
 
@@ -25,6 +27,7 @@ void free_device_particle_list(particle_array &d_particle_list)
   cudaFree(d_particle_list.ID);
 
   cudaFree(d_particle_list.CoEps);
+  cudaFree(d_particle_list.nuT);
 
   cudaFree(d_particle_list.pos);
   cudaFree(d_particle_list.velMean);
