@@ -1,20 +1,20 @@
 #include "CUDA_QES_Data.h"
 
 
-void copy_data_gpu(const int &num_cell, QESWindsData &d_qes_winds_data)
+void copy_data_gpu(const int &num_face, QESWindsData &d_qes_winds_data)
 {
   std::vector<float> data;
-  data.resize(num_cell, 1.0);
+  data.resize(num_face, 1.0);
 
   std::fill(data.begin(), data.end(), 1.0);
-  cudaMalloc((void **)&d_qes_winds_data.u, num_cell * sizeof(float));
-  cudaMemcpy(d_qes_winds_data.u, data.data(), num_cell * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_winds_data.u, num_face * sizeof(float));
+  cudaMemcpy(d_qes_winds_data.u, data.data(), num_face * sizeof(float), cudaMemcpyHostToDevice);
   std::fill(data.begin(), data.end(), 0.0);
-  cudaMalloc((void **)&d_qes_winds_data.v, num_cell * sizeof(float));
-  cudaMemcpy(d_qes_winds_data.v, data.data(), num_cell * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_winds_data.v, num_face * sizeof(float));
+  cudaMemcpy(d_qes_winds_data.v, data.data(), num_face * sizeof(float), cudaMemcpyHostToDevice);
   std::fill(data.begin(), data.end(), 0.0);
-  cudaMalloc((void **)&d_qes_winds_data.w, num_cell * sizeof(float));
-  cudaMemcpy(d_qes_winds_data.w, data.data(), num_cell * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_winds_data.w, num_face * sizeof(float));
+  cudaMemcpy(d_qes_winds_data.w, data.data(), num_face * sizeof(float), cudaMemcpyHostToDevice);
 }
 
 void copy_data_gpu(const int &num_cell, QESTurbData &d_qes_turb_data)

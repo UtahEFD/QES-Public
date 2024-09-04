@@ -29,3 +29,7 @@ struct interpWeight
 __global__ void interpolate(int length, particle_array d_particle_list, const QESWindsData data, const QESgrid &qes_grid);
 __global__ void interpolate(int length, const vec3 *pos, mat3sym *tau, vec3 *sigma, const QESTurbData data, const QESgrid &qes_grid);
 __global__ void interpolate(int length, particle_array d_particle_list, const QESTurbData data, const QESgrid &qes_grid);
+
+__global__ void interpolate_1(int length, particle_array d_particle_list, const QESTurbData data, const QESgrid &qes_grid);
+__global__ void interpolate_2(int length, particle_array d_particle_list, const QESTurbData data, const QESgrid &qes_grid);
+__global__ void interpolate_3(int length, particle_array d_particle_list, const QESTurbData data, const QESgrid &qes_grid);

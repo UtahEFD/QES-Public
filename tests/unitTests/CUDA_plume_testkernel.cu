@@ -21,24 +21,6 @@ void print_percentage(const float &percentage)
   fflush(stdout);
 }
 
-
-__global__ void interpolate_particle(int length, particle_array d_particle_list)
-{
-
-  int idx = blockIdx.x * blockDim.x + threadIdx.x;
-  if (idx < length) {
-    if (d_particle_list.state[idx] == ACTIVE) {
-
-      d_particle_list.velMean[idx] = { 1.0f, 0.0f, 0.0f };
-
-      d_particle_list.CoEps[idx] = 0.1f;
-      d_particle_list.tau[idx] = { 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f };
-      d_particle_list.flux_div[idx] = { 0.0f, 0.0f, 0.0f };
-    }
-  }
-}
-
-
 void print_particle(const particle &p)
 {
   std::string particle_state = "ERROR";
@@ -96,30 +78,34 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     qes_grid.dy = 1;
     qes_grid.dz = 1;
 
-    qes_grid.nx = 400;
-    qes_grid.ny = 400;
-    qes_grid.nz = 400;
+    qes_grid.nx = 200 + 1;
+    qes_grid.ny = 100 + 1;
+    qes_grid.nz = 140 + 2;
 
-    int num_cell = qes_grid.nx * qes_grid.ny * qes_grid.nz;
+    int num_cell = (qes_grid.nx - 1) * (qes_grid.ny - 1) * (qes_grid.nz - 1);
+    int num_face = qes_grid.nx * qes_grid.ny * qes_grid.nz;
 
     QESWindsData d_qes_winds_data;
-    copy_data_gpu(num_cell, d_qes_winds_data);
+    copy_data_gpu(num_face, d_qes_winds_data);
 
     QESTurbData d_qes_turb_data;
     copy_data_gpu(num_cell, d_qes_turb_data);
 
     // set boundary condition
-    bc_param.xStartDomain = 0;
-    bc_param.yStartDomain = 0;
+    bc_param.xStartDomain = 0 + 0.5 * qes_grid.dx;
+    bc_param.yStartDomain = 0 + 0.5 * qes_grid.dy;
     bc_param.zStartDomain = 0;
 
-    bc_param.xEndDomain = 200;
-    bc_param.yEndDomain = 100;
+    bc_param.xEndDomain = 200 - 0.5 * qes_grid.dx;
+    bc_param.yEndDomain = 100 - 0.5 * qes_grid.dy;
     bc_param.zEndDomain = 140;
 
     int h_lower_count = 0, h_upper_count;
 
     auto gpuStartTime = std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<double> interpElapsed(0.0);
+    std::chrono::duration<double> advectElapsed(0.0);
 
     // Allocate particle array on the device ONLY
     particle_array d_particle_list[2];
@@ -168,7 +154,8 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       cudaMemcpy(d_new_particle_list.velFluct_old, new_sig.data(), new_particle * sizeof(vec3), cudaMemcpyHostToDevice);
 
 
-      int num_particle = length;// h_lower_count + new_particle;
+      // int num_particle = length;
+      int num_particle = h_lower_count + new_particle;
       // std::cout << num_particle << std::endl;
 
       int numBlocks_buffer = (length + blockSize - 1) / blockSize;
@@ -187,11 +174,19 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       insert_particle<<<numBlocks_new_particle, blockSize>>>(length, new_particle, d_lower_count, d_new_particle_list, d_particle_list[idx]);
       cudaDeviceSynchronize();
 
+      auto interpStartTime = std::chrono::high_resolution_clock::now();
 
       interpolate<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx], d_qes_winds_data, qes_grid);
+      // interpolate_1<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx], d_qes_turb_data, qes_grid);
+      // interpolate_2<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx], d_qes_turb_data, qes_grid);
+      // interpolate_3<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx], d_qes_turb_data, qes_grid);
       interpolate<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx], d_qes_turb_data, qes_grid);
-      // interpolate_particle<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx]);
       cudaDeviceSynchronize();
+
+      auto interpEndTime = std::chrono::high_resolution_clock::now();
+      interpElapsed += interpEndTime - interpStartTime;
+
+      auto advectStartTime = std::chrono::high_resolution_clock::now();
 
       advect_particle<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx], d_RNG_vals, bc_param);
 
@@ -203,6 +198,9 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       // std::cout << k << " " << h_lower_count << " " << h_upper_count << std::endl;
 
       cudaDeviceSynchronize();
+
+      auto advectEndTime = std::chrono::high_resolution_clock::now();
+      advectElapsed += advectEndTime - advectStartTime;
 
       print_percentage((float)h_lower_count / (float)length);
     }
@@ -273,7 +271,10 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     print_particle(particle_list[0]);
     print_particle(particle_list[1]);
 
+
     std::cout << "--------------------------------------" << std::endl;
+    std::cout << "interpolation elapsed time: " << interpElapsed.count() << " s\n";
+    std::cout << "advection elapsed time: " << advectElapsed.count() << " s\n";
     std::chrono::duration<double> kernelElapsed = kernelEndTime - kernelStartTime;
     std::cout << "kernel elapsed time: " << kernelElapsed.count() << " s\n";
     std::chrono::duration<double> gpuElapsed = gpuEndTime - gpuStartTime;

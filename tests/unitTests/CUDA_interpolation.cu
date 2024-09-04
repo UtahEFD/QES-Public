@@ -163,22 +163,22 @@ __global__ void interpolate(int length, particle_array d_particle_list, const QE
 
   if (idx < length) {
     if (d_particle_list.state[idx] == ACTIVE) {
-      interpWeight wgt{ 1, 0, 0, 1.0, 0.0, 0.0 };
+      interpWeight wgt{ 0, 0, 0, 0.0, 0.0, 0.0 };
 
       float u, v, w;
 
       // set interpolation indexing variables for uFace variables
-      // setInterp3Dindex_uFace(d_particle_list.pos[idx], wgt, qes_grid);
+      setInterp3Dindex_uFace(d_particle_list.pos[idx], wgt, qes_grid);
       // interpolation of variables on uFace
       interp3D_faceVar(u, data.u, wgt, qes_grid);
 
       // set interpolation indexing variables for vFace variables
-      // setInterp3Dindex_vFace(d_particle_list.pos[idx], wgt, qes_grid);
+      setInterp3Dindex_vFace(d_particle_list.pos[idx], wgt, qes_grid);
       // interpolation of variables on vFace
       interp3D_faceVar(v, data.v, wgt, qes_grid);
 
       // set interpolation indexing variables for wFace variables
-      // setInterp3Dindex_wFace(d_particle_list.pos[idx], wgt, qes_grid);
+      setInterp3Dindex_wFace(d_particle_list.pos[idx], wgt, qes_grid);
       // interpolation of variables on wFace
       interp3D_faceVar(w, data.w, wgt, qes_grid);
 
@@ -228,9 +228,9 @@ __global__ void interpolate(int length, particle_array d_particle_list, const QE
   if (idx < length) {
     if (d_particle_list.state[idx] == ACTIVE) {
       // these are the current interp3D variables, as they are used for multiple interpolations for each particle
-      interpWeight wgt{ 1, 0, 0, 1.0, 0.0, 0.0 };
+      interpWeight wgt{ 0, 0, 0, 0.0, 0.0, 0.0 };
 
-      // setInterp3Dindex_cellVar(d_particle_list.pos[idx], wgt, qes_grid);
+      setInterp3Dindex_cellVar(d_particle_list.pos[idx], wgt, qes_grid);
 
       // this is the CoEps for the particle
       float CoEps_out;
@@ -260,6 +260,79 @@ __global__ void interpolate(int length, particle_array d_particle_list, const QE
       float nuT_out;
       interp3D_cellVar(nuT_out, data.nuT, wgt, qes_grid);
       d_particle_list.nuT[idx] = nuT_out;
+    }
+  }
+}
+
+
+__global__ void interpolate_1(int length, particle_array d_particle_list, const QESTurbData data, const QESgrid &qes_grid)
+{
+  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if (idx < length) {
+    if (d_particle_list.state[idx] == ACTIVE) {
+      // these are the current interp3D variables, as they are used for multiple interpolations for each particle
+      interpWeight wgt{ 0, 0, 0, 0.0, 0.0, 0.0 };
+
+      setInterp3Dindex_cellVar(d_particle_list.pos[idx], wgt, qes_grid);
+
+      // this is the CoEps for the particle
+      float CoEps_out;
+      interp3D_cellVar(CoEps_out, data.CoEps, wgt, qes_grid);
+      // make sure CoEps is always bigger than zero
+      if (CoEps_out <= 1e-6) {
+        CoEps_out = 1e-6;
+      }
+      d_particle_list.CoEps[idx] = CoEps_out;
+
+      float nuT_out;
+      interp3D_cellVar(nuT_out, data.nuT, wgt, qes_grid);
+      d_particle_list.nuT[idx] = nuT_out;
+    }
+  }
+}
+
+__global__ void interpolate_2(int length, particle_array d_particle_list, const QESTurbData data, const QESgrid &qes_grid)
+{
+  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if (idx < length) {
+    if (d_particle_list.state[idx] == ACTIVE) {
+      // these are the current interp3D variables, as they are used for multiple interpolations for each particle
+      interpWeight wgt{ 0, 0, 0, 0.0, 0.0, 0.0 };
+
+      setInterp3Dindex_cellVar(d_particle_list.pos[idx], wgt, qes_grid);
+
+      // this is the current reynolds stress tensor
+      float txx_out, txy_out, txz_out, tyy_out, tyz_out, tzz_out;
+      interp3D_cellVar(txx_out, data.txx, wgt, qes_grid);
+      interp3D_cellVar(txy_out, data.txy, wgt, qes_grid);
+      interp3D_cellVar(txz_out, data.txz, wgt, qes_grid);
+      interp3D_cellVar(tyy_out, data.tyy, wgt, qes_grid);
+      interp3D_cellVar(tyz_out, data.tyz, wgt, qes_grid);
+      interp3D_cellVar(tzz_out, data.tzz, wgt, qes_grid);
+      d_particle_list.tau[idx] = { txx_out, txy_out, txz_out, tyy_out, tyz_out, tzz_out };
+    }
+  }
+}
+
+
+__global__ void interpolate_3(int length, particle_array d_particle_list, const QESTurbData data, const QESgrid &qes_grid)
+{
+  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if (idx < length) {
+    if (d_particle_list.state[idx] == ACTIVE) {
+      // these are the current interp3D variables, as they are used for multiple interpolations for each particle
+      interpWeight wgt{ 0, 0, 0, 0.0, 0.0, 0.0 };
+
+      setInterp3Dindex_cellVar(d_particle_list.pos[idx], wgt, qes_grid);
+
+      float flux_div_x_out, flux_div_y_out, flux_div_z_out;
+      interp3D_cellVar(flux_div_x_out, data.div_tau_x, wgt, qes_grid);
+      interp3D_cellVar(flux_div_y_out, data.div_tau_y, wgt, qes_grid);
+      interp3D_cellVar(flux_div_z_out, data.div_tau_z, wgt, qes_grid);
+      d_particle_list.flux_div[idx] = { flux_div_x_out, flux_div_y_out, flux_div_z_out };
     }
   }
 }
