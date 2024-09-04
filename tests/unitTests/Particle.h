@@ -8,18 +8,6 @@ enum ParticleStates : int { ACTIVE,
 
 typedef struct
 {
-  float xStartDomain;
-  float yStartDomain;
-  float zStartDomain;
-
-  float xEndDomain;
-  float yEndDomain;
-  float zEndDomain;
-
-} BC_Params;
-
-typedef struct
-{
   int state;
   uint32_t ID;
 

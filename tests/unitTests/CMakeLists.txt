@@ -57,6 +57,9 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
    target_link_libraries(test_particle_partition_GPU ${CUDA_curand_LIBRARY})
    
    cuda_add_executable(test_advect_partition_GPU
+     CUDA_particle_partition.cu
+     CUDA_boundary_conditions.cu
+     CUDA_advection.cu
      CUDA_advect_partition_testkernel.cu
      test_advect_partition_GPU.cpp)
    target_link_libraries(test_advect_partition_GPU ${CUDA_LIBRARIES})
