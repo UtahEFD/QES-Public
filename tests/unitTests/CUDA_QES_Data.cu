@@ -60,3 +60,52 @@ void copy_data_gpu(const int &num_cell, QESTurbData &d_qes_turb_data)
   cudaMalloc((void **)&d_qes_turb_data.nuT, num_cell * sizeof(float));
   cudaMemcpy(d_qes_turb_data.nuT, data.data(), num_cell * sizeof(float), cudaMemcpyHostToDevice);
 }
+
+void copy_data_gpu(const WINDSGeneralData *WGD, QESWindsData &d_qes_winds_data)
+{
+  // velocity field components
+  cudaMalloc((void **)&d_qes_winds_data.u, WGD->numcell_face * sizeof(float));
+  cudaMemcpy(d_qes_winds_data.u, WGD->u.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_winds_data.v, WGD->numcell_face * sizeof(float));
+  cudaMemcpy(d_qes_winds_data.v, WGD->v.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_winds_data.w, WGD->numcell_face * sizeof(float));
+  cudaMemcpy(d_qes_winds_data.w, WGD->w.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+}
+
+void copy_data_gpu(const TURBGeneralData *TGD, QESTurbData &d_qes_turb_data)
+{
+
+  // stress tensor
+  cudaMalloc((void **)&d_qes_turb_data.txx, TGD->numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.txx, TGD->txx.data(), TGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_turb_data.txy, TGD->numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.txy, TGD->txy.data(), TGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_turb_data.txz, TGD->numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.txz, TGD->txz.data(), TGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_turb_data.tyy, TGD->numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.tyy, TGD->tyy.data(), TGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_turb_data.tyz, TGD->numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.tyz, TGD->tyz.data(), TGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_turb_data.tzz, TGD->numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.tzz, TGD->tzz.data(), TGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+
+  // divergence of stress tensor
+  cudaMalloc((void **)&d_qes_turb_data.div_tau_x, TGD->numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.div_tau_x, TGD->div_tau_x.data(), TGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_turb_data.div_tau_y, TGD->numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.div_tau_y, TGD->div_tau_y.data(), TGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_turb_data.div_tau_z, TGD->numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.div_tau_z, TGD->div_tau_z.data(), TGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+
+  // dissipation rate
+  cudaMalloc((void **)&d_qes_turb_data.CoEps, TGD->numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.CoEps, TGD->CoEps.data(), TGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+
+  // turbulent viscosity
+  cudaMalloc((void **)&d_qes_turb_data.nuT, TGD->numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.nuT, TGD->nuT.data(), TGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+
+  // turbulence kinetic energy
+  cudaMalloc((void **)&d_qes_turb_data.tke, TGD->numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.tke, TGD->tke.data(), TGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+}

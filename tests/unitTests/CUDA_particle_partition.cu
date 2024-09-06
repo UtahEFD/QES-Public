@@ -115,5 +115,6 @@ __global__ void insert_particle(int length, int new_particle, int *lower, partic
     d_particle_list.pos[idx + (*lower)] = d_new_particle_list.pos[idx];
     // use all fluctuation as initial condition (sigma)
     d_particle_list.velFluct_old[idx + (*lower)] = d_new_particle_list.velFluct_old[idx];
+    d_particle_list.tau[idx + (*lower)] = d_new_particle_list.tau[idx];
   }
 }

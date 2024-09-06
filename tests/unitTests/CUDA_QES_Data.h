@@ -8,6 +8,9 @@
 
 #include "util/VectorMath.h"
 
+#include "winds/WINDSGeneralData.h"
+#include "winds/TURBGeneralData.h"
+
 #include <cuda.h>
 #include <curand.h>
 
@@ -44,7 +47,12 @@ struct QESTurbData
 
   float *CoEps;
   float *nuT;
+  float *tke;
 };
 
 void copy_data_gpu(const int &num_cell, QESWindsData &d_qes_winds_data);
 void copy_data_gpu(const int &num_cell, QESTurbData &d_qes_turb_data);
+
+
+void copy_data_gpu(const WINDSGeneralData *, QESWindsData &);
+void copy_data_gpu(const TURBGeneralData *, QESTurbData &);
