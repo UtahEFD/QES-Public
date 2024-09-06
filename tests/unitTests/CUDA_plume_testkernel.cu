@@ -5,12 +5,14 @@
 #include "CUDA_particle_partition.cuh"
 #include "CUDA_interpolation.cuh"
 #include "CUDA_advection.cuh"
+#include "CUDA_concentration.cuh"
 
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
 #define PBWIDTH 60
 
 __device__ __managed__ QESgrid qes_grid;
 __device__ __managed__ BC_Params bc_param;
+__device__ __managed__ ConcentrationParam param;
 
 void print_percentage(const float &percentage)
 {
@@ -100,12 +102,36 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     bc_param.yEndDomain = 100 - 0.5 * qes_grid.dy;
     bc_param.zEndDomain = 140;
 
+    // concnetration calculation
+    param.lbndx = 0.0;
+    param.lbndy = 0.0;
+    param.lbndz = 0.0;
+
+    param.ubndx = 200.0;
+    param.ubndy = 100.0;
+    param.ubndz = 140.0;
+
+    param.nx = 40;
+    param.ny = 20;
+    param.nz = 28;
+
+    param.dx = (param.ubndx - param.lbndx) / (param.nx);
+    param.dy = (param.ubndy - param.lbndy) / (param.ny);
+    param.dz = (param.ubndz - param.lbndz) / (param.nz);
+
+    std::vector<int> h_pBox(param.nx * param.ny * param.nz, 0.0);
+
+    int *d_pBox;
+    cudaMalloc(&d_pBox, param.nx * param.ny * param.nz * sizeof(int));
+
+
     int h_lower_count = 0, h_upper_count;
 
     auto gpuStartTime = std::chrono::high_resolution_clock::now();
 
     std::chrono::duration<double> interpElapsed(0.0);
     std::chrono::duration<double> advectElapsed(0.0);
+    std::chrono::duration<double> concenElapsed(0.0);
 
     // Allocate particle array on the device ONLY
     particle_array d_particle_list[2];
@@ -135,6 +161,10 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     int blockSize = 256;
 
     int idx = 0, alt_idx = 1;
+
+    float ongoingAveragingTime = 0.0;
+    float timeStep = 1.0;
+    float volume = param.dx * param.dy * param.dz;
 
     // call kernel
     auto kernelStartTime = std::chrono::high_resolution_clock::now();
@@ -202,6 +232,15 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       auto advectEndTime = std::chrono::high_resolution_clock::now();
       advectElapsed += advectEndTime - advectStartTime;
 
+      auto concenStartTime = std::chrono::high_resolution_clock::now();
+
+      collect<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx], d_pBox, param);
+      cudaDeviceSynchronize();
+      ongoingAveragingTime += timeStep;
+
+      auto concenEndTime = std::chrono::high_resolution_clock::now();
+      concenElapsed += concenEndTime - concenStartTime;
+
       print_percentage((float)h_lower_count / (float)length);
     }
     std::cout << std::endl;
@@ -233,6 +272,8 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     cudaMemcpy(velMean.data(), d_particle_list[idx].velMean, length * sizeof(vec3), cudaMemcpyDeviceToHost);
     cudaMemcpy(velFluct.data(), d_particle_list[idx].velFluct, length * sizeof(vec3), cudaMemcpyDeviceToHost);
 
+    cudaMemcpy(h_pBox.data(), d_pBox, param.nx * param.ny * param.nz * sizeof(int), cudaMemcpyDeviceToHost);
+
     std::vector<particle> particle_list(length);
 
     for (size_t k = 0; k < particle_list.size(); ++k) {
@@ -253,6 +294,8 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     free_device_particle_list(d_particle_list[0]);
     free_device_particle_list(d_particle_list[1]);
     free_device_particle_list(d_new_particle_list);
+    cudaFree(d_pBox);
+    cudaFree(d_RNG_vals);
 
     auto gpuEndTime = std::chrono::high_resolution_clock::now();
 
@@ -275,6 +318,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     std::cout << "--------------------------------------" << std::endl;
     std::cout << "interpolation elapsed time: " << interpElapsed.count() << " s\n";
     std::cout << "advection elapsed time: " << advectElapsed.count() << " s\n";
+    std::cout << "concentration elapsed time: " << concenElapsed.count() << " s\n";
     std::chrono::duration<double> kernelElapsed = kernelEndTime - kernelStartTime;
     std::cout << "kernel elapsed time: " << kernelElapsed.count() << " s\n";
     std::chrono::duration<double> gpuElapsed = gpuEndTime - gpuStartTime;

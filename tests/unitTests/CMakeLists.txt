@@ -74,8 +74,9 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
    target_link_libraries(test_interpolation_GPU ${CUDA_curand_LIBRARY})
 
    cuda_add_executable(test_concentration_GPU
-     CUDA_concentration_testkernel.cu
+     CUDA_concentration.cu
      CUDA_particle_partition.cu
+     CUDA_concentration_testkernel.cu
      test_concentration_GPU.cpp)
    target_link_libraries(test_concentration_GPU ${CUDA_LIBRARIES})
    target_link_libraries(test_concentration_GPU ${CUDA_curand_LIBRARY})
@@ -86,6 +87,7 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
      CUDA_particle_partition.cu
      CUDA_boundary_conditions.cu
      CUDA_advection.cu
+     CUDA_concentration.cu
      CUDA_plume_testkernel.cu
      test_plume_GPU.cpp)
    target_link_libraries(test_plume_GPU ${CUDA_LIBRARIES})

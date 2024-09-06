@@ -3,6 +3,7 @@
 
 #include "util/VectorMath_CUDA.cuh"
 #include "CUDA_particle_partition.cuh"
+#include "CUDA_concentration.cuh"
 
 // #include "CUDA_GLE_Solver.cuh"
 //  #include "Particle.cuh"
@@ -23,28 +24,6 @@ __global__ void set_positions(int length, particle_array d_particle_list, float 
   }
 }
 
-
-__global__ void collect(int length, particle_array d_particle_list, int *pBox, const ConcentrationParam param)
-{
-  int idx = blockIdx.x * blockDim.x + threadIdx.x;
-
-  if (idx < length) {
-    if (d_particle_list.state[idx] == ACTIVE) {
-      // x-direction
-      int i = floor((d_particle_list.pos[idx]._1 - param.lbndx) / (param.dx + 1e-9));
-      // y-direction
-      int j = floor((d_particle_list.pos[idx]._2 - param.lbndy) / (param.dy + 1e-9));
-      // z-direction
-      int k = floor((d_particle_list.pos[idx]._3 - param.lbndz) / (param.dz + 1e-9));
-
-      if (i >= 0 && i <= param.nx - 1 && j >= 0 && j <= param.ny - 1 && k >= 0 && k <= param.nz - 1) {
-        int id = k * param.ny * param.nx + j * param.nx + i;
-        atomicAdd(&pBox[id], 1);
-        // conc[id] = conc[id] + par.m * par.wdecay * timeStep;
-      }
-    }
-  }
-}
 
 void test_gpu(const int &ntest, const int &new_particle, const int &length)
 {
@@ -110,8 +89,8 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     int num_particle = length;// h_lower_count + new_particle;
     int numBlocks_all_particle = (num_particle + blockSize - 1) / blockSize;
 
-    float ongoingAveragingTime = 0;
-    float timeStep = 1;
+    float ongoingAveragingTime = 0.0;
+    float timeStep = 1.0;
     float volume = param.dx * param.dy * param.dz;
 
     // call kernel
