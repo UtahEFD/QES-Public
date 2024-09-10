@@ -7,6 +7,8 @@
 #include <vector>
 
 #include "util/VectorMath.h"
+#include "util/QESFileOutput_v2.h"
+#include "util/QESNetCDFOutput_v2.h"
 
 #include "plume/IDGenerator.h"
 

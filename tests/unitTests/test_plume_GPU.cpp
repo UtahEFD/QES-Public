@@ -23,7 +23,10 @@ TEST_CASE("PLUME")
   // for (auto lIdx = 0; lIdx < 3; ++lIdx) {
 
   startTime = std::chrono::high_resolution_clock::now();
-  test_gpu(1E4, 2E3, 2E5);
+  test_gpu(1E5, 8E3, 5E5);
+  // test_gpu(2100, 8E3, 5E5);
+  // test_gpu(100000, 400, 5E5);
+  //  test_gpu(2100, 400, 50000);
   endTime = std::chrono::high_resolution_clock::now();
 
   elapsed = endTime - startTime;

@@ -129,7 +129,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
   qes_grid.dy = 1;
   qes_grid.dz = 1;
 
-  qes_grid.nx = 202;
+  qes_grid.nx = 102;
   qes_grid.ny = 102;
   qes_grid.nz = 141;
 
@@ -212,11 +212,11 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     param.lbndy = 1.0;
     param.lbndz = 1.0;
 
-    param.ubndx = 200.0;
+    param.ubndx = 100.0;
     param.ubndy = 99.0;
     param.ubndz = 139.0;
 
-    param.nx = 40;
+    param.nx = 20;
     param.ny = 49;
     param.nz = 69;
 
@@ -446,15 +446,15 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     std::cout << "--------------------------------------" << std::endl;
     std::cout << "number of active particle: " << count << std::endl;
 
-    print_particle(particle_list[0]);
-    print_particle(particle_list[1]);
+    // print_particle(particle_list[0]);
+    // print_particle(particle_list[1]);
 
     // source info (hard coded because no way to access the source info here)
     float xS = 20;
     float yS = 50;
     float zS = 70;
     float Q = new_particle;// #par/s (source strength)
-    float tRelease = 2100;// total time of release
+    float tRelease = ntest;// total time of release
     float Ntot = Q * tRelease;// total number of particles
 
     float CNorm = (uMean * H * H / Q);
@@ -464,6 +464,9 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
     // normalization of particle count #particle -> time-averaged # particle/m3
     float CC = dt / tAvg / volume;
+
+    std::cout << "normalization of particle count: " << CC << std::endl;
+    std::cout << "normalization for source: " << CNorm << std::endl;
 
     // output concentration storage variables
     std::vector<float> xBoxCen(param.nx, 0.0);
@@ -558,6 +561,29 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       }
     }
     float R2 = 1.0f - SSres / SStot;
+
+    QESNetCDFOutput_v2 *outfile = nullptr;
+    outfile = new QESNetCDFOutput_v2("test_plumeOut.nc");
+
+    outfile->newDimension("x_c", "x-center collection box", "m", &xBoxCen);
+    outfile->newDimension("y_c", "y-center collection box", "m", &yBoxCen);
+    outfile->newDimension("z_c", "z-center collection box", "m", &zBoxCen);
+
+    outfile->newDimensionSet("concentration", { "t", "z_c", "y_c", "x_c" });
+
+    outfile->newField("t_avg", "Averaging time", "s", "time", &ongoingAveragingTime);
+    outfile->newField("p_count", "number of particle per box", "#ofPar", "concentration", &h_pBox);
+    std::vector<float> CStar(param.nx * param.ny * param.nz);
+    for (size_t id = 0; id < CStar.size(); ++id) {
+      CStar[id] = h_pBox[id] * CC * CNorm;
+    }
+    outfile->newField("c", "normailzed concentration", "--", "concentration", &CStar);
+
+    QEStime time;
+    outfile->pushAllFieldsToFile(time);
+
+    delete outfile;
+    delete WGD, TGD;
 
     // check the results
     std::cout << "--------------------------------------------------------------" << std::endl;

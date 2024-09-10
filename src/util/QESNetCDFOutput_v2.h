@@ -77,7 +77,7 @@ public:
   void setStartTime(const QEStime &) override;
   void newTimeEntry(const QEStime &) override;
 
-protected:
+  // protected:
   QESNetCDFOutput_v2() = default;
 
   void pushAllFieldsToFile(QEStime &) override;
