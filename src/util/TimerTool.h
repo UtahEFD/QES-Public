@@ -44,7 +44,7 @@ class Timer
 {
 public:
   // constructor
-  Timer(std::string str_in) : timerName(str_in)
+  Timer(std::string str_in) : name(str_in)
   {
     startTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> tmp(0.0);
@@ -62,25 +62,19 @@ public:
   void stop()
   {
     endTime = std::chrono::high_resolution_clock::now();
-    elapsed = endTime - startTime;
-  }
-
-  void increment()
-  {
-    auto now = std::chrono::high_resolution_clock::now();
-    elapsed += now - startTime;
+    elapsed += endTime - startTime;
   }
 
   void show()
   {
-    std::cout << "Elapsed time for " << timerName << ": " << elapsed.count() << " s\n";
+    std::cout << "Elapsed time for " << name.append(25 - name.length(), ' ') << elapsed.count() << " s\n";
   }
 
 private:
   Timer()
   {}
 
-  std::string timerName;
+  std::string name;
   std::chrono::time_point<std::chrono::high_resolution_clock> startTime;
   std::chrono::time_point<std::chrono::high_resolution_clock> endTime;
   std::chrono::duration<double> elapsed;

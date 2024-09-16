@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "util/TimerTool.h"
 #include "util/VectorMath.h"
 #include "util/QESFileOutput_v2.h"
 #include "util/QESNetCDFOutput_v2.h"

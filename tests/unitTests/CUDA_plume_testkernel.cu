@@ -118,6 +118,16 @@ void print_particle(const particle &p)
 
 void test_gpu(const int &ntest, const int &new_particle, const int &length)
 {
+  Timer initTimer("initialization");
+  Timer gpuTimer("GPU");
+
+  Timer gpuInitTimer("GPU initialization");
+  Timer timeLoopTimer("time loop");
+  Timer partitonTimer("particle partitioning");
+  Timer interpTimer("interpolation");
+  Timer advectTimer("advection");
+  Timer concenTimer("concentration");
+
   float uMean = 2.0;
   float uStar = 0.174;
   float H = 70;
@@ -132,6 +142,8 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
   qes_grid.nx = 102;
   qes_grid.ny = 102;
   qes_grid.nz = 141;
+
+  initTimer.start();
 
   int gridSize[3] = { qes_grid.nx, qes_grid.ny, qes_grid.nz };
   float gridRes[3] = { qes_grid.dx, qes_grid.dy, qes_grid.dz };
@@ -165,10 +177,15 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
   }
   TGD->divergenceStress();
 
+  initTimer.stop();
+
+
   int gpuID = 0;
   cudaError_t errorCheck = cudaGetDevice(&gpuID);
   if (errorCheck == cudaSuccess) {
-    auto gpuStartTime = std::chrono::high_resolution_clock::now();
+
+    gpuTimer.start();
+    gpuInitTimer.start();
 
     int blockCount = 1;
     cudaDeviceGetAttribute(&blockCount, cudaDevAttrMultiProcessorCount, gpuID);
@@ -231,10 +248,6 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
     int h_lower_count = 0, h_upper_count;
 
-    std::chrono::duration<double> interpElapsed(0.0);
-    std::chrono::duration<double> advectElapsed(0.0);
-    std::chrono::duration<double> concenElapsed(0.0);
-
     // Allocate particle array on the device ONLY
     particle_array d_particle[2];
     allocate_device_particle_list(d_particle[0], length);
@@ -259,6 +272,8 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     cudaMalloc(&d_lower_count, sizeof(int));
     cudaMalloc(&d_upper_count, sizeof(int));
 
+    gpuInitTimer.stop();
+
     int blockSize = 256;
 
     int idx = 0, alt_idx = 1;
@@ -267,8 +282,8 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     float timeStep = 1.0;
     float volume = param.dx * param.dy * param.dz;
 
+    timeLoopTimer.start();
     // call kernel
-    auto kernelStartTime = std::chrono::high_resolution_clock::now();
     std::cout << "buffer usage: " << std::endl;
     for (int k = 0; k < ntest; ++k) {
 
@@ -300,12 +315,15 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       curandGenerateNormal(gen, d_RNG_vals, 3 * length, 0.0, 1.0);
       curandGenerateNormal(gen, d_RNG_newvals, 3 * new_particle, 0.0, 1.0);
 
+      partitonTimer.start();
+
       partition_particle<<<numBlocks_buffer, blockSize>>>(d_particle[idx],
                                                           d_particle[alt_idx],
                                                           d_lower_count,
                                                           d_upper_count,
                                                           length);
       cudaDeviceSynchronize();
+      partitonTimer.stop();
 
       interpolate<<<numBlocks_new_particle, blockSize>>>(new_particle,
                                                          d_new_particle.pos,
@@ -325,8 +343,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
                                                              d_particle[idx]);
       cudaDeviceSynchronize();
 
-      auto interpStartTime = std::chrono::high_resolution_clock::now();
-
+      interpTimer.start();
       interpolate<<<numBlocks_all_particle, blockSize>>>(num_particle,
                                                          d_particle[idx],
                                                          d_qes_winds_data,
@@ -339,12 +356,10 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
                                                          d_qes_turb_data,
                                                          qes_grid);
       cudaDeviceSynchronize();
+      interpTimer.stop();
 
-      auto interpEndTime = std::chrono::high_resolution_clock::now();
-      interpElapsed += interpEndTime - interpStartTime;
 
-      auto advectStartTime = std::chrono::high_resolution_clock::now();
-
+      advectTimer.start();
       advect_particle<<<numBlocks_all_particle, blockSize>>>(num_particle,
                                                              d_particle[idx],
                                                              d_RNG_vals,
@@ -358,35 +373,28 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       // std::cout << k << " " << h_lower_count << " " << h_upper_count << std::endl;
 
       cudaDeviceSynchronize();
-
-      auto advectEndTime = std::chrono::high_resolution_clock::now();
-      advectElapsed += advectEndTime - advectStartTime;
-
+      advectTimer.stop();
 
       if (k >= 1000) {
-        auto concenStartTime = std::chrono::high_resolution_clock::now();
+        concenTimer.start();
         collect<<<numBlocks_all_particle, blockSize>>>(num_particle,
                                                        d_particle[idx],
                                                        d_pBox,
                                                        param);
         cudaDeviceSynchronize();
         ongoingAveragingTime += timeStep;
-        auto concenEndTime = std::chrono::high_resolution_clock::now();
-        concenElapsed += concenEndTime - concenStartTime;
+        concenTimer.stop();
       }
 
       print_percentage((float)h_lower_count / (float)length);
     }
     std::cout << std::endl;
-
+    timeLoopTimer.stop();
 
     int numBlocks_buffer = (length + blockSize - 1) / blockSize;
     cudaMemset(d_lower_count, 0, sizeof(int));
     cudaMemset(d_upper_count, 0, sizeof(int));
     check_buffer<<<numBlocks_buffer, blockSize>>>(d_particle[idx], d_lower_count, d_upper_count, length);
-
-    auto kernelEndTime = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> kernelElapsed = kernelEndTime - kernelStartTime;
 
     cudaMemcpy(&h_lower_count, d_lower_count, sizeof(int), cudaMemcpyDeviceToHost);
     cudaMemcpy(&h_upper_count, d_upper_count, sizeof(int), cudaMemcpyDeviceToHost);
@@ -408,9 +416,6 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     cudaMemcpy(velFluct.data(), d_particle[idx].velFluct, length * sizeof(vec3), cudaMemcpyDeviceToHost);
 
     cudaMemcpy(h_pBox.data(), d_pBox, param.nx * param.ny * param.nz * sizeof(int), cudaMemcpyDeviceToHost);
-
-    auto gpuEndTime = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> gpuElapsed = gpuEndTime - gpuStartTime;
 
     std::vector<particle> particle_list(length);
 
@@ -434,6 +439,9 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     free_device_particle_list(d_new_particle);
     cudaFree(d_pBox);
     cudaFree(d_RNG_vals);
+    cudaFree(d_RNG_newvals);
+
+    gpuTimer.stop();
 
     int count = 0;
     for (auto &p : particle_list) {
@@ -598,12 +606,23 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     std::cout << "QES-Plume r2 coeff: r2 = " << R2 << std::endl;
     std::cout << "--------------------------------------------------------------" << std::endl;
 
-    std::cout << "--------------------------------------" << std::endl;
-    std::cout << "interpolation elapsed time: " << interpElapsed.count() << " s\n";
-    std::cout << "advection elapsed time: " << advectElapsed.count() << " s\n";
-    std::cout << "concentration elapsed time: " << concenElapsed.count() << " s\n";
-    std::cout << "kernel elapsed time: " << kernelElapsed.count() << " s\n";
-    std::cout << "GPU elapsed time:    " << gpuElapsed.count() << " s\n";
+    std::cout << "--------------------------------------------------------------" << std::endl;
+    initTimer.show();
+    gpuTimer.show();
+    gpuInitTimer.show();
+    std::cout << "--------------------------------------------------------------" << std::endl;
+    timeLoopTimer.show();
+    partitonTimer.show();
+    interpTimer.show();
+    advectTimer.show();
+    concenTimer.show();
+    std::cout << "--------------------------------------------------------------" << std::endl;
+
+    // std::cout << "interpolation elapsed time: " << interpElapsed.count() << " s\n";
+    // std::cout << "advection elapsed time: " << advectElapsed.count() << " s\n";
+    // std::cout << "concentration elapsed time: " << concenElapsed.count() << " s\n";
+    // std::cout << "kernel elapsed time: " << kernelElapsed.count() << " s\n";
+    // std::cout << "GPU elapsed time:    " << gpuElapsed.count() << " s\n";
   } else {
     printf("CUDA ERROR!\n");
   }
