@@ -47,6 +47,16 @@
 #include "Solver.h"
 
 
+struct SolverCoeff
+{
+  float *e;
+  float *f;
+  float *g;
+  float *h;
+  float *m;
+  float *n;
+};
+
 /**
  * @class GlobalMemory
  * @brief Child class of the Solver that runs the convergence
