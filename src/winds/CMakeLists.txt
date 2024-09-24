@@ -64,7 +64,8 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
   CUDA_ADD_LIBRARY(qeswindsgpu
     DynamicParallelism.cu
     GlobalMemory.cu GlobalMemory.h
-    SharedMemory.cu SharedMemory.h    
+    SharedMemory.cu SharedMemory.h
+    WINDSGeneralData.cu
     TURBGeneralData.cu
     WindProfilerBarnGPU.cu)
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})

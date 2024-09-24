@@ -62,7 +62,6 @@ __global__ void set_new_particle(int new_particle, particle_array p, float *d_RN
   }
 }
 
-
 void print_percentage(const float &percentage)
 {
   int val = (int)(percentage * 100);
@@ -209,8 +208,10 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     IDGenerator *id_gen;
     id_gen = IDGenerator::getInstance();
 
-    QESWindsData d_qes_winds_data;
-    copy_data_gpu(WGD, d_qes_winds_data);
+    // QESWindsData d_qes_winds_data;
+    // copy_data_gpu(WGD, d_qes_winds_data);
+    WGD->allocateDevice();
+    WGD->copyDataToDevice();
 
     QESTurbData d_qes_turb_data;
     copy_data_gpu(TGD, d_qes_turb_data);
@@ -344,9 +345,13 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       cudaDeviceSynchronize();
 
       interpTimer.start();
-      interpolate<<<numBlocks_all_particle, blockSize>>>(num_particle,
+      /*interpolate<<<numBlocks_all_particle, blockSize>>>(num_particle,
                                                          d_particle[idx],
                                                          d_qes_winds_data,
+                                                         qes_grid);*/
+      interpolate<<<numBlocks_all_particle, blockSize>>>(num_particle,
+                                                         d_particle[idx],
+                                                         WGD->d_data,
                                                          qes_grid);
       // interpolate_1<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle[idx], d_qes_turb_data, qes_grid);
       // interpolate_2<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle[idx], d_qes_turb_data, qes_grid);
@@ -440,6 +445,8 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     cudaFree(d_pBox);
     cudaFree(d_RNG_vals);
     cudaFree(d_RNG_newvals);
+
+    WGD->freeDevice();
 
     gpuTimer.stop();
 

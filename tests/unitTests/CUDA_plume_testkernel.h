@@ -11,6 +11,8 @@
 #include "util/QESFileOutput_v2.h"
 #include "util/QESNetCDFOutput_v2.h"
 
+#include "winds/WINDSGeneralData.h"
+
 #include "plume/IDGenerator.h"
 
 #include <cuda.h>

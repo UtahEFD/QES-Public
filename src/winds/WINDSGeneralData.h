@@ -72,6 +72,13 @@
 using namespace netCDF;
 using namespace netCDF::exceptions;
 
+struct WINDSDeviceData
+{
+  float *u;
+  float *v;
+  float *w;
+};
+
 class WINDSInputData;
 
 /**
@@ -303,6 +310,12 @@ public:
   std::vector<std::vector<int>> num_points;
   std::vector<std::vector<float>> coeff;
   ///@}
+
+  WINDSDeviceData d_data;
+  void allocateDevice();
+  void freeDevice();
+  void copyDataToDevice();
+  void copyDataFromDevice();
 
 private:
   // input: store here for multiple time instance.

@@ -187,6 +187,37 @@ __global__ void interpolate(int length, particle_array d_particle_list, const QE
   }
 }
 
+__global__ void interpolate(int length, particle_array d_particle_list, const WINDSDeviceData data, const QESgrid &qes_grid)
+{
+  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if (idx < length) {
+    if (d_particle_list.state[idx] == ACTIVE) {
+      interpWeight wgt{ 0, 0, 0, 0.0, 0.0, 0.0 };
+
+      float u, v, w;
+
+      // set interpolation indexing variables for uFace variables
+      setInterp3Dindex_uFace(d_particle_list.pos[idx], wgt, qes_grid);
+      // interpolation of variables on uFace
+      interp3D_faceVar(u, data.u, wgt, qes_grid);
+
+      // set interpolation indexing variables for vFace variables
+      setInterp3Dindex_vFace(d_particle_list.pos[idx], wgt, qes_grid);
+      // interpolation of variables on vFace
+      interp3D_faceVar(v, data.v, wgt, qes_grid);
+
+      // set interpolation indexing variables for wFace variables
+      setInterp3Dindex_wFace(d_particle_list.pos[idx], wgt, qes_grid);
+      // interpolation of variables on wFace
+      interp3D_faceVar(w, data.w, wgt, qes_grid);
+
+      d_particle_list.velMean[idx] = { u, v, w };
+    }
+  }
+}
+
+
 __global__ void interpolate(int length, const vec3 *pos, mat3sym *tau, vec3 *sigma, const QESTurbData data, const QESgrid &qes_grid)
 {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;

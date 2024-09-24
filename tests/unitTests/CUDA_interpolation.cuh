@@ -10,6 +10,8 @@
 #include "util/VectorMath.h"
 // #include "util/VectorMath_CUDA.cuh"
 
+#include "winds/WINDSGeneralData.h"
+
 #include <cuda.h>
 #include <curand.h>
 
@@ -26,10 +28,13 @@ struct interpWeight
   float kw;// normalized distance to the nearest cell index to the left in the z direction
 };
 
-__global__ void interpolate(int length, particle_array d_particle_list, const QESWindsData data, const QESgrid &qes_grid);
-__global__ void interpolate(int length, const vec3 *pos, mat3sym *tau, vec3 *sigma, const QESTurbData data, const QESgrid &qes_grid);
-__global__ void interpolate(int length, particle_array d_particle_list, const QESTurbData data, const QESgrid &qes_grid);
+__global__ void interpolate(int, particle_array, const QESWindsData, const QESgrid &);
 
-__global__ void interpolate_1(int length, particle_array d_particle_list, const QESTurbData data, const QESgrid &qes_grid);
-__global__ void interpolate_2(int length, particle_array d_particle_list, const QESTurbData data, const QESgrid &qes_grid);
-__global__ void interpolate_3(int length, particle_array d_particle_list, const QESTurbData data, const QESgrid &qes_grid);
+__global__ void interpolate(int, particle_array, const WINDSDeviceData, const QESgrid &);
+
+__global__ void interpolate(int, const vec3 *, mat3sym *, vec3 *, const QESTurbData, const QESgrid &q);
+__global__ void interpolate(int, particle_array, const QESTurbData, const QESgrid &);
+
+__global__ void interpolate_1(int, particle_array, const QESTurbData, const QESgrid &);
+__global__ void interpolate_2(int, particle_array, const QESTurbData, const QESgrid &);
+__global__ void interpolate_3(int, particle_array, const QESTurbData, const QESgrid &);
