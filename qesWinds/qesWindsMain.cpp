@@ -98,8 +98,20 @@ int main(int argc, char *argv[])
     }
   }
 
+  // 
+  // WID should be deleted at this point....
+  //
+  // transfer to other things through some Factory???
+
+  // Somehere... we initialize the QESDomain... some class that holds ifo for
+  // Singleton????
+  // 
+
   // Generate the general WINDS data from all inputs
   WINDSGeneralData *WGD = new WINDSGeneralData(WID, arguments.solveType);
+  // 
+  // get Domain data to WGD... have it constructed, setup outside of this class as a start....
+  // WINDSGeneralData *WGD = new WINDSGeneralData(WID, arguments.solveType, qes->getCopyDomain());
 
   // create WINDS output classes
   std::vector<QESNetCDFOutput *> outputVec;
