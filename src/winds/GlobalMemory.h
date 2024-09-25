@@ -85,6 +85,10 @@ public:
     std::cout << "-------------------------------------------------------------------" << std::endl;
     std::cout << "[Solver]\t Initializing Global Memory Solver (GPU) ..." << std::endl;
   }
+  ~GlobalMemory()
+  {
+    std::cout << "[Solver]\t destruction of Global Memory Solver (GPU) ..." << std::endl;
+  }
 
 protected:
   ///@{
