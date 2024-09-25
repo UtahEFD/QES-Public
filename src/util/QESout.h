@@ -34,11 +34,13 @@
 
 #include <iostream>
 #include <string>
+#include <cuda.h>
+#include <cuda_runtime.h>
 
 namespace QESout {
-  void splashScreen();
-  void error(std::string);
-  void warning(std::string);
-  void setVerbose();
-  void verbose(std::string);
+void splashScreen();
+void error(std::string);
+void warning(std::string);
+void setVerbose();
+void verbose(std::string);
 };// namespace QESout

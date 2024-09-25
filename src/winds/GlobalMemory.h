@@ -79,16 +79,7 @@ private:
   void _cudaCheck(T e, const char *func, const char *call, const int line);
 
 public:
-  GlobalMemory(const WINDSInputData *WID, WINDSGeneralData *WGD)
-    : Solver(WID, WGD)
-  {
-    std::cout << "-------------------------------------------------------------------" << std::endl;
-    std::cout << "[Solver]\t Initializing Global Memory Solver (GPU) ..." << std::endl;
-  }
-  ~GlobalMemory()
-  {
-    std::cout << "[Solver]\t destruction of Global Memory Solver (GPU) ..." << std::endl;
-  }
+  GlobalMemory(const WINDSInputData *WID, WINDSGeneralData *WGD);
 
 protected:
   ///@{

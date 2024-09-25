@@ -198,6 +198,34 @@ __global__ void finalVelocityGlobal(float *d_lambda, float *d_u, float *d_v, flo
   }
 }
 
+GlobalMemory::GlobalMemory(const WINDSInputData *WID, WINDSGeneralData *WGD)
+  : Solver(WID, WGD)
+{
+  std::cout << "-------------------------------------------------------------------" << std::endl;
+  std::cout << "[Solver]\t Initializing Global Memory Solver (GPU) ..." << std::endl;
+  int deviceCount = 0;
+  cudaError_t error_id = cudaGetDeviceCount(&deviceCount);
+
+  if (error_id != cudaSuccess) {
+    std::cerr << "\n===================================================================" << std::endl;
+    std::cerr << "[ERROR]\t cudaGetDeviceCount returned "
+              << static_cast<int>(error_id) << "\n\t-> "
+              << cudaGetErrorString(error_id) << std::endl;
+    std::cerr << "===================================================================" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
+  // This function call returnsq 0 if there are no CUDA capable devices.
+  if (deviceCount == 0) {
+    std::cerr << "\n===================================================================" << std::endl;
+    std::cerr << "[ERROR]\t There are no available device(s) that support CUDA\n";
+    std::cerr << "===================================================================" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
+  cudaSetDevice(0);
+}
+
 void GlobalMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind)
 {
 
@@ -329,8 +357,8 @@ void GlobalMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool 
   auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
 
   std::chrono::duration<float> elapsed = finish - start;
-  printf("[Solver] Residual after %d itertations: %2.9f\n", iter, max_error);
+  printf("[Solver]\t Residual after %d itertations: %2.9f\n", iter, max_error);
   // std::cout << "Error:" << max_error[0] << "\n";
   // std::cout << "Number of iterations:" << iter << "\n";// Print the number of iterations
-  std::cout << "\t\t Elapsed time: " << elapsed.count() << " s\n";// Print out elapsed execution time
+  std::cout << "\t\t elapsed time: " << elapsed.count() << " s\n";// Print out elapsed execution time
 }
