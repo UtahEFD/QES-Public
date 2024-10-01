@@ -38,7 +38,7 @@ std::string QESfs::get_absolute_path(const std::string fileName)
       new_path /= fileName;
       new_path = fs::canonical(new_path.parent_path());
       new_path /= filename;
-    } catch (const fs::filesystem_error &e) {
+    } catch (std::filesystem::filesystem_error const& e) {
       std::cerr << "[ERROR] cannot convert to absolute path " << fileName << std::endl;
       std::cerr << "        error message: ";
       std::cerr << e.code().message() << std::endl;
