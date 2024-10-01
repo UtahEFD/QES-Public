@@ -2,6 +2,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 SET( qesWindCoreSources
+  ../qes/Domain.cpp ../qes/Domain.h
   Canopy.cpp
   CanopyElement.cpp
   CanopyHomogeneous.cpp

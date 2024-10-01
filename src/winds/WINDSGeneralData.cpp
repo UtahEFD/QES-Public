@@ -40,6 +40,8 @@
 #define LIMIT 99999999.0f
 
 WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
+  : domain( WID->simParams->domain[0], WID->simParams->domain[1], WID->simParams->domain[2],
+	    WID->simParams->grid[0], WID->simParams->grid[1], WID->simParams->grid[2] )
 {
   std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "[QES-WINDS]\t Initialization of wind model...\n";
@@ -57,6 +59,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   // This is done to make reference to nx, ny and nz easier in this function
   // Vector3Int domainInfo;
   // domainInfo = *(WID->simParams->domain);
+#if NOTUSED
   nx = WID->simParams->domain[0];
   ny = WID->simParams->domain[1];
   nz = WID->simParams->domain[2];
@@ -70,12 +73,14 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   dx = WID->simParams->grid[0];// Grid resolution in x-direction
   dy = WID->simParams->grid[1];// Grid resolution in y-direction
   dz = WID->simParams->grid[2];// Grid resolution in z-direction
-  dxy = MIN_S(dx, dy);
-
-  numcell_cout = (nx - 1) * (ny - 1) * (nz - 2);// Total number of cell-centered values in domain
-  numcell_cout_2d = (nx - 1) * (ny - 1);// Total number of horizontal cell-centered values in domain
-  numcell_cent = (nx - 1) * (ny - 1) * (nz - 1);// Total number of cell-centered values in domain
-  numcell_face = nx * ny * nz;// Total number of face-centered values in domain
+#endif
+  
+  dxy = domain.minDxy();  // MIN_S(dx, dy);
+  
+  // numcell_cout = domain.numCellCentered();  // (nx - 1) * (ny - 1) * (nz - 2);// Total number of cell-centered values in domain
+  numcell_cout_2d = domain.numHorizontalCellCentered(); // (nx - 1) * (ny - 1);// Total number of horizontal cell-centered values in domain
+  numcell_cent = domain.numCellCentered(); // (nx - 1) * (ny - 1) * (nz - 1);// Total number of cell-centered values in domain
+  numcell_face = domain.numFaceCentered(); // nx * ny * nz;// Total number of face-centered values in domain
 
   //////////////////////////////////////////////////////////////////////////////////
   /////    Create sensor velocity profiles and generate initial velocity field /////
@@ -303,7 +308,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         }
       }
     }
-
+    
     // Sort the timesteps from low to high (earliest to latest)
     mergeSortTime(sensortime, sensortime_id);
 
@@ -328,7 +333,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         WID->metParams->sensors[i]->site_ycoord += WID->simParams->halo_y;
       }
     }
-  }
+    // }
 
   // Pete could move to input param processing...
   assert(WID->metParams->sensors.size() > 0);// extra
@@ -339,29 +344,29 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   // or somewhere else once we know the domain size
   // /////////////////////////
   z0 = 0.1;
-  z0_domain_u.resize(nx * ny);
-  z0_domain_v.resize(nx * ny);
+  z0_domain_u.resize(domain.nx() * domain.ny());
+  z0_domain_v.resize(domain.nx() * domain.ny());
   if (WID->metParams->z0_domain_flag == 0)// Uniform z0 for the whole domain
   {
-    for (auto i = 0; i < nx; i++) {
-      for (auto j = 0; j < ny; j++) {
-        id = i + j * nx;
+    for (auto i = 0; i < domain.nx(); i++) {
+      for (auto j = 0; j < domain.ny(); j++) {
+        id = i + j * domain.nx();
         z0_domain_u[id] = WID->metParams->sensors[0]->TS[0]->site_z0;
         z0_domain_v[id] = WID->metParams->sensors[0]->TS[0]->site_z0;
         z0 = WID->metParams->sensors[0]->TS[0]->site_z0;
       }
     }
   } else {
-    for (auto i = 0; i < nx / 2; i++) {
-      for (auto j = 0; j < ny; j++) {
-        id = i + j * nx;
+    for (auto i = 0; i < domain.nx() / 2; i++) {
+      for (auto j = 0; j < domain.ny(); j++) {
+        id = i + j * domain.nx();
         z0_domain_u[id] = 0.5;
         z0_domain_v[id] = 0.5;
       }
     }
-    for (auto i = nx / 2; i < nx; i++) {
-      for (auto j = 0; j < ny; j++) {
-        id = i + j * nx;
+    for (auto i = domain.nx() / 2; i < domain.nx(); i++) {
+      for (auto j = 0; j < domain.ny(); j++) {
+        id = i + j * domain.nx();
         z0_domain_u[id] = 0.1;
         z0_domain_v[id] = 0.1;
       }
@@ -864,7 +869,9 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 }
 
 
+// should not be a constructor -- reuse the other constructor...
 WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
+  : domain( inputFile )
 {
   std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "[QES-WINDS]\t Initialization of wind model...\n";
@@ -930,6 +937,7 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
     }
   }
 
+  // This is what winds gd really needs to do...  let domain handle stuff above
   // Allocate memory
   allocateMemory();
 

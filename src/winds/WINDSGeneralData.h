@@ -43,6 +43,8 @@
 
 #include "WINDSInputData.h"
 
+#include "qes/Domain.h"
+
 #include "WindProfilerType.h"
 #include "WindProfilerWRF.h"
 #include "WindProfilerBarnCPU.h"
@@ -80,9 +82,10 @@ class WINDSInputData;
  */
 class WINDSGeneralData
 {
+private:
+  WINDSGeneralData() : domain(1,1,1,1,1,1) {}  // do not allow empty domain to be created
+  
 public:
-  WINDSGeneralData()
-  {}
   WINDSGeneralData(const WINDSInputData *WID, int solverType);
   WINDSGeneralData(const std::string inputFile);
   virtual ~WINDSGeneralData()
@@ -142,7 +145,9 @@ public:
   int icell_face;
   int icell_cent;
 
-  // General QES Domain Data
+  // General QES Domain Data -- winds does not create this... provide const & in constructor of WINDS...
+  qes::Domain domain;
+  
   ///@{
   /** Number of cells */
   int nx, ny, nz;
@@ -236,11 +241,14 @@ public:
   ///@{
   /** Declaration of initial wind components (u0,v0,w0) */
   std::vector<float> u0, v0, w0;
+  // maintain a separate QESWindData for u0,v0,w0
   ///@}
 
   ///@{
   /** Declaration of final velocity field components (u,v,w) */
   std::vector<float> u, v, w;
+
+  /// it really needs to use SimDataAccess.windData for the u, v, w....
   ///@}
 
   // local Mixing class and data
