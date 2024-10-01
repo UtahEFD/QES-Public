@@ -36,7 +36,7 @@ void Domain::defineVerticalStretching(const std::vector<float> &dz_value)
     dz_array[k] = dz_value[k - 1];// Read in custom dz values and set them to dz_array
   }
   dz_array[0] = dz_array[1];// Value for ghost cell below the surface
-  
+
   float newDz = *std::min_element(dz_array.begin(), dz_array.end());// Set dz to minimum value of
   domainData.dz = newDz;
 }

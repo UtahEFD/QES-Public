@@ -117,7 +117,7 @@ public:
 
   // 2d cell centered idx
   // 2d face centered idx
-  
+
 
 private:
   void defineHorizontalGrid();
@@ -152,6 +152,6 @@ public:
     // Keep local copy of DomainInfo given by the construtor...
     Domain dInfo;
 };
-  #endif
+#endif
 
 }// namespace qes
