@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "Domain.h"
 
 using namespace qes;
@@ -43,7 +45,7 @@ void Domain::defineVerticalStretching(const std::vector<float> &dz_value)
   // vertical grid (can be uniform or stretched)
   dz_array.resize(domainData.nz - 1, 0.0);
   // Stretched vertical grid
-  for (size_t k = 1; k < dz_array.size(); ++k) {
+  for (auto k = 1; k < dz_array.size(); ++k) {
     dz_array[k] = dz_value[k - 1];// Read in custom dz values and set them to dz_array
   }
   dz_array[0] = dz_array[1];// Value for ghost cell below the surface
@@ -58,14 +60,14 @@ void Domain::defineVerticalGrid()
   z_face.resize(domainData.nz, 0.0);
   z_face[0] = -dz_array[0];
   z_face[1] = 0.0;
-  for (size_t k = 2; k < z_face.size(); ++k) {
+  for (auto k = 2; k < z_face.size(); ++k) {
     z_face[k] = z_face[k - 1] + dz_array[k - 1];
   }
 
   // Location of cell centers in z-dir
   z.resize(domainData.nz - 1, 0.0);
   z[0] = -0.5f * dz_array[0];
-  for (size_t k = 1; k < z.size(); ++k) {
+  for (auto k = 1; k < z.size(); ++k) {
     z[k] = 0.5f * (z_face[k] + z_face[k + 1]);
   }
 }
