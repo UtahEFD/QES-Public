@@ -47,15 +47,14 @@ WINDSGeneralData::WINDSGeneralData(qes::Domain domain_in)
   std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "[QES-WINDS]\t Initialization of wind model...\n";
 
-  tie(nx, ny, nz) = domain.getDomainCellNum();
-  tie(dx, dy, dz) = domain.getDomainSize();// Grid resolution in x-direction
-  dxy = domain.minDxy();// MIN_S(dx, dy);
+  // tie(nx, ny, nz) = domain.getDomainCellNum();
+  // tie(dx, dy, dz) = domain.getDomainSize();// Grid resolution in x-direction
+  // dxy = domain.minDxy();// MIN_S(dx, dy);
 
   // numcell_cout = domain.numCellCentered();  // (nx - 1) * (ny - 1) * (nz - 2);// Total number of cell-centered values in domain
-  numcell_cout_2d = domain.numHorizontalCellCentered();// (nx - 1) * (ny - 1);// Total number of horizontal cell-centered values in domain
-  numcell_cent = domain.numCellCentered();// (nx - 1) * (ny - 1) * (nz - 1);// Total number of cell-centered values in domain
-  numcell_face = domain.numFaceCentered();// nx * ny * nz;// Total number of face-centered values in domain
-
+  // numcell_cout_2d = domain.numHorizontalCellCentered();// (nx - 1) * (ny - 1);// Total number of horizontal cell-centered values in domain
+  // numcell_cent = domain.numCellCentered();// (nx - 1) * (ny - 1) * (nz - 1);// Total number of cell-centered values in domain
+  // numcell_face = domain.numFaceCentered();// nx * ny * nz;// Total number of face-centered values in domain
 
 
   allocateMemory();
@@ -96,12 +95,12 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
   dz = WID->simParams->grid[2];// Grid resolution in z-direction
 #endif
 
-  dxy = domain.minDxy();// MIN_S(dx, dy);
+  // dxy = domain.minDxy();// MIN_S(dx, dy);
 
   // numcell_cout = domain.numCellCentered();  // (nx - 1) * (ny - 1) * (nz - 2);// Total number of cell-centered values in domain
-  numcell_cout_2d = domain.numHorizontalCellCentered();// (nx - 1) * (ny - 1);// Total number of horizontal cell-centered values in domain
-  numcell_cent = domain.numCellCentered();// (nx - 1) * (ny - 1) * (nz - 1);// Total number of cell-centered values in domain
-  numcell_face = domain.numFaceCentered();// nx * ny * nz;// Total number of face-centered values in domain
+  // numcell_cout_2d = domain.numHorizontalCellCentered();// (nx - 1) * (ny - 1);// Total number of horizontal cell-centered values in domain
+  // numcell_cent = domain.numCellCentered();// (nx - 1) * (ny - 1) * (nz - 1);// Total number of cell-centered values in domain
+  // numcell_face = domain.numFaceCentered();// nx * ny * nz;// Total number of face-centered values in domain
 
   //////////////////////////////////////////////////////////////////////////////////
   /////    Create sensor velocity profiles and generate initial velocity field /////
@@ -398,14 +397,14 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
   // /////////////////////////
   // Definition of the grid
   // /////////////////////////
-  if (WID->simParams->verticalStretching == 0) {// Uniform vertical grid
-    defineVerticalStretching(dz);
+  /*if (WID->simParams->verticalStretching == 0) {// Uniform vertical grid
+    defineVerticalStretching(domain.dz());
   } else if (WID->simParams->verticalStretching == 1) {// Stretched vertical grid
     defineVerticalStretching(WID->simParams->dz_value);// Read in custom dz values and set them to dz_array
   }
   defineVerticalGrid();
   defineHorizontalGrid();
-
+*/
 
   // /////////////////////////
   // Allocate memory
@@ -413,17 +412,17 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
   allocateMemory();
 
   // defining ground solid cells (ghost cells below the surface)
-  for (int j = 0; j < ny - 1; j++) {
-    for (int i = 0; i < nx - 1; i++) {
-      int icell_cent = i + j * (nx - 1);
+  for (int j = 0; j < domain.ny() - 1; j++) {
+    for (int i = 0; i < domain.nx() - 1; i++) {
+      int icell_cent = i + j * (domain.nx() - 1);
       icellflag[icell_cent] = 2;
     }
   }
 
-  halo_index_x = (WID->simParams->halo_x / dx);
-  halo_x = halo_index_x * dx;
-  halo_index_y = (WID->simParams->halo_y / dy);
-  halo_y = halo_index_y * dy;
+  halo_index_x = (WID->simParams->halo_x / domain.dx());
+  halo_x = halo_index_x * domain.dx();
+  halo_index_y = (WID->simParams->halo_y / domain.dy());
+  halo_y = halo_index_y * domain.dy();
 
   ////////////////////////////////////////////////////////
   //////              Apply Terrain code             /////
@@ -440,13 +439,13 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
     // ////////////////////////////////
     // Retrieve terrain height field //
     // ////////////////////////////////
-    for (int i = 0; i < nx - 2 * halo_index_x - 1; i++) {
-      for (int j = 0; j < ny - 2 * halo_index_y - 1; j++) {
+    for (int i = 0; i < domain.nx() - 2 * halo_index_x - 1; i++) {
+      for (int j = 0; j < domain.ny() - 2 * halo_index_y - 1; j++) {
         // Gets height of the terrain for each cell
         ii = i + halo_index_x;
         jj = j + halo_index_y;
         idx = ii + jj * (nx - 1);
-        terrain[idx] = WID->simParams->DTE_mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
+        terrain[idx] = WID->simParams->DTE_mesh->getHeight(i * domain.dx() + domain.dx() * 0.5f, j * domain.dy() + domain.dy() * 0.5f);
         if (terrain[idx] < 0.0) {
           terrain[idx] = 0.0;
         }
@@ -460,68 +459,68 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
       }
     }
 
-    for (int i = halo_index_x; i < nx - halo_index_x - 1; i++) {
+    for (int i = halo_index_x; i < domain.nx() - halo_index_x - 1; i++) {
       for (int j = 0; j < halo_index_y; j++) {
-        id = i + halo_index_y * nx;
-        icell_face = i + j * nx;
+        id = i + halo_index_y * domain.nx();
+        icell_face = i + j * domain.nx();
         terrain_face_id[icell_face] = terrain_face_id[id];
       }
 
-      for (int j = ny - halo_index_y - 1; j < ny; j++) {
-        id = i + (ny - halo_index_y - 1) * nx;
-        icell_face = i + j * nx;
+      for (int j = domain.ny() - halo_index_y - 1; j < domain.ny(); j++) {
+        id = i + (domain.ny() - halo_index_y - 1) * nx;
+        icell_face = i + j * domain.nx();
         terrain_face_id[icell_face] = terrain_face_id[id];
       }
     }
 
-    for (int j = halo_index_y; j < ny - halo_index_y - 1; j++) {
+    for (int j = halo_index_y; j < domain.ny() - halo_index_y - 1; j++) {
       for (int i = 0; i < halo_index_x; i++) {
-        id = halo_index_x + j * nx;
-        icell_face = i + j * nx;
+        id = halo_index_x + j * domain.nx();
+        icell_face = i + j * domain.nx();
         terrain_face_id[icell_face] = terrain_face_id[id];
       }
 
-      for (int i = nx - halo_index_x - 1; i < nx; i++) {
-        id = (nx - halo_index_x - 1) + j * nx;
-        icell_face = i + j * nx;
+      for (int i = domain.nx() - halo_index_x - 1; i < domain.nx(); i++) {
+        id = (domain.nx() - halo_index_x - 1) + j * domain.nx();
+        icell_face = i + j * domain.nx();
         terrain_face_id[icell_face] = terrain_face_id[id];
       }
     }
 
     for (int i = 0; i < halo_index_x; i++) {
       for (int j = 0; j < halo_index_y; j++) {
-        id = halo_index_x + halo_index_y * nx;
-        icell_face = i + j * nx;
+        id = halo_index_x + halo_index_y * domain.nx();
+        icell_face = i + j * domain.nx();
         terrain_face_id[icell_face] = terrain_face_id[id];
       }
 
-      for (int j = ny - halo_index_y - 1; j < ny; j++) {
-        id = halo_index_x + (ny - halo_index_y - 1) * nx;
-        icell_face = i + j * nx;
+      for (int j = domain.ny() - halo_index_y - 1; j < domain.ny(); j++) {
+        id = halo_index_x + (domain.ny() - halo_index_y - 1) * domain.nx();
+        icell_face = i + j * domain.nx();
         terrain_face_id[icell_face] = terrain_face_id[id];
       }
     }
 
-    for (int i = nx - halo_index_x - 1; i < nx - 1; i++) {
+    for (int i = domain.nx() - halo_index_x - 1; i < domain.nx() - 1; i++) {
       for (int j = 0; j < halo_index_y; j++) {
-        id = (nx - halo_index_x - 1) + halo_index_y * nx;
-        icell_face = i + j * nx;
+        id = (domain.nx() - halo_index_x - 1) + halo_index_y * domain.nx();
+        icell_face = i + j * domain.nx();
         terrain_face_id[icell_face] = terrain_face_id[id];
       }
 
-      for (int j = ny - halo_index_y - 1; j < ny - 1; j++) {
-        id = (nx - halo_index_x - 1) + (ny - halo_index_y - 2) * nx;
-        icell_face = i + j * nx;
+      for (int j = domain.ny() - halo_index_y - 1; j < domain.ny() - 1; j++) {
+        id = (domain.nx() - halo_index_x - 1) + (domain.ny() - halo_index_y - 2) * domain.nx();
+        icell_face = i + j * domain.nx();
         terrain_face_id[icell_face] = terrain_id[id];
       }
     }
 
-    for (int i = 0; i < nx - 2 * halo_index_x - 1; i++) {
-      for (int j = 0; j < ny - 2 * halo_index_y - 1; j++) {
+    for (int i = 0; i < domain.nx() - 2 * halo_index_x - 1; i++) {
+      for (int j = 0; j < domain.ny() - 2 * halo_index_y - 1; j++) {
         // Gets height of the terrain for each cell
         ii = i + halo_index_x;
         jj = j + halo_index_y;
-        idx = ii + jj * (nx - 1);
+        idx = ii + jj * (domain.nx() - 1);
         for (size_t k = 0; k < z.size() - 1; k++) {
           terrain_id[idx] = k;
           if (terrain[idx] < z[k]) {
@@ -531,33 +530,33 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
       }
     }
 
-    for (int i = halo_index_x; i < nx - halo_index_x - 1; i++) {
+    for (int i = halo_index_x; i < domain.nx() - halo_index_x - 1; i++) {
       for (int j = 0; j < halo_index_y; j++) {
-        id = i + halo_index_y * (nx - 1);
-        icell_cent = i + j * (nx - 1);
+        id = i + halo_index_y * (domain.nx() - 1);
+        icell_cent = i + j * (domain.nx() - 1);
         terrain_id[icell_cent] = terrain_id[id];
         terrain[icell_cent] = terrain[id];
       }
 
-      for (int j = ny - halo_index_y - 1; j < ny - 1; j++) {
-        id = i + (ny - halo_index_y - 2) * (nx - 1);
-        icell_cent = i + j * (nx - 1);
+      for (int j = domain.ny() - halo_index_y - 1; j < domain.ny() - 1; j++) {
+        id = i + (domain.ny() - halo_index_y - 2) * (domain.nx() - 1);
+        icell_cent = i + j * (domain.nx() - 1);
         terrain_id[icell_cent] = terrain_id[id];
         terrain[icell_cent] = terrain[id];
       }
     }
 
-    for (int j = halo_index_y; j < ny - halo_index_y - 1; j++) {
+    for (int j = halo_index_y; j < domain.ny() - halo_index_y - 1; j++) {
       for (int i = 0; i < halo_index_x; i++) {
-        id = halo_index_x + j * (nx - 1);
-        icell_cent = i + j * (nx - 1);
+        id = halo_index_x + j * (domain.nx() - 1);
+        icell_cent = i + j * (domain.nx() - 1);
         terrain_id[icell_cent] = terrain_id[id];
         terrain[icell_cent] = terrain[id];
       }
 
-      for (int i = nx - halo_index_x - 1; i < nx - 1; i++) {
-        id = (nx - halo_index_x - 2) + j * (nx - 1);
-        icell_cent = i + j * (nx - 1);
+      for (int i = domain.nx() - halo_index_x - 1; i < domain.nx() - 1; i++) {
+        id = (domain.nx() - halo_index_x - 2) + j * (domain.nx() - 1);
+        icell_cent = i + j * (domain.nx() - 1);
         terrain_id[icell_cent] = terrain_id[id];
         terrain[icell_cent] = terrain[id];
       }
@@ -565,45 +564,46 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
 
     for (int i = 0; i < halo_index_x; i++) {
       for (int j = 0; j < halo_index_y; j++) {
-        id = halo_index_x + halo_index_y * (nx - 1);
-        icell_cent = i + j * (nx - 1);
+        id = halo_index_x + halo_index_y * (domain.nx() - 1);
+        icell_cent = i + j * (domain.nx() - 1);
         terrain_id[icell_cent] = terrain_id[id];
         terrain[icell_cent] = terrain[id];
       }
 
-      for (int j = ny - halo_index_y - 1; j < ny - 1; j++) {
-        id = halo_index_x + (ny - halo_index_y - 2) * (nx - 1);
-        icell_cent = i + j * (nx - 1);
+      for (int j = domain.ny() - halo_index_y - 1; j < domain.ny() - 1; j++) {
+        id = halo_index_x + (domain.ny() - halo_index_y - 2) * (domain.nx() - 1);
+        icell_cent = i + j * (domain.nx() - 1);
         terrain_id[icell_cent] = terrain_id[id];
         terrain[icell_cent] = terrain[id];
       }
     }
 
-    for (int i = nx - halo_index_x - 1; i < nx - 1; i++) {
+    for (int i = domain.nx() - halo_index_x - 1; i < domain.nx() - 1; i++) {
       for (int j = 0; j < halo_index_y; j++) {
-        id = (nx - halo_index_x - 2) + halo_index_y * (nx - 1);
-        icell_cent = i + j * (nx - 1);
+        id = (domain.nx() - halo_index_x - 2) + halo_index_y * (domain.nx() - 1);
+        icell_cent = i + j * (domain.nx() - 1);
         terrain_id[icell_cent] = terrain_id[id];
         terrain[icell_cent] = terrain[id];
       }
 
-      for (int j = ny - halo_index_y - 1; j < ny - 1; j++) {
-        id = (nx - halo_index_x - 2) + (ny - halo_index_y - 2) * (nx - 1);
-        icell_cent = i + j * (nx - 1);
+      for (int j = domain.ny() - halo_index_y - 1; j < domain.ny() - 1; j++) {
+        id = (domain.nx() - halo_index_x - 2) + (domain.ny() - halo_index_y - 2) * (domain.nx() - 1);
+        icell_cent = i + j * (domain.nx() - 1);
         terrain_id[icell_cent] = terrain_id[id];
         terrain[icell_cent] = terrain[id];
       }
     }
 
-    for (int i = 0; i < nx - 1; i++) {
-      for (int j = 0; j < ny - 1; j++) {
+    for (int i = 0; i < domain.nx() - 1; i++) {
+      for (int j = 0; j < domain.ny() - 1; j++) {
         // Gets height of the terrain for each cell
-        int idx = i + j * (nx - 1);
+        int idx = i + j * (domain.nx() - 1);
         for (size_t k = 0; k < z.size() - 1; k++) {
           if (terrain[idx] < z[k + 1]) {
             break;
           }
-          icell_cent = i + j * (nx - 1) + (k + 1) * (nx - 1) * (ny - 1);
+          // icell_cent = i + j * (nx - 1) + (k + 1) * (nx - 1) * (ny - 1);
+          icell_cent = domain.getCellIdx(i, j, k + 1);
           center_id[icell_cent] = 0;// Marks the cell center as inside solid
         }
       }
@@ -617,16 +617,17 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
       auto start_stair = std::chrono::high_resolution_clock::now();
       std::cout << "[QES-WINDS]\t Stair-step method for terrain..." << std::endl;
 
-      for (int i = 0; i < nx - 1; i++) {
-        for (int j = 0; j < ny - 1; j++) {
+      for (int i = 0; i < domain.nx() - 1; i++) {
+        for (int j = 0; j < domain.ny() - 1; j++) {
           // Gets height of the terrain for each cell
-          int idx = i + j * (nx - 1);
+          int idx = i + j * (domain.nx() - 1);
           for (size_t k = 0; k < z.size() - 1; k++) {
             if (terrain[idx] < z[k + 1]) {
               break;
             }
 
-            icell_cent = i + j * (nx - 1) + (k + 1) * (nx - 1) * (ny - 1);
+            // icell_cent = i + j * (nx - 1) + (k + 1) * (nx - 1) * (ny - 1);
+            icell_cent = domain.getCellIdx(i, j, k + 1);
             icellflag[icell_cent] = 2;
           }
         }
@@ -891,8 +892,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
 
 
 // should not be a constructor -- reuse the other constructor...
-WINDSGeneralData::WINDSGeneralData(const std::string inputFile)// : domain(inputFile)
-  : domain(1, 1, 1, 1.0, 1.0, 1.0)
+WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
+  : domain(inputFile)
 {
   std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "[QES-WINDS]\t Initialization of wind model...\n";
@@ -904,19 +905,23 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)// : domain(input
   // create wall instance for BC
   wall = new Wall();
 
+  input->getDimensionSize("t", nt);
+
+  /*
   // nx,ny - face centered value (consistant with QES-Winds)
   input->getDimensionSize("x_face", nx);
   input->getDimensionSize("y_face", ny);
   // nz - face centered value + bottom ghost (consistant with QES-Winds)
   input->getDimensionSize("z_face", nz);
   // nt - number of time instance in data
-  input->getDimensionSize("t", nt);
+  input->getDimensionSize("t", nt);*/
 
-  numcell_cout = (nx - 1) * (ny - 1) * (nz - 2); /**< Total number of cell-centered values in domain */
-  numcell_cout_2d = (nx - 1) * (ny - 1); /**< Total number of horizontal cell-centered values in domain */
-  numcell_cent = (nx - 1) * (ny - 1) * (nz - 1); /**< Total number of cell-centered values in domain */
-  numcell_face = nx * ny * nz; /**< Total number of face-centered values in domain */
+  // numcell_cout = (nx - 1) * (ny - 1) * (nz - 2); /**< Total number of cell-centered values in domain */
+  // numcell_cout_2d = (nx - 1) * (ny - 1); /**< Total number of horizontal cell-centered values in domain */
+  // numcell_cent = (nx - 1) * (ny - 1) * (nz - 1); /**< Total number of cell-centered values in domain */
+  // numcell_face = nx * ny * nz; /**< Total number of face-centered values in domain */
 
+  /*
   // get grid information
   x.resize(nx - 1);
   y.resize(ny - 1);
@@ -925,10 +930,10 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)// : domain(input
   dz_array.resize(nz - 1, 0.0);
 
   input->getVariableData("x", x);
-  dx = x[1] - x[0]; /**< Grid resolution in x-direction */
+  dx = x[1] - x[0];
 
   input->getVariableData("y", y);
-  dy = y[1] - y[0]; /**< Grid resolution in x-direction */
+  dy = y[1] - y[0];
   dxy = MIN_S(dx, dy);
 
   input->getVariableData("z", z);
@@ -957,6 +962,7 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)// : domain(input
       z_face[k] = z_face[k - 1] + dz_array[k - 1];
     }
   }
+  */
 
   // This is what winds gd really needs to do...  let domain handle stuff above
   // Allocate memory
@@ -1007,11 +1013,11 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)// : domain(input
   std::vector<size_t> count_2d;
 
   start = { 0, 0 };
-  count_2d = { static_cast<unsigned long>(ny - 1),
-               static_cast<unsigned long>(nx - 1) };
+  count_2d = { static_cast<unsigned long>(domain.ny() - 1),
+               static_cast<unsigned long>(domain.nx() - 1) };
 
   // terrain (cell-center)
-  terrain.resize((ny - 1) * (nx - 1), 0.0);
+  terrain.resize((domain.ny() - 1) * (domain.nx() - 1), 0.0);
   NcVar NcVar_terrain;
   input->getVariable("terrain", NcVar_terrain);
   if (!NcVar_terrain.isNull()) {// => terrain data in QES-Winds file
@@ -1021,7 +1027,7 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)// : domain(input
   }
 }
 
-void WINDSGeneralData::defineVerticalStretching(const float &dz_value)
+/*void WINDSGeneralData::defineVerticalStretching(const float &dz_value)
 {
   // vertical grid (can be uniform or stretched)
   dz_array.resize(nz - 1, 0.0);
@@ -1029,9 +1035,9 @@ void WINDSGeneralData::defineVerticalStretching(const float &dz_value)
   for (float &k : dz_array) {
     k = dz_value;
   }
-}
+}*/
 
-void WINDSGeneralData::defineVerticalStretching(const std::vector<float> &dz_value)
+/*void WINDSGeneralData::defineVerticalStretching(const std::vector<float> &dz_value)
 {
   // vertical grid (can be uniform or stretched)
   dz_array.resize(nz - 1, 0.0);
@@ -1041,9 +1047,9 @@ void WINDSGeneralData::defineVerticalStretching(const std::vector<float> &dz_val
   }
   dz_array[0] = dz_array[1];// Value for ghost cell below the surface
   dz = *std::min_element(dz_array.begin(), dz_array.end());// Set dz to minimum value of
-}
+}*/
 
-void WINDSGeneralData::defineVerticalGrid()
+/*void WINDSGeneralData::defineVerticalGrid()
 {
   // Location of face in z-dir
   z_face.resize(nz, 0.0);
@@ -1059,9 +1065,9 @@ void WINDSGeneralData::defineVerticalGrid()
   for (size_t k = 1; k < z.size(); ++k) {
     z[k] = 0.5f * (z_face[k] + z_face[k + 1]);
   }
-}
+}*/
 
-void WINDSGeneralData::defineHorizontalGrid()
+/*void WINDSGeneralData::defineHorizontalGrid()
 {
   // horizontal grid (x-direction)
   x.resize(nx - 1);
@@ -1074,15 +1080,20 @@ void WINDSGeneralData::defineHorizontalGrid()
   for (auto j = 0; j < ny - 1; ++j) {
     y[j] = ((float)j + 0.5f) * dy;// Location of face centers in y-dir
   }
-}
+}*/
 
 void WINDSGeneralData::allocateMemory()
 {
   std::cout << "[QES-WINDS]\t Allocation Memory..." << std::flush;
-  numcell_cout = (nx - 1) * (ny - 1) * (nz - 2);// Total number of cell-centered values in domain
-  numcell_cout_2d = (nx - 1) * (ny - 1);// Total number of horizontal cell-centered values in domain
-  numcell_cent = (nx - 1) * (ny - 1) * (nz - 1);// Total number of cell-centered values in domain
-  numcell_face = nx * ny * nz;// Total number of face-centered values in domain
+  // long numcell_cout = domain.numCellCentered();  // (nx - 1) * (ny - 1) * (nz - 2);// Total number of cell-centered values in domain
+  long numcell_cout_2d = domain.numHorizontalCellCentered();// (nx - 1) * (ny - 1);// Total number of horizontal cell-centered values in domain
+  long numcell_cent = domain.numCellCentered();// (nx - 1) * (ny - 1) * (nz - 1);// Total number of cell-centered values in domain
+  long numcell_face = domain.numFaceCentered();// nx * ny * nz;// Total number of face-centered values in domain
+
+  // numcell_cout = (nx - 1) * (ny - 1) * (nz - 2);// Total number of cell-centered values in domain
+  // numcell_cout_2d = (nx - 1) * (ny - 1);// Total number of horizontal cell-centered values in domain
+  // numcell_cent = (nx - 1) * (ny - 1) * (nz - 1);// Total number of cell-centered values in domain
+  // numcell_face = nx * ny * nz;// Total number of face-centered values in domain
 
   // Resize the coefficients for use with the solver
   e.resize(numcell_cent, 1.0);
@@ -1112,8 +1123,8 @@ void WINDSGeneralData::allocateMemory()
   mixingLengths.resize(numcell_cent, 0.0);
 
   terrain.resize(numcell_cout_2d, 0.0);
-  terrain_face_id.resize(nx * ny, 1);
-  terrain_id.resize((nx - 1) * (ny - 1), 1);
+  terrain_face_id.resize(domain.nx() * domain.ny(), 1);
+  terrain_id.resize(numcell_cout_2d, 1);
 
   // Set the Wind Velocity data elements to be of the correct size
   // Initialize u0,v0, and w0 to 0.0
@@ -1161,13 +1172,13 @@ void WINDSGeneralData::loadNetCDFData(int stepin)
 
   start = { static_cast<unsigned long>(stepin), 0, 0, 0 };
   count_cc = { 1,
-               static_cast<unsigned long>(nz - 1),
-               static_cast<unsigned long>(ny - 1),
-               static_cast<unsigned long>(nx - 1) };
+               static_cast<unsigned long>(domain.nz() - 1),
+               static_cast<unsigned long>(domain.ny() - 1),
+               static_cast<unsigned long>(domain.tnx - 1) };
   count_fc = { 1,
-               static_cast<unsigned long>(nz),
-               static_cast<unsigned long>(ny),
-               static_cast<unsigned long>(nx) };
+               static_cast<unsigned long>(domain.nz()),
+               static_cast<unsigned long>(domain.ny()),
+               static_cast<unsigned long>(domain.nx()) };
 
   // cell-center variables
   // icellflag (see .h for velues)
@@ -1213,9 +1224,9 @@ void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex
   u0.clear();
   v0.clear();
   w0.clear();
-  u0.resize(numcell_face, 0.0);
-  v0.resize(numcell_face, 0.0);
-  w0.resize(numcell_face, 0.0);
+  u0.resize(domain.numFaceCentered(), 0.0);
+  v0.resize(domain.numFaceCentered(), 0.0);
+  w0.resize(domain.numFaceCentered(), 0.0);
 
   auto start_InputWindProfile = std::chrono::high_resolution_clock::now();// Finish recording execution time
 
@@ -1276,9 +1287,10 @@ void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex
   // FM -> CODE REMOVED TO WITH WINDPROFILER CLASSES // TO CLEAN
 
   max_velmag = 0.0;
-  for (auto i = 0; i < nx; i++) {
-    for (auto j = 0; j < ny; j++) {
-      int icell_face = i + j * nx + (nz - 2) * nx * ny;
+  for (auto i = 0; i < domain.nx(); i++) {
+    for (auto j = 0; j < domain.ny(); j++) {
+      // int icell_face = i + j * nx + (nz - 2) * nx * ny;
+      long icell_face = domain.getFaceIdx(i, j, domain.nz() - 2);
       max_velmag = MAX_S(max_velmag, sqrt(pow(u0[icell_face], 2.0) + pow(v0[icell_face], 2.0)));
     }
   }

@@ -3,6 +3,8 @@
 #include <tuple>
 #include <vector>
 
+#include "util/NetCDFInput.h"
+
 /**
  * \brief Namespace for core components within the QES framework.
  */
@@ -63,14 +65,19 @@ public:
    *
    * @param nx initialize from input file data
    */
-  // Domain(std::string NetCDFFileDataName) {}
+  Domain(std::string NetCDFFileDataName);
 
   /**
    *
    */
   int nx() const { return domainData.nx; }
+  const int &tnx = domainData.nx;
   int ny() const { return domainData.ny; }
   int nz() const { return domainData.nz; }
+
+  float dx() const { return domainData.dx; }
+  float dy() const { return domainData.dy; }
+  float dz() const { return domainData.dz; }
 
   std::tuple<float, float, float> getDomainSize() const { return { domainData.dx, domainData.dx, domainData.dz }; }
   std::tuple<int, int, int> getDomainCellNum() const { return { domainData.nx, domainData.ny, domainData.nz }; }

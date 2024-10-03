@@ -152,13 +152,13 @@ public:
 private:
   ///@{
   /** Number of cells */
-  int nx, ny, nz;
+  // int nx, ny, nz;
   ///@}
   ///@{
   /** Grid resolution */
-  float dx, dy, dz;
+  // float dx, dy, dz;
   ///@}
-  float dxy; /**< Minimum value between dx and dy */
+  // float dxy; /**< Minimum value between dx and dy */
 
   int wrf_nx, wrf_ny;
 
@@ -166,9 +166,9 @@ private:
   int halo_index_x, halo_index_y;
 
   long numcell_cout; /**< :document this: */
-  long numcell_cout_2d; /**< :document this: */
-  long numcell_cent; /**< Total number of cell-centered values in domain */
-  long numcell_face; /**< Total number of face-centered values in domain */
+  // long numcell_cout_2d; /**< :document this: */
+  // long numcell_cent; /**< Total number of cell-centered values in domain */
+  // long numcell_face; /**< Total number of face-centered values in domain */
 
 public:
   // std::vector<size_t> start; /**< :document this: */
@@ -320,10 +320,10 @@ private:
   NetCDFInput *input; /**< :document this: */
 
 protected:
-  void defineHorizontalGrid();
-  void defineVerticalGrid();
-  void defineVerticalStretching(const float &);
-  void defineVerticalStretching(const std::vector<float> &);
+  // void defineHorizontalGrid();
+  // void defineVerticalGrid();
+  // void defineVerticalStretching(const float &);
+  // void defineVerticalStretching(const std::vector<float> &);
 
   void allocateMemory();
 };
