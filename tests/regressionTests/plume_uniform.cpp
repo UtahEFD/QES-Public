@@ -13,8 +13,6 @@
 #include "util/NetCDFInput.h"
 #include "util/QESout.h"
 
-#include "test_WINDSGeneralData.h"
-
 #include "winds/WINDSGeneralData.h"
 #include "plume/PLUMEGeneralData.h"
 
@@ -40,7 +38,7 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
   qesPlumeParamFile.append("/tests/regressionTests/plume_uniform_parameters.xml");
 
   // parse xml settings
-  auto PID = new PlumeInputData(qesPlumeParamFile);
+  auto *PID = new PlumeInputData(qesPlumeParamFile);
 
   float uMean = 2.0;
   float uStar = 0.174;
@@ -51,14 +49,18 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
   int gridSize[3] = { 102, 102, 141 };
   float gridRes[3] = { 1.0, 1.0, 1.0 };
 
-  WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes);
-  TURBGeneralData *TGD = new TURBGeneralData(WGD);
+  qes::Domain domain(102, 102, 141, 1.0, 1.0, 1.0);
 
-  for (int k = 0; k < WGD->nz; ++k) {
-    for (int j = 0; j < WGD->ny; ++j) {
-      for (int i = 0; i < WGD->nx; ++i) {
-        int faceID = i + j * (WGD->nx) + k * (WGD->nx) * (WGD->ny);
-        WGD->u[faceID] = uMean;
+  auto *WGD = new WINDSGeneralData(domain);
+  WGD->timestamp.emplace_back("2020-01-01T00:00:00");
+
+  auto *TGD = new TURBGeneralData(WGD);
+
+  for (int k = 0; k < WGD->domain.nz(); ++k) {
+    for (int j = 0; j < WGD->domain.ny(); ++j) {
+      for (int i = 0; i < WGD->domain.nx(); ++i) {
+        // int faceID = i + j * (WGD->nx) + k * (WGD->nx) * (WGD->ny);
+        WGD->u[WGD->domain.getFaceIdx(i, j, k)] = uMean;
       }
     }
   }
@@ -66,15 +68,15 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
   for (int k = 1; k < WGD->nz - 1; ++k) {
     for (int j = 0; j < WGD->ny - 1; ++j) {
       for (int i = 0; i < WGD->nx - 1; ++i) {
-        int cellID = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-        TGD->txx[cellID] = pow(2.50 * uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
-        TGD->tyy[cellID] = pow(1.78 * uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
-        TGD->tzz[cellID] = pow(1.27 * uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
-        TGD->txz[cellID] = -pow(uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
+        int cellID = WGD->domain.getCellIdx(i, j, k);
+        TGD->txx[cellID] = pow(2.50 * uStar, 2) * pow(1 - WGD->domain.z[k] / zi, 3. / 2.);
+        TGD->tyy[cellID] = pow(1.78 * uStar, 2) * pow(1 - WGD->domain.z[k] / zi, 3. / 2.);
+        TGD->tzz[cellID] = pow(1.27 * uStar, 2) * pow(1 - WGD->domain.z[k] / zi, 3. / 2.);
+        TGD->txz[cellID] = -pow(uStar, 2) * pow(1 - WGD->domain.z[k] / zi, 3. / 2.);
 
         TGD->tke[cellID] = pow(uStar / 0.55, 2.0);
         TGD->CoEps[cellID] = C0 * pow(uStar, 3)
-                             / (0.4 * WGD->z[k]) * pow(1 - 0.85 * WGD->z[k] / zi, 3.0 / 2.0);
+                             / (0.4 * WGD->domain.z[k]) * pow(1 - 0.85 * WGD->domain.z[k] / zi, 3.0 / 2.0);
       }
     }
   }

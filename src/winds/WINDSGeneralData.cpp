@@ -35,13 +35,34 @@
 
 #include "WINDSGeneralData.h"
 
+#include <utility>
+
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
 #define PBWIDTH 60
 #define LIMIT 99999999.0f
 
-WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
-  : domain( WID->simParams->domain[0], WID->simParams->domain[1], WID->simParams->domain[2],
-	    WID->simParams->grid[0], WID->simParams->grid[1], WID->simParams->grid[2] )
+WINDSGeneralData::WINDSGeneralData(qes::Domain domain_in)
+  : domain(std::move(domain_in))
+{
+  std::cout << "-------------------------------------------------------------------" << std::endl;
+  std::cout << "[QES-WINDS]\t Initialization of wind model...\n";
+
+  tie(nx, ny, nz) = domain.getDomainCellNum();
+  tie(dx, dy, dz) = domain.getDomainSize();// Grid resolution in x-direction
+  dxy = domain.minDxy();// MIN_S(dx, dy);
+
+  // numcell_cout = domain.numCellCentered();  // (nx - 1) * (ny - 1) * (nz - 2);// Total number of cell-centered values in domain
+  numcell_cout_2d = domain.numHorizontalCellCentered();// (nx - 1) * (ny - 1);// Total number of horizontal cell-centered values in domain
+  numcell_cent = domain.numCellCentered();// (nx - 1) * (ny - 1) * (nz - 1);// Total number of cell-centered values in domain
+  numcell_face = domain.numFaceCentered();// nx * ny * nz;// Total number of face-centered values in domain
+
+
+
+  allocateMemory();
+}
+
+WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain_in, int solverType)
+  : domain(std::move(domain_in))
 {
   std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "[QES-WINDS]\t Initialization of wind model...\n";
@@ -74,13 +95,13 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   dy = WID->simParams->grid[1];// Grid resolution in y-direction
   dz = WID->simParams->grid[2];// Grid resolution in z-direction
 #endif
-  
-  dxy = domain.minDxy();  // MIN_S(dx, dy);
-  
+
+  dxy = domain.minDxy();// MIN_S(dx, dy);
+
   // numcell_cout = domain.numCellCentered();  // (nx - 1) * (ny - 1) * (nz - 2);// Total number of cell-centered values in domain
-  numcell_cout_2d = domain.numHorizontalCellCentered(); // (nx - 1) * (ny - 1);// Total number of horizontal cell-centered values in domain
-  numcell_cent = domain.numCellCentered(); // (nx - 1) * (ny - 1) * (nz - 1);// Total number of cell-centered values in domain
-  numcell_face = domain.numFaceCentered(); // nx * ny * nz;// Total number of face-centered values in domain
+  numcell_cout_2d = domain.numHorizontalCellCentered();// (nx - 1) * (ny - 1);// Total number of horizontal cell-centered values in domain
+  numcell_cent = domain.numCellCentered();// (nx - 1) * (ny - 1) * (nz - 1);// Total number of cell-centered values in domain
+  numcell_face = domain.numFaceCentered();// nx * ny * nz;// Total number of face-centered values in domain
 
   //////////////////////////////////////////////////////////////////////////////////
   /////    Create sensor velocity profiles and generate initial velocity field /////
@@ -308,7 +329,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         }
       }
     }
-    
+
     // Sort the timesteps from low to high (earliest to latest)
     mergeSortTime(sensortime, sensortime_id);
 
@@ -333,7 +354,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         WID->metParams->sensors[i]->site_ycoord += WID->simParams->halo_y;
       }
     }
-    // }
+  }
 
   // Pete could move to input param processing...
   assert(WID->metParams->sensors.size() > 0);// extra
@@ -870,8 +891,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
 
 // should not be a constructor -- reuse the other constructor...
-WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
-  : domain( inputFile )
+WINDSGeneralData::WINDSGeneralData(const std::string inputFile)// : domain(inputFile)
+  : domain(1, 1, 1, 1.0, 1.0, 1.0)
 {
   std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "[QES-WINDS]\t Initialization of wind model...\n";

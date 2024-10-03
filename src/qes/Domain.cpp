@@ -14,6 +14,17 @@ Domain::Domain(int nx, int ny, int nz, float dx, float dy, float dz)
   domainData.dx = dx;
   domainData.dy = dy;
   domainData.dz = dz;
+
+  // Definition of the grid
+  // ??? how to define the vertical grid with the different option
+  defineVerticalStretching(dz);
+  /*if (WID->simParams->verticalStretching == 0) {// Uniform vertical grid
+    defineVerticalStretching(dz);
+  } else if (WID->simParams->verticalStretching == 1) {// Stretched vertical grid
+    defineVerticalStretching(WID->simParams->dz_value);// Read in custom dz values and set them to dz_array
+  }*/
+  defineVerticalGrid();
+  defineHorizontalGrid();
 }
 
 

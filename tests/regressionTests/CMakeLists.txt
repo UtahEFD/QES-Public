@@ -3,21 +3,17 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 IF ($CACHE{HAS_CUDA_SUPPORT})
 
     CUDA_ADD_EXECUTABLE(plume_sinusoidal
-            test_WINDSGeneralData.h test_WINDSGeneralData.cpp
             plume_sinusoidal.cpp)
 
     CUDA_ADD_EXECUTABLE(plume_uniform
-            test_WINDSGeneralData.h test_WINDSGeneralData.cpp
             plume_uniform.cpp)
 
 ELSE ($CACHE{HAS_CUDA_SUPPORT})
 
     add_executable(plume_sinusoidal
-            ../unitTests/test_WINDSGeneralData.h ../unitTests/test_WINDSGeneralData.cpp
             plume_sinusoidal.cpp)
 
     add_executable(plume_uniform
-            ../unitTests/test_WINDSGeneralData.h ../unitTests/test_WINDSGeneralData.cpp
             plume_uniform.cpp)
 
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})

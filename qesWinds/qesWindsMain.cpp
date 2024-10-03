@@ -38,6 +38,8 @@
 
 #include "handleWINDSArgs.h"
 
+#include "qes/Domain.h"
+
 #include "winds/WINDSInputData.h"
 #include "winds/WINDSGeneralData.h"
 #include "winds/WINDSOutputVisualization.h"
@@ -98,18 +100,19 @@ int main(int argc, char *argv[])
     }
   }
 
-  // 
+  //
   // WID should be deleted at this point....
   //
   // transfer to other things through some Factory???
 
   // Somehere... we initialize the QESDomain... some class that holds ifo for
   // Singleton????
-  // 
+  //
+  qes::Domain domain(WID->simParams->domain[0], WID->simParams->domain[1], WID->simParams->domain[2], WID->simParams->grid[0], WID->simParams->grid[1], WID->simParams->grid[2]);
 
   // Generate the general WINDS data from all inputs
-  WINDSGeneralData *WGD = new WINDSGeneralData(WID, arguments.solveType);
-  // 
+  WINDSGeneralData *WGD = new WINDSGeneralData(WID, domain, arguments.solveType);
+  //
   // get Domain data to WGD... have it constructed, setup outside of this class as a start....
   // WINDSGeneralData *WGD = new WINDSGeneralData(WID, arguments.solveType, qes->getCopyDomain());
 

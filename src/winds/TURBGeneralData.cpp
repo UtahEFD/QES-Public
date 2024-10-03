@@ -390,8 +390,12 @@ TURBGeneralData::TURBGeneralData(WINDSGeneralData *WGDin)
   ny = m_WGD->ny;
   nx = m_WGD->nx;
 
+  std::cout << "test turb " << nz << std::endl;
+
   numcell_cent = m_WGD->numcell_cent;
   numcell_face = m_WGD->numcell_face;
+
+  std::cout << "test turb " << nz << std::endl;
 
   dz = m_WGD->dz;
   dy = m_WGD->dy;

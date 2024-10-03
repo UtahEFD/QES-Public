@@ -83,10 +83,11 @@ class WINDSInputData;
 class WINDSGeneralData
 {
 private:
-  WINDSGeneralData() : domain(1,1,1,1,1,1) {}  // do not allow empty domain to be created
-  
+  WINDSGeneralData() : domain(1, 1, 1, 1, 1, 1) {}// do not allow empty domain to be created
+
 public:
-  WINDSGeneralData(const WINDSInputData *WID, int solverType);
+  WINDSGeneralData(qes::Domain domain_in);
+  WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain_in, int solverType);
   WINDSGeneralData(const std::string inputFile);
   virtual ~WINDSGeneralData()
   {}
@@ -147,7 +148,8 @@ public:
 
   // General QES Domain Data -- winds does not create this... provide const & in constructor of WINDS...
   qes::Domain domain;
-  
+
+private:
   ///@{
   /** Number of cells */
   int nx, ny, nz;
@@ -168,6 +170,7 @@ public:
   long numcell_cent; /**< Total number of cell-centered values in domain */
   long numcell_face; /**< Total number of face-centered values in domain */
 
+public:
   // std::vector<size_t> start; /**< :document this: */
   // std::vector<size_t> count; /**< :document this: */
 

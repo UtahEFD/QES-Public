@@ -9,11 +9,11 @@
 
 #include "util/calcTime.h"
 
+#include "qes/Domain.h"
+
 #include "plume/PlumeInputData.hpp"
 #include "util/NetCDFInput.h"
 #include "util/QESout.h"
-
-#include "test_WINDSGeneralData.h"
 
 #include "plume/PLUMEGeneralData.h"
 
@@ -41,7 +41,11 @@ TEST_CASE("Regression test of QES-Plume: sinusoidal stress")
   int gridSize[3] = { 20, 20, 50 };
   float gridRes[3] = { 1.0 / 20.0, 1.0 / 20.0, 1.0 / 49.0 };
 
-  WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes);
+  qes::Domain domain(20, 20, 50, 1.0 / 20.0, 1.0 / 20.0, 1.0 / 49.);
+
+  WINDSGeneralData *WGD = new WINDSGeneralData(domain);
+  WGD->timestamp.emplace_back("2020-01-01T00:00:00");
+
   TURBGeneralData *TGD = new TURBGeneralData(WGD);
 
   std::vector<float> sig2_new(WGD->nz - 1);
@@ -53,7 +57,7 @@ TEST_CASE("Regression test of QES-Plume: sinusoidal stress")
   for (int k = 0; k < WGD->nz - 1; ++k) {
     for (int j = 0; j < WGD->ny - 1; ++j) {
       for (int i = 0; i < WGD->nx - 1; ++i) {
-        int cellID = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+        int cellID = WGD->domain.getCellIdx(i, j, k);
         TGD->txx[cellID] = sig2_new[k];
         TGD->tyy[cellID] = sig2_new[k];
         TGD->tzz[cellID] = sig2_new[k];

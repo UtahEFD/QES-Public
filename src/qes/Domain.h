@@ -27,7 +27,7 @@ struct QESgrid
 class Domain
 {
 private:
-  Domain() {}// cannot create empty domain
+  Domain() = default;// cannot create empty domain
 
 public:
   /**
@@ -72,8 +72,8 @@ public:
   int ny() const { return domainData.ny; }
   int nz() const { return domainData.nz; }
 
-  std::tuple<float, float, float> getDomainSizee() const { return { domainData.dx, domainData.dx, domainData.dz }; }
-
+  std::tuple<float, float, float> getDomainSize() const { return { domainData.dx, domainData.dx, domainData.dz }; }
+  std::tuple<int, int, int> getDomainCellNum() const { return { domainData.nx, domainData.ny, domainData.nz }; }
   std::tuple<int, int, int> getBaseDomainCellNum() const { return { domainData.nx - 1, domainData.ny - 1, domainData.nz - 2 }; }
 
   float minDxy() const { return std::min(domainData.dx, domainData.dy); }
@@ -112,8 +112,14 @@ public:
   long numFaceCentered() const { return domainData.nx * domainData.ny * domainData.nz; }
 
   // inlined too... d
-  // long getFaceIdx(i, j, k) const { return the correct idx; }
-  // long getCellIdx(i, j, k) const { return the correct idx; }
+  long getFaceIdx(const int &i, const int &j, const int &k) const
+  {
+    return i + j * domainData.nx + k * domainData.nx * domainData.ny;
+  }
+  long getCellIdx(const int &i, const int &j, const int &k) const
+  {
+    return i + j * (domainData.nx - 1) + k * (domainData.nx - 1) * (domainData.ny - 1);
+  }
 
   // 2d cell centered idx
   // 2d face centered idx
@@ -125,8 +131,9 @@ private:
   void defineVerticalStretching(const float &);
   void defineVerticalStretching(const std::vector<float> &);
 
-  QESgrid domainData;
+  QESgrid domainData{};
 
+public:
   std::vector<float> z0_domain_u, z0_domain_v;
   std::vector<float> dz_array; /**< :Array contain dz values: */
   ///@{
