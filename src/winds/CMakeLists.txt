@@ -10,7 +10,6 @@ SET( qesWindCoreSources
   CanopyWindbreak.cpp
   CanopyROC.cpp
   Cell.cpp
-  CPUSolver.cpp
   Cut_cell.cpp
   DTEHeightField.cpp
   LocalMixing.cpp
@@ -21,6 +20,7 @@ SET( qesWindCoreSources
   PolyBuilding.cpp PolyBuilding.h
   Sensor.cpp
   Solver.cpp
+  Solver_CPU.cpp
   Solver_CPU_RB.cpp
   TURBParams.h
   TURBGeneralData.cpp

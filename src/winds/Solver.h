@@ -43,7 +43,7 @@
 #include "WINDSInputData.h"
 #include "WINDSGeneralData.h"
 
-#include "util/Vector3Float.h"
+#include "qes/Domain.h"
 
 using namespace std;
 
@@ -63,7 +63,19 @@ using namespace std;
  */
 class Solver
 {
+private:
+  Solver()
+    : domain(1, 1, 1, 1.0, 1.0, 1.0),
+      alpha1(1),
+      alpha2(1),
+      eta(1),
+      A(1),
+      B(1)
+  {}
+
 protected:
+  qes::Domain domain;
+
   const int alpha1; /**< Gaussian precision moduli */
   const int alpha2; /**< Gaussian precision moduli */
   const float eta; /**< :document this: */
@@ -79,7 +91,8 @@ protected:
   std::vector<float> R; /**< Divergence of initial velocity field */
   std::vector<float> lambda, lambda_old; /**< :document these as group or indiv: */
 
-  Solver(const WINDSInputData *WID, WINDSGeneralData *WGD);
+
+  Solver(qes::Domain domain_in, const float &tolerance);
   /**
    * Prints out the current amount that a process
    * has finished with a progress bar.

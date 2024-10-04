@@ -37,6 +37,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <cmath>
+#include <utility>
 #include <vector>
 #include <chrono>
 
@@ -55,8 +56,8 @@
 class Solver_CPU_RB : public Solver
 {
 public:
-  Solver_CPU_RB(const WINDSInputData *WID, WINDSGeneralData *WGD)
-    : Solver(WID, WGD)
+  Solver_CPU_RB(qes::Domain domain_in, const float &tolerance)
+    : Solver(std::move(domain_in), tolerance)
   {
     std::cout << "-------------------------------------------------------------------" << std::endl;
     std::cout << "[Solver]\t Initializing Red/Black Solver (CPU) ..." << std::endl;

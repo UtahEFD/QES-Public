@@ -450,9 +450,9 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
           terrain[idx] = 0.0;
         }
         id = ii + jj * domain.nx();
-        for (size_t k = 0; k < z.size() - 1; k++) {
+        for (size_t k = 0; k < domain.z.size() - 1; k++) {
           terrain_face_id[id] = k;
-          if (terrain[idx] < z_face[k]) {
+          if (terrain[idx] < domain.z_face[k]) {
             break;
           }
         }
@@ -521,9 +521,9 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
         ii = i + halo_index_x;
         jj = j + halo_index_y;
         idx = ii + jj * (domain.nx() - 1);
-        for (size_t k = 0; k < z.size() - 1; k++) {
+        for (size_t k = 0; k < domain.z.size() - 1; k++) {
           terrain_id[idx] = k;
-          if (terrain[idx] < z[k]) {
+          if (terrain[idx] < domain.z[k]) {
             break;
           }
         }
@@ -598,8 +598,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
       for (int j = 0; j < domain.ny() - 1; j++) {
         // Gets height of the terrain for each cell
         int idx = i + j * (domain.nx() - 1);
-        for (size_t k = 0; k < z.size() - 1; k++) {
-          if (terrain[idx] < z[k + 1]) {
+        for (size_t k = 0; k < domain.z.size() - 1; k++) {
+          if (terrain[idx] < domain.z[k + 1]) {
             break;
           }
           // icell_cent = i + j * (nx - 1) + (k + 1) * (nx - 1) * (ny - 1);
@@ -621,8 +621,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
         for (int j = 0; j < domain.ny() - 1; j++) {
           // Gets height of the terrain for each cell
           int idx = i + j * (domain.nx() - 1);
-          for (size_t k = 0; k < z.size() - 1; k++) {
-            if (terrain[idx] < z[k + 1]) {
+          for (size_t k = 0; k < domain.z.size() - 1; k++) {
+            if (terrain[idx] < domain.z[k + 1]) {
               break;
             }
 
@@ -906,21 +906,22 @@ WINDSGeneralData::WINDSGeneralData(const std::string &inputFile)
   wall = new Wall();
 
   // nx,ny - face centered value (consistant with QES-Winds)
-  int nx,ny,nz;
+  int nx, ny, nz;
 
   input->getDimensionSize("x_face", nx);
   input->getDimensionSize("y_face", ny);
   // nz - face centered value + bottom ghost (consistant with QES-Winds)
   input->getDimensionSize("z_face", nz);
 
-  if((nx!=domain.nx()) || (ny!=domain.ny()) || (nz!=domain.nz())) {
+  if ((nx != domain.nx()) || (ny != domain.ny()) || (nz != domain.nz())) {
     std::cerr << "[ERROR] \t data size incompatible " << std::endl;
     exit(1);
   }
 
   // nt - number of time instance in data
-  input->getDimensionSize("t", nt);*/
-/*
+  input->getDimensionSize("t", nt);
+
+  /*
   // numcell_cout = (nx - 1) * (ny - 1) * (nz - 2); /**< Total number of cell-centered values in domain */
   // numcell_cout_2d = (nx - 1) * (ny - 1); /**< Total number of horizontal cell-centered values in domain */
   // numcell_cent = (nx - 1) * (ny - 1) * (nz - 1); /**< Total number of cell-centered values in domain */

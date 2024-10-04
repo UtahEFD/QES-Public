@@ -185,12 +185,12 @@ public:
 
   float z0{}; /**< In wallLogBC */
 
-  std::vector<float> dz_array; /**< :Array contain dz values: */
+  // std::vector<float> dz_array; /**< :Array contain dz values: */
   ///@{
   /** :Location of center of cell in x,y and z directions: */
-  std::vector<float> x, y, z;
+  // std::vector<float> x, y, z;
   ///@}
-  std::vector<float> z_face; /**< :Location of the bottom face of the cell in z-direction: */
+  // std::vector<float> z_face; /**< :Location of the bottom face of the cell in z-direction: */
 
   std::vector<QEStime> sensortime; /**< :document this: */
   std::vector<int> sensortime_id;

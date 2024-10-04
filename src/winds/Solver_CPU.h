@@ -28,7 +28,7 @@
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file CPUSolver.h */
+/** @file Solver_CPU.h */
 
 #pragma once
 
@@ -44,16 +44,17 @@
 #include "Solver.h"
 
 /**
- * @class CPUSolver
+ * @class Solver_CPU
  * @brief Child class of the Solver that runs the convergence
  * algorithm in serial order on a CPU.
  */
-class CPUSolver : public Solver
+class Solver_CPU : public Solver
 {
 public:
-  CPUSolver(const WINDSInputData *WID, WINDSGeneralData *WGD)
-    : Solver(WID, WGD)
+  Solver_CPU(qes::Domain domain_in, const float &tolerance)
+    : Solver(std::move(domain_in), tolerance)
   {
+    std::cout << "-------------------------------------------------------------------" << std::endl;
     std::cout << "[Solver]\t Initializing Serial Solver (CPU) ..." << std::endl;
   }
 
@@ -68,5 +69,5 @@ protected:
    * @param WGD :document this:
    * @param solveWind :document this:
    */
-  virtual void solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind);
+  virtual void solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind) override;
 };
