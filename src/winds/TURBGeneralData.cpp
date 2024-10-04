@@ -667,7 +667,7 @@ void TURBGeneralData::derivativeVelocity()
     // int i = cellID - j * (nx - 1) - k * (nx - 1) * (ny - 1);
     // int faceID = i + j * nx + k * nx * ny;
     auto [i, j, k] = domain.getCellIdx(cellID);
-    long faceID = domain.getFaceIdx(i, j, k);
+    // long faceID = domain.getFaceIdx(i, j, k);
 
     // - Diagonal componants of the velocity gradient tensor naturally fall at the cell-center
     // - Off-diagonal componants of the  velocity gradient tensor require extra interpolation
@@ -676,58 +676,58 @@ void TURBGeneralData::derivativeVelocity()
 
 
     // Gxx = dudx
-    Gxx[cellID] = (m_WGD->u[faceID + 1] - m_WGD->u[faceID]) / (domain.dx());
+    Gxx[cellID] = (m_WGD->u[domain.getFaceIdx(i + 1, j, k)] - m_WGD->u[domain.getFaceIdx(i, j, k)]) / (domain.dx());
     // Gyx = dvdx
-    Gyx[cellID] = ((m_WGD->v[faceID + 1] + m_WGD->v[faceID + 1 + nx])
-                   - (m_WGD->v[faceID - 1] + m_WGD->v[faceID - 1 + nx]))
-                  / (4.0 * domain.dx());
+    Gyx[cellID] = ((m_WGD->v[domain.getFaceIdx(i + 1, j, k)] + m_WGD->v[domain.getFaceIdx(i + 1, j + 1, k)])
+                   - (m_WGD->v[domain.getFaceIdx(i - 1, j, k)] + m_WGD->v[domain.getFaceIdx(i - 1, j + 1, k)]))
+                  / (4.0f * domain.dx());
     // Gzx = dwdx
-    Gzx[cellID] = ((m_WGD->w[faceID + 1] + m_WGD->w[faceID + 1 + nx * ny])
-                   - (m_WGD->w[faceID - 1] + m_WGD->w[faceID - 1 + nx * ny]))
-                  / (4.0 * domain.dx());
+    Gzx[cellID] = ((m_WGD->w[domain.getFaceIdx(i + 1, j, k)] + m_WGD->w[domain.getFaceIdx(i + 1, j, k + 1)])
+                   - (m_WGD->w[domain.getFaceIdx(i - 1, j, k)] + m_WGD->w[domain.getFaceIdx(i - 1, j, k + 1)]))
+                  / (4.0f * domain.dx());
 
     // Gxy = dudy
-    Gxy[cellID] = ((m_WGD->u[faceID + nx] + m_WGD->u[faceID + 1 + nx])
-                   - (m_WGD->u[faceID - nx] + m_WGD->u[faceID + 1 - nx]))
-                  / (4.0 * domain.dy());
+    Gxy[cellID] = ((m_WGD->u[domain.getFaceIdx(i, j + 1, k)] + m_WGD->u[domain.getFaceIdx(i + 1, j + 1, k)])
+                   - (m_WGD->u[domain.getFaceIdx(i, j - 1, k)] + m_WGD->u[domain.getFaceIdx(i + 1, j - 1, k)]))
+                  / (4.0f * domain.dy());
     // Gyy = dvdy
-    Gyy[cellID] = (m_WGD->v[faceID + nx] - m_WGD->v[faceID]) / (domain.dy());
+    Gyy[cellID] = (m_WGD->v[domain.getFaceIdx(i, j + 1, k)] - m_WGD->v[domain.getFaceIdx(i, j, k)]) / (domain.dy());
     // Gzy = dwdy
-    Gzy[cellID] = ((m_WGD->w[faceID + nx] + m_WGD->w[faceID + nx + nx * ny])
-                   - (m_WGD->w[faceID - nx] + m_WGD->w[faceID - nx + nx * ny]))
-                  / (4.0 * domain.dy());
+    Gzy[cellID] = ((m_WGD->w[domain.getFaceIdx(i, j + 1, k)] + m_WGD->w[domain.getFaceIdx(i, j + 1, k + 1)])
+                   - (m_WGD->w[domain.getFaceIdx(i, j - 1, k)] + m_WGD->w[domain.getFaceIdx(i, j - 1, k + 1)]))
+                  / (4.0f * domain.dy());
 
 
     if (flagUniformZGrid) {
       // Gxz = dudz
-      Gxz[cellID] = ((m_WGD->u[faceID + nx * ny] + m_WGD->u[faceID + 1 + nx * ny])
-                     - (m_WGD->u[faceID - nx * ny] + m_WGD->u[faceID + 1 - nx * ny]))
-                    / (4.0 * domain.dz());
+      Gxz[cellID] = ((m_WGD->u[domain.getFaceIdx(i, j, k + 1)] + m_WGD->u[domain.getFaceIdx(i + 1, j, k + 1)])
+                     - (m_WGD->u[domain.getFaceIdx(i, j, k - 1)] + m_WGD->u[domain.getFaceIdx(i + 1, j, k - 1)]))
+                    / (4.0f * domain.dz());
       // Gyz = dvdz
-      Gyz[cellID] = ((m_WGD->v[faceID + nx * ny] + m_WGD->v[faceID + nx + nx * ny])
-                     - (m_WGD->v[faceID - nx * ny] + m_WGD->v[faceID + nx - nx * ny]))
-                    / (4.0 * domain.dz());
+      Gyz[cellID] = ((m_WGD->v[domain.getFaceIdx(i, j, k + 1)] + m_WGD->v[domain.getFaceIdx(i, j + 1, k + 1)])
+                     - (m_WGD->v[domain.getFaceIdx(i, j, k - 1)] + m_WGD->v[domain.getFaceIdx(i, j + 1, k - 1)]))
+                    / (4.0f * domain.dz());
       // Gzz = dwdz
-      Gzz[cellID] = (m_WGD->w[faceID + nx * ny] - m_WGD->w[faceID]) / (domain.dz());
+      Gzz[cellID] = (m_WGD->w[domain.getFaceIdx(i, j, k + 1)] - m_WGD->w[domain.getFaceIdx(i, j, k)]) / (domain.dz());
     } else {
       // Gxz = dudz
-      Gxz[cellID] = (0.5 * (domain.z[k] - domain.z[k - 1]) / (domain.z[k + 1] - domain.z[k])
-                       * ((m_WGD->u[faceID + nx * ny] + m_WGD->u[faceID + 1 + nx * ny])
-                          - (m_WGD->u[faceID] + m_WGD->u[faceID + 1]))
-                     + 0.5 * (domain.z[k + 1] - domain.z[k]) / (domain.z[k] - domain.z[k - 1])
-                         * ((m_WGD->u[faceID] + m_WGD->u[faceID + 1])
-                            - (m_WGD->u[faceID - nx * ny] + m_WGD->u[faceID + 1 - nx * ny])))
+      Gxz[cellID] = (0.5f * (domain.z[k] - domain.z[k - 1]) / (domain.z[k + 1] - domain.z[k])
+                       * ((m_WGD->u[domain.getFaceIdx(i, j, k + 1)] + m_WGD->u[domain.getFaceIdx(i + 1, j, k + 1)])
+                          - (m_WGD->u[domain.getFaceIdx(i, j, k)] + m_WGD->u[domain.getFaceIdx(i + 1, j, k)]))
+                     + 0.5f * (domain.z[k + 1] - domain.z[k]) / (domain.z[k] - domain.z[k - 1])
+                         * ((m_WGD->u[domain.getFaceIdx(i, j, k)] + m_WGD->u[domain.getFaceIdx(i + 1, j, k)])
+                            - (m_WGD->u[domain.getFaceIdx(i, j, k - 1)] + m_WGD->u[domain.getFaceIdx(i + 1, j, k - 1)])))
                     / (domain.z[k + 1] - domain.z[k - 1]);
       // Gyz = dvdz
-      Gyz[cellID] = (0.5 * (domain.z[k] - domain.z[k - 1]) / (domain.z[k + 1] - domain.z[k])
-                       * ((m_WGD->v[faceID + nx * ny] + m_WGD->v[faceID + nx + nx * ny])
-                          - (m_WGD->v[faceID] + m_WGD->v[faceID + nx]))
-                     + 0.5 * (domain.z[k + 1] - domain.z[k]) / (domain.z[k] - domain.z[k - 1])
-                         * ((m_WGD->v[faceID] + m_WGD->v[faceID + nx])
-                            - (m_WGD->v[faceID - nx * ny] + m_WGD->v[faceID + nx - nx * ny])))
+      Gyz[cellID] = (0.5f * (domain.z[k] - domain.z[k - 1]) / (domain.z[k + 1] - domain.z[k])
+                       * ((m_WGD->v[domain.getFaceIdx(i, j, k + 1)] + m_WGD->v[domain.getFaceIdx(i, j + 1, k + 1)])
+                          - (m_WGD->v[domain.getFaceIdx(i, j, k)] + m_WGD->v[domain.getFaceIdx(i, j + 1, k)]))
+                     + 0.5f * (domain.z[k + 1] - domain.z[k]) / (domain.z[k] - domain.z[k - 1])
+                         * ((m_WGD->v[domain.getFaceIdx(i, j, k)] + m_WGD->v[domain.getFaceIdx(i, j + 1, k)])
+                            - (m_WGD->v[domain.getFaceIdx(i, j, k - 1)] + m_WGD->v[domain.getFaceIdx(i, j + 1, k - 1)])))
                     / (domain.z[k + 1] - domain.z[k - 1]);
       // Gzz = dwdz
-      Gzz[cellID] = (m_WGD->w[faceID + nx * ny] - m_WGD->w[faceID]) / (domain.dz_array[k]);
+      Gzz[cellID] = (m_WGD->w[domain.getFaceIdx(i, j, k + 1)] - m_WGD->w[domain.getFaceIdx(i, j, k)]) / (domain.dz_array[k]);
     }
   }
 
@@ -830,7 +830,7 @@ void TURBGeneralData::stressTensor()
 
     int k_ref = 0;
     float refHeight = 15.0;// reference height for rotation wind direction is arbitrarily set to 15m above terrain
-    while (m_WGD->z_face[k_ref] < (refHeight + m_WGD->terrain[i + j * (m_WGD->nx - 1)])) {
+    while (m_WGD->z_face[k_ref] < (refHeight + m_WGD->terrain[i + j * (domain.nx() - 1)])) {
       k_ref += 1;
     }
 
