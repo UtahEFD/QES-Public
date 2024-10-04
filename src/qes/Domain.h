@@ -123,9 +123,25 @@ public:
   {
     return i + j * domainData.nx + k * domainData.nx * domainData.ny;
   }
+  long getFaceIdx(const long &curr, const int &i, const int &j, const int &k) const
+  {
+    return curr + i + j * domainData.nx + k * domainData.nx * domainData.ny;
+  }
+
   long getCellIdx(const int &i, const int &j, const int &k) const
   {
     return i + j * (domainData.nx - 1) + k * (domainData.nx - 1) * (domainData.ny - 1);
+  }
+  long getCellIdx(const long &curr, const int &i, const int &j, const int &k) const
+  {
+    return curr + i + j * (domainData.nx - 1) + k * (domainData.nx - 1) * (domainData.ny - 1);
+  }
+  std::tuple<int, int, int> getCellIdx(const long &curr) const
+  {
+    int k = (int)(curr / ((domainData.nx - 1) * (domainData.ny - 1)));
+    int j = (int)((curr - k * (domainData.nx - 1) * (domainData.ny - 1)) / (domainData.nx - 1));
+    int i = curr - j * (domainData.nx - 1) - k * (domainData.nx - 1) * (domainData.ny - 1);
+    return { i, j, k };
   }
 
   // 2d cell centered idx

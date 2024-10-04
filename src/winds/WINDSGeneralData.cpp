@@ -905,17 +905,22 @@ WINDSGeneralData::WINDSGeneralData(const std::string &inputFile)
   // create wall instance for BC
   wall = new Wall();
 
-  input->getDimensionSize("t", nt);
-
-  /*
   // nx,ny - face centered value (consistant with QES-Winds)
+  int nx,ny,nz;
+
   input->getDimensionSize("x_face", nx);
   input->getDimensionSize("y_face", ny);
   // nz - face centered value + bottom ghost (consistant with QES-Winds)
   input->getDimensionSize("z_face", nz);
+
+  if((nx!=domain.nx()) || (ny!=domain.ny()) || (nz!=domain.nz())) {
+    std::cerr << "[ERROR] \t data size incompatible " << std::endl;
+    exit(1);
+  }
+
   // nt - number of time instance in data
   input->getDimensionSize("t", nt);*/
-
+/*
   // numcell_cout = (nx - 1) * (ny - 1) * (nz - 2); /**< Total number of cell-centered values in domain */
   // numcell_cout_2d = (nx - 1) * (ny - 1); /**< Total number of horizontal cell-centered values in domain */
   // numcell_cent = (nx - 1) * (ny - 1) * (nz - 1); /**< Total number of cell-centered values in domain */
@@ -1084,7 +1089,8 @@ WINDSGeneralData::WINDSGeneralData(const std::string &inputFile)
 
 void WINDSGeneralData::allocateMemory()
 {
-  std::cout << "[QES-WINDS]\t Allocation Memory..." << std::flush;
+  std::cout << "[QES-WINDS]\t Allocating Memory..." << std::flush;
+
   // long numcell_cout = domain.numCellCentered();  // (nx - 1) * (ny - 1) * (nz - 2);// Total number of cell-centered values in domain
   long numcell_cout_2d = domain.numHorizontalCellCentered();// (nx - 1) * (ny - 1);// Total number of horizontal cell-centered values in domain
   long numcell_cent = domain.numCellCentered();// (nx - 1) * (ny - 1) * (nz - 1);// Total number of cell-centered values in domain
@@ -1136,7 +1142,7 @@ void WINDSGeneralData::allocateMemory()
   v.resize(numcell_face, 0.0);
   w.resize(numcell_face, 0.0);
 
-  std::cout << "\r[QES-WINDS]\t Allocation Memory... [DONE]" << std::endl;
+  std::cout << "\r[QES-WINDS]\t Allocating Memory... [DONE]" << std::endl;
 }
 
 

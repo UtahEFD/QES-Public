@@ -35,6 +35,8 @@
 #include <math.h>
 #include <vector>
 
+#include "qes/Domain.h"
+
 #include "WINDSInputData.h"
 #include "WINDSGeneralData.h"
 #include "TURBWall.h"
@@ -68,13 +70,15 @@ public:
   void divergenceStress();
 
   // General QUIC Domain Data
+  qes::Domain domain;
+
   ///@{
   /** number of cells */
-  int nx, ny, nz;
+  // int nx, ny, nz;
   ///@}
 
-  long numcell_cent; /**< Total number of cell-centered values in domain */
-  long numcell_face; /**< Total number of face-centered values in domain */
+  // long numcell_cent; /**< Total number of cell-centered values in domain */
+  // long numcell_face; /**< Total number of face-centered values in domain */
 
   // nt - number of time instance in data
   int nt;
@@ -83,11 +87,11 @@ public:
 
   ///@{
   /** grid information */
-  std::vector<float> x, y, z;
+  // std::vector<float> x, y, z;
 
-  std::vector<float> x_cc;
-  std::vector<float> z_face;
-  std::vector<float> dz_array;
+  // std::vector<float> x_cc;
+  // std::vector<float> z_face;
+  // std::vector<float> dz_array;
   ///@}
 
   // index for fluid cell
@@ -215,6 +219,7 @@ private:
   // cannot have an empty constructor (have to pass in a mesh to build)
   TURBGeneralData();
 
+  void allocateMemory();
   // store the wall classes
   std::vector<TURBWall *> wallVec;
 
@@ -222,7 +227,7 @@ private:
   const float vonKar = 0.4;
   float backgroundMixing = 0.0;
 
-  float dx, dy, dz;
+  //float dx, dy, dz;
 
   // input: store here for multiple time instance.
   NetCDFInput *input;
