@@ -48,15 +48,15 @@ TEST_CASE("Regression test of QES-Plume: sinusoidal stress")
 
   TURBGeneralData *TGD = new TURBGeneralData(WGD);
 
-  std::vector<float> sig2_new(WGD->nz - 1);
+  std::vector<float> sig2_new(WGD->domain.nz() - 1);
 
-  for (int k = 0; k < WGD->nz - 1; ++k) {
+  for (int k = 0; k < WGD->domain.nz() - 1; ++k) {
     sig2_new[k] = 1.1 + sin(2.0 * M_PI * WGD->z[k]);
   }
 
-  for (int k = 0; k < WGD->nz - 1; ++k) {
-    for (int j = 0; j < WGD->ny - 1; ++j) {
-      for (int i = 0; i < WGD->nx - 1; ++i) {
+  for (int k = 0; k < WGD->domain.nz() - 1; ++k) {
+    for (int j = 0; j < WGD->domain.ny() - 1; ++j) {
+      for (int i = 0; i < WGD->domain.nx() - 1; ++i) {
         int cellID = WGD->domain.getCellIdx(i, j, k);
         TGD->txx[cellID] = sig2_new[k];
         TGD->tyy[cellID] = sig2_new[k];
