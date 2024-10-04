@@ -661,7 +661,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
   //////   END END END of  Apply Terrain code       /////
   ///////////////////////////////////////////////////////
 
-
   // WINDS Input Data will have read in the specific types of
   // buildings, canopies, etc... but we need to merge all of that
   // onto a single vector of Building* -- this vector is called
