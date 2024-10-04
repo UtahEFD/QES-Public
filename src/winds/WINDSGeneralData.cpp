@@ -444,12 +444,12 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
         // Gets height of the terrain for each cell
         ii = i + halo_index_x;
         jj = j + halo_index_y;
-        idx = ii + jj * (nx - 1);
+        idx = ii + jj * (domain.nx() - 1);
         terrain[idx] = WID->simParams->DTE_mesh->getHeight(i * domain.dx() + domain.dx() * 0.5f, j * domain.dy() + domain.dy() * 0.5f);
         if (terrain[idx] < 0.0) {
           terrain[idx] = 0.0;
         }
-        id = ii + jj * nx;
+        id = ii + jj * domain.nx();
         for (size_t k = 0; k < z.size() - 1; k++) {
           terrain_face_id[id] = k;
           if (terrain[idx] < z_face[k]) {
@@ -462,13 +462,13 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
     for (int i = halo_index_x; i < domain.nx() - halo_index_x - 1; i++) {
       for (int j = 0; j < halo_index_y; j++) {
         id = i + halo_index_y * domain.nx();
-        icell_face = i + j * domain.nx();
+        long icell_face = i + j * domain.nx();
         terrain_face_id[icell_face] = terrain_face_id[id];
       }
 
       for (int j = domain.ny() - halo_index_y - 1; j < domain.ny(); j++) {
-        id = i + (domain.ny() - halo_index_y - 1) * nx;
-        icell_face = i + j * domain.nx();
+        id = i + (domain.ny() - halo_index_y - 1) * domain.nx();
+        long icell_face = i + j * domain.nx();
         terrain_face_id[icell_face] = terrain_face_id[id];
       }
     }
@@ -476,13 +476,13 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
     for (int j = halo_index_y; j < domain.ny() - halo_index_y - 1; j++) {
       for (int i = 0; i < halo_index_x; i++) {
         id = halo_index_x + j * domain.nx();
-        icell_face = i + j * domain.nx();
+        long icell_face = i + j * domain.nx();
         terrain_face_id[icell_face] = terrain_face_id[id];
       }
 
       for (int i = domain.nx() - halo_index_x - 1; i < domain.nx(); i++) {
         id = (domain.nx() - halo_index_x - 1) + j * domain.nx();
-        icell_face = i + j * domain.nx();
+        long icell_face = i + j * domain.nx();
         terrain_face_id[icell_face] = terrain_face_id[id];
       }
     }
@@ -490,13 +490,13 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
     for (int i = 0; i < halo_index_x; i++) {
       for (int j = 0; j < halo_index_y; j++) {
         id = halo_index_x + halo_index_y * domain.nx();
-        icell_face = i + j * domain.nx();
+        long icell_face = i + j * domain.nx();
         terrain_face_id[icell_face] = terrain_face_id[id];
       }
 
       for (int j = domain.ny() - halo_index_y - 1; j < domain.ny(); j++) {
         id = halo_index_x + (domain.ny() - halo_index_y - 1) * domain.nx();
-        icell_face = i + j * domain.nx();
+        long icell_face = i + j * domain.nx();
         terrain_face_id[icell_face] = terrain_face_id[id];
       }
     }
@@ -504,13 +504,13 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
     for (int i = domain.nx() - halo_index_x - 1; i < domain.nx() - 1; i++) {
       for (int j = 0; j < halo_index_y; j++) {
         id = (domain.nx() - halo_index_x - 1) + halo_index_y * domain.nx();
-        icell_face = i + j * domain.nx();
+        long icell_face = i + j * domain.nx();
         terrain_face_id[icell_face] = terrain_face_id[id];
       }
 
       for (int j = domain.ny() - halo_index_y - 1; j < domain.ny() - 1; j++) {
         id = (domain.nx() - halo_index_x - 1) + (domain.ny() - halo_index_y - 2) * domain.nx();
-        icell_face = i + j * domain.nx();
+        long icell_face = i + j * domain.nx();
         terrain_face_id[icell_face] = terrain_id[id];
       }
     }
@@ -533,14 +533,14 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
     for (int i = halo_index_x; i < domain.nx() - halo_index_x - 1; i++) {
       for (int j = 0; j < halo_index_y; j++) {
         id = i + halo_index_y * (domain.nx() - 1);
-        icell_cent = i + j * (domain.nx() - 1);
+        long icell_cent = i + j * (domain.nx() - 1);
         terrain_id[icell_cent] = terrain_id[id];
         terrain[icell_cent] = terrain[id];
       }
 
       for (int j = domain.ny() - halo_index_y - 1; j < domain.ny() - 1; j++) {
         id = i + (domain.ny() - halo_index_y - 2) * (domain.nx() - 1);
-        icell_cent = i + j * (domain.nx() - 1);
+        long icell_cent = i + j * (domain.nx() - 1);
         terrain_id[icell_cent] = terrain_id[id];
         terrain[icell_cent] = terrain[id];
       }
@@ -549,14 +549,14 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
     for (int j = halo_index_y; j < domain.ny() - halo_index_y - 1; j++) {
       for (int i = 0; i < halo_index_x; i++) {
         id = halo_index_x + j * (domain.nx() - 1);
-        icell_cent = i + j * (domain.nx() - 1);
+        long icell_cent = i + j * (domain.nx() - 1);
         terrain_id[icell_cent] = terrain_id[id];
         terrain[icell_cent] = terrain[id];
       }
 
       for (int i = domain.nx() - halo_index_x - 1; i < domain.nx() - 1; i++) {
         id = (domain.nx() - halo_index_x - 2) + j * (domain.nx() - 1);
-        icell_cent = i + j * (domain.nx() - 1);
+        long icell_cent = i + j * (domain.nx() - 1);
         terrain_id[icell_cent] = terrain_id[id];
         terrain[icell_cent] = terrain[id];
       }
@@ -565,14 +565,14 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
     for (int i = 0; i < halo_index_x; i++) {
       for (int j = 0; j < halo_index_y; j++) {
         id = halo_index_x + halo_index_y * (domain.nx() - 1);
-        icell_cent = i + j * (domain.nx() - 1);
+        long icell_cent = i + j * (domain.nx() - 1);
         terrain_id[icell_cent] = terrain_id[id];
         terrain[icell_cent] = terrain[id];
       }
 
       for (int j = domain.ny() - halo_index_y - 1; j < domain.ny() - 1; j++) {
         id = halo_index_x + (domain.ny() - halo_index_y - 2) * (domain.nx() - 1);
-        icell_cent = i + j * (domain.nx() - 1);
+        long icell_cent = i + j * (domain.nx() - 1);
         terrain_id[icell_cent] = terrain_id[id];
         terrain[icell_cent] = terrain[id];
       }
@@ -581,14 +581,14 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
     for (int i = domain.nx() - halo_index_x - 1; i < domain.nx() - 1; i++) {
       for (int j = 0; j < halo_index_y; j++) {
         id = (domain.nx() - halo_index_x - 2) + halo_index_y * (domain.nx() - 1);
-        icell_cent = i + j * (domain.nx() - 1);
+        long icell_cent = i + j * (domain.nx() - 1);
         terrain_id[icell_cent] = terrain_id[id];
         terrain[icell_cent] = terrain[id];
       }
 
       for (int j = domain.ny() - halo_index_y - 1; j < domain.ny() - 1; j++) {
         id = (domain.nx() - halo_index_x - 2) + (domain.ny() - halo_index_y - 2) * (domain.nx() - 1);
-        icell_cent = i + j * (domain.nx() - 1);
+        long icell_cent = i + j * (domain.nx() - 1);
         terrain_id[icell_cent] = terrain_id[id];
         terrain[icell_cent] = terrain[id];
       }
@@ -603,7 +603,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
             break;
           }
           // icell_cent = i + j * (nx - 1) + (k + 1) * (nx - 1) * (ny - 1);
-          icell_cent = domain.getCellIdx(i, j, k + 1);
+          long icell_cent = domain.getCellIdx(i, j, k + 1);
           center_id[icell_cent] = 0;// Marks the cell center as inside solid
         }
       }
@@ -627,7 +627,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
             }
 
             // icell_cent = i + j * (nx - 1) + (k + 1) * (nx - 1) * (ny - 1);
-            icell_cent = domain.getCellIdx(i, j, k + 1);
+            long icell_cent = domain.getCellIdx(i, j, k + 1);
             icellflag[icell_cent] = 2;
           }
         }
@@ -892,7 +892,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
 
 
 // should not be a constructor -- reuse the other constructor...
-WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
+WINDSGeneralData::WINDSGeneralData(const std::string &inputFile)
   : domain(inputFile)
 {
   std::cout << "-------------------------------------------------------------------" << std::endl;

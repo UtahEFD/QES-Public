@@ -4,7 +4,7 @@
 
 using namespace qes;
 
-Domain::Domain(int nx, int ny, int nz, float dx, float dy, float dz)
+Domain::Domain(const int &nx, const int &ny, const int &nz, const float &dx, const float &dy, const float &dz)
 {
   // Internally this information is converted to the staggered grid
   // representation, which adds 1 to nx and ny and 2 to nz (to
@@ -29,7 +29,7 @@ Domain::Domain(int nx, int ny, int nz, float dx, float dy, float dz)
   defineHorizontalGrid();
 }
 
-Domain::Domain(std::string inputFile)
+Domain::Domain(const std::string &inputFile)
 {
   auto *input = new NetCDFInput(inputFile);
 
@@ -51,7 +51,7 @@ Domain::Domain(std::string inputFile)
 
   input->getVariableData("y", y);
   domainData.dy = y[1] - y[0]; /**< Grid resolution in x-direction */
-  //dxy = MIN_S(dx, dy);
+  // dxy = MIN_S(dx, dy);
 
   input->getVariableData("z", z);
   // check if dz_array is in the NetCDF file
@@ -79,7 +79,6 @@ Domain::Domain(std::string inputFile)
       z_face[k] = z_face[k - 1] + dz_array[k - 1];
     }
   }
-
 }
 
 void Domain::defineVerticalStretching(const float &dz_value)

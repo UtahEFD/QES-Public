@@ -50,7 +50,7 @@ public:
    * @param dy Size of cells in the Y dimension
    * @param dz Size of cells in the Z dimension
    */
-  Domain(int nx, int ny, int nz, float dx, float dy, float dz);
+  Domain(const int &nx, const int &ny, const int &nz, const float &dx, const float &dy, const float &dz);
 
   /**
    * /brief Standard domain constructor.
@@ -63,9 +63,9 @@ public:
    *
    * Internally, the class will manage this information as a staggered grid.
    *
-   * @param nx initialize from input file data
+   * @param inputFile initialize from input file data
    */
-  Domain(std::string NetCDFFileDataName);
+  explicit Domain(const std::string &NetCDFFileDataName);
 
   /**
    *
