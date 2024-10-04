@@ -149,26 +149,25 @@ public:
   // General QES Domain Data -- winds does not create this... provide const & in constructor of WINDS...
   qes::Domain domain;
 
-private:
   ///@{
   /** Number of cells */
-  // int nx, ny, nz;
+  int nx, ny, nz;
   ///@}
   ///@{
   /** Grid resolution */
-  // float dx, dy, dz;
+  float dx, dy, dz;
   ///@}
-  // float dxy; /**< Minimum value between dx and dy */
+  float dxy; /**< Minimum value between dx and dy */
 
   int wrf_nx{}, wrf_ny{};
 
   float halo_x{}, halo_y{};
   int halo_index_x{}, halo_index_y{};
 
-  // long numcell_cout{}; /**< :document this: */
-  // long numcell_cout_2d; /**< :document this: */
-  // long numcell_cent; /**< Total number of cell-centered values in domain */
-  // long numcell_face; /**< Total number of face-centered values in domain */
+  long numcell_cout{}; /**< :document this: */
+  long numcell_cout_2d; /**< :document this: */
+  long numcell_cent; /**< Total number of cell-centered values in domain */
+  long numcell_face; /**< Total number of face-centered values in domain */
 
 public:
   // std::vector<size_t> start; /**< :document this: */
@@ -185,12 +184,12 @@ public:
 
   float z0{}; /**< In wallLogBC */
 
-  // std::vector<float> dz_array; /**< :Array contain dz values: */
+  std::vector<float> dz_array; /**< :Array contain dz values: */
   ///@{
   /** :Location of center of cell in x,y and z directions: */
-  // std::vector<float> x, y, z;
+  std::vector<float> x, y, z;
   ///@}
-  // std::vector<float> z_face; /**< :Location of the bottom face of the cell in z-direction: */
+  std::vector<float> z_face; /**< :Location of the bottom face of the cell in z-direction: */
 
   std::vector<QEStime> sensortime; /**< :document this: */
   std::vector<int> sensortime_id;

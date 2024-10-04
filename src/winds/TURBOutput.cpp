@@ -45,17 +45,17 @@ TURBOutput::TURBOutput(TURBGeneralData *tgd, std::string output_file)
 
   m_TGD = tgd;
 
-  int nx = m_TGD->nx;
-  int ny = m_TGD->ny;
-  int nz = m_TGD->nz;
+  int nx = m_TGD->domain.nx();
+  int ny = m_TGD->domain.ny();
+  int nz = m_TGD->domain.nz();
 
   // unused: long numcell_cout = (nx-1)*(ny-1)*(nz-1);
 
   // set cell-centered data dimensions
   // space dimensions
-  createDimension("x", "x-distance", "m", &(m_TGD->x));
-  createDimension("y", "y-distance", "m", &(m_TGD->y));
-  createDimension("z", "z-distance", "m", &(m_TGD->z));
+  createDimension("x", "x-distance", "m", &(m_TGD->domain.x));
+  createDimension("y", "y-distance", "m", &(m_TGD->domain.y));
+  createDimension("z", "z-distance", "m", &(m_TGD->domain.z));
 
   // create attributes space dimensions
 

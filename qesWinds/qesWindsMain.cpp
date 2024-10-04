@@ -49,7 +49,7 @@
 #include "winds/TURBOutput.h"
 
 #include "winds/Solver.h"
-#include "winds/CPUSolver.h"
+#include "winds/Solver_CPU.h"
 #include "winds/Solver_CPU_RB.h"
 #ifdef HAS_CUDA
 #include "winds/DynamicParallelism.h"
@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
   //
   // get Domain data to WGD... have it constructed, setup outside of this class as a start....
   // WINDSGeneralData *WGD = new WINDSGeneralData(WID, arguments.solveType, qes->getCopyDomain());
-
+  
   // create WINDS output classes
   std::vector<QESNetCDFOutput *> outputVec;
   if (arguments.visuOutput) {
@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
   if (arguments.solveType == CPU_Type) {
 #ifdef _OPENMP
     std::cout << "Run Red/Black Solver (CPU) ..." << std::endl;
-    solver = new Solver_CPU_RB(WID, WGD);
+    solver = new Solver_CPU_RB(WGD->domain, WID->simParams->tolerance);
 #else
     std::cout << "Run Serial Solver (CPU) ..." << std::endl;
     solver = new CPUSolver(WID, WGD);

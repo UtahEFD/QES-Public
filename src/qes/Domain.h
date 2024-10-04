@@ -99,7 +99,7 @@ public:
    * initial parameters of the simulation and does not return
    * information based on staggered grid domain.
    */
-  long numCellCentered() const { return (domainData.nx - 1) * (domainData.ny - 1) * (domainData.dz - 1); }
+  long numCellCentered() const { return (domainData.nx - 1) * (domainData.ny - 1) * (domainData.nz - 1); }
 
   /**
    * Returns the total number of cell centered cells in the domain

@@ -102,6 +102,11 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
   // numcell_cent = domain.numCellCentered();// (nx - 1) * (ny - 1) * (nz - 1);// Total number of cell-centered values in domain
   // numcell_face = domain.numFaceCentered();// nx * ny * nz;// Total number of face-centered values in domain
 
+  // /////////////////////////
+  // Allocate memory
+  // /////////////////////////
+  allocateMemory();
+
   //////////////////////////////////////////////////////////////////////////////////
   /////    Create sensor velocity profiles and generate initial velocity field /////
   //////////////////////////////////////////////////////////////////////////////////
@@ -406,16 +411,11 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
   defineHorizontalGrid();
 */
 
-  // /////////////////////////
-  // Allocate memory
-  // /////////////////////////
-  allocateMemory();
-
   // defining ground solid cells (ghost cells below the surface)
   for (int j = 0; j < domain.ny() - 1; j++) {
     for (int i = 0; i < domain.nx() - 1; i++) {
-      int icell_cent = i + j * (domain.nx() - 1);
-      icellflag[icell_cent] = 2;
+      // long icell_cent = i + j * (domain.nx() - 1);
+      icellflag[domain.getCellIdx(i, j, 0)] = 2;
     }
   }
 
