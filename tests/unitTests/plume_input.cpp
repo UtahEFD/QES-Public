@@ -109,19 +109,20 @@ TEST_CASE("Plume test inputs for multiple particle models with uniform winds and
   WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes);
   TURBGeneralData *TGD = new TURBGeneralData(WGD);
 
-  for (int k = 0; k < WGD->nz; ++k) {
-    for (int j = 0; j < WGD->ny; ++j) {
-      for (int i = 0; i < WGD->nx; ++i) {
-        int faceID = i + j * (WGD->nx) + k * (WGD->nx) * (WGD->ny);
-        WGD->u[faceID] = uMean;
+  for (int k = 0; k < WGD->domain.nz(); ++k) {
+    for (int j = 0; j < WGD->domain.ny(); ++j) {
+      for (int i = 0; i < WGD->domain.nx(); ++i) {
+        // int faceID = i + j * (WGD->nx) + k * (WGD->nx) * (WGD->ny);
+        WGD->u[WGD->domain.getFaceIdx(i, j, k)] = uMean;
       }
     }
   }
 
-  for (int k = 1; k < WGD->nz - 1; ++k) {
-    for (int j = 0; j < WGD->ny - 1; ++j) {
-      for (int i = 0; i < WGD->nx - 1; ++i) {
-        int cellID = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+  for (int k = 1; k < WGD->domain.nz() - 1; ++k) {
+    for (int j = 0; j < WGD->domain.ny() - 1; ++j) {
+      for (int i = 0; i < WGD->domain.nx() - 1; ++i) {
+        // int cellID = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+        int cellID = WGD->domain.getCellIdx(i, j, k);
         TGD->txx[cellID] = pow(2.50 * uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
         TGD->tyy[cellID] = pow(1.78 * uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
         TGD->tzz[cellID] = pow(1.27 * uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);

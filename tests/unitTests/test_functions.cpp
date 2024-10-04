@@ -1,5 +1,6 @@
 #include "test_functions.h"
 test_functions::test_functions(WINDSGeneralData *WGD, TURBGeneralData *TGD, const std::string &function_type)
+  : domain(WGD->domain)
 {
   std::cout << "[Test Functions]\t setting test functions" << std::endl;
   if (function_type == "linear") {
@@ -21,50 +22,50 @@ test_functions::test_functions(WINDSGeneralData *WGD, TURBGeneralData *TGD, cons
 void test_functions::setTestValues(WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
   // uv on vertical face -> k=0...nz-2
-  for (int k = 0; k < WGD->nz - 1; k++) {
-    for (int j = 0; j < WGD->ny - 1; j++) {
-      for (int i = 0; i < WGD->nx - 1; i++) {
-        int faceID = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-        WGD->u[faceID] = u_test_function->val(i * WGD->dx, WGD->y[j], WGD->z[k]);
+  for (int k = 0; k < domain.nz() - 1; k++) {
+    for (int j = 0; j < domain.ny() - 1; j++) {
+      for (int i = 0; i < domain.nx() - 1; i++) {
+        long faceID = domain.getFaceIdx(i, j, k);
+        WGD->u[faceID] = u_test_function->val(i * domain.dx(), domain.y[j], domain.z[k]);
       }
     }
-    for (int j = 0; j < WGD->ny - 1; j++) {
-      for (int i = 0; i < WGD->nx - 1; i++) {
-        int faceID = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-        // WGD->v[faceID] = cos(a * WGD->x[i]) + cos(b * j * WGD->dy) + sin(c * WGD->z[k]);
-        // WGD->v[faceID] = a * WGD->x[i] + b * j * WGD->dy + c * WGD->z[k];
-        WGD->v[faceID] = v_test_function->val(WGD->x[i], j * WGD->dy, WGD->z[k]);
+    for (int j = 0; j < domain.ny() - 1; j++) {
+      for (int i = 0; i < domain.nx() - 1; i++) {
+        long faceID = i + j * domain.nx() + k * domain.nx() * domain.ny();
+        // WGD->v[faceID] = cos(a * domain.x[i]) + cos(b * j * WGD->dy) + sin(c * domain.z[k]);
+        // WGD->v[faceID] = a * domain.x[i] + b * j * WGD->dy + c * domain.z[k];
+        WGD->v[faceID] = v_test_function->val(domain.x[i], j * domain.dy(), domain.z[k]);
       }
     }
   }
 
   // w on horizontal face -> k=0...nz-1
-  for (int k = 0; k < WGD->nz - 1; k++) {
-    for (int j = 0; j < WGD->ny - 1; j++) {
-      for (int i = 0; i < WGD->nx - 1; i++) {
-        int faceID = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-        WGD->w[faceID] = w_test_function->val(WGD->x[i], WGD->y[j], WGD->z_face[k]);
+  for (int k = 0; k < domain.nz() - 1; k++) {
+    for (int j = 0; j < domain.ny() - 1; j++) {
+      for (int i = 0; i < domain.nx() - 1; i++) {
+        long faceID = domain.getFaceIdx(i, j, k);
+        WGD->w[faceID] = w_test_function->val(domain.x[i], domain.y[j], domain.z_face[k]);
       }
     }
   }
 
   // cell center-> k=0...nz-2
-  for (int k = 0; k < WGD->nz - 2; k++) {
-    for (int j = 0; j < WGD->ny - 1; j++) {
-      for (int i = 0; i < WGD->nx - 1; i++) {
-        int cellID = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-        TGD->txx[cellID] = c_test_function->val(WGD->x[i], WGD->y[j], WGD->z[k]);
-        TGD->txy[cellID] = c_test_function->val(WGD->x[i], WGD->y[j], WGD->z[k]);
-        TGD->txz[cellID] = c_test_function->val(WGD->x[i], WGD->y[j], WGD->z[k]);
-        TGD->tyy[cellID] = c_test_function->val(WGD->x[i], WGD->y[j], WGD->z[k]);
-        TGD->tyz[cellID] = c_test_function->val(WGD->x[i], WGD->y[j], WGD->z[k]);
-        TGD->tzz[cellID] = c_test_function->val(WGD->x[i], WGD->y[j], WGD->z[k]);
+  for (int k = 0; k < domain.nz() - 2; k++) {
+    for (int j = 0; j < domain.ny() - 1; j++) {
+      for (int i = 0; i < domain.nx() - 1; i++) {
+        long cellID = domain.getCellIdx(i, j, k);
+        TGD->txx[cellID] = c_test_function->val(domain.x[i], domain.y[j], domain.z[k]);
+        TGD->txy[cellID] = c_test_function->val(domain.x[i], domain.y[j], domain.z[k]);
+        TGD->txz[cellID] = c_test_function->val(domain.x[i], domain.y[j], domain.z[k]);
+        TGD->tyy[cellID] = c_test_function->val(domain.x[i], domain.y[j], domain.z[k]);
+        TGD->tyz[cellID] = c_test_function->val(domain.x[i], domain.y[j], domain.z[k]);
+        TGD->tzz[cellID] = c_test_function->val(domain.x[i], domain.y[j], domain.z[k]);
 
-        TGD->div_tau_x[cellID] = c_test_function->val(WGD->x[i], WGD->y[j], WGD->z[k]);
-        TGD->div_tau_y[cellID] = c_test_function->val(WGD->x[i], WGD->y[j], WGD->z[k]);
-        TGD->div_tau_z[cellID] = c_test_function->val(WGD->x[i], WGD->y[j], WGD->z[k]);
+        TGD->div_tau_x[cellID] = c_test_function->val(domain.x[i], domain.y[j], domain.z[k]);
+        TGD->div_tau_y[cellID] = c_test_function->val(domain.x[i], domain.y[j], domain.z[k]);
+        TGD->div_tau_z[cellID] = c_test_function->val(domain.x[i], domain.y[j], domain.z[k]);
 
-        TGD->CoEps[cellID] = c_test_function->val(WGD->x[i], WGD->y[j], WGD->z[k]);
+        TGD->CoEps[cellID] = c_test_function->val(domain.x[i], domain.y[j], domain.z[k]);
       }
     }
   }

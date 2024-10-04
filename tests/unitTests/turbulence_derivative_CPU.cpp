@@ -57,19 +57,19 @@ TEST_CASE("Testing QES-Turb derivatives CPU")
   std::cout << "Checking derivatives" << std::endl;
 
   std::vector<float> dudx, dvdx, dwdx;
-  dudx.resize(WGD->nx - 1, 0.0);
-  dvdx.resize(WGD->nx - 1, 0.0);
-  dwdx.resize(WGD->nx - 1, 0.0);
+  dudx.resize(WGD->domain.nx() - 1, 0.0);
+  dvdx.resize(WGD->domain.nx() - 1, 0.0);
+  dwdx.resize(WGD->domain.nx() - 1, 0.0);
 
   std::vector<float> dudy, dvdy, dwdy;
-  dudy.resize(WGD->ny - 1, 0.0);
-  dvdy.resize(WGD->ny - 1, 0.0);
-  dwdy.resize(WGD->ny - 1, 0.0);
+  dudy.resize(WGD->domain.ny() - 1, 0.0);
+  dvdy.resize(WGD->domain.ny() - 1, 0.0);
+  dwdy.resize(WGD->domain.ny() - 1, 0.0);
 
   std::vector<float> dudz, dvdz, dwdz;
-  dudz.resize(WGD->nz - 1, 0.0);
-  dvdz.resize(WGD->nz - 1, 0.0);
-  dwdz.resize(WGD->nz - 1, 0.0);
+  dudz.resize(WGD->domain.nz() - 1, 0.0);
+  dvdz.resize(WGD->domain.nz() - 1, 0.0);
+  dwdz.resize(WGD->domain.nz() - 1, 0.0);
 
   set1DDerivative(&dudx, &dudy, &dudz, &dvdx, &dvdy, &dvdz, &dwdx, &dwdy, &dwdz, WGD);
 
@@ -91,7 +91,6 @@ TEST_CASE("Testing QES-Turb derivatives CPU")
   REQUIRE(compError1Dz(&dudz, &(TGD->Gxz), WGD, TGD) < tol);
   REQUIRE(compError1Dz(&dvdz, &(TGD->Gyz), WGD, TGD) < tol);
   REQUIRE(compError1Dz(&dwdz, &(TGD->Gzz), WGD, TGD) < tol);
-
 }
 
 void set1DDerivative(std::vector<float> *dudx,
@@ -106,64 +105,67 @@ void set1DDerivative(std::vector<float> *dudx,
                      WINDSGeneralData *WGD)
 {
 
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
 
   // a = 2 * 2pi/Lx
-  float a = 2.0 * 2.0 * M_PI / (WGD->nx * WGD->dx);
+  float a = 2.0 * 2.0 * M_PI / (nx * dx);
   // b = 6 * 2pi/Ly
-  float b = 6.0 * 2.0 * M_PI / (WGD->ny * WGD->dy);
+  float b = 6.0 * 2.0 * M_PI / (ny * dy);
   // c = 4 * 2pi/Lz
-  float c = 4.0 * 2.0 * M_PI / ((WGD->nz - 1) * WGD->dz);
+  float c = 4.0 * 2.0 * M_PI / ((nz - 1) * dz);
 
   // uv on vertical face -> k=0...nz-2
-  for (int k = 0; k < WGD->nz - 1; k++) {
-    for (int j = 0; j < WGD->ny - 1; j++) {
-      for (int i = 0; i < WGD->nx - 1; i++) {
-        int faceID = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-        WGD->u[faceID] = cos(a * i * WGD->dx) + cos(b * WGD->y[j]) + sin(c * WGD->z[k]);
+  for (int k = 0; k < nz - 1; k++) {
+    for (int j = 0; j < ny - 1; j++) {
+      for (int i = 0; i < nx - 1; i++) {
+        // int faceID = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+        int faceID = WGD->domain.getFaceIdx(i, j, k);
+        WGD->u[faceID] = cos(a * i * dx) + cos(b * WGD->y[j]) + sin(c * WGD->z[k]);
       }
     }
-    for (int j = 0; j < WGD->ny - 1; j++) {
-      for (int i = 0; i < WGD->nx - 1; i++) {
-        int faceID = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-        WGD->v[faceID] = cos(a * WGD->x[i]) + cos(b * j * WGD->dy) + sin(c * WGD->z[k]);
+    for (int j = 0; j < ny - 1; j++) {
+      for (int i = 0; i < nx - 1; i++) {
+        int faceID = WGD->domain.getFaceIdx(i, j, k);
+        WGD->v[faceID] = cos(a * WGD->x[i]) + cos(b * j * dy) + sin(c * WGD->z[k]);
       }
     }
   }
   // dudx and dvdx at cell-center face -> i=1...ny-2
-  for (int i = 0; i < WGD->nx - 2; i++) {
+  for (int i = 0; i < nx - 2; i++) {
     dudx->at(i) = -a * sin(a * WGD->x[i]);
     dvdx->at(i) = -a * sin(a * WGD->x[i]);
   }
   // dudy and dvdy at cell-center face -> j=0...ny-2
-  for (int j = 0; j < WGD->ny - 2; j++) {
+  for (int j = 0; j < ny - 2; j++) {
     dudy->at(j) = -b * sin(b * WGD->y[j]);
     dvdy->at(j) = -b * sin(b * WGD->y[j]);
   }
   // dudz and dvdz at cell-center face -> k=1...nz-2
-  for (int k = 1; k < WGD->nz - 2; k++) {
+  for (int k = 1; k < nz - 2; k++) {
     dudz->at(k) = c * cos(c * WGD->z[k]);
     dvdz->at(k) = c * cos(c * WGD->z[k]);
   }
 
   // w on horizontal face -> k=0...nz-1
-  for (int k = 1; k < WGD->nz - 1; k++) {
-    for (int j = 0; j < WGD->ny - 1; j++) {
-      for (int i = 0; i < WGD->nx - 1; i++) {
-        int faceID = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+  for (int k = 1; k < nz - 1; k++) {
+    for (int j = 0; j < ny - 1; j++) {
+      for (int i = 0; i < nx - 1; i++) {
+        int faceID = WGD->domain.getFaceIdx(i, j, k);
         WGD->w[faceID] = cos(a * WGD->x[i]) + cos(b * WGD->y[j]) + sin(c * WGD->z_face[k]);
       }
     }
   }
   // dwdx at cell-center -> i=1...nx-3
-  for (int i = 0; i < WGD->nx - 2; i++) {
+  for (int i = 0; i < nx - 2; i++) {
     dwdx->at(i) = -a * sin(a * WGD->x[i]);
   }
   // dwdx at cell-center -> j=1...nz-3
-  for (int j = 0; j < WGD->nz - 2; j++) {
+  for (int j = 0; j < nz - 2; j++) {
     dwdy->at(j) = -b * sin(b * WGD->y[j]);
   }
   // dwdx at cell-center -> k=1...nz-2
-  for (int k = 1; k < WGD->nz - 2; k++) {
+  for (int k = 1; k < nz - 2; k++) {
     dwdz->at(k) = c * cos(c * WGD->z[k]);
   }
 
@@ -180,9 +182,7 @@ float compError1Dx(std::vector<float> *deriv,
 
   for (std::vector<int>::iterator it = TGD->icellfluid.begin(); it != TGD->icellfluid.end(); ++it) {
     int cellID = *it;
-    int k = (int)(cellID / ((WGD->nx - 1) * (WGD->ny - 1)));
-    int j = (int)((cellID - k * (WGD->nx - 1) * (WGD->ny - 1)) / (WGD->nx - 1));
-    int i = cellID - j * (WGD->nx - 1) - k * (WGD->nx - 1) * (WGD->ny - 1);
+    auto [i, j, k] = WGD->domain.getCellIdx(cellID);
 
     error += pow((var->at(cellID) - deriv->at(i)), 2.0);
     numcell++;
@@ -202,9 +202,7 @@ float compError1Dy(std::vector<float> *deriv,
 
   for (std::vector<int>::iterator it = TGD->icellfluid.begin(); it != TGD->icellfluid.end(); ++it) {
     int cellID = *it;
-    int k = (int)(cellID / ((WGD->nx - 1) * (WGD->ny - 1)));
-    int j = (int)((cellID - k * (WGD->nx - 1) * (WGD->ny - 1)) / (WGD->nx - 1));
-    // int i = cellID - j * (WGD->nx - 1) - k * (WGD->nx - 1) * (WGD->ny - 1);
+    auto [i, j, k] = WGD->domain.getCellIdx(cellID);
 
     error += pow((var->at(cellID) - deriv->at(j)), 2.0);
     numcell++;
@@ -224,9 +222,7 @@ float compError1Dz(std::vector<float> *deriv,
 
   for (std::vector<int>::iterator it = TGD->icellfluid.begin(); it != TGD->icellfluid.end(); ++it) {
     int cellID = *it;
-    int k = (int)(cellID / ((WGD->nx - 1) * (WGD->ny - 1)));
-    // int j = (int)((cellID - k * (WGD->nx - 1) * (WGD->ny - 1)) / (WGD->nx - 1));
-    // int i = cellID - j * (WGD->nx - 1) - k * (WGD->nx - 1) * (WGD->ny - 1);
+    auto [i, j, k] = WGD->domain.getCellIdx(cellID);
 
     error += pow((var->at(cellID) - deriv->at(k)), 2.0);
     numcell++;

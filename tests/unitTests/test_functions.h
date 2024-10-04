@@ -24,4 +24,6 @@ public:
 
 private:
   test_functions() {}
+
+  qes::Domain domain;
 };

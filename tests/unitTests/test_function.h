@@ -13,27 +13,19 @@ class test_function
 {
 public:
   test_function(WINDSGeneralData *WGD)
+    : domain(WGD->domain)
   {
-    nx = WGD->nx;
-    ny = WGD->ny;
-    nz = WGD->nz;
-
-    dx = WGD->dx;
-    dy = WGD->dy;
-    dz = WGD->dz;
-
-    lx = nx * dx;
-    ly = ny * dy;
-    lz = WGD->z_face.back();
+    lx = domain.nx() * domain.dx();
+    ly = domain.ny() * domain.dy();
+    lz = domain.z_face.back();
   }
   ~test_function() {}
 
   virtual float val(float x, float y, float z) = 0;
 
 protected:
-  int nx{}, ny{}, nz{};
-  float dx{}, dy{}, dz{};
   float lx{}, ly{}, lz{};
+  qes::Domain domain;
 
 private:
   test_function() = default;
