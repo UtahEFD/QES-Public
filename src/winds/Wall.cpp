@@ -44,9 +44,9 @@
 void Wall::defineWalls(WINDSGeneralData *WGD)
 {
 
-  int nx = WGD->nx;
-  int ny = WGD->ny;
-  int nz = WGD->nz;
+  int nx = WGD->domain.nx();
+  int ny = WGD->domain.ny();
+  int nz = WGD->domain.nz();
 
 
   for (auto k = 1; k < nz - 1; k++) {
@@ -137,11 +137,11 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
         if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
 
           // Wall below
-          if (WGD->icellflag[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] == 0 || WGD->icellflag[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] == 2) {
+          if (WGD->icellflag[icell_cent - (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)] == 0 || WGD->icellflag[icell_cent - (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)] == 2) {
             WGD->n[icell_cent] = 0.0;
           }
           // Wall above
-          if (WGD->icellflag[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)] == 0 || WGD->icellflag[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)] == 2) {
+          if (WGD->icellflag[icell_cent + (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)] == 0 || WGD->icellflag[icell_cent + (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)] == 2) {
             WGD->m[icell_cent] = 0.0;
           }
           // Wall in back
@@ -155,24 +155,24 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
             WGD->e[icell_cent] = 0.0;
           }
           // Wall on right
-          if (WGD->icellflag[icell_cent - (WGD->nx - 1)] == 0 || WGD->icellflag[icell_cent - (WGD->nx - 1)] == 2) {
+          if (WGD->icellflag[icell_cent - (WGD->domain.nx() - 1)] == 0 || WGD->icellflag[icell_cent - (WGD->domain.nx() - 1)] == 2) {
             if (j > 0) {
               WGD->h[icell_cent] = 0.0;
             }
           }
           // Wall on left
-          if (WGD->icellflag[icell_cent + (WGD->nx - 1)] == 0 || WGD->icellflag[icell_cent + (WGD->nx - 1)] == 2) {
+          if (WGD->icellflag[icell_cent + (WGD->domain.nx() - 1)] == 0 || WGD->icellflag[icell_cent + (WGD->domain.nx() - 1)] == 2) {
             WGD->g[icell_cent] = 0.0;
           }
         }
 
         if (WGD->icellflag[icell_cent] == 7) {
-          if (WGD->icellflag[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] == 7 || WGD->icellflag[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] == 8) {
-            WGD->m[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] = WGD->n[icell_cent];
+          if (WGD->icellflag[icell_cent - (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)] == 7 || WGD->icellflag[icell_cent - (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)] == 8) {
+            WGD->m[icell_cent - (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)] = WGD->n[icell_cent];
           }
 
-          if (WGD->icellflag[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)] == 7 || WGD->icellflag[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)] == 8) {
-            WGD->n[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)] = WGD->m[icell_cent];
+          if (WGD->icellflag[icell_cent + (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)] == 7 || WGD->icellflag[icell_cent + (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)] == 8) {
+            WGD->n[icell_cent + (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)] = WGD->m[icell_cent];
           }
 
           if (WGD->icellflag[icell_cent - 1] == 7 || WGD->icellflag[icell_cent - 1] == 8) {
@@ -185,24 +185,24 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
             WGD->e[icell_cent] = WGD->f[icell_cent + 1];
           }
 
-          if (WGD->icellflag[icell_cent - (WGD->nx - 1)] == 7 || WGD->icellflag[icell_cent - (WGD->nx - 1)] == 8) {
+          if (WGD->icellflag[icell_cent - (WGD->domain.nx() - 1)] == 7 || WGD->icellflag[icell_cent - (WGD->domain.nx() - 1)] == 8) {
             if (j > 0) {
-              WGD->h[icell_cent] = WGD->g[icell_cent - (WGD->nx - 1)];
+              WGD->h[icell_cent] = WGD->g[icell_cent - (WGD->domain.nx() - 1)];
             }
           }
 
-          if (WGD->icellflag[icell_cent + (WGD->nx - 1)] == 7 || WGD->icellflag[icell_cent + (WGD->nx - 1)] == 8) {
-            WGD->g[icell_cent] = WGD->h[icell_cent + (WGD->nx - 1)];
+          if (WGD->icellflag[icell_cent + (WGD->domain.nx() - 1)] == 7 || WGD->icellflag[icell_cent + (WGD->domain.nx() - 1)] == 8) {
+            WGD->g[icell_cent] = WGD->h[icell_cent + (WGD->domain.nx() - 1)];
           }
         }
 
         if (WGD->icellflag[icell_cent] == 8) {
-          if (WGD->icellflag[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] == 7 || WGD->icellflag[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] == 8) {
-            WGD->m[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] = WGD->n[icell_cent];
+          if (WGD->icellflag[icell_cent - (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)] == 7 || WGD->icellflag[icell_cent - (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)] == 8) {
+            WGD->m[icell_cent - (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)] = WGD->n[icell_cent];
           }
 
-          if (WGD->icellflag[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)] == 7 || WGD->icellflag[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)] == 8) {
-            WGD->n[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)] = WGD->m[icell_cent];
+          if (WGD->icellflag[icell_cent + (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)] == 7 || WGD->icellflag[icell_cent + (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)] == 8) {
+            WGD->n[icell_cent + (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)] = WGD->m[icell_cent];
           }
 
           if (WGD->icellflag[icell_cent - 1] == 7 || WGD->icellflag[icell_cent - 1] == 8) {
@@ -215,24 +215,24 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
             WGD->e[icell_cent] = WGD->f[icell_cent + 1];
           }
 
-          if (WGD->icellflag[icell_cent - (WGD->nx - 1)] == 7 || WGD->icellflag[icell_cent - (WGD->nx - 1)] == 8) {
+          if (WGD->icellflag[icell_cent - (WGD->domain.nx() - 1)] == 7 || WGD->icellflag[icell_cent - (WGD->domain.nx() - 1)] == 8) {
             if (j > 0) {
-              WGD->h[icell_cent] = WGD->g[icell_cent - (WGD->nx - 1)];
+              WGD->h[icell_cent] = WGD->g[icell_cent - (WGD->domain.nx() - 1)];
             }
           }
 
-          if (WGD->icellflag[icell_cent + (WGD->nx - 1)] == 7 || WGD->icellflag[icell_cent + (WGD->nx - 1)] == 8) {
-            WGD->g[icell_cent] = WGD->h[icell_cent + (WGD->nx - 1)];
+          if (WGD->icellflag[icell_cent + (WGD->domain.nx() - 1)] == 7 || WGD->icellflag[icell_cent + (WGD->domain.nx() - 1)] == 8) {
+            WGD->g[icell_cent] = WGD->h[icell_cent + (WGD->domain.nx() - 1)];
           }
         }
 
         if (WGD->icellflag[icell_cent] == 1) {
-          if (WGD->icellflag[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] == 7 || WGD->icellflag[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] == 8) {
-            WGD->n[icell_cent] = WGD->m[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)];
+          if (WGD->icellflag[icell_cent - (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)] == 7 || WGD->icellflag[icell_cent - (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)] == 8) {
+            WGD->n[icell_cent] = WGD->m[icell_cent - (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)];
           }
 
-          if (WGD->icellflag[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)] == 7 || WGD->icellflag[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)] == 8) {
-            WGD->m[icell_cent] = WGD->n[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)];
+          if (WGD->icellflag[icell_cent + (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)] == 7 || WGD->icellflag[icell_cent + (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)] == 8) {
+            WGD->m[icell_cent] = WGD->n[icell_cent + (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)];
           }
 
           if (WGD->icellflag[icell_cent - 1] == 7 || WGD->icellflag[icell_cent - 1] == 8) {
@@ -245,14 +245,14 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
             WGD->e[icell_cent] = WGD->f[icell_cent + 1];
           }
 
-          if (WGD->icellflag[icell_cent - (WGD->nx - 1)] == 7 || WGD->icellflag[icell_cent - (WGD->nx - 1)] == 8) {
+          if (WGD->icellflag[icell_cent - (WGD->domain.nx() - 1)] == 7 || WGD->icellflag[icell_cent - (WGD->domain.nx() - 1)] == 8) {
             if (j > 0) {
-              WGD->h[icell_cent] = WGD->g[icell_cent - (WGD->nx - 1)];
+              WGD->h[icell_cent] = WGD->g[icell_cent - (WGD->domain.nx() - 1)];
             }
           }
 
-          if (WGD->icellflag[icell_cent + (WGD->nx - 1)] == 7 || WGD->icellflag[icell_cent + (WGD->nx - 1)] == 8) {
-            WGD->g[icell_cent] = WGD->h[icell_cent + (WGD->nx - 1)];
+          if (WGD->icellflag[icell_cent + (WGD->domain.nx() - 1)] == 7 || WGD->icellflag[icell_cent + (WGD->domain.nx() - 1)] == 8) {
+            WGD->g[icell_cent] = WGD->h[icell_cent + (WGD->domain.nx() - 1)];
           }
         }
       }
@@ -299,14 +299,14 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
         if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
 
           // Wall below
-          if (WGD->icellflag[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] == 0 || WGD->icellflag[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] == 2) {
+          if (WGD->icellflag[icell_cent - (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)] == 0 || WGD->icellflag[icell_cent - (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)] == 2) {
             if (WGD->icellflag[icell_cent] != 8) {
               WGD->wall_below_indices.push_back(icell_face);
             }
             WGD->n[icell_cent] = 0.0;
           }
           // Wall above
-          if (WGD->icellflag[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)] == 0 || WGD->icellflag[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)] == 2) {
+          if (WGD->icellflag[icell_cent + (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)] == 0 || WGD->icellflag[icell_cent + (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)] == 2) {
             if (WGD->icellflag[icell_cent] != 8) {
               WGD->wall_above_indices.push_back(icell_face);
             }
@@ -329,7 +329,7 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
             WGD->e[icell_cent] = 0.0;
           }
           // Wall on right
-          if (WGD->icellflag[icell_cent - (WGD->nx - 1)] == 0 || WGD->icellflag[icell_cent - (WGD->nx - 1)] == 2) {
+          if (WGD->icellflag[icell_cent - (WGD->domain.nx() - 1)] == 0 || WGD->icellflag[icell_cent - (WGD->domain.nx() - 1)] == 2) {
             if (j > 0) {
               if (WGD->icellflag[icell_cent] != 8) {
                 WGD->wall_right_indices.push_back(icell_face);
@@ -338,7 +338,7 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
             }
           }
           // Wall on left
-          if (WGD->icellflag[icell_cent + (WGD->nx - 1)] == 0 || WGD->icellflag[icell_cent + (WGD->nx - 1)] == 2) {
+          if (WGD->icellflag[icell_cent + (WGD->domain.nx() - 1)] == 0 || WGD->icellflag[icell_cent + (WGD->domain.nx() - 1)] == 2) {
             if (WGD->icellflag[icell_cent] != 8) {
               WGD->wall_left_indices.push_back(icell_face);
             }
@@ -361,16 +361,16 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
 
   std::cout << "Applying log law parameterization..." << std::flush;
 
-  //float dx = WGD->dx;
-  //float dy = WGD->dy;
-  //float dz = WGD->dz;
-  //int nx = WGD->nx;
-  //int ny = WGD->ny;
-  //int nz = WGD->nz;
-  //const float z0 = WGD->z0;
-  //std::vector<float> &u0 = WGD->u0;
-  //std::vector<float> &v0 = WGD->v0;
-  //std::vector<float> &w0 = WGD->w0;
+  // float dx = WGD->domain.dx();
+  // float dy = WGD->domain.dy();
+  // float dz = WGD->domain.dz();
+  // int nx = WGD->domain.nx();
+  // int ny = WGD->domain.ny();
+  // int nz = WGD->domain.nz();
+  // const float z0 = WGD->z0;
+  // std::vector<float> &u0 = WGD->u0;
+  // std::vector<float> &v0 = WGD->v0;
+  // std::vector<float> &w0 = WGD->w0;
 
   float ustar_wall;// velocity gradient at the wall
   float new_ustar;// new ustar value calculated
@@ -379,7 +379,7 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
   float dist1(0.0);// distance of the center of the nearest cell in perpendicular direction from wall
   float dist2(0.0);// distance of the center of second near cell in perpendicular direction from wall
   float wind_dir;// wind direction in parallel planes to wall
-  //int icell_cent;
+  // int icell_cent;
   float s_behind, s_front, s_right, s_left, s_below, s_above, s_cut;// Area of each face and the cut-cell filled by solid
   int first_i(0), first_j(0), first_k(0);
   int second_i(0), second_j(0), second_k(0);
@@ -387,13 +387,13 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
   // Loop through all the cells
   for (auto i = 0u; i < WGD->wall_indices.size(); i++) {
     if (WGD->ni[WGD->wall_indices[i]] == 0.0 && WGD->nj[WGD->wall_indices[i]] == 0.0 && WGD->nk[WGD->wall_indices[i]] == 0.0) {
-      int k = WGD->wall_indices[i] / ((WGD->nx - 1) * (WGD->ny - 1));
-      s_behind = WGD->f[WGD->wall_indices[i]] * (WGD->dy * WGD->dz_array[k]) * (WGD->dx * WGD->dx);
-      s_front = WGD->e[WGD->wall_indices[i]] * (WGD->dy * WGD->dz_array[k]) * (WGD->dx * WGD->dx);
-      s_right = WGD->h[WGD->wall_indices[i]] * (WGD->dx * WGD->dz_array[k]) * (WGD->dy * WGD->dy);
-      s_left = WGD->g[WGD->wall_indices[i]] * (WGD->dx * WGD->dz_array[k]) * (WGD->dy * WGD->dy);
-      s_below = WGD->n[WGD->wall_indices[i]] * (WGD->dx * WGD->dy) * (WGD->dz_array[k] * 0.5 * (WGD->dz_array[k] + WGD->dz_array[k + 1]));
-      s_above = WGD->m[WGD->wall_indices[i]] * (WGD->dx * WGD->dy) * (WGD->dz_array[k] * 0.5 * (WGD->dz_array[k] + WGD->dz_array[k - 1]));
+      int k = WGD->wall_indices[i] / ((WGD->domain.nx() - 1) * (WGD->domain.ny() - 1));
+      s_behind = WGD->f[WGD->wall_indices[i]] * (WGD->domain.dy() * WGD->domain.dz_array[k]) * (WGD->domain.dx() * WGD->domain.dx());
+      s_front = WGD->e[WGD->wall_indices[i]] * (WGD->domain.dy() * WGD->domain.dz_array[k]) * (WGD->domain.dx() * WGD->domain.dx());
+      s_right = WGD->h[WGD->wall_indices[i]] * (WGD->domain.dx() * WGD->domain.dz_array[k]) * (WGD->domain.dy() * WGD->domain.dy());
+      s_left = WGD->g[WGD->wall_indices[i]] * (WGD->domain.dx() * WGD->domain.dz_array[k]) * (WGD->domain.dy() * WGD->domain.dy());
+      s_below = WGD->n[WGD->wall_indices[i]] * (WGD->domain.dx() * WGD->domain.dy()) * (WGD->domain.dz_array[k] * 0.5 * (WGD->domain.dz_array[k] + WGD->domain.dz_array[k + 1]));
+      s_above = WGD->m[WGD->wall_indices[i]] * (WGD->domain.dx() * WGD->domain.dy()) * (WGD->domain.dz_array[k] * 0.5 * (WGD->domain.dz_array[k] + WGD->domain.dz_array[k - 1]));
 
       s_cut = sqrt(pow(s_behind - s_front, 2.0) + pow(s_right - s_left, 2.0)
                    + pow(s_below - s_above, 2.0));
@@ -417,12 +417,12 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
   float max_dist;
   // Loop through all the cut-cells
   for (auto id = 0u; id < WGD->wall_indices.size(); id++) {
-    int k = WGD->wall_indices[id] / ((WGD->nx - 1) * (WGD->ny - 1));
-    int j = (WGD->wall_indices[id] - k * (WGD->nx - 1) * (WGD->ny - 1)) / (WGD->nx - 1);
-    int i = WGD->wall_indices[id] - k * (WGD->nx - 1) * (WGD->ny - 1) - j * (WGD->nx - 1);
+    int k = WGD->wall_indices[id] / ((WGD->domain.nx() - 1) * (WGD->domain.ny() - 1));
+    int j = (WGD->wall_indices[id] - k * (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1)) / (WGD->domain.nx() - 1);
+    int i = WGD->wall_indices[id] - k * (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1) - j * (WGD->domain.nx() - 1);
     coeff = 1.0;
     count = 0;
-    max_dist = sqrt(pow(WGD->dx, 2.0) + pow(WGD->dy, 2.0) + pow(WGD->dz_array[k], 2.0));
+    max_dist = sqrt(pow(WGD->domain.dx(), 2.0) + pow(WGD->domain.dy(), 2.0) + pow(WGD->domain.dz_array[k], 2.0));
 
     if (abs(WGD->ni[WGD->wall_indices[id]]) < 0.05) {
       WGD->ni[WGD->wall_indices[id]] = 0;
@@ -455,46 +455,46 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
 
       if (WGD->ni[WGD->wall_indices[id]] >= 0.0) {
         // Finding indices for the second node location in normal to surface direction
-        second_i = std::round((WGD->x[i] - 0.001 + WGD->ni[WGD->wall_indices[id]] * coeff * WGD->dx) / WGD->dx);
+        second_i = std::round((WGD->domain.x[i] - 0.001 + WGD->ni[WGD->wall_indices[id]] * coeff * WGD->domain.dx()) / WGD->domain.dx());
       } else {
         // Finding indices for the second node location in normal to surface direction
-        second_i = std::round((WGD->x[i] - 0.001 + WGD->ni[WGD->wall_indices[id]] * coeff * WGD->dx) / WGD->dx) - 1;
+        second_i = std::round((WGD->domain.x[i] - 0.001 + WGD->ni[WGD->wall_indices[id]] * coeff * WGD->domain.dx()) / WGD->domain.dx()) - 1;
       }
 
       if (WGD->nj[WGD->wall_indices[id]] >= 0.0) {
         // Finding indices for the second node location in normal to surface direction
-        second_j = std::round((WGD->y[j] - 0.001 + WGD->nj[WGD->wall_indices[id]] * coeff * WGD->dy) / WGD->dy);
+        second_j = std::round((WGD->domain.y[j] - 0.001 + WGD->nj[WGD->wall_indices[id]] * coeff * WGD->domain.dy()) / WGD->domain.dy());
       } else {
         // Finding indices for the second node location in normal to surface direction
-        second_j = std::round((WGD->y[j] - 0.001 + WGD->nj[WGD->wall_indices[id]] * coeff * WGD->dy) / WGD->dy) - 1;
+        second_j = std::round((WGD->domain.y[j] - 0.001 + WGD->nj[WGD->wall_indices[id]] * coeff * WGD->domain.dy()) / WGD->domain.dy()) - 1;
       }
 
 
       if (WGD->nk[WGD->wall_indices[id]] >= 0.0) {
-        z_buffer = WGD->z[k] + WGD->nk[WGD->wall_indices[id]] * coeff * WGD->dz_array[k];
+        z_buffer = WGD->domain.z[k] + WGD->nk[WGD->wall_indices[id]] * coeff * WGD->domain.dz_array[k];
         for (auto kk = 0u; kk < WGD->z.size() - 1; ++kk) {
           second_k = kk + 1;
-          if (z_buffer <= WGD->z_face[kk + 2]) {
+          if (z_buffer <= WGD->domain.z_face[kk + 2]) {
             break;
           }
         }
       } else {
-        z_buffer = WGD->z[k] + WGD->nk[WGD->wall_indices[id]] * coeff * WGD->dz_array[k];
+        z_buffer = WGD->domain.z[k] + WGD->nk[WGD->wall_indices[id]] * coeff * WGD->domain.dz_array[k];
         for (auto kk = 0u; kk < WGD->z.size() - 1; ++kk) {
           second_k = kk + 1;
-          if (z_buffer <= WGD->z_face[kk + 2]) {
+          if (z_buffer <= WGD->domain.z_face[kk + 2]) {
             break;
           }
         }
       }
 
       // Distance of the first cell center from the cut surface
-      dist1 = sqrt(pow((WGD->x[first_i] - WGD->x[i]), 2.0) + pow((WGD->y[first_j] - WGD->y[j]), 2.0)
-                   + pow((WGD->z[first_k] - WGD->z[k]), 2.0))
+      dist1 = sqrt(pow((WGD->domain.x[first_i] - WGD->domain.x[i]), 2.0) + pow((WGD->domain.y[first_j] - WGD->domain.y[j]), 2.0)
+                   + pow((WGD->domain.z[first_k] - WGD->domain.z[k]), 2.0))
               + WGD->wall_distance[WGD->wall_indices[id]];
       // Distance of the second cell center from the cut surface
-      dist2 = sqrt(pow((WGD->x[second_i] - WGD->x[i]), 2.0) + pow((WGD->y[second_j] - WGD->y[j]), 2.0)
-                   + pow((WGD->z[second_k] - WGD->z[k]), 2.0))
+      dist2 = sqrt(pow((WGD->domain.x[second_i] - WGD->domain.x[i]), 2.0) + pow((WGD->domain.y[second_j] - WGD->domain.y[j]), 2.0)
+                   + pow((WGD->domain.z[second_k] - WGD->domain.z[k]), 2.0))
               + WGD->wall_distance[WGD->wall_indices[id]];
     } else {
       bool condition = true;
@@ -507,71 +507,71 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
 
         if (WGD->ni[WGD->wall_indices[id]] >= 0.0) {
           // Finding index for the first node location in normal to surface direction
-          first_i = std::round((WGD->x[i] - 0.001 + WGD->ni[WGD->wall_indices[id]] * coeff * WGD->dx) / WGD->dx);
+          first_i = std::round((WGD->domain.x[i] - 0.001 + WGD->ni[WGD->wall_indices[id]] * coeff * WGD->domain.dx()) / WGD->domain.dx());
           // Finding index for the second node location in normal to surface direction
-          second_i = std::round((WGD->x[i] - 0.001 + WGD->ni[WGD->wall_indices[id]] * (coeff + 1) * WGD->dx) / WGD->dx);
+          second_i = std::round((WGD->domain.x[i] - 0.001 + WGD->ni[WGD->wall_indices[id]] * (coeff + 1) * WGD->domain.dx()) / WGD->domain.dx());
         } else {
           // Finding index for the first node location in normal to surface direction
-          first_i = std::round((WGD->x[i] - 0.001 + WGD->ni[WGD->wall_indices[id]] * coeff * WGD->dx) / WGD->dx) - 1;
+          first_i = std::round((WGD->domain.x[i] - 0.001 + WGD->ni[WGD->wall_indices[id]] * coeff * WGD->domain.dx()) / WGD->domain.dx()) - 1;
           // Finding index for the second node location in normal to surface direction
-          second_i = std::round((WGD->x[i] - 0.001 + WGD->ni[WGD->wall_indices[id]] * (coeff + 1) * WGD->dx) / WGD->dx) - 1;
+          second_i = std::round((WGD->domain.x[i] - 0.001 + WGD->ni[WGD->wall_indices[id]] * (coeff + 1) * WGD->domain.dx()) / WGD->domain.dx()) - 1;
         }
 
         if (WGD->nj[WGD->wall_indices[id]] >= 0.0) {
           // Finding index for the first node location in normal to surface direction
-          first_j = std::round((WGD->y[j] - 0.001 + WGD->nj[WGD->wall_indices[id]] * coeff * WGD->dy) / WGD->dy);
+          first_j = std::round((WGD->domain.y[j] - 0.001 + WGD->nj[WGD->wall_indices[id]] * coeff * WGD->domain.dy()) / WGD->domain.dy());
           // Finding index for the second node location in normal to surface direction
-          second_j = std::round((WGD->y[j] - 0.001 + WGD->nj[WGD->wall_indices[id]] * (coeff + 1) * WGD->dy) / WGD->dy);
+          second_j = std::round((WGD->domain.y[j] - 0.001 + WGD->nj[WGD->wall_indices[id]] * (coeff + 1) * WGD->domain.dy()) / WGD->domain.dy());
         } else {
           // Finding index for the first node location in normal to surface direction
-          first_j = std::round((WGD->y[j] - 0.001 + WGD->nj[WGD->wall_indices[id]] * coeff * WGD->dy) / WGD->dy) - 1;
+          first_j = std::round((WGD->domain.y[j] - 0.001 + WGD->nj[WGD->wall_indices[id]] * coeff * WGD->domain.dy()) / WGD->domain.dy()) - 1;
           // Finding index for the second node location in normal to surface direction
-          second_j = std::round((WGD->y[j] - 0.001 + WGD->nj[WGD->wall_indices[id]] * (coeff + 1) * WGD->dy) / WGD->dy) - 1;
+          second_j = std::round((WGD->domain.y[j] - 0.001 + WGD->nj[WGD->wall_indices[id]] * (coeff + 1) * WGD->domain.dy()) / WGD->domain.dy()) - 1;
         }
 
         if (WGD->nk[WGD->wall_indices[id]] >= 0.0) {
-          z_buffer = WGD->z[k] + WGD->nk[WGD->wall_indices[id]] * coeff * WGD->dz_array[k];
+          z_buffer = WGD->domain.z[k] + WGD->nk[WGD->wall_indices[id]] * coeff * WGD->domain.dz_array[k];
           for (auto kk = 0u; kk < WGD->z.size(); kk++) {
             first_k = kk + 1;
-            if (z_buffer <= WGD->z[kk + 1]) {
+            if (z_buffer <= WGD->domain.z[kk + 1]) {
               break;
             }
           }
-          z_buffer = WGD->z[k] + WGD->nk[WGD->wall_indices[id]] * (coeff + 1) * WGD->dz_array[k];
+          z_buffer = WGD->domain.z[k] + WGD->nk[WGD->wall_indices[id]] * (coeff + 1) * WGD->domain.dz_array[k];
           for (auto kk = 0u; kk < WGD->z.size() - 1; ++kk) {
             second_k = kk + 1;
-            if (z_buffer <= WGD->z_face[kk + 2]) {
+            if (z_buffer <= WGD->domain.z_face[kk + 2]) {
               break;
             }
           }
         } else {
-          z_buffer = WGD->z[k] + WGD->nk[WGD->wall_indices[id]] * coeff * WGD->dz_array[k];
+          z_buffer = WGD->domain.z[k] + WGD->nk[WGD->wall_indices[id]] * coeff * WGD->domain.dz_array[k];
           for (auto kk = 0u; kk < WGD->z.size() - 1; ++kk) {
             first_k = kk + 1;
-            if (z_buffer <= WGD->z_face[kk + 2]) {
+            if (z_buffer <= WGD->domain.z_face[kk + 2]) {
               break;
             }
           }
-          z_buffer = WGD->z[k] + WGD->nk[WGD->wall_indices[id]] * (coeff + 1) * WGD->dz_array[k];
+          z_buffer = WGD->domain.z[k] + WGD->nk[WGD->wall_indices[id]] * (coeff + 1) * WGD->domain.dz_array[k];
           for (auto kk = 0u; kk < WGD->z.size(); kk++) {
             second_k = kk - 1;
-            if (z_buffer <= WGD->z[kk]) {
+            if (z_buffer <= WGD->domain.z[kk]) {
               break;
             }
           }
         }
-        if (first_i > WGD->nx - 2 || first_i < 0 || first_j > WGD->ny - 2 || first_j < 0 || first_k > WGD->nz - 3 || first_k < 1
-            || second_i > WGD->nx - 2 || second_i < 0 || second_j > WGD->ny - 2 || second_j < 0 || second_k > WGD->nz - 3 || second_k < 1) {
+        if (first_i > WGD->domain.nx() - 2 || first_i < 0 || first_j > WGD->domain.ny() - 2 || first_j < 0 || first_k > WGD->domain.nz() - 3 || first_k < 1
+            || second_i > WGD->domain.nx() - 2 || second_i < 0 || second_j > WGD->domain.ny() - 2 || second_j < 0 || second_k > WGD->domain.nz() - 3 || second_k < 1) {
           break;
         }
 
         // Distance of the first cell center from the cut surface
-        dist1 = sqrt(pow((WGD->x[first_i] - WGD->x[i]), 2.0) + pow((WGD->y[first_j] - WGD->y[j]), 2.0)
-                     + pow((WGD->z[first_k] - WGD->z[k]), 2.0))
+        dist1 = sqrt(pow((WGD->domain.x[first_i] - WGD->domain.x[i]), 2.0) + pow((WGD->domain.y[first_j] - WGD->domain.y[j]), 2.0)
+                     + pow((WGD->domain.z[first_k] - WGD->domain.z[k]), 2.0))
                 + WGD->wall_distance[WGD->wall_indices[id]];
         // Distance of the second cell center from the cut surface
-        dist2 = sqrt(pow((WGD->x[second_i] - WGD->x[i]), 2.0) + pow((WGD->y[second_j] - WGD->y[j]), 2.0)
-                     + pow((WGD->z[second_k] - WGD->z[k]), 2.0))
+        dist2 = sqrt(pow((WGD->domain.x[second_i] - WGD->domain.x[i]), 2.0) + pow((WGD->domain.y[second_j] - WGD->domain.y[j]), 2.0)
+                     + pow((WGD->domain.z[second_k] - WGD->domain.z[k]), 2.0))
                 + WGD->wall_distance[WGD->wall_indices[id]];
 
         if (((log(dist2 / dist1) / log(dist1 / WGD->z0)) <= 1.0) && dist1 > WGD->z0) {
@@ -583,13 +583,13 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
     }
 
 
-    if (first_i > WGD->nx - 2 || first_i < 0 || first_j > WGD->ny - 2 || first_j < 0 || first_k > WGD->nz - 3 || first_k < 1
-        || second_i > WGD->nx - 2 || second_i < 0 || second_j > WGD->ny - 2 || second_j < 0 || second_k > WGD->nz - 3 || second_k < 1) {
+    if (first_i > WGD->domain.nx() - 2 || first_i < 0 || first_j > WGD->domain.ny() - 2 || first_j < 0 || first_k > WGD->domain.nz() - 3 || first_k < 1
+        || second_i > WGD->domain.nx() - 2 || second_i < 0 || second_j > WGD->domain.ny() - 2 || second_j < 0 || second_k > WGD->domain.nz() - 3 || second_k < 1) {
       continue;
     }
 
     // Id of the first cell for velocity components
-    first_id = first_i + first_j * WGD->nx + first_k * WGD->nx * WGD->ny;
+    first_id = first_i + first_j * WGD->domain.nx() + first_k * WGD->domain.nx() * WGD->domain.ny();
 
     if (isInitial == true) {
       // Velocity magnitude in normal direction (U.N = u0*ni+v0*nj+w0*nk)
@@ -629,7 +629,7 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
 
 
     // Id of the second cell for velocity components
-    second_id = second_i + second_j * WGD->nx + second_k * WGD->nx * WGD->ny;
+    second_id = second_i + second_j * WGD->domain.nx() + second_k * WGD->domain.nx() * WGD->domain.ny();
     if (isInitial == true) {
       // Velocity magnitude in tangential direction (U.T = u0*ti+v0*tj+w0*tk)
       vel_mag2 = abs(WGD->u0[second_id] * WGD->ti[WGD->wall_indices[id]] + WGD->v0[second_id] * WGD->tj[WGD->wall_indices[id]]
@@ -674,15 +674,15 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
   vel_mag1 = 0.0;
   vel_mag2 = 0.0;
 
-  dist1 = 0.5 * WGD->dz;
-  dist2 = 1.5 * WGD->dz;
+  dist1 = 0.5 * WGD->domain.dz();
+  dist2 = 1.5 * WGD->domain.dz();
 
   // apply log law fix to the cells with wall below
   for (size_t i = 0; i < WGD->wall_below_indices.size(); i++) {
     ustar_wall = 0.1;// reset default value for velocity gradient
     for (auto iter = 0; iter < 20; iter++) {
-      wind_dir = atan2(WGD->v0[WGD->wall_below_indices[i] + WGD->nx * WGD->ny], WGD->u0[WGD->wall_below_indices[i] + WGD->nx * WGD->ny]);
-      vel_mag2 = sqrt(pow(WGD->u0[WGD->wall_below_indices[i] + WGD->nx * WGD->ny], 2.0) + pow(WGD->v0[WGD->wall_below_indices[i] + WGD->nx * WGD->ny], 2.0));
+      wind_dir = atan2(WGD->v0[WGD->wall_below_indices[i] + WGD->domain.nx() * WGD->domain.ny()], WGD->u0[WGD->wall_below_indices[i] + WGD->domain.nx() * WGD->domain.ny()]);
+      vel_mag2 = sqrt(pow(WGD->u0[WGD->wall_below_indices[i] + WGD->domain.nx() * WGD->domain.ny()], 2.0) + pow(WGD->v0[WGD->wall_below_indices[i] + WGD->domain.nx() * WGD->domain.ny()], 2.0));
       vel_mag1 = vel_mag2 - (ustar_wall / WGD->vk) * log(dist2 / dist1);
       WGD->w0[WGD->wall_below_indices[i]] = 0;// normal component of velocity set to zero
       // parallel components of velocity to wall
@@ -699,8 +699,8 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
   for (size_t i = 0; i < WGD->wall_above_indices.size(); i++) {
     ustar_wall = 0.1;// reset default value for velocity gradient
     for (auto iter = 0; iter < 20; iter++) {
-      wind_dir = atan2(WGD->v0[WGD->wall_above_indices[i] - WGD->nx * WGD->ny], WGD->u0[WGD->wall_above_indices[i] - WGD->nx * WGD->ny]);
-      vel_mag2 = sqrt(pow(WGD->u0[WGD->wall_above_indices[i] - WGD->nx * WGD->ny], 2.0) + pow(WGD->v0[WGD->wall_above_indices[i] - WGD->nx * WGD->ny], 2.0));
+      wind_dir = atan2(WGD->v0[WGD->wall_above_indices[i] - WGD->domain.nx() * WGD->domain.ny()], WGD->u0[WGD->wall_above_indices[i] - WGD->domain.nx() * WGD->domain.ny()]);
+      vel_mag2 = sqrt(pow(WGD->u0[WGD->wall_above_indices[i] - WGD->domain.nx() * WGD->domain.ny()], 2.0) + pow(WGD->v0[WGD->wall_above_indices[i] - WGD->domain.nx() * WGD->domain.ny()], 2.0));
       vel_mag1 = vel_mag2 - (ustar_wall / WGD->vk) * log(dist2 / dist1);
       WGD->w0[WGD->wall_above_indices[i]] = 0;// normal component of velocity set to zero
       // parallel components of velocity to wall
@@ -714,8 +714,8 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
     ustar[j] = ustar_wall;
   }
 
-  dist1 = 0.5 * WGD->dx;
-  dist2 = 1.5 * WGD->dx;
+  dist1 = 0.5 * WGD->domain.dx();
+  dist2 = 1.5 * WGD->domain.dx();
 
   // apply log law fix to the cells with wall in back
   for (size_t i = 0; i < WGD->wall_back_indices.size(); i++) {
@@ -757,15 +757,15 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
   }
 
 
-  dist1 = 0.5 * WGD->dy;
-  dist2 = 1.5 * WGD->dy;
+  dist1 = 0.5 * WGD->domain.dy();
+  dist2 = 1.5 * WGD->domain.dy();
 
   // apply log law fix to the cells with wall to right
   for (size_t i = 0; i < WGD->wall_right_indices.size(); i++) {
     ustar_wall = 0.1;// reset default value for velocity gradient
     for (auto iter = 0; iter < 20; iter++) {
-      wind_dir = atan2(WGD->w0[WGD->wall_right_indices[i] + WGD->nx], WGD->u0[WGD->wall_right_indices[i] + WGD->nx]);
-      vel_mag2 = sqrt(pow(WGD->u0[WGD->wall_right_indices[i] + WGD->nx], 2.0) + pow(WGD->w0[WGD->wall_right_indices[i] + WGD->nx], 2.0));
+      wind_dir = atan2(WGD->w0[WGD->wall_right_indices[i] + WGD->domain.nx()], WGD->u0[WGD->wall_right_indices[i] + WGD->domain.nx()]);
+      vel_mag2 = sqrt(pow(WGD->u0[WGD->wall_right_indices[i] + WGD->domain.nx()], 2.0) + pow(WGD->w0[WGD->wall_right_indices[i] + WGD->domain.nx()], 2.0));
       vel_mag1 = vel_mag2 - (ustar_wall / WGD->vk) * log(dist2 / dist1);
       WGD->v0[WGD->wall_right_indices[i]] = 0;// normal component of velocity set to zero
       // parallel components of velocity to wall
@@ -783,8 +783,8 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
   for (size_t i = 0; i < WGD->wall_left_indices.size(); i++) {
     ustar_wall = 0.1;// reset default value for velocity gradient
     for (auto iter = 0; iter < 20; iter++) {
-      wind_dir = atan2(WGD->w0[WGD->wall_left_indices[i] - WGD->nx], WGD->u0[WGD->wall_left_indices[i] - WGD->nx]);
-      vel_mag2 = sqrt(pow(WGD->u0[WGD->wall_left_indices[i] - WGD->nx], 2.0) + pow(WGD->w0[WGD->wall_left_indices[i] - WGD->nx], 2.0));
+      wind_dir = atan2(WGD->w0[WGD->wall_left_indices[i] - WGD->domain.nx()], WGD->u0[WGD->wall_left_indices[i] - WGD->domain.nx()]);
+      vel_mag2 = sqrt(pow(WGD->u0[WGD->wall_left_indices[i] - WGD->domain.nx()], 2.0) + pow(WGD->w0[WGD->wall_left_indices[i] - WGD->domain.nx()], 2.0));
       vel_mag1 = vel_mag2 - (ustar_wall / WGD->vk) * log(dist2 / dist1);
       WGD->v0[WGD->wall_left_indices[i]] = 0;// normal component of velocity set to zero
       // parallel components of velocity to wall
@@ -807,18 +807,18 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
 
 void Wall::setVelocityZero(WINDSGeneralData *WGD)
 {
-  for (auto k = 0; k < WGD->nz - 1; k++) {
-    for (auto j = 1; j < WGD->ny - 1; j++) {
-      for (auto i = 1; i < WGD->nx - 1; i++) {
-        int icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-        int icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+  for (auto k = 0; k < WGD->domain.nz() - 1; k++) {
+    for (auto j = 1; j < WGD->domain.ny() - 1; j++) {
+      for (auto i = 1; i < WGD->domain.nx() - 1; i++) {
+        int icell_cent = i + j * (WGD->domain.nx() - 1) + k * (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1);
+        int icell_face = i + j * WGD->domain.nx() + k * WGD->domain.nx() * WGD->domain.ny();
         if (WGD->icellflag[icell_cent] == 0 || WGD->icellflag[icell_cent] == 2) {
           WGD->u0[icell_face] = 0.0;// Set velocity inside the building to zero
           WGD->u0[icell_face + 1] = 0.0;
           WGD->v0[icell_face] = 0.0;// Set velocity inside the building to zero
-          WGD->v0[icell_face + WGD->nx] = 0.0;
+          WGD->v0[icell_face + WGD->domain.nx()] = 0.0;
           WGD->w0[icell_face] = 0.0;// Set velocity inside the building to zero
-          WGD->w0[icell_face + WGD->nx * WGD->ny] = 0.0;
+          WGD->w0[icell_face + WGD->domain.nx() * WGD->domain.ny()] = 0.0;
         }
       }
     }
@@ -830,16 +830,16 @@ void Wall::solverCoefficients(WINDSGeneralData *WGD)
 {
   // New boundary condition implementation
   // This needs to be done only once
-  for (auto k = 1; k < WGD->nz - 2; k++) {
-    for (auto j = 0; j < WGD->ny - 1; j++) {
-      for (auto i = 0; i < WGD->nx - 1; i++) {
-        int icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-        WGD->e[icell_cent] = WGD->e[icell_cent] / (WGD->dx * WGD->dx);
-        WGD->f[icell_cent] = WGD->f[icell_cent] / (WGD->dx * WGD->dx);
-        WGD->g[icell_cent] = WGD->g[icell_cent] / (WGD->dy * WGD->dy);
-        WGD->h[icell_cent] = WGD->h[icell_cent] / (WGD->dy * WGD->dy);
-        WGD->m[icell_cent] = WGD->m[icell_cent] / (WGD->dz_array[k] * 0.5 * (WGD->dz_array[k] + WGD->dz_array[k + 1]));
-        WGD->n[icell_cent] = WGD->n[icell_cent] / (WGD->dz_array[k] * 0.5 * (WGD->dz_array[k] + WGD->dz_array[k - 1]));
+  for (auto k = 1; k < WGD->domain.nz() - 2; k++) {
+    for (auto j = 0; j < WGD->domain.ny() - 1; j++) {
+      for (auto i = 0; i < WGD->domain.nx() - 1; i++) {
+        int icell_cent = i + j * (WGD->domain.nx() - 1) + k * (WGD->domain.nx() - 1) * (WGD->domain.ny() - 1);
+        WGD->e[icell_cent] = WGD->e[icell_cent] / (WGD->domain.dx() * WGD->domain.dx());
+        WGD->f[icell_cent] = WGD->f[icell_cent] / (WGD->domain.dx() * WGD->domain.dx());
+        WGD->g[icell_cent] = WGD->g[icell_cent] / (WGD->domain.dy() * WGD->domain.dy());
+        WGD->h[icell_cent] = WGD->h[icell_cent] / (WGD->domain.dy() * WGD->domain.dy());
+        WGD->m[icell_cent] = WGD->m[icell_cent] / (WGD->domain.dz_array[k] * 0.5 * (WGD->domain.dz_array[k] + WGD->domain.dz_array[k + 1]));
+        WGD->n[icell_cent] = WGD->n[icell_cent] / (WGD->domain.dz_array[k] * 0.5 * (WGD->domain.dz_array[k] + WGD->domain.dz_array[k - 1]));
       }
     }
   }
