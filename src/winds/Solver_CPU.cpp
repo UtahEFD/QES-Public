@@ -239,6 +239,6 @@ void Solver_CPU::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool so
   auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
   std::chrono::duration<float> elapsedTotal = finish - startOfSolveMethod;
   std::chrono::duration<float> elapsedSolve = finish - startSolveSection;
-  std::cout << "\t\t Elapsed time: " << elapsedTotal.count() << " s\n";// Print out elapsed execution time
+  std::cout << "\t\t elapsed time: " << elapsedTotal.count() << " s\n";// Print out elapsed execution time
   // std::cout << "Elapsed solve time: " << elapsedSolve.count() << " s\n";// Print out elapsed execution time
 }

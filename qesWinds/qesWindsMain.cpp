@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
   //
   // get Domain data to WGD... have it constructed, setup outside of this class as a start....
   // WINDSGeneralData *WGD = new WINDSGeneralData(WID, arguments.solveType, qes->getCopyDomain());
-  
+
   // create WINDS output classes
   std::vector<QESNetCDFOutput *> outputVec;
   if (arguments.visuOutput) {
@@ -143,22 +143,17 @@ int main(int argc, char *argv[])
   Solver *solver = nullptr;
   if (arguments.solveType == CPU_Type) {
 #ifdef _OPENMP
-    std::cout << "Run Red/Black Solver (CPU) ..." << std::endl;
     solver = new Solver_CPU_RB(WGD->domain, WID->simParams->tolerance);
 #else
-    std::cout << "Run Serial Solver (CPU) ..." << std::endl;
-    solver = new CPUSolver(WID, WGD);
+    solver = new Solver_CPU(WGD->domain, WID->simParams->tolerance);
 #endif
 
 #ifdef HAS_CUDA
   } else if (arguments.solveType == DYNAMIC_P) {
-    std::cout << "Run Dynamic Parallel Solver (GPU) ..." << std::endl;
     solver = new DynamicParallelism(WID, WGD);
   } else if (arguments.solveType == Global_M) {
-    std::cout << "Run Global Memory Solver (GPU) ..." << std::endl;
     solver = new GlobalMemory(WID, WGD);
   } else if (arguments.solveType == Shared_M) {
-    std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
     solver = new SharedMemory(WID, WGD);
 #endif
   } else {

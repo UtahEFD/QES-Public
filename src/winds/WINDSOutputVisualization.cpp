@@ -48,25 +48,25 @@ WINDSOutputVisualization::WINDSOutputVisualization(WINDSGeneralData *WGD,
   // copy of WGD pointer
   m_WGD = WGD;
 
-  int nx = m_WGD->nx;
-  int ny = m_WGD->ny;
-  int nz = m_WGD->nz;
+  int nx = m_WGD->domain.nx();
+  int ny = m_WGD->domain.ny();
+  int nz = m_WGD->domain.nz();
 
   long numcell_cout = (nx - 1) * (ny - 1) * (nz - 2);
 
   z_out.resize(nz - 2);
   for (auto k = 1; k < nz - 1; k++) {
-    z_out[k - 1] = m_WGD->z[k];// Location of face centers in z-dir
+    z_out[k - 1] = m_WGD->domain.z[k];// Location of face centers in z-dir
   }
 
   x_out.resize(nx - 1);
   for (auto i = 0; i < nx - 1; i++) {
-    x_out[i] = (i + 0.5) * m_WGD->dx;// Location of face centers in x-dir
+    x_out[i] = (i + 0.5) * m_WGD->domain.dx();// Location of face centers in x-dir
   }
 
   y_out.resize(ny - 1);
   for (auto j = 0; j < ny - 1; j++) {
-    y_out[j] = (j + 0.5) * m_WGD->dy;// Location of face centers in y-dir
+    y_out[j] = (j + 0.5) * m_WGD->domain.dy();// Location of face centers in y-dir
   }
 
   // Output related data
@@ -114,9 +114,9 @@ WINDSOutputVisualization::WINDSOutputVisualization(WINDSGeneralData *WGD,
 void WINDSOutputVisualization::save(QEStime timeOut)
 {
   // get grid size (not output var size)
-  int nx = m_WGD->nx;
-  int ny = m_WGD->ny;
-  int nz = m_WGD->nz;
+  int nx = m_WGD->domain.nx();
+  int ny = m_WGD->domain.ny();
+  int nz = m_WGD->domain.nz();
 
   // set time
   timeCurrent = timeOut;
