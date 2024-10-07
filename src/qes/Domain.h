@@ -119,6 +119,10 @@ public:
   long numFaceCentered() const { return domainData.nx * domainData.ny * domainData.nz; }
 
   // inlined too... d
+  long face2d(const int &i, const int &j) const
+  {
+    return i + j * domainData.nx;
+  }
   long getFaceIdx(const int &i, const int &j, const int &k) const
   {
     return i + j * domainData.nx + k * domainData.nx * domainData.ny;
@@ -128,6 +132,10 @@ public:
     return curr + i + j * domainData.nx + k * domainData.nx * domainData.ny;
   }
 
+  long cell2d(const int &i, const int &j) const
+  {
+    return i + j * (domainData.nx - 1);
+  }
   long getCellIdx(const int &i, const int &j, const int &k) const
   {
     return i + j * (domainData.nx - 1) + k * (domainData.nx - 1) * (domainData.ny - 1);

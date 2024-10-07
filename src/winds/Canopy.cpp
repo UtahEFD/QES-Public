@@ -44,9 +44,9 @@
 Canopy::Canopy(const WINDSInputData *WID, WINDSGeneralData *WGD)
 {
   wakeFlag = WID->vegetationParams->wakeFlag;
-  nx_canopy = WGD->nx - 1;
-  ny_canopy = WGD->ny - 1;
-  nz_canopy = WGD->nz - 1;
+  nx_canopy = WGD->domain.nx() - 1;
+  ny_canopy = WGD->domain.ny() - 1;
+  nz_canopy = WGD->domain.nz() - 1;
 
   // number of cell cell-center elements (2D)
   numcell_cent_2d = nx_canopy * ny_canopy;
@@ -70,8 +70,8 @@ Canopy::Canopy(const WINDSInputData *WID, WINDSGeneralData *WGD)
   canopy_atten_coeff.resize(numcell_cent_3d, 0.0);
   icanopy_flag.resize(numcell_cent_3d, 0);
 
-  wake_u_defect.resize(WGD->numcell_face, 0.0);
-  wake_v_defect.resize(WGD->numcell_face, 0.0);
+  wake_u_defect.resize(WGD->domain.numFaceCentered(), 0.0);
+  wake_v_defect.resize(WGD->domain.numFaceCentered(), 0.0);
 }
 
 void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
@@ -90,7 +90,7 @@ void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
     WID->vegetationParams->SHPData->getLocalDomain(shpDomainSize);
     WID->vegetationParams->SHPData->getMinExtent(minExtent);
 
-    //printf("\tShapefile Origin = (%.6f,%.6f)\n", minExtent[0], minExtent[1]);
+    // printf("\tShapefile Origin = (%.6f,%.6f)\n", minExtent[0], minExtent[1]);
 
     // If the shapefile is not covering the whole domain or the UTM coordinates
     // of the QES domain is different than shapefile origin
@@ -111,7 +111,7 @@ void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
       if (WID->simParams->DTE_heightField && WID->simParams->DTE_mesh) {
         std::cerr << "Isolated tree from shapefile and DEM not implemented...\n";
       } else {
-        //base_height.push_back(0.0);
+        // base_height.push_back(0.0);
       }
 
       for (auto lIdx = 0u; lIdx < WID->vegetationParams->SHPData->m_polygons[pIdx].size(); lIdx++) {
@@ -121,7 +121,7 @@ void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
 
       // Loop to create each of the polygon buildings read in from the shapefile
       int cId = allCanopiesV.size();
-      //allCanopiesV.push_back(new CanopyIsolatedTree(WID, WGD, pIdx));
+      // allCanopiesV.push_back(new CanopyIsolatedTree(WID, WGD, pIdx));
       allCanopiesV.push_back(new CanopyIsolatedTree(WID->vegetationParams->SHPData->m_polygons[pIdx],
                                                     WID->vegetationParams->SHPData->m_features["H"][pIdx],
                                                     WID->vegetationParams->SHPData->m_features["D"][pIdx],
@@ -170,7 +170,7 @@ void Canopy::applyCanopyVegetation(WINDSGeneralData *WGD)
 
   for (size_t i = 0; i < allCanopiesV.size(); ++i) {
     // for now this does the canopy stuff for us
-    //allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
+    // allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
     allCanopiesV[canopy_id[i]]->canopyVegetation(WGD, canopy_id[i]);
   }
 
@@ -183,7 +183,7 @@ void Canopy::applyCanopyWake(WINDSGeneralData *WGD)
   if (wakeFlag == 1) {
     for (size_t i = 0; i < allCanopiesV.size(); ++i) {
       // for now this does the canopy stuff for us
-      //allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
+      // allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
       allCanopiesV[canopy_id[i]]->canopyWake(WGD, canopy_id[i]);
     }
 
@@ -207,7 +207,7 @@ void Canopy::applyCanopyTurbulenceWake(WINDSGeneralData *WGD, TURBGeneralData *T
   if (wakeFlag == 1) {
     for (size_t i = 0; i < allCanopiesV.size(); ++i) {
       // for now this does the canopy stuff for us
-      //allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
+      // allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
       allCanopiesV[canopy_id[i]]->canopyTurbulenceWake(WGD, TGD, canopy_id[i]);
     }
   }
@@ -221,7 +221,7 @@ void Canopy::applyCanopyStress(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   if (wakeFlag == 1) {
     for (size_t i = 0; i < allCanopiesV.size(); ++i) {
       // for now this does the canopy stuff for us
-      //allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
+      // allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
       allCanopiesV[canopy_id[i]]->canopyStress(WGD, TGD, canopy_id[i]);
     }
   }
@@ -238,7 +238,7 @@ void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
   int num_atten;
 
   // Call regression to define ustar and surface roughness of the canopy
-  //canopyRegression(WGD);
+  // canopyRegression(WGD);
 
   for (auto j = 0; j < ny_canopy; j++) {
     for (auto i = 0; i < nx_canopy; i++) {
@@ -269,13 +269,13 @@ void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
         // float u_H = (WGD->canopy_ustar[id]/WGD->vk)*
         //  log((WGD->canopy_top[id]-WGD->canopy_d[id])/WGD->canopy_z0[id]);
 
-        for (auto k = 1; k < WGD->nz - 1; k++) {
-          int icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-          float z_rel = WGD->z[k] - WGD->terrain[icell_2d];
+        for (auto k = 1; k < WGD->domain.nz() - 1; k++) {
+          long icell_face = WGD->domain.getFaceIdx(i, j, k);
+          float z_rel = WGD->domain.z[k] - WGD->terrain[icell_2d];
 
-          if (WGD->z[k] < canopy_base[icell_2d]) {
+          if (WGD->domain.z[k] < canopy_base[icell_2d]) {
             // below the terrain or building
-          } else if (WGD->z[k] < canopy_top[icell_2d]) {
+          } else if (WGD->domain.z[k] < canopy_top[icell_2d]) {
             if (canopy_atten_coeff[icell_3d] > 0) {
               icell_3d = i + j * nx_canopy + k * nx_canopy * ny_canopy;
               avg_atten = canopy_atten_coeff[icell_3d];
@@ -314,14 +314,14 @@ void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
 
               // at the edge of the canopy need to adjust velocity at the next face
               // use canopy_top to detect the edge (worke with level changes)
-              if (j < WGD->ny - 2) {
+              if (j < WGD->domain.ny() - 2) {
                 if (canopy_top[icell_2d + nx_canopy] == 0.0) {
-                  WGD->v0[icell_face + WGD->nx] *= veg_vel_frac;
+                  WGD->v0[WGD->domain.getFaceIdx(icell_face, 0, 1, 0)] *= veg_vel_frac;
                 }
               }
-              if (i < WGD->nx - 2) {
+              if (i < WGD->domain.nx() - 2) {
                 if (canopy_top[icell_2d + 1] == 0.0) {
-                  WGD->u0[icell_face + 1] *= veg_vel_frac;
+                  WGD->u0[WGD->domain.getFaceIdx(icell_face, 1, 0, 0)] *= veg_vel_frac;
                 }
               }
             }
@@ -338,16 +338,16 @@ void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
 
             // at the edge of the canopy need to adjust velocity at the next face
             // use canopy_top to detect the edge (worke with level changes)
-            if (j < WGD->ny - 2) {
+            if (j < WGD->domain.ny() - 2) {
               icell_3d = i + j * nx_canopy + canopy_bot_index[icell_2d] * nx_canopy * ny_canopy;
               if (canopy_top[icell_2d + nx_canopy] == 0.0) {
-                WGD->v0[icell_face + WGD->nx] *= veg_vel_frac;
+                WGD->v0[WGD->domain.getFaceIdx(icell_face, 0, 1, 0)] *= veg_vel_frac;
               }
             }
-            if (i < WGD->nx - 2) {
+            if (i < WGD->domain.nx() - 2) {
               icell_3d = i + j * nx_canopy + canopy_bot_index[icell_2d] * nx_canopy * ny_canopy;
               if (canopy_top[icell_2d + 1] == 0.0) {
-                WGD->u0[icell_face + 1] *= veg_vel_frac;
+                WGD->u0[WGD->domain.getFaceIdx(icell_face, 1, 0, 0)] *= veg_vel_frac;
               }
             }
           }
@@ -370,16 +370,16 @@ void Canopy::canopyRegression(WINDSGeneralData *WGD)
     for (auto i = 0; i < nx_canopy; i++) {
       int id = i + j * nx_canopy;
       if (canopy_top_index[id] > 0) {
-        for (auto k = canopy_top_index[id]; k < WGD->nz - 2; k++) {
+        for (auto k = canopy_top_index[id]; k < WGD->domain.nz() - 2; k++) {
           k_top = k;
-          if (canopy_top[id] + canopy_height[id] < WGD->z[k + 1])
+          if (canopy_top[id] + canopy_height[id] < WGD->domain.z[k + 1])
             break;
         }
         if (k_top == canopy_top_index[id]) {
           k_top = canopy_top_index[id] + 1;
         }
-        if (k_top > WGD->nz - 1) {
-          k_top = WGD->nz - 1;
+        if (k_top > WGD->domain.nz() - 1) {
+          k_top = WGD->domain.nz() - 1;
         }
         sum_x = 0;
         sum_y = 0;
@@ -388,9 +388,9 @@ void Canopy::canopyRegression(WINDSGeneralData *WGD)
         counter = 0;
         for (auto k = canopy_top_index[id]; k <= k_top; k++) {
           counter += 1;
-          int icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+          long icell_face = WGD->domain.getFaceIdx(i, j, k);
           local_mag = sqrt(pow(WGD->u0[icell_face], 2.0) + pow(WGD->v0[icell_face], 2.0));
-          y = log(WGD->z[k] - WGD->terrain[i + j * (WGD->nx - 1)]);
+          y = log(WGD->domain.z[k] - WGD->terrain[i + j * (WGD->domain.nx() - 1)]);
           sum_x += local_mag;
           sum_y += y;
           sum_xy += local_mag * y;
@@ -402,7 +402,7 @@ void Canopy::canopyRegression(WINDSGeneralData *WGD)
         ym = sum_y / counter;
         canopy_z0[id] = exp(ym - ((WGD->vk / canopy_ustar[id])) * xm);
 
-        //std::cout << xm << " " << ym << " " << sum_y << " " << sum_x_sq << " " << canopy_ustar[id] << " " << canopy_z0[id] << std::endl;
+        // std::cout << xm << " " << ym << " " << sum_y << " " << sum_x_sq << " " << canopy_ustar[id] << " " << canopy_z0[id] << std::endl;
 
         if (isnan(canopy_z0[id])) {
           std::cerr << "==============================================================" << std::endl;

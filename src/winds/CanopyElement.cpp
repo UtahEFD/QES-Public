@@ -47,8 +47,8 @@ void CanopyElement::setPolyBuilding(WINDSGeneralData *WGD)
   building_cent_x /= polygonVertices.size() - 1;
   building_cent_y /= polygonVertices.size() - 1;
 
-  i_building_cent = std::round(building_cent_x / WGD->dx) - 1;// Index of building centroid in x-direction
-  j_building_cent = std::round(building_cent_y / WGD->dy) - 1;// Index of building centroid in y-direction
+  i_building_cent = std::round(building_cent_x / WGD->domain.dx()) - 1;// Index of building centroid in x-direction
+  j_building_cent = std::round(building_cent_y / WGD->domain.dy()) - 1;// Index of building centroid in y-direction
 
   // Loop to calculate maximum and minimum of x and y values of the building
   x_min = x_max = polygonVertices[0].x_poly;
@@ -69,13 +69,13 @@ void CanopyElement::setPolyBuilding(WINDSGeneralData *WGD)
   }
 
   // i_start and i_end are faces and not cells
-  i_start = x_min / WGD->dx;// Index of canopy start location in x-direction
-  i_end = x_max / WGD->dx + 1;// Index of canopy end location in x-direction
+  i_start = x_min / WGD->domain.dx();// Index of canopy start location in x-direction
+  i_end = x_max / WGD->domain.dx() + 1;// Index of canopy end location in x-direction
   // j_start and j_end are faces and not cells
-  j_start = y_min / WGD->dy;// Index of canopy end location in y-direction
-  j_end = y_max / WGD->dy + 1;// Index of canopy start location in y-direction
+  j_start = y_min / WGD->domain.dy();// Index of canopy end location in y-direction
+  j_end = y_max / WGD->domain.dy() + 1;// Index of canopy start location in y-direction
 
-  if (i_start < 0 || i_end >= WGD->nx - 1 || j_start < 0 || j_end >= WGD->ny - 1) {
+  if (i_start < 0 || i_end >= WGD->domain.nx() - 1 || j_start < 0 || j_end >= WGD->domain.ny() - 1) {
     std::cerr << "==============================================================" << std::endl;
     std::cerr << "[ERROR] canopy element out of bound" << std::endl;
     std::cout << "x value (min,man) (indeces) (" << x_min << "," << x_max << ") (" << i_start << "," << i_end << ")" << std::endl;
@@ -313,7 +313,7 @@ void CanopyElement::canopyCioncoParam(WINDSGeneralData *WGD)
   int num_atten;
 
   // Call regression to define ustar and surface roughness of the canopy
-  //canopyRegression(WGD);
+  // canopyRegression(WGD);
 
   for (auto j = 0; j < ny_canopy; j++) {
     for (auto i = 0; i < nx_canopy; i++) {
