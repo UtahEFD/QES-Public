@@ -42,13 +42,8 @@
 
 void LocalMixingSerial::defineMixingLength(const WINDSInputData *WID, WINDSGeneralData *WGD)
 {
-  int nx = WGD->nx;
-  int ny = WGD->ny;
-  int nz = WGD->nz;
-
-  float dz = WGD->dz;
-  float dy = WGD->dy;
-  float dx = WGD->dx;
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
 
   // x-grid (face-center & cell-center)
   x_fc.resize(nx, 0);
@@ -63,7 +58,7 @@ void LocalMixingSerial::defineMixingLength(const WINDSInputData *WID, WINDSGener
   z_cc.resize(nz - 1, 0);
 
   // x cell-center
-  x_cc = WGD->x;
+  x_cc = WGD->domain.x;
   // x face-center (this assume constant dx for the moment, same as QES-winds)
   for (int i = 1; i < nx - 1; i++) {
     x_fc[i] = 0.5 * (WGD->x[i - 1] + WGD->x[i]);
@@ -72,7 +67,7 @@ void LocalMixingSerial::defineMixingLength(const WINDSInputData *WID, WINDSGener
   x_fc[nx - 1] = x_fc[nx - 2] + dx;
 
   // y cell-center
-  y_cc = WGD->y;
+  y_cc = WGD->domain.y;
   // y face-center (this assume constant dy for the moment, same as QES-winds)
   for (int i = 1; i < ny - 1; i++) {
     y_fc[i] = 0.5 * (WGD->y[i - 1] + WGD->y[i]);
@@ -81,10 +76,10 @@ void LocalMixingSerial::defineMixingLength(const WINDSInputData *WID, WINDSGener
   y_fc[ny - 1] = y_fc[ny - 2] + dy;
 
   // z cell-center
-  z_cc = WGD->z;
+  z_cc = WGD->domain.z;
   // z face-center (with ghost cell under the ground)
   for (int i = 1; i < nz; i++) {
-    z_fc[i] = WGD->z_face[i];
+    z_fc[i] = WGD->domain.z_face[i];
   }
   z_fc[0] = z_fc[1] - dz;
 
@@ -166,9 +161,7 @@ void LocalMixingSerial::defineMixingLength(const WINDSInputData *WID, WINDSGener
 void LocalMixingSerial::getMinDistWall(WINDSGeneralData *WGD, int max_height)
 {
 
-  int nx = WGD->nx;
-  int ny = WGD->ny;
-  int nz = WGD->nz;
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
 
   // defining the walls
   for (int i = 1; i < nx - 2; i++) {

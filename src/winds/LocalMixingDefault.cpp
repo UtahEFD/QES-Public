@@ -42,14 +42,12 @@
 
 void LocalMixingDefault::defineMixingLength(const WINDSInputData *WID, WINDSGeneralData *WGD)
 {
-  int nx = WGD->nx;
-  int ny = WGD->ny;
-  int nz = WGD->nz;
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
 
   // z cell-center
   std::vector<float> z_cc;
   z_cc.resize(nz - 1, 0);
-  z_cc = WGD->z;
+  z_cc = WGD->domain.z;
 
   // seeding Local Mixing Length with the verical distance to the terrain (up to 2*max_z)
   for (int i = 0; i < nx - 1; i++) {
@@ -65,6 +63,4 @@ void LocalMixingDefault::defineMixingLength(const WINDSInputData *WID, WINDSGene
       }
     }
   }
-
-  return;
 }

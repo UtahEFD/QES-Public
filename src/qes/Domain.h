@@ -83,7 +83,7 @@ public:
   std::tuple<int, int, int> getDomainCellNum() const { return { domainData.nx, domainData.ny, domainData.nz }; }
   std::tuple<int, int, int> getBaseDomainCellNum() const { return { domainData.nx - 1, domainData.ny - 1, domainData.nz - 2 }; }
 
-  float minDxy() const { return std::min(domainData.dx, domainData.dy); }
+  float dxy() const { return std::min(domainData.dx, domainData.dy); }
 
   /**
    *

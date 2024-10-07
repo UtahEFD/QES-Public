@@ -43,13 +43,8 @@
 void LocalMixingOptix::defineMixingLength(const WINDSInputData *WID, WINDSGeneralData *WGD)
 {
 
-  int nx = WGD->nx;
-  int ny = WGD->ny;
-  int nz = WGD->nz;
-
-  float dx = WGD->dx;
-  float dy = WGD->dy;
-  float dz = WGD->dz;
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
 
   // ///////////////////////////////////////
   //
