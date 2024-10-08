@@ -509,8 +509,8 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
 
           // wake u-values
           // ij coord of u-face
-          int i_u = std::round(((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / WGD->dx);
-          int j_u = ((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / WGD->dy;
+          int i_u = std::round(((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / WGD->domain.dx());
+          int j_u = ((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / WGD->domain.dy();
           if (i_u < WGD->domain.nx() - 1 && i_u > 0 && j_u < WGD->domain.ny() - 1 && j_u > 0) {
             // not rotated relative coordinate of u-face
             x_p = i_u * WGD->domain.dx() - building_cent_x;
@@ -572,8 +572,8 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
 
           // wake v-values
           // ij coord of v-face
-          int i_v = ((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / WGD->dx;
-          int j_v = std::round(((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / WGD->dy);
+          int i_v = ((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / WGD->domain.dx();
+          int j_v = std::round(((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / WGD->domain.dy());
           if (i_v < WGD->domain.nx() - 1 && i_v > 0 && j_v < WGD->domain.ny() - 1 && j_v > 0) {
             // not rotated relative coordinate of v-face
             x_p = (i_v + 0.5) * WGD->domain.dx() - building_cent_x;
