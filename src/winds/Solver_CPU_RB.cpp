@@ -61,19 +61,19 @@ void Solver_CPU_RB::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool
       for (int j = 0; j < domain.ny() - 1; ++j) {
         for (int i = 0; i < domain.nx() - 1; ++i) {
           // icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-          icell_cent = domain.getCellIdx(i, j, k);
+          icell_cent = domain.cell(i, j, k);
           // icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-          icell_face = domain.getFaceIdx(i, j, k);
+          icell_face = domain.face(i, j, k);
           // Calculate divergence of initial velocity field
           R[icell_cent] = (-2.0f * pow(alpha1, 2.0))
-                          * (((WGD->e[icell_cent] * WGD->u0[domain.getFaceIdx(icell_face, 1, 0, 0)]
+                          * (((WGD->e[icell_cent] * WGD->u0[domain.faceAdd(icell_face, 1, 0, 0)]
                                - WGD->f[icell_cent] * WGD->u0[icell_face])
                               * domain.dx())
-                             + ((WGD->g[icell_cent] * WGD->v0[domain.getFaceIdx(icell_face, 0, 1, 0)]
+                             + ((WGD->g[icell_cent] * WGD->v0[domain.faceAdd(icell_face, 0, 1, 0)]
                                  - WGD->h[icell_cent] * WGD->v0[icell_face])
                                 * domain.dy())
                              + ((WGD->m[icell_cent] * domain.dz_array[k] * 0.5 * (domain.dz_array[k] + domain.dz_array[k + 1])
-                                   * WGD->w0[domain.getFaceIdx(icell_face, 0, 0, 1)]
+                                   * WGD->w0[domain.faceAdd(icell_face, 0, 0, 1)]
                                  - WGD->n[icell_cent] * domain.dz_array[k] * 0.5f * (domain.dz_array[k] + domain.dz_array[k - 1])
                                      * WGD->w0[icell_face])));
         }
@@ -115,14 +115,14 @@ void Solver_CPU_RB::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool
 
             if (((i + j + k) % 2) == 0) {
               // icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-              icell_cent = domain.getCellIdx(i, j, k);
+              icell_cent = domain.cell(i, j, k);
               lambda[icell_cent] = (omega / (WGD->e[icell_cent] + WGD->f[icell_cent] + WGD->g[icell_cent] + WGD->h[icell_cent] + WGD->m[icell_cent] + WGD->n[icell_cent]))
-                                     * (WGD->e[icell_cent] * lambda[domain.getCellIdx(icell_cent, 1, 0, 0)]
-                                        + WGD->f[icell_cent] * lambda[domain.getCellIdx(icell_cent, -1, 0, 0)]
-                                        + WGD->g[icell_cent] * lambda[domain.getCellIdx(icell_cent, 0, 1, 0)]
-                                        + WGD->h[icell_cent] * lambda[domain.getCellIdx(icell_cent, 0, -1, 0)]
-                                        + WGD->m[icell_cent] * lambda[domain.getCellIdx(icell_cent, 0, 0, 1)]
-                                        + WGD->n[icell_cent] * lambda[domain.getCellIdx(icell_cent, 0, 0, -1)] - R[icell_cent])
+                                     * (WGD->e[icell_cent] * lambda[domain.cellAdd(icell_cent, 1, 0, 0)]
+                                        + WGD->f[icell_cent] * lambda[domain.cellAdd(icell_cent, -1, 0, 0)]
+                                        + WGD->g[icell_cent] * lambda[domain.cellAdd(icell_cent, 0, 1, 0)]
+                                        + WGD->h[icell_cent] * lambda[domain.cellAdd(icell_cent, 0, -1, 0)]
+                                        + WGD->m[icell_cent] * lambda[domain.cellAdd(icell_cent, 0, 0, 1)]
+                                        + WGD->n[icell_cent] * lambda[domain.cellAdd(icell_cent, 0, 0, -1)] - R[icell_cent])
                                    + (1.0f - omega) * lambda[icell_cent];// SOR formulation
             }
           }
@@ -137,14 +137,14 @@ void Solver_CPU_RB::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool
           for (int i = 1; i < domain.nx() - 2; ++i) {
             if (((i + j + k) % 2) == 1) {
               // icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-              icell_cent = domain.getCellIdx(i, j, k);
+              icell_cent = domain.cell(i, j, k);
               lambda[icell_cent] = (omega / (WGD->e[icell_cent] + WGD->f[icell_cent] + WGD->g[icell_cent] + WGD->h[icell_cent] + WGD->m[icell_cent] + WGD->n[icell_cent]))
-                                     * (WGD->e[icell_cent] * lambda[domain.getCellIdx(icell_cent, 1, 0, 0)]
-                                        + WGD->f[icell_cent] * lambda[domain.getCellIdx(icell_cent, -1, 0, 0)]
-                                        + WGD->g[icell_cent] * lambda[domain.getCellIdx(icell_cent, 0, 1, 0)]
-                                        + WGD->h[icell_cent] * lambda[domain.getCellIdx(icell_cent, 0, -1, 0)]
-                                        + WGD->m[icell_cent] * lambda[domain.getCellIdx(icell_cent, 0, 0, 1)]
-                                        + WGD->n[icell_cent] * lambda[domain.getCellIdx(icell_cent, 0, 0, -1)] - R[icell_cent])
+                                     * (WGD->e[icell_cent] * lambda[domain.cellAdd(icell_cent, 1, 0, 0)]
+                                        + WGD->f[icell_cent] * lambda[domain.cellAdd(icell_cent, -1, 0, 0)]
+                                        + WGD->g[icell_cent] * lambda[domain.cellAdd(icell_cent, 0, 1, 0)]
+                                        + WGD->h[icell_cent] * lambda[domain.cellAdd(icell_cent, 0, -1, 0)]
+                                        + WGD->m[icell_cent] * lambda[domain.cellAdd(icell_cent, 0, 0, 1)]
+                                        + WGD->n[icell_cent] * lambda[domain.cellAdd(icell_cent, 0, 0, -1)] - R[icell_cent])
                                    + (1.0f - omega) * lambda[icell_cent];// SOR formulation
             }
           }
@@ -157,8 +157,8 @@ void Solver_CPU_RB::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool
       for (int j = 0; j < domain.ny() - 1; ++j) {
         for (int i = 0; i < domain.nx() - 1; ++i) {
           // icell_cent = i + j * (WGD->nx - 1);// Lineralized index for cell centered values
-          icell_cent = domain.getCellIdx(i, j, 0);
-          lambda[icell_cent] = lambda[domain.getCellIdx(icell_cent, 0, 0, 1)];
+          icell_cent = domain.cell(i, j, 0);
+          lambda[icell_cent] = lambda[domain.cellAdd(icell_cent, 0, 0, 1)];
         }
       }
       // end of omp for (with implicit barrier)
@@ -171,7 +171,7 @@ void Solver_CPU_RB::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool
         for (int j = 0; j < domain.ny() - 1; ++j) {
           for (int i = 0; i < domain.nx() - 1; ++i) {
             // icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);// Lineralized index for cell centered values
-            icell_cent = domain.getCellIdx(i, j, k);
+            icell_cent = domain.cell(i, j, k);
             error = fabs(lambda[icell_cent] - lambda_old[icell_cent]);
             if (error > max_error) {
               max_error = error;
@@ -217,9 +217,9 @@ void Solver_CPU_RB::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool
       for (int j = 1; j < domain.ny() - 1; ++j) {
         for (int i = 1; i < domain.nx() - 1; ++i) {
           // icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-          icell_cent = domain.getCellIdx(i, j, k);
+          icell_cent = domain.cell(i, j, k);
           // icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-          icell_face = domain.getFaceIdx(i, j, k);
+          icell_face = domain.face(i, j, k);
           WGD->u[icell_face] = WGD->u0[icell_face]
                                + (1.0f / (2.0f * (float)pow(alpha1, 2.0))) * WGD->f[icell_cent] * domain.dx()
                                    * (lambda[icell_cent] - lambda[icell_cent - 1]);
@@ -233,12 +233,12 @@ void Solver_CPU_RB::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool
       for (int j = 1; j < domain.ny() - 1; ++j) {
         for (int i = 1; i < domain.nx() - 1; ++i) {
           // icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-          icell_cent = domain.getCellIdx(i, j, k);
+          icell_cent = domain.cell(i, j, k);
           // icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-          icell_face = domain.getFaceIdx(i, j, k);
+          icell_face = domain.face(i, j, k);
           WGD->v[icell_face] = WGD->v0[icell_face]
                                + (1.0f / (2.0f * (float)pow(alpha1, 2.0))) * WGD->h[icell_cent] * domain.dy()
-                                   * (lambda[icell_cent] - lambda[domain.getCellIdx(icell_cent, 0, -1, 0)]);
+                                   * (lambda[icell_cent] - lambda[domain.cellAdd(icell_cent, 0, -1, 0)]);
         }
       }
     }
@@ -249,12 +249,12 @@ void Solver_CPU_RB::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool
       for (int j = 1; j < domain.ny() - 1; ++j) {
         for (int i = 1; i < domain.nx() - 1; ++i) {
           // icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-          icell_cent = domain.getCellIdx(i, j, k);
+          icell_cent = domain.cell(i, j, k);
           // icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-          icell_face = domain.getFaceIdx(i, j, k);
+          icell_face = domain.face(i, j, k);
           WGD->w[icell_face] = WGD->w0[icell_face]
                                + (1.0f / (2.0f * (float)pow(alpha2, 2.0))) * WGD->n[icell_cent] * domain.dz_array[k]
-                                   * (lambda[icell_cent] - lambda[domain.getCellIdx(icell_cent, 0, 0, -1)]);
+                                   * (lambda[icell_cent] - lambda[domain.cellAdd(icell_cent, 0, 0, -1)]);
         }
       }
     }
@@ -265,19 +265,19 @@ void Solver_CPU_RB::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool
       for (int j = 0; j < domain.ny() - 1; ++j) {
         for (int i = 0; i < domain.nx() - 1; ++i) {
           // icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-          icell_cent = domain.getCellIdx(i, j, k);
+          icell_cent = domain.cell(i, j, k);
           // icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-          icell_face = domain.getFaceIdx(i, j, k);
+          icell_face = domain.face(i, j, k);
 
           // If we are inside a building, set velocities to 0.0
           if (WGD->icellflag[icell_cent] == 0 || WGD->icellflag[icell_cent] == 2) {
             // Setting velocity field inside the building to zero
             WGD->u[icell_face] = 0;
-            WGD->u[domain.getFaceIdx(icell_face, 1, 0, 0)] = 0;
+            WGD->u[domain.faceAdd(icell_face, 1, 0, 0)] = 0;
             WGD->v[icell_face] = 0;
-            WGD->v[domain.getFaceIdx(icell_face, 0, 1, 0)] = 0;
+            WGD->v[domain.faceAdd(icell_face, 0, 1, 0)] = 0;
             WGD->w[icell_face] = 0;
-            WGD->w[domain.getFaceIdx(icell_face, 0, 0, 1)] = 0;
+            WGD->w[domain.faceAdd(icell_face, 0, 0, 1)] = 0;
           }
         }
       }
