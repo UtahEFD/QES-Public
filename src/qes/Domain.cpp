@@ -16,6 +16,7 @@ Domain::Domain(const int &nx, const int &ny, const int &nz, const float &dx, con
   domainData.dx = dx;
   domainData.dy = dy;
   domainData.dz = dz;
+  domainData.dxy = std::min(domainData.dx, domainData.dy);
 
   // Definition of the grid
   // ??? how to define the vertical grid with the different option

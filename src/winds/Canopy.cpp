@@ -270,7 +270,7 @@ void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
         //  log((WGD->canopy_top[id]-WGD->canopy_d[id])/WGD->canopy_z0[id]);
 
         for (auto k = 1; k < WGD->domain.nz() - 1; k++) {
-          long icell_face = WGD->domain.getFaceIdx(i, j, k);
+          long icell_face = WGD->domain.face(i, j, k);
           float z_rel = WGD->domain.z[k] - WGD->terrain[icell_2d];
 
           if (WGD->domain.z[k] < canopy_base[icell_2d]) {
@@ -316,12 +316,12 @@ void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
               // use canopy_top to detect the edge (worke with level changes)
               if (j < WGD->domain.ny() - 2) {
                 if (canopy_top[icell_2d + nx_canopy] == 0.0) {
-                  WGD->v0[WGD->domain.getFaceIdx(icell_face, 0, 1, 0)] *= veg_vel_frac;
+                  WGD->v0[WGD->domain.faceAdd(icell_face, 0, 1, 0)] *= veg_vel_frac;
                 }
               }
               if (i < WGD->domain.nx() - 2) {
                 if (canopy_top[icell_2d + 1] == 0.0) {
-                  WGD->u0[WGD->domain.getFaceIdx(icell_face, 1, 0, 0)] *= veg_vel_frac;
+                  WGD->u0[WGD->domain.faceAdd(icell_face, 1, 0, 0)] *= veg_vel_frac;
                 }
               }
             }
@@ -341,13 +341,13 @@ void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
             if (j < WGD->domain.ny() - 2) {
               icell_3d = i + j * nx_canopy + canopy_bot_index[icell_2d] * nx_canopy * ny_canopy;
               if (canopy_top[icell_2d + nx_canopy] == 0.0) {
-                WGD->v0[WGD->domain.getFaceIdx(icell_face, 0, 1, 0)] *= veg_vel_frac;
+                WGD->v0[WGD->domain.faceAdd(icell_face, 0, 1, 0)] *= veg_vel_frac;
               }
             }
             if (i < WGD->domain.nx() - 2) {
               icell_3d = i + j * nx_canopy + canopy_bot_index[icell_2d] * nx_canopy * ny_canopy;
               if (canopy_top[icell_2d + 1] == 0.0) {
-                WGD->u0[WGD->domain.getFaceIdx(icell_face, 1, 0, 0)] *= veg_vel_frac;
+                WGD->u0[WGD->domain.faceAdd(icell_face, 1, 0, 0)] *= veg_vel_frac;
               }
             }
           }
@@ -361,16 +361,16 @@ void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
 
 void Canopy::canopyRegression(WINDSGeneralData *WGD)
 {
-
   int k_top(0), counter;
   float sum_x, sum_y, sum_xy, sum_x_sq, local_mag;
   float y, xm, ym;
+  int nz = WGD->domain.nz();
 
   for (auto j = 0; j < ny_canopy; j++) {
     for (auto i = 0; i < nx_canopy; i++) {
       int id = i + j * nx_canopy;
       if (canopy_top_index[id] > 0) {
-        for (auto k = canopy_top_index[id]; k < WGD->domain.nz() - 2; k++) {
+        for (auto k = canopy_top_index[id]; k < nz - 2; k++) {
           k_top = k;
           if (canopy_top[id] + canopy_height[id] < WGD->domain.z[k + 1])
             break;
@@ -378,8 +378,8 @@ void Canopy::canopyRegression(WINDSGeneralData *WGD)
         if (k_top == canopy_top_index[id]) {
           k_top = canopy_top_index[id] + 1;
         }
-        if (k_top > WGD->domain.nz() - 1) {
-          k_top = WGD->domain.nz() - 1;
+        if (k_top > nz - 1) {
+          k_top = nz - 1;
         }
         sum_x = 0;
         sum_y = 0;
@@ -388,9 +388,9 @@ void Canopy::canopyRegression(WINDSGeneralData *WGD)
         counter = 0;
         for (auto k = canopy_top_index[id]; k <= k_top; k++) {
           counter += 1;
-          long icell_face = WGD->domain.getFaceIdx(i, j, k);
+          long icell_face = WGD->domain.face(i, j, k);
           local_mag = sqrt(pow(WGD->u0[icell_face], 2.0) + pow(WGD->v0[icell_face], 2.0));
-          y = log(WGD->domain.z[k] - WGD->terrain[i + j * (WGD->domain.nx() - 1)]);
+          y = log(WGD->domain.z[k] - WGD->terrain[WGD->domain.cell2d(i, j)]);
           sum_x += local_mag;
           sum_y += y;
           sum_xy += local_mag * y;

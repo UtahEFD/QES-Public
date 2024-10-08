@@ -15,6 +15,7 @@ struct QESgrid
   float dx;
   float dy;
   float dz;
+  float dxy;
 
   int nx;
   int ny;
@@ -78,13 +79,13 @@ public:
   float dx() const { return domainData.dx; }
   float dy() const { return domainData.dy; }
   float dz() const { return domainData.dz; }
+  float dxy() const { return domainData.dxy; }
 
   std::tuple<float, float, float> getDomainSize() const { return { domainData.dx, domainData.dx, domainData.dz }; }
   std::tuple<int, int, int> getDomainCellNum() const { return { domainData.nx, domainData.ny, domainData.nz }; }
   std::tuple<int, int, int> getBaseDomainCellNum() const { return { domainData.nx - 1, domainData.ny - 1, domainData.nz - 2 }; }
 
-  float dxy() const { return std::min(domainData.dx, domainData.dy); }
-
+  qes::QESgrid getDomainInfo() const { return domainData; }
   /**
    *
    */
@@ -123,11 +124,11 @@ public:
   {
     return i + j * domainData.nx;
   }
-  long getFaceIdx(const int &i, const int &j, const int &k) const
+  long face(const int &i, const int &j, const int &k) const
   {
     return i + j * domainData.nx + k * domainData.nx * domainData.ny;
   }
-  long getFaceIdx(const long &curr, const int &i, const int &j, const int &k) const
+  long faceAdd(const long &curr, const int &i, const int &j, const int &k) const
   {
     return curr + i + j * domainData.nx + k * domainData.nx * domainData.ny;
   }
@@ -136,14 +137,15 @@ public:
   {
     return i + j * (domainData.nx - 1);
   }
-  long getCellIdx(const int &i, const int &j, const int &k) const
+  long cell(const int &i, const int &j, const int &k) const
   {
     return i + j * (domainData.nx - 1) + k * (domainData.nx - 1) * (domainData.ny - 1);
   }
-  long getCellIdx(const long &curr, const int &i, const int &j, const int &k) const
+  long cellAdd(const long &curr, const int &i, const int &j, const int &k) const
   {
     return curr + i + j * (domainData.nx - 1) + k * (domainData.nx - 1) * (domainData.ny - 1);
   }
+
   std::tuple<int, int, int> getCellIdx(const long &curr) const
   {
     int k = (int)(curr / ((domainData.nx - 1) * (domainData.ny - 1)));
