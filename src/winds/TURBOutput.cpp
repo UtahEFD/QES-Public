@@ -45,9 +45,7 @@ TURBOutput::TURBOutput(TURBGeneralData *tgd, std::string output_file)
 
   m_TGD = tgd;
 
-  int nx = m_TGD->domain.nx();
-  int ny = m_TGD->domain.ny();
-  int nz = m_TGD->domain.nz();
+  auto [nx, ny, nz] = m_TGD->domain.getDomainCellNum();
 
   // unused: long numcell_cout = (nx-1)*(ny-1)*(nz-1);
 

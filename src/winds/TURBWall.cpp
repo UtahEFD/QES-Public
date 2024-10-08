@@ -84,8 +84,8 @@ void TURBWall::get_stairstep_wall_id(WINDSGeneralData *WGD, int cellflag)
   for (auto i = 1; i < nx - 1; i++) {
     for (auto j = 1; j < ny - 1; j++) {
       for (auto k = 1; k < nz - 2; k++) {
-        int cellID = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
-        int faceID = i + j * nx + k * nx * ny;
+        int cellID = WGD->domain.cell(i, j, k);
+        int faceID = WGD->domain.face(i, j, k);
 
         if (WGD->icellflag[cellID] != 0 && WGD->icellflag[cellID] != 2) {
 
@@ -172,7 +172,7 @@ void TURBWall::get_cutcell_wall_id(WINDSGeneralData *WGD, int cellflag)
   for (int k = 0; k < nz - 2; k++) {
     for (int j = 1; j < ny - 2; j++) {
       for (int i = 1; i < nx - 2; i++) {
-        int id = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
+        int id = WGD->domain.cell(i, j, k);
         if (WGD->icellflag[id] == cellflag) {
           cutcell_wall_id.push_back(id);
         }
