@@ -196,7 +196,7 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
 
   // interpolation of velocity at the top of the building
   // icell_face = i_building_cent + j_building_cent * nx + (k_top + 1) * nx * ny;
-  icell_face = WGD->domain.getFaceIdx(i_building_cent, j_building_cent, k_top + 1);
+  icell_face = WGD->domain.face(i_building_cent, j_building_cent, k_top + 1);
   u_h = 0.5 * (WGD->u[icell_face] + WGD->u[icell_face + 1]);
   v_h = 0.5 * (WGD->v[icell_face] + WGD->v[icell_face + nx]);
   // w_h=0.5*(WGD->w[icell_face]+WGD->w[icell_face+nx*ny]);
@@ -305,7 +305,7 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
     return;
   }
   for (auto k = k_top + 1; k >= k_bottom; k--) {
-    icell_cent = WGD->domain.getCellIdx(i_ref_r, j_ref_r, k);
+    icell_cent = WGD->domain.cell(i_ref_r, j_ref_r, k);
     // TGD->iturbflag[icell_cent]=12;
   }
 
@@ -326,7 +326,7 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
     return;
   }
   for (auto k = k_top + 1; k >= k_bottom; k--) {
-    icell_cent = WGD->domain.getCellIdx(i_ref_l, j_ref_l, k);
+    icell_cent = WGD->domain.cell(i_ref_l, j_ref_l, k);
     // TGD->iturbflag[icell_cent]=12;
   }
 
@@ -379,7 +379,7 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
             if (i >= nx - 2 && i <= 0 && j >= ny - 2 && j <= 0) {
               break;
             }
-            icell_cent = WGD->domain.getCellIdx(i, j, kk);
+            icell_cent = WGD->domain.cell(i, j, kk);
             if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2 && x_id_min < 0) {
               x_id_min = x_id;
             }
@@ -400,7 +400,7 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
             if (i >= nx - 2 || i <= 0 || j >= ny - 2 || j <= 0) {
               break;
             }
-            icell_cent = WGD->domain.getCellIdx(i, j, k);
+            icell_cent = WGD->domain.cell(i, j, k);
             if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2 && x_id_min < 0) {
               x_id_min = x_id;
             }
@@ -410,8 +410,8 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
                   x_id_min = -1;
                 } else if (canyon_factor < 1.0) {
                   break;
-                } else if (WGD->icellflag[WGD->domain.getCellIdx(i, j, kk)] == 0
-                           || WGD->icellflag[WGD->domain.getCellIdx(i, j, kk)] == 2) {
+                } else if (WGD->icellflag[WGD->domain.cell(i, j, kk)] == 0
+                           || WGD->icellflag[WGD->domain.cell(i, j, kk)] == 2) {
                   break;
                 }
               }
@@ -500,8 +500,8 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
                   w_wake_flag = 0;
                 }
 
-                icell_cent = WGD->domain.getCellIdx(i_w, j_w, k);
-                icell_face = WGD->domain.getFaceIdx(i_w, j_w, k);
+                icell_cent = WGD->domain.cell(i_w, j_w, k);
+                icell_face = WGD->domain.face(i_w, j_w, k);
                 if (dn_w > 0.0 && w_wake_flag == 1 && yw <= yi[id] && yw >= yi[id + 1] && WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
                   // location of the center line
                   i_cl = ceil((cos(upwind_dir) * xw + building_cent_x) / dx) - 1;

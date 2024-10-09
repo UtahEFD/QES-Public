@@ -61,7 +61,7 @@ void LocalMixingSerial::defineMixingLength(const WINDSInputData *WID, WINDSGener
   x_cc = WGD->domain.x;
   // x face-center (this assume constant dx for the moment, same as QES-winds)
   for (int i = 1; i < nx - 1; i++) {
-    x_fc[i] = 0.5 * (WGD->x[i - 1] + WGD->x[i]);
+    x_fc[i] = 0.5 * (WGD->domain.x[i - 1] + WGD->domain.x[i]);
   }
   x_fc[0] = x_fc[1] - dx;
   x_fc[nx - 1] = x_fc[nx - 2] + dx;
@@ -70,7 +70,7 @@ void LocalMixingSerial::defineMixingLength(const WINDSInputData *WID, WINDSGener
   y_cc = WGD->domain.y;
   // y face-center (this assume constant dy for the moment, same as QES-winds)
   for (int i = 1; i < ny - 1; i++) {
-    y_fc[i] = 0.5 * (WGD->y[i - 1] + WGD->y[i]);
+    y_fc[i] = 0.5 * (WGD->domain.y[i - 1] + WGD->domain.y[i]);
   }
   y_fc[0] = y_fc[1] - dy;
   y_fc[ny - 1] = y_fc[ny - 2] + dy;
