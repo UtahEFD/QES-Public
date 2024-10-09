@@ -85,7 +85,7 @@ public:
   std::tuple<int, int, int> getDomainCellNum() const { return { domainData.nx, domainData.ny, domainData.nz }; }
   std::tuple<int, int, int> getBaseDomainCellNum() const { return { domainData.nx - 1, domainData.ny - 1, domainData.nz - 2 }; }
 
-  qes::QESgrid getDomainInfo() const { return domainData; }
+  // qes::QESgrid getDomainInfo() const { return domainData; }
   /**
    *
    */

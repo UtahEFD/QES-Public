@@ -36,7 +36,8 @@
 void CanopyElement::setPolyBuilding(WINDSGeneralData *WGD)
 {
 
-  qes::QESgrid grid = WGD->domain.getDomainInfo();
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
 
   // Calculate the centroid coordinates of the building (average of all nodes coordinates)
   building_cent_x = 0.0;// x-coordinate of the centroid of the building
@@ -49,8 +50,8 @@ void CanopyElement::setPolyBuilding(WINDSGeneralData *WGD)
   building_cent_x /= polygonVertices.size() - 1;
   building_cent_y /= polygonVertices.size() - 1;
 
-  i_building_cent = std::round(building_cent_x / grid.dx) - 1;// Index of building centroid in x-direction
-  j_building_cent = std::round(building_cent_y / grid.dy) - 1;// Index of building centroid in y-direction
+  i_building_cent = std::round(building_cent_x / dx) - 1;// Index of building centroid in x-direction
+  j_building_cent = std::round(building_cent_y / dy) - 1;// Index of building centroid in y-direction
 
   // Loop to calculate maximum and minimum of x and y values of the building
   x_min = x_max = polygonVertices[0].x_poly;
@@ -71,13 +72,13 @@ void CanopyElement::setPolyBuilding(WINDSGeneralData *WGD)
   }
 
   // i_start and i_end are faces and not cells
-  i_start = x_min / grid.dx;// Index of canopy start location in x-direction
-  i_end = x_max / grid.dx + 1;// Index of canopy end location in x-direction
+  i_start = x_min / dx;// Index of canopy start location in x-direction
+  i_end = x_max / dx + 1;// Index of canopy end location in x-direction
   // j_start and j_end are faces and not cells
-  j_start = y_min / grid.dy;// Index of canopy end location in y-direction
-  j_end = y_max / grid.dy + 1;// Index of canopy start location in y-direction
+  j_start = y_min / dy;// Index of canopy end location in y-direction
+  j_end = y_max / dy + 1;// Index of canopy start location in y-direction
 
-  if (i_start < 0 || i_end >= grid.nx - 1 || j_start < 0 || j_end >= grid.ny - 1) {
+  if (i_start < 0 || i_end >= nx - 1 || j_start < 0 || j_end >= ny - 1) {
     std::cerr << "==============================================================" << std::endl;
     std::cerr << "[ERROR] canopy element out of bound" << std::endl;
     std::cout << "x value (min,man) (indeces) (" << x_min << "," << x_max << ") (" << i_start << "," << i_end << ")" << std::endl;

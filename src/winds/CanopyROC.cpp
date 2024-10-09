@@ -68,7 +68,8 @@ void CanopyROC::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, i
   // readCanopy(nx, ny, nz, landuse_flag, num_canopies, lu_canopy_flag,
   // canopy_atten, canopy_top);
 
-  qes::QESgrid grid = WGD->domain.getDomainInfo();
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
 
   // this function need to be called to defined the boundary of the canopy and the icellflags
   // setCanopyGrid(WGD, building_id);
@@ -80,9 +81,9 @@ void CanopyROC::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, i
   // Check the center of each cell, if it's inside, set that cell to building
   for (auto j = j_start; j < j_end; j++) {
     // Center of cell y coordinate
-    float y_cent = (j + 0.5) * grid.dy;
+    float y_cent = (j + 0.5) * dy;
     for (auto i = i_start; i < i_end; i++) {
-      float x_cent = (i + 0.5) * grid.dx;
+      float x_cent = (i + 0.5) * dx;
       // Node index
       vert_id = 0;
       start_poly = vert_id;
@@ -106,7 +107,7 @@ void CanopyROC::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, i
       // if num_crossing is odd = cell is oustside of the polygon
       // if num_crossing is even = cell is inside of the polygon
       if ((num_crossing % 2) != 0) {
-        int icell_2d = WGD->domain.cell2d(i, j);
+        long icell_2d = WGD->domain.cell2d(i, j);
 
         if (WGD->icellflag_footprint[icell_2d] == 0) {
           // a  building exist here -> skip
@@ -141,7 +142,7 @@ void CanopyROC::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, i
 
           // define icellflag @ (x,y) for all z(k) in [k_start...k_end]
           for (auto k = WGD->canopy->canopy_bot_index[icell_2d]; k < WGD->canopy->canopy_top_index[icell_2d]; k++) {
-            int icell_3d = WGD->domain.cell(i, j, k);
+            long icell_3d = WGD->domain.cell(i, j, k);
             if (WGD->icellflag[icell_3d] != 0 && WGD->icellflag[icell_3d] != 2) {
               // Canopy cell
               // WGD->icellflag[icell_3d] = getCellFlagCanopy();
@@ -160,7 +161,7 @@ void CanopyROC::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, i
     k_start = 0;
     k_end = 0;
   } else {
-    k_start = grid.nz - 1;
+    k_start = nz - 1;
     k_end = 0;
     for (size_t k = 0u; k < canopy_cell2D.size(); k++) {
       if (WGD->canopy->canopy_bot_index[canopy_cell2D[k]] < k_start)
@@ -177,7 +178,7 @@ void CanopyROC::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, i
   }
 
 
-  if (ceil(1.5 * k_end) > grid.nz - 1) {
+  if (ceil(1.5 * k_end) > nz - 1) {
     std::cerr << "ERROR domain too short for tree method" << std::endl;
     exit(EXIT_FAILURE);
   }
@@ -210,12 +211,13 @@ void CanopyROC::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, i
 
 void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
 {
-  qes::QESgrid grid = WGD->domain.getDomainInfo();
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
 
   std::vector<float> u0_modified, v0_modified;
   std::vector<int> u0_mod_id, v0_mod_id;
 
-  int icell_face = WGD->domain.face(i_building_cent, j_building_cent, grid.nz - 5);
+  long icell_face = WGD->domain.face(i_building_cent, j_building_cent, nz - 5);
   float u0_uw = WGD->u0[icell_face];// u velocity at the centroid, 5 nodes from the top of domain (avoids effect of nearby wakes)
   float v0_uw = WGD->v0[icell_face];// v velocity at the centroid, 5 nodes from the top of domain
 
@@ -380,13 +382,11 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   float dv_c_dw;// distance of current node to downwind-est vertex
   float N;// number of rows upwind of current point
   float ld;// "local distance", the orthogonal distance from the current i,j point to the upwind edge of the closest row in the upwind direction
-  int icell_2d, icell_2d_canopy;
+  long icell_2d, icell_2d_canopy;
   float a_exp;// a blending constant that smooths the transition from wake to upwind flow
   float a_uwv[N_e + 1];// the attenuation due to one row (to be raised to N_e, where N_e is number of rows in entry region)
   float tkeFacU_uwv[N_e + 1];
 
-
-  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
   int np_cc_v = (nz - 1) * (ny - 1) * (nx - 1);
   int np_fc_v = nz * ny;
   tkeFac.resize(np_cc_v, 0);
@@ -409,7 +409,7 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
 
 
       // Row-orthogonal distance between current point and the upwind-est row, dv_c
-      float cxy[2] = { (i - 1 + i_start) * grid.dx, (j - 1 + j_start) * grid.dy };// current x position
+      float cxy[2] = { (i - 1 + i_start) * dx, (j - 1 + j_start) * dy };// current x position
       dv_c = abs(P2L(cxy, Rx_o, Ry_o));
 
       // Row-orthogonal distance between current point and the downwind-est row
@@ -518,8 +518,8 @@ void CanopyROC::canopyVegetation(WINDSGeneralData *WGD, int building_id)
         // MAIN Z-LOOP
         for (auto k = WGD->canopy->canopy_bot_index[icell_2d]; k < (nz - 1); k++) {
           z_rel = WGD->domain.z_face[k - 1] - z_b;
-          int icell_face = WGD->domain.face(i - 1 + i_start, j - 1 + j_start, k);
-          int icell_cent = WGD->domain.cell(i - 1 + i_start, j - 1 + j_start, k);
+          icell_face = WGD->domain.face(i - 1 + i_start, j - 1 + j_start, k);
+          icell_cent = WGD->domain.cell(i - 1 + i_start, j - 1 + j_start, k);
 
           // Rotate u0 and v0 into row-aligned coords
           u_c0 = cosA * WGD->u0[icell_face] - sinA * WGD->v0[icell_face];
@@ -750,7 +750,9 @@ void CanopyROC::canopyWake(WINDSGeneralData *WGD, int building_id)
 */
 void CanopyROC::canopyWake(WINDSGeneralData *WGD, int building_id)
 {
-  qes::QESgrid grid = WGD->domain.getDomainInfo();
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
+  float dxy = WGD->domain.dxy();
 
   std::vector<float> u0_modified, v0_modified;
   std::vector<int> u0_mod_id, v0_mod_id;
@@ -758,7 +760,7 @@ void CanopyROC::canopyWake(WINDSGeneralData *WGD, int building_id)
   // Test to see which sides have wake lines trailing off.
 
   // Make streamwise vector trailing off each midpoint
-  int icell_face = WGD->domain.face(i_building_cent, j_building_cent, grid.nz - 5);
+  long icell_face = WGD->domain.face(i_building_cent, j_building_cent, nz - 5);
   float u0_uw = WGD->u0[icell_face];// u velocity at the centroid, 5 nodes from the top of domain (avoids effect of nearby wakes)
   float v0_uw = WGD->v0[icell_face];// v velocity at the centroid, 5 nodes from the top of domain
   float M0_uw, dwX, dwY;
@@ -819,7 +821,7 @@ void CanopyROC::canopyWake(WINDSGeneralData *WGD, int building_id)
   double uRefHat = u0_uw / M0_uw;
   double vRefHat = v0_uw / M0_uw;
 
-  double stepLength = grid.dxy / 2.0;
+  double stepLength = dxy / 2.0;
   for (int edgeNum = 0; edgeNum < polygonVertices.size() - 1; edgeNum++) {
 
     if (wakeEdges.at(edgeNum) == 1) {
@@ -858,21 +860,21 @@ void CanopyROC::canopyWake(WINDSGeneralData *WGD, int building_id)
 
         int i = 0;
         int j = 0;
-        while (dW <= 7.5 * H && i < grid.nx && j < grid.ny) {
+        while (dW <= 7.5 * H && i < nx && j < ny) {
 
           // WAKE MODEL HERE
 
-          i = ceil(xW / grid.dx) - 1;
-          j = ceil(yW / grid.dy) - 1;
+          i = ceil(xW / dx) - 1;
+          j = ceil(yW / dy) - 1;
 
-          int icell_2d = WGD->domain.cell2d(i, j);
+          long icell_2d = WGD->domain.cell2d(i, j);
           float wakeXY[2] = { static_cast<float>(xW), static_cast<float>(yW) };// current x-y location in wake in QES coords
           float dv_w = abs(P2L(wakeXY, Rx_o, Ry_o));// orthogonal distance from current x-y position in wake to upwindest vertex
           float d_dw_local_w = d_dw_local_wo + (dv_w - dv_wo) / sin(betaAngle * M_PI / 180);// total streamwise distance from current point in wake to back side of last row in block
 
           // find k-node of mid-canopy at current i,j location
           k_mid = 0;
-          for (auto k = WGD->terrain_id[icell_2d]; k < grid.nz; k++) {
+          for (auto k = WGD->terrain_id[icell_2d]; k < nz; k++) {
             if (WGD->domain.z[k] > (WGD->terrain[icell_2d] + understory_height + (H - understory_height) / 2)) {
               break;
             }
@@ -884,17 +886,17 @@ void CanopyROC::canopyWake(WINDSGeneralData *WGD, int building_id)
           float ld_w = (dv_w - dv_wo) + ld_wo;// total orthogonal distance between current point in wake and last row in block
           szo_top = std::max(szo_slope * ld_w + H, 0.0f);
 
-          for (int k = WGD->terrain_id[icell_2d]; k < grid.nz; k++) {
+          for (int k = WGD->terrain_id[icell_2d]; k < nz; k++) {
             icell_cent = WGD->domain.cell(i, j, k);
             WGD->icellflag[icell_cent] = 33;
           }
           z_b = WGD->canopy->canopy_base[icell_2d];
 
           // MAIN Z-LOOP
-          for (auto k = WGD->terrain_id[icell_2d]; k < (grid.nz - 1); k++) {
+          for (auto k = WGD->terrain_id[icell_2d]; k < (nz - 1); k++) {
             z_rel = WGD->domain.z_face[k - 1] - WGD->terrain[icell_2d];
-            int icell_cent = WGD->domain.cell(i, j, k);
-            int icell_face = WGD->domain.face(i, j, k);
+            icell_cent = WGD->domain.cell(i, j, k);
+            icell_face = WGD->domain.face(i, j, k);
 
             // Rotate u0 and v0 into row-aligned coords
             u_c0 = cosA * WGD->u0[icell_face] - sinA * WGD->v0[icell_face];
@@ -1048,19 +1050,20 @@ void CanopyROC::canopyWake(WINDSGeneralData *WGD, int building_id)
 
 void CanopyROC::canopyTurbulenceWake(WINDSGeneralData *WGD, TURBGeneralData *TGD, int building_id)
 {
-  qes::QESgrid grid = WGD->domain.getDomainInfo();
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
 
   // float tkeMax = 0.5;// To be modeled/assimilated from NWP output later
   // for (auto i = 0; i < WGD->nx - 1; i++) {
   //   for (auto j = 0; j < WGD->ny - 1; j++) {
-  for (auto i = 0; i < grid.nx; i++) {
-    for (auto j = 0; j < grid.ny; j++) {
+  for (auto i = 0; i < nx; i++) {
+    for (auto j = 0; j < ny; j++) {
       // Get mean gradients at canopy top
       int k_top = 0;
       while (WGD->domain.z_face[k_top] < (H + WGD->terrain[WGD->domain.cell2d(i, j)])) {
         k_top += 1;
       }
-      int icell_faceKTOP = WGD->domain.face(i, j, k_top);
+      long icell_faceKTOP = WGD->domain.face(i, j, k_top);
 
       // Central difference at z=H
       float M_KTOPp1 = pow(pow(WGD->u[WGD->domain.faceAdd(icell_faceKTOP, 0, 0, 1)], 2.0)
@@ -1074,9 +1077,9 @@ void CanopyROC::canopyTurbulenceWake(WINDSGeneralData *WGD, TURBGeneralData *TGD
       float dMdz = (M_KTOPp1 - M_KTOPm1) / (WGD->domain.z_face[k_top + 1] - WGD->domain.z_face[k_top - 1]);
       float Ls = M_KTOPm1 / dMdz;// shear length scale at current point
 
-      for (auto k = 0; k < grid.nz - 2; k++) {
+      for (auto k = 0; k < nz - 2; k++) {
         // int icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-        int icell_cent = WGD->domain.cell(i, j, k);
+        long icell_cent = WGD->domain.cell(i, j, k);
         // int icell_face = (i - 1 + i_start) + (j - 1 + j_start) * WGD->nx + k * WGD->nx * WGD->ny;
 
         if (fabs(tkeFac[icell_cent]) > 0.) {
@@ -1142,13 +1145,14 @@ void CanopyROC::canopyTurbulenceWake(WINDSGeneralData *WGD, TURBGeneralData *TGD
 
 void CanopyROC::canopyStress(WINDSGeneralData *WGD, TURBGeneralData *TGD, int building_id)
 {
-  qes::QESgrid grid = WGD->domain.getDomainInfo();
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
 
   // float tkeMax = 0.5;// To be modeled/assimilated from NWP output later
   // for (auto i = 0; i < WGD->nx - 1; i++) {
   //   for (auto j = 0; j < WGD->ny - 1; j++) {
-  for (auto i = 0; i < grid.nx; i++) {
-    for (auto j = 0; j < grid.ny; j++) {
+  for (auto i = 0; i < nx; i++) {
+    for (auto j = 0; j < ny; j++) {
 
       // Get mean gradients at canopy top
       int k_top = 0;
@@ -1161,8 +1165,8 @@ void CanopyROC::canopyStress(WINDSGeneralData *WGD, TURBGeneralData *TGD, int bu
       }
 
 
-      int icell_faceKTOP = WGD->domain.face(i, j, k_top + 0);
-      int icell_faceKUH = WGD->domain.face(i, j, k_uh);
+      long icell_faceKTOP = WGD->domain.face(i, j, k_top + 0);
+      long icell_faceKUH = WGD->domain.face(i, j, k_uh);
 
       // Central difference at z=H
       // float dUdz = (WGD->u[icell_faceKTOP + WGD->nx * WGD->ny] - WGD->u[icell_faceKTOP - WGD->nx * WGD->ny]) / (WGD->z_face[k_top + 1] - WGD->z_face[k_top - 1]);
@@ -1174,29 +1178,29 @@ void CanopyROC::canopyStress(WINDSGeneralData *WGD, TURBGeneralData *TGD, int bu
                    / (4.0f * (WGD->domain.z_face[k_top + 1] - WGD->domain.z_face[k_top - 1]));
       float dWdx = ((WGD->w[WGD->domain.faceAdd(icell_faceKTOP, 1, 0, 0)] + WGD->w[WGD->domain.faceAdd(icell_faceKTOP, 1, 0, 1)])
                     - (WGD->w[WGD->domain.faceAdd(icell_faceKTOP, -1, 0, 0)] + WGD->w[WGD->domain.faceAdd(icell_faceKTOP, -1, 0, 1)]))
-                   / (4.0f * grid.dx);
+                   / (4.0f * dx);
       float dVdz = ((WGD->v[WGD->domain.faceAdd(icell_faceKTOP, 0, 0, 1)] + WGD->v[WGD->domain.faceAdd(icell_faceKTOP, 0, 1, 1)])
                     - (WGD->v[WGD->domain.faceAdd(icell_faceKTOP, 0, 0, -1)] + WGD->v[WGD->domain.faceAdd(icell_faceKTOP, 0, 1, -1)]))
                    / (4.0f * (WGD->domain.z_face[k_top + 1] - WGD->domain.z_face[k_top - 1]));
       float dWdy = ((WGD->w[WGD->domain.faceAdd(icell_faceKTOP, 0, 1, 0)] + WGD->w[WGD->domain.faceAdd(icell_faceKTOP, 0, 1, 1)])
                     - (WGD->w[WGD->domain.faceAdd(icell_faceKTOP, 0, -1, 0)] + WGD->w[WGD->domain.faceAdd(icell_faceKTOP, 0, -1, 1)]))
-                   / (4.0f * grid.dy);
+                   / (4.0f * dy);
 
       float dUdy = ((WGD->u[WGD->domain.faceAdd(icell_faceKTOP, 0, 1, 0)] + WGD->u[WGD->domain.faceAdd(icell_faceKTOP, 1, 1, 0)])
                     - (WGD->u[WGD->domain.faceAdd(icell_faceKTOP, 0, -1, 0)] + WGD->u[WGD->domain.faceAdd(icell_faceKTOP, 1, -1, 0)]))
-                   / (4.0f * grid.dy);
+                   / (4.0f * dy);
 
       float dVdx = ((WGD->v[WGD->domain.faceAdd(icell_faceKTOP, +1, 0, 0)] + WGD->v[WGD->domain.faceAdd(icell_faceKTOP, 1, 1, 0)])
                     - (WGD->v[WGD->domain.faceAdd(icell_faceKTOP, -1, 0, 0)] + WGD->v[WGD->domain.faceAdd(icell_faceKTOP, -1, 1, 0)]))
-                   / (4.0 * grid.dx);
+                   / (4.0f * dx);
 
 
       float dUdx = ((WGD->u[WGD->domain.faceAdd(icell_faceKTOP, +1, 0, 0)] + WGD->u[WGD->domain.faceAdd(icell_faceKTOP, +2, 0, 0)])
                     - (WGD->u[icell_faceKTOP] + WGD->u[WGD->domain.faceAdd(icell_faceKTOP, -1, 0, 0)]))
-                   / (4.0f * grid.dx);
+                   / (4.0f * dx);
       float dVdy = ((WGD->v[WGD->domain.faceAdd(icell_faceKTOP, 0, 1, 0)] + WGD->v[WGD->domain.faceAdd(icell_faceKTOP, 0, 2, 0)])
                     - (WGD->v[icell_faceKTOP] + WGD->v[WGD->domain.faceAdd(icell_faceKTOP, 0, -1, 0)]))
-                   / (4.0f * grid.dy);
+                   / (4.0f * dy);
       float dWdz = ((WGD->w[WGD->domain.faceAdd(icell_faceKTOP, 0, 0, 1)] + WGD->w[WGD->domain.faceAdd(icell_faceKTOP, 0, 0, 2)])
                     - (WGD->w[icell_faceKTOP] + WGD->w[WGD->domain.faceAdd(icell_faceKTOP, 0, 0, -1)]))
                    / (4.0f * (WGD->domain.z_face[k_top + 1] - WGD->domain.z_face[k_top - 1]));
@@ -1214,7 +1218,7 @@ void CanopyROC::canopyStress(WINDSGeneralData *WGD, TURBGeneralData *TGD, int bu
 */
       for (auto k = 0; k < k_top; k++) {
         // int icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-        int icell_cent = WGD->domain.cell(i, j, k);
+        long icell_cent = WGD->domain.cell(i, j, k);
         // int icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
 
         if (fabs(vineLm[icell_cent]) > 0.) {

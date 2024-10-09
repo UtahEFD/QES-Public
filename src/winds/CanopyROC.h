@@ -14,7 +14,7 @@ public:
   // LDU: this gets run first, when the XML is parsed. So polygonVertices are always the rotated ones, wherever they're used downstream. However, the wake rotation seems to be done inside the paramterization.
   virtual void parseValues()
   {
-    //std::cout << "PARSING VINEYARD PARAMETERS" << std::endl;
+    // std::cout << "PARSING VINEYARD PARAMETERS" << std::endl;
     base_height = 0.0;
 
     std::vector<float> xVertex, yVertex;
@@ -38,16 +38,16 @@ public:
     parsePrimitive<float>(true, rowWidth, "rowWidth");
     parsePrimitive<float>(true, rowAngle, "rowAngle");
 
-    parsePrimitive<float>(true, LAD_eff, "LAD_eff");//leaf area per volume of canopy, including aisles. Effective (bulk) LAD. Re-calculated by the code using beta if thinFence==1 (=0.6667 for 2013 validation cases)
-    parsePrimitive<float>(true, LAD_avg, "LAD_avg");//vertically averaged LAD for the rowitself, used in UD zone drag calc for vegetative rows only. (=4.3138 for 2013 validation cases)
+    parsePrimitive<float>(true, LAD_eff, "LAD_eff");// leaf area per volume of canopy, including aisles. Effective (bulk) LAD. Re-calculated by the code using beta if thinFence==1 (=0.6667 for 2013 validation cases)
+    parsePrimitive<float>(true, LAD_avg, "LAD_avg");// vertically averaged LAD for the rowitself, used in UD zone drag calc for vegetative rows only. (=4.3138 for 2013 validation cases)
     parsePrimitive<float>(true, beta, "opticalPorosity");
     parsePrimitive<float>(true, tkeMax, "tkeMax");
     parsePrimitive<float>(false, stdw, "upstreamSigmaW");
-    parsePrimitive<float>(false, uustar, "upstreamUstar");//upstream ustar
-    parsePrimitive<float>(false, d_v, "displacementHeightParallel");//displacement height in row-parallel winds
+    parsePrimitive<float>(false, uustar, "upstreamUstar");// upstream ustar
+    parsePrimitive<float>(false, d_v, "displacementHeightParallel");// displacement height in row-parallel winds
 
-    //x_start += UID->simParams->halo_x;
-    //y_start += UID->simParams->halo_y;
+    // x_start += UID->simParams->halo_x;
+    // y_start += UID->simParams->halo_y;
     canopy_rotation *= M_PI / 180.0;
     polygonVertices.resize(5);
   }
@@ -63,7 +63,7 @@ public:
   float P2L(float[2], float[2], float[2]);
 
 private:
-  //float attenuationCoeff=1.0;
+  // float attenuationCoeff=1.0;
   float upwind_dir_unit = 0.;
   float understory_height;
   std::vector<float> tkeFac;
@@ -111,7 +111,8 @@ private:
   // V_c parameterization params (shared by veg and wake portions)
   float ustar_v_c,
     psi, psiH, dpsiH, ex, exH, dexH, vH_c, a_v, vref_c, zref, exRef, dexRef, psiRef, dpsiRef;
-  int icell_face_ref, zref_k;
+  long icell_face_ref;
+  int zref_k;
 };
 
 inline int CanopyROC::getCellFlagCanopy()
@@ -128,4 +129,3 @@ inline float CanopyROC::P2L(float P[2], float Lx[2], float Ly[2])
 {
   return abs((Lx[1] - Lx[0]) * (Ly[0] - P[1]) - (Lx[0] - P[0]) * (Ly[1] - Ly[0])) / sqrt(pow(Lx[1] - Lx[0], 2) + pow(Ly[1] - Ly[0], 2));
 }
-

@@ -232,6 +232,7 @@ void Canopy::applyCanopyStress(WINDSGeneralData *WGD, TURBGeneralData *TGD)
 // Based on the version contain Lucas Ulmer's modifications
 void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
 {
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
 
   float avg_atten; /**< average attenuation of the canopy */
   float veg_vel_frac; /**< vegetation velocity fraction */
@@ -269,7 +270,7 @@ void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
         // float u_H = (WGD->canopy_ustar[id]/WGD->vk)*
         //  log((WGD->canopy_top[id]-WGD->canopy_d[id])/WGD->canopy_z0[id]);
 
-        for (auto k = 1; k < WGD->domain.nz() - 1; k++) {
+        for (auto k = 1; k < WGD->nz - 1; k++) {
           long icell_face = WGD->domain.face(i, j, k);
           float z_rel = WGD->domain.z[k] - WGD->terrain[icell_2d];
 
@@ -314,12 +315,12 @@ void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
 
               // at the edge of the canopy need to adjust velocity at the next face
               // use canopy_top to detect the edge (worke with level changes)
-              if (j < WGD->domain.ny() - 2) {
+              if (j < ny - 2) {
                 if (canopy_top[icell_2d + nx_canopy] == 0.0) {
                   WGD->v0[WGD->domain.faceAdd(icell_face, 0, 1, 0)] *= veg_vel_frac;
                 }
               }
-              if (i < WGD->domain.nx() - 2) {
+              if (i < nx - 2) {
                 if (canopy_top[icell_2d + 1] == 0.0) {
                   WGD->u0[WGD->domain.faceAdd(icell_face, 1, 0, 0)] *= veg_vel_frac;
                 }
@@ -338,13 +339,13 @@ void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
 
             // at the edge of the canopy need to adjust velocity at the next face
             // use canopy_top to detect the edge (worke with level changes)
-            if (j < WGD->domain.ny() - 2) {
+            if (j < ny - 2) {
               icell_3d = i + j * nx_canopy + canopy_bot_index[icell_2d] * nx_canopy * ny_canopy;
               if (canopy_top[icell_2d + nx_canopy] == 0.0) {
                 WGD->v0[WGD->domain.faceAdd(icell_face, 0, 1, 0)] *= veg_vel_frac;
               }
             }
-            if (i < WGD->domain.nx() - 2) {
+            if (i < nx - 2) {
               icell_3d = i + j * nx_canopy + canopy_bot_index[icell_2d] * nx_canopy * ny_canopy;
               if (canopy_top[icell_2d + 1] == 0.0) {
                 WGD->u0[WGD->domain.faceAdd(icell_face, 1, 0, 0)] *= veg_vel_frac;
