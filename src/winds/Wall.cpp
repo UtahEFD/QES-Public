@@ -48,7 +48,7 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
   for (auto k = 1; k < nz - 1; k++) {
     for (auto i = 0; i < nx - 1; i++) {
       for (auto j = 0; j < ny - 1; j++) {
-        long icell_cent = WGD->domain.cell(i, j, k, );
+        long icell_cent = WGD->domain.cell(i, j, k);
         if (WGD->e[icell_cent] < 0.05) {
           WGD->e[icell_cent] = 0.0;
         }

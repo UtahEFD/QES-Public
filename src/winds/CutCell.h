@@ -99,7 +99,9 @@ private:
    * @param g  solver coefficient (left face)
    * @param index index of the face that the points belong to
    */
-  float calculateArea(std::vector<Vector3Float> &cut_points, int cutcell_index, float dx, float dy, float dz, std::vector<float> &n, std::vector<float> &m, std::vector<float> &f, std::vector<float> &e, std::vector<float> &h, std::vector<float> &g, int index);
+  float calculateArea(std::vector<Vector3Float> &cut_points,
+                      int cutcell_index,
+                      float dx, float dy, float dz, std::vector<float> &n, std::vector<float> &m, std::vector<float> &f, std::vector<float> &e, std::vector<float> &h, std::vector<float> &g, int index);
 
   /**
    * This function uses the edges that form triangles that lie on either the top or bottom of the cell to

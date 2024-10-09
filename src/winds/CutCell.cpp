@@ -41,12 +41,12 @@
 #include "WINDSGeneralData.h"
 
 
-void CutCell::reorderPoints(std::vector<Vector3> &cut_points, int index, float pi)
+void CutCell::reorderPoints(std::vector<Vector3Float> &cut_points, int index, float pi)
 {
 
-  Vector3 centroid;
+  Vector3Float centroid;
   std::vector<float> angle(cut_points.size(), 0.0);
-  Vector3 sum;
+  Vector3Float sum;
 
   sum[0] = 0;
   sum[1] = 0;
@@ -80,7 +80,7 @@ void CutCell::reorderPoints(std::vector<Vector3> &cut_points, int index, float p
 }
 
 
-void CutCell::mergeSort(std::vector<float> &angle, std::vector<Vector3> &cutPoints)
+void CutCell::mergeSort(std::vector<float> &angle, std::vector<Vector3Float> &cutPoints)
 {
   // if the size of the array is 1, it is already sorted
   if (angle.size() == 1)
@@ -88,7 +88,7 @@ void CutCell::mergeSort(std::vector<float> &angle, std::vector<Vector3> &cutPoin
 
   // make left and right sides of the data
   std::vector<float> angleL, angleR;
-  std::vector<Vector3> cutPointsL, cutPointsR;
+  std::vector<Vector3Float> cutPointsL, cutPointsR;
 
   angleL.resize(angle.size() / 2);
   angleR.resize(angle.size() - angle.size() / 2);
@@ -126,7 +126,7 @@ void CutCell::mergeSort(std::vector<float> &angle, std::vector<Vector3> &cutPoin
   return;
 }
 
-float CutCell::calculateArea(std::vector<Vector3> &cut_points, int cutcell_index, float dx, float dy, float dz, std::vector<float> &n, std::vector<float> &m, std::vector<float> &f, std::vector<float> &e, std::vector<float> &h, std::vector<float> &g, int index)
+float CutCell::calculateArea(std::vector<Vector3Float> &cut_points, int cutcell_index, float dx, float dy, float dz, std::vector<float> &n, std::vector<float> &m, std::vector<float> &f, std::vector<float> &e, std::vector<float> &h, std::vector<float> &g, int index)
 {
   float S = 0.0;
   float coeff = 0;
@@ -173,20 +173,20 @@ float CutCell::calculateArea(std::vector<Vector3> &cut_points, int cutcell_index
 }
 
 
-float CutCell::calculateAreaTopBot(std::vector<Vector3> &terrainPoints,
-                                    const std::vector<Edge<int>> &terrainEdges,
-                                    const int cellIndex,
-                                    const float dx,
-                                    const float dy,
-                                    const float dz,
-                                    Vector3 location,
-                                    std::vector<float> &coef,
-                                    const bool isBot)
+float CutCell::calculateAreaTopBot(std::vector<Vector3Float> &terrainPoints,
+                                   const std::vector<Edge<int>> &terrainEdges,
+                                   const int cellIndex,
+                                   const float dx,
+                                   const float dy,
+                                   const float dz,
+                                   Vector3Float location,
+                                   std::vector<float> &coef,
+                                   const bool isBot)
 {
   float S = 0.0;
   float area = 0.0f;
   std::vector<int> pointsOnFace;
-  std::vector<Vector3> listOfTriangles;// each point is a vector3, the triangle is 3 points
+  std::vector<Vector3Float> listOfTriangles;// each point is a vector3, the triangle is 3 points
   float faceHeight = location[2] + (isBot ? 0.0f : dz);// face height is 0 if we are on the bottom, otherwise add dz_array
 
   // find all points in the terrain on this face
@@ -206,24 +206,24 @@ float CutCell::calculateAreaTopBot(std::vector<Vector3> &terrainPoints,
           Edge<int> abEdge(pointsOnFace[a], pointsOnFace[b]), acEdge(pointsOnFace[a], pointsOnFace[c]),
             bcEdge(pointsOnFace[b], pointsOnFace[c]);
           if ((std::find(terrainEdges.begin(), terrainEdges.end(), abEdge) != terrainEdges.end()) && (std::find(terrainEdges.begin(), terrainEdges.end(), acEdge) != terrainEdges.end()) && (std::find(terrainEdges.begin(), terrainEdges.end(), bcEdge) != terrainEdges.end())) {
-            listOfTriangles.push_back(Vector3(terrainPoints[pointsOnFace[a]][0],
-                                              terrainPoints[pointsOnFace[a]][1],
-                                              terrainPoints[pointsOnFace[a]][2]));
-            listOfTriangles.push_back(Vector3(terrainPoints[pointsOnFace[b]][0],
-                                              terrainPoints[pointsOnFace[b]][1],
-                                              terrainPoints[pointsOnFace[b]][2]));
-            listOfTriangles.push_back(Vector3(terrainPoints[pointsOnFace[c]][0],
-                                              terrainPoints[pointsOnFace[c]][1],
-                                              terrainPoints[pointsOnFace[c]][2]));
+            listOfTriangles.push_back(Vector3Float(terrainPoints[pointsOnFace[a]][0],
+                                                   terrainPoints[pointsOnFace[a]][1],
+                                                   terrainPoints[pointsOnFace[a]][2]));
+            listOfTriangles.push_back(Vector3Float(terrainPoints[pointsOnFace[b]][0],
+                                                   terrainPoints[pointsOnFace[b]][1],
+                                                   terrainPoints[pointsOnFace[b]][2]));
+            listOfTriangles.push_back(Vector3Float(terrainPoints[pointsOnFace[c]][0],
+                                                   terrainPoints[pointsOnFace[c]][1],
+                                                   terrainPoints[pointsOnFace[c]][2]));
           }
         }
   }
 
   // for all triangles, add the area to the total
   for (int t = 0; t < listOfTriangles.size(); t = t + 3) {
-    Vector3 a = listOfTriangles[t];
-    Vector3 b = listOfTriangles[t + 1];
-    Vector3 c = listOfTriangles[t + 2];
+    Vector3Float a = listOfTriangles[t];
+    Vector3Float b = listOfTriangles[t + 1];
+    Vector3Float c = listOfTriangles[t + 2];
 
     // move to local space
     for (int d = 0; d < 3; d++) {
