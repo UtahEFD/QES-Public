@@ -25,13 +25,13 @@ void test_functions::setTestValues(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   for (int k = 0; k < domain.nz() - 1; k++) {
     for (int j = 0; j < domain.ny() - 1; j++) {
       for (int i = 0; i < domain.nx() - 1; i++) {
-        long faceID = domain.getFaceIdx(i, j, k);
+        long faceID = domain.face(i, j, k);
         WGD->u[faceID] = u_test_function->val(i * domain.dx(), domain.y[j], domain.z[k]);
       }
     }
     for (int j = 0; j < domain.ny() - 1; j++) {
       for (int i = 0; i < domain.nx() - 1; i++) {
-        long faceID = i + j * domain.nx() + k * domain.nx() * domain.ny();
+        long faceID = domain.face(i, j, k);
         // WGD->v[faceID] = cos(a * domain.x[i]) + cos(b * j * WGD->dy) + sin(c * domain.z[k]);
         // WGD->v[faceID] = a * domain.x[i] + b * j * WGD->dy + c * domain.z[k];
         WGD->v[faceID] = v_test_function->val(domain.x[i], j * domain.dy(), domain.z[k]);
@@ -43,7 +43,7 @@ void test_functions::setTestValues(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   for (int k = 0; k < domain.nz() - 1; k++) {
     for (int j = 0; j < domain.ny() - 1; j++) {
       for (int i = 0; i < domain.nx() - 1; i++) {
-        long faceID = domain.getFaceIdx(i, j, k);
+        long faceID = domain.face(i, j, k);
         WGD->w[faceID] = w_test_function->val(domain.x[i], domain.y[j], domain.z_face[k]);
       }
     }
@@ -53,7 +53,7 @@ void test_functions::setTestValues(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   for (int k = 0; k < domain.nz() - 2; k++) {
     for (int j = 0; j < domain.ny() - 1; j++) {
       for (int i = 0; i < domain.nx() - 1; i++) {
-        long cellID = domain.getCellIdx(i, j, k);
+        long cellID = domain.cell(i, j, k);
         TGD->txx[cellID] = c_test_function->val(domain.x[i], domain.y[j], domain.z[k]);
         TGD->txy[cellID] = c_test_function->val(domain.x[i], domain.y[j], domain.z[k]);
         TGD->txz[cellID] = c_test_function->val(domain.x[i], domain.y[j], domain.z[k]);

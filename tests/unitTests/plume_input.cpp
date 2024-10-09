@@ -10,7 +10,6 @@
 
 #include "util/calcTime.h"
 
-#include "test_WINDSGeneralData.h"
 #include "winds/WINDSGeneralData.h"
 
 #include "plume/PlumeInputData.hpp"
@@ -105,15 +104,15 @@ TEST_CASE("Plume test inputs for multiple particle models with uniform winds and
 
   int gridSize[3] = { 102, 102, 141 };
   float gridRes[3] = { 1.0, 1.0, 1.0 };
-
-  WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes);
+  qes::Domain domain(gridSize[0], gridSize[1], gridSize[2], gridRes[0], gridRes[1], gridRes[2]);
+  WINDSGeneralData *WGD = new WINDSGeneralData(domain);
   TURBGeneralData *TGD = new TURBGeneralData(WGD);
 
   for (int k = 0; k < WGD->domain.nz(); ++k) {
     for (int j = 0; j < WGD->domain.ny(); ++j) {
       for (int i = 0; i < WGD->domain.nx(); ++i) {
         // int faceID = i + j * (WGD->nx) + k * (WGD->nx) * (WGD->ny);
-        WGD->u[WGD->domain.getFaceIdx(i, j, k)] = uMean;
+        WGD->u[WGD->domain.face(i, j, k)] = uMean;
       }
     }
   }
@@ -122,14 +121,14 @@ TEST_CASE("Plume test inputs for multiple particle models with uniform winds and
     for (int j = 0; j < WGD->domain.ny() - 1; ++j) {
       for (int i = 0; i < WGD->domain.nx() - 1; ++i) {
         // int cellID = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-        int cellID = WGD->domain.getCellIdx(i, j, k);
-        TGD->txx[cellID] = pow(2.50 * uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
-        TGD->tyy[cellID] = pow(1.78 * uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
-        TGD->tzz[cellID] = pow(1.27 * uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
-        TGD->txz[cellID] = -pow(uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
+        int cellID = WGD->domain.cell(i, j, k);
+        TGD->txx[cellID] = pow(2.50 * uStar, 2) * pow(1 - WGD->domain.z[k] / zi, 3. / 2.);
+        TGD->tyy[cellID] = pow(1.78 * uStar, 2) * pow(1 - WGD->domain.z[k] / zi, 3. / 2.);
+        TGD->tzz[cellID] = pow(1.27 * uStar, 2) * pow(1 - WGD->domain.z[k] / zi, 3. / 2.);
+        TGD->txz[cellID] = -pow(uStar, 2) * pow(1 - WGD->domain.z[k] / zi, 3. / 2.);
 
         TGD->tke[cellID] = pow(uStar / 0.55, 2.0);
-        TGD->CoEps[cellID] = C0 * pow(uStar, 3) / (0.4 * WGD->z[k]) * pow(1 - 0.85 * WGD->z[k] / zi, 3.0 / 2.0);
+        TGD->CoEps[cellID] = C0 * pow(uStar, 3) / (0.4 * WGD->domain.z[k]) * pow(1 - 0.85 * WGD->domain.z[k] / zi, 3.0 / 2.0);
       }
     }
   }

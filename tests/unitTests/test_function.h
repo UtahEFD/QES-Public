@@ -19,7 +19,7 @@ public:
     ly = domain.ny() * domain.dy();
     lz = domain.z_face.back();
   }
-  ~test_function() {}
+  ~test_function() = default;
 
   virtual float val(float x, float y, float z) = 0;
 
@@ -28,7 +28,7 @@ protected:
   qes::Domain domain;
 
 private:
-  test_function() = default;
+  test_function() : domain(0, 0, 0, 0, 0, 0) {}
 };
 
 class test_function_linearX : public test_function

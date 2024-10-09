@@ -60,7 +60,7 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
     for (int j = 0; j < WGD->domain.ny(); ++j) {
       for (int i = 0; i < WGD->domain.nx(); ++i) {
         // int faceID = i + j * (WGD->nx) + k * (WGD->nx) * (WGD->ny);
-        WGD->u[WGD->domain.getFaceIdx(i, j, k)] = uMean;
+        WGD->u[WGD->domain.face(i, j, k)] = uMean;
       }
     }
   }
@@ -68,7 +68,7 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
   for (int k = 1; k < WGD->domain.nz() - 1; ++k) {
     for (int j = 0; j < WGD->domain.ny() - 1; ++j) {
       for (int i = 0; i < WGD->domain.nx() - 1; ++i) {
-        int cellID = WGD->domain.getCellIdx(i, j, k);
+        int cellID = WGD->domain.cell(i, j, k);
         TGD->txx[cellID] = pow(2.50 * uStar, 2) * pow(1 - WGD->domain.z[k] / zi, 3. / 2.);
         TGD->tyy[cellID] = pow(1.78 * uStar, 2) * pow(1 - WGD->domain.z[k] / zi, 3. / 2.);
         TGD->tzz[cellID] = pow(1.27 * uStar, 2) * pow(1 - WGD->domain.z[k] / zi, 3. / 2.);

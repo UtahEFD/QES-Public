@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "test_functions.h"
-#include "test_WINDSGeneralData.h"
 #include "test_TURBGeneralData.h"
 #include "test_PlumeGeneralData.h"
 
@@ -15,8 +14,8 @@ TEST_CASE("interpolation fine grid", "[Working]")
 
   int gridSize[3] = { 200, 200, 200 };
   float gridRes[3] = { 1.0, 1.0, 1.0 };
-
-  test_WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes);
+  qes::Domain domain(gridSize[0], gridSize[1], gridSize[2], gridRes[0], gridRes[1], gridRes[2]);
+  WINDSGeneralData *WGD = new WINDSGeneralData(domain);
   test_TURBGeneralData *TGD = new test_TURBGeneralData(WGD);
   PlumeParameters PP("", false, false);
   test_PlumeGeneralData *PGD = new test_PlumeGeneralData(PP, WGD, TGD);
@@ -69,9 +68,9 @@ TEST_CASE("interpolation fine grid", "[Working]")
     std::random_device rnd_device;
     // Specify the engine and distribution.
     std::mt19937 mersenne_engine{ rnd_device() };// Generates random integers
-    std::uniform_real_distribution<float> disX{ WGD->x[0], WGD->x.back() };
-    std::uniform_real_distribution<float> disY{ WGD->y[0], WGD->y.back() };
-    std::uniform_real_distribution<float> disZ{ 0, WGD->z_face[WGD->nz - 3] };
+    std::uniform_real_distribution<float> disX{ WGD->domain.x[0], WGD->domain.x.back() };
+    std::uniform_real_distribution<float> disY{ WGD->domain.y[0], WGD->domain.y.back() };
+    std::uniform_real_distribution<float> disZ{ 0, WGD->domain.z_face[WGD->domain.nz() - 3] };
 
     std::vector<float> xArray, yArray, zArray;
 
@@ -123,8 +122,8 @@ TEST_CASE("interpolation coarse grid", "[Working]")
 
   int gridSize[3] = { 200, 200, 200 };
   float gridRes[3] = { 2.0, 2.0, 2.0 };
-
-  test_WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes);
+  qes::Domain domain(gridSize[0], gridSize[1], gridSize[2], gridRes[0], gridRes[1], gridRes[2]);
+  WINDSGeneralData *WGD = new WINDSGeneralData(domain);
   test_TURBGeneralData *TGD = new test_TURBGeneralData(WGD);
   PlumeParameters PP("", false, false);
   test_PlumeGeneralData *PGD = new test_PlumeGeneralData(PP, WGD, TGD);
@@ -182,10 +181,10 @@ TEST_CASE("interpolation stretched grid", "[Working]")
   for (int k = 0; k < gridSize[2]; ++k) {
     dz_array[k] = (k + 1) * gridRes[2];
   }
-
-  test_WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes, dz_array);
-
+  qes::Domain domain(gridSize[0], gridSize[1], gridSize[2], gridRes[0], gridRes[1], gridRes[2]);
+  WINDSGeneralData *WGD = new WINDSGeneralData(domain);
   test_TURBGeneralData *TGD = new test_TURBGeneralData(WGD);
+
   PlumeParameters PP("", false, false);
   test_PlumeGeneralData *PGD = new test_PlumeGeneralData(PP, WGD, TGD);
   PGD->setInterpMethod("triLinear", WGD, TGD);
@@ -238,9 +237,9 @@ TEST_CASE("interpolation stretched grid", "[Working]")
     std::random_device rnd_device;
     // Specify the engine and distribution.
     std::mt19937 mersenne_engine{ rnd_device() };// Generates random integers
-    std::uniform_real_distribution<float> disX{ WGD->x[0], WGD->x.back() };
-    std::uniform_real_distribution<float> disY{ WGD->y[0], WGD->y.back() };
-    std::uniform_real_distribution<float> disZ{ 0, WGD->z_face[WGD->nz - 3] };
+    std::uniform_real_distribution<float> disX{ WGD->domain.x[0], WGD->domain.x.back() };
+    std::uniform_real_distribution<float> disY{ WGD->domain.y[0], WGD->domain.y.back() };
+    std::uniform_real_distribution<float> disZ{ 0, WGD->domain.z_face[WGD->domain.nz() - 3] };
 
     std::vector<float> xArray, yArray, zArray;
 

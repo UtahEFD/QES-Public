@@ -40,28 +40,26 @@ TEST_CASE("Regression test of QES-Plume: sinusoidal stress")
 
   int gridSize[3] = { 20, 20, 50 };
   float gridRes[3] = { 1.0 / 20.0, 1.0 / 20.0, 1.0 / 49.0 };
-
-  qes::Domain domain(20, 20, 50, 1.0 / 20.0, 1.0 / 20.0, 1.0 / 49.);
+  qes::Domain domain(gridSize[0], gridSize[1], gridSize[2], gridRes[0], gridRes[1], gridRes[2]);
 
   WINDSGeneralData *WGD = new WINDSGeneralData(domain);
   WGD->timestamp.emplace_back("2020-01-01T00:00:00");
-
   TURBGeneralData *TGD = new TURBGeneralData(WGD);
 
   std::vector<float> sig2_new(WGD->domain.nz() - 1);
 
   for (int k = 0; k < WGD->domain.nz() - 1; ++k) {
-    sig2_new[k] = 1.1 + sin(2.0 * M_PI * WGD->z[k]);
+    sig2_new[k] = 1.1 + sin(2.0 * M_PI * WGD->domain.z[k]);
   }
 
   for (int k = 0; k < WGD->domain.nz() - 1; ++k) {
     for (int j = 0; j < WGD->domain.ny() - 1; ++j) {
       for (int i = 0; i < WGD->domain.nx() - 1; ++i) {
-        int cellID = WGD->domain.getCellIdx(i, j, k);
+        int cellID = WGD->domain.cell(i, j, k);
         TGD->txx[cellID] = sig2_new[k];
         TGD->tyy[cellID] = sig2_new[k];
         TGD->tzz[cellID] = sig2_new[k];
-        TGD->tke[cellID] = pow(WGD->z[k] * pow(sig2_new[k], 3.0 / 2.0), 2.0 / 3.0);
+        TGD->tke[cellID] = pow(WGD->domain.z[k] * pow(sig2_new[k], 3.0 / 2.0), 2.0 / 3.0);
         TGD->CoEps[cellID] = 4.0 * pow(sig2_new[k], 3.0 / 2.0);
       }
     }

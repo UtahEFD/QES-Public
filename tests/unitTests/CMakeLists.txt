@@ -4,13 +4,11 @@ include_directories(.)
 IF ($CACHE{HAS_CUDA_SUPPORT})
   cuda_add_library(unittestcore
         test_functions.h test_functions.cpp
-        test_WINDSGeneralData.h test_WINDSGeneralData.cpp
         test_TURBGeneralData.h test_TURBGeneralData.cpp
         test_PlumeGeneralData.h test_PlumeGeneralData.cpp)
 ELSE ($CACHE{HAS_CUDA_SUPPORT})
   add_library(unittestcore
         test_functions.h test_functions.cpp
-        test_WINDSGeneralData.h test_WINDSGeneralData.cpp
         test_TURBGeneralData.h test_TURBGeneralData.cpp
         test_PlumeGeneralData.h test_PlumeGeneralData.cpp)
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})

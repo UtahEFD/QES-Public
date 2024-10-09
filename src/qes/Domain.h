@@ -68,6 +68,8 @@ public:
    */
   explicit Domain(const std::string &NetCDFFileDataName);
 
+  ~Domain() = default;
+
   /**
    *
    */

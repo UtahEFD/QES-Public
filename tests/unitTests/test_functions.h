@@ -23,7 +23,7 @@ public:
   test_function *c_test_function;
 
 private:
-  test_functions() {}
+  test_functions() : domain(0, 0, 0, 0, 0, 0) {}
 
   qes::Domain domain;
 };

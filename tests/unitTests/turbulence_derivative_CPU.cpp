@@ -5,7 +5,8 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "test_WINDSGeneralData.h"
+#include "qes/Domain.h"
+
 #include "test_TURBGeneralData.h"
 
 std::string mainTest();
@@ -49,8 +50,9 @@ TEST_CASE("Testing QES-Turb derivatives CPU")
 
   int gridSize[3] = { 400, 400, 400 };
   float gridRes[3] = { 1.0, 1.0, 1.0 };
+  qes::Domain domain(gridSize[0], gridSize[1], gridSize[2], gridRes[0], gridRes[1], gridRes[2]);
 
-  WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes);
+  WINDSGeneralData *WGD = new WINDSGeneralData(domain);
   auto TGD = new test_TURBGeneralData(WGD);
 
 
@@ -120,53 +122,53 @@ void set1DDerivative(std::vector<float> *dudx,
     for (int j = 0; j < ny - 1; j++) {
       for (int i = 0; i < nx - 1; i++) {
         // int faceID = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-        int faceID = WGD->domain.getFaceIdx(i, j, k);
-        WGD->u[faceID] = cos(a * i * dx) + cos(b * WGD->y[j]) + sin(c * WGD->z[k]);
+        int faceID = WGD->domain.face(i, j, k);
+        WGD->u[faceID] = cos(a * i * dx) + cos(b * WGD->domain.y[j]) + sin(c * WGD->domain.z[k]);
       }
     }
     for (int j = 0; j < ny - 1; j++) {
       for (int i = 0; i < nx - 1; i++) {
-        int faceID = WGD->domain.getFaceIdx(i, j, k);
-        WGD->v[faceID] = cos(a * WGD->x[i]) + cos(b * j * dy) + sin(c * WGD->z[k]);
+        int faceID = WGD->domain.face(i, j, k);
+        WGD->v[faceID] = cos(a * WGD->domain.x[i]) + cos(b * j * dy) + sin(c * WGD->domain.z[k]);
       }
     }
   }
   // dudx and dvdx at cell-center face -> i=1...ny-2
   for (int i = 0; i < nx - 2; i++) {
-    dudx->at(i) = -a * sin(a * WGD->x[i]);
-    dvdx->at(i) = -a * sin(a * WGD->x[i]);
+    dudx->at(i) = -a * sin(a * WGD->domain.x[i]);
+    dvdx->at(i) = -a * sin(a * WGD->domain.x[i]);
   }
   // dudy and dvdy at cell-center face -> j=0...ny-2
   for (int j = 0; j < ny - 2; j++) {
-    dudy->at(j) = -b * sin(b * WGD->y[j]);
-    dvdy->at(j) = -b * sin(b * WGD->y[j]);
+    dudy->at(j) = -b * sin(b * WGD->domain.y[j]);
+    dvdy->at(j) = -b * sin(b * WGD->domain.y[j]);
   }
   // dudz and dvdz at cell-center face -> k=1...nz-2
   for (int k = 1; k < nz - 2; k++) {
-    dudz->at(k) = c * cos(c * WGD->z[k]);
-    dvdz->at(k) = c * cos(c * WGD->z[k]);
+    dudz->at(k) = c * cos(c * WGD->domain.z[k]);
+    dvdz->at(k) = c * cos(c * WGD->domain.z[k]);
   }
 
   // w on horizontal face -> k=0...nz-1
   for (int k = 1; k < nz - 1; k++) {
     for (int j = 0; j < ny - 1; j++) {
       for (int i = 0; i < nx - 1; i++) {
-        int faceID = WGD->domain.getFaceIdx(i, j, k);
-        WGD->w[faceID] = cos(a * WGD->x[i]) + cos(b * WGD->y[j]) + sin(c * WGD->z_face[k]);
+        int faceID = WGD->domain.face(i, j, k);
+        WGD->w[faceID] = cos(a * WGD->domain.x[i]) + cos(b * WGD->domain.y[j]) + sin(c * WGD->domain.z_face[k]);
       }
     }
   }
   // dwdx at cell-center -> i=1...nx-3
   for (int i = 0; i < nx - 2; i++) {
-    dwdx->at(i) = -a * sin(a * WGD->x[i]);
+    dwdx->at(i) = -a * sin(a * WGD->domain.x[i]);
   }
   // dwdx at cell-center -> j=1...nz-3
   for (int j = 0; j < nz - 2; j++) {
-    dwdy->at(j) = -b * sin(b * WGD->y[j]);
+    dwdy->at(j) = -b * sin(b * WGD->domain.y[j]);
   }
   // dwdx at cell-center -> k=1...nz-2
   for (int k = 1; k < nz - 2; k++) {
-    dwdz->at(k) = c * cos(c * WGD->z[k]);
+    dwdz->at(k) = c * cos(c * WGD->domain.z[k]);
   }
 
   return;
