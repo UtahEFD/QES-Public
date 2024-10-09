@@ -32,6 +32,8 @@
  * @brief
  */
 
+#include <numeric>
+
 #include "WallReflection_StairStep.h"
 
 bool WallReflection_StairStep::reflect(const WINDSGeneralData *WGD,

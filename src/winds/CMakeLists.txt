@@ -10,7 +10,8 @@ SET( qesWindCoreSources
   CanopyWindbreak.cpp
   CanopyROC.cpp
   Cell.cpp
-  Cut_cell.cpp
+  CutCell.cpp
+  CutBuilding.cpp
   DTEHeightField.cpp
   LocalMixing.cpp
   LocalMixingDefault.cpp

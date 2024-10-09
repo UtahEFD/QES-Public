@@ -88,7 +88,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
   ny += 1;// +1 for Staggered grid
   nz += 2;// +2 for staggered grid and ghost cell
 
-  // Vector3Float gridInfo;
+  // Vector3 gridInfo;
   // gridInfo = *(WID->simParams->grid);
   dx = WID->simParams->grid[0];// Grid resolution in x-direction
   dy = WID->simParams->grid[1];// Grid resolution in y-direction
@@ -452,7 +452,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
         id = ii + jj * domain.nx();
         for (size_t k = 0; k < domain.z.size() - 1; k++) {
           terrain_face_id[id] = k;
-          if (terrain[idx] < domain.z_face[k]) {
+          if (terrain[idx] <= domain.z_face[k+1]) {
             break;
           }
         }
@@ -803,8 +803,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
           }
         }
         allBuildingsV[j]->base_height = min_height;
-      } else {
-        // allBuildingsV[j]->base_height = 0.0;
       }
       allBuildingsV[j]->ID = j;
       allBuildingsV[j]->setPolyBuilding(this);

@@ -172,4 +172,5 @@ public:
   virtual void NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, int buidling_id)
   {
   }
+
 };

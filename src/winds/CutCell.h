@@ -28,7 +28,7 @@
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Cut_cell.h */
+/** @file CutCell.h */
 
 #pragma once
 
@@ -43,14 +43,15 @@ class WINDSInputData;
 class WINDSGeneralData;
 
 /**
- * @class Cut_cell
+ * @class CutCell
  * @brief Designed to store and handle information related to the Cut_cells.
  *
- * :explain what distinguishes a cut_cell from a cell here:
+ * A cut-cell is a cell in which a solid surface cuts through the cell (partial
+ * solid cell).
  *
  * @sa Cell
  */
-class Cut_cell
+class CutCell
 {
 private:
   const float pi = 4.0f * atan(1.0); /**< pi constant */
@@ -65,9 +66,9 @@ public:
    * It fisrt calculates the centroid of points (simple average). Then it reorders points based
    * on their angle start from -180 to 180 degree.
    *
-   * @param cut_points :document this:
-   * @param index :document this:
-   * @param pi :document this:
+   * @param cut_points list of solid points on a face
+   * @param index index of the face that the points belong to
+   * @param pi pi constant
    */
   void reorderPoints(std::vector<Vector3Float> &cut_points, int index, float pi);
 
@@ -75,8 +76,8 @@ public:
    * This function takes in points and their calculated angles and sort them from lowest to
    * largest.
    *
-   * @param angle :document this:
-   * @param cutPoints :document this:
+   * @param angle list of angles of each point on a face
+   * @param cutPoints list of solid points on a face
    */
   void mergeSort(std::vector<float> &angle, std::vector<Vector3Float> &cutPoints);
 
@@ -85,18 +86,18 @@ private:
    * This function takes in sorted intersection points and calculates area fraction coefficients
    * based on polygon area formulation. Then it sets them to related solver coefficients.
    *
-   * @param cut_points :document this:
-   * @param cutcell_index :document this:
-   * @param dx :document this:
-   * @param dy :document this:
-   * @param dz :document this:
-   * @param n  :document this:
-   * @param m  :document this:
-   * @param f  :document this:
-   * @param e  :document this:
-   * @param h  :document this:
-   * @param g  :document this:
-   * @param index :document this:
+   * @param cut_points List of solid points on a face
+   * @param cutcell_index Index of the cut-cell
+   * @param dx dimension of the cell in the x direction
+   * @param dy dimension of the cell in the y direction
+   * @param dz dimension of the cell in the z direction
+   * @param n  solver coefficient (bottom face)
+   * @param m  solver coefficient (top face)
+   * @param f  solver coefficient (behind face)
+   * @param e  solver coefficient (front face)
+   * @param h  solver coefficient (right face)
+   * @param g  solver coefficient (left face)
+   * @param index index of the face that the points belong to
    */
   float calculateArea(std::vector<Vector3Float> &cut_points, int cutcell_index, float dx, float dy, float dz, std::vector<float> &n, std::vector<float> &m, std::vector<float> &f, std::vector<float> &e, std::vector<float> &h, std::vector<float> &g, int index);
 
@@ -105,7 +106,7 @@ private:
    * calculate the terrain area that covers each face.
    *
    * @param terrainPoints the points in the cell that mark a separation of terrain and air
-   * @param terrainEdges a list of edges that exist between terrainPoints
+   * @param terrainEdges list of edges that exist between terrainPoints
    * @param cellIndex the index of the cell (this is needed for the coef)
    * @param dx dimension of the cell in the x direction
    * @param dy dimension of the cell in the y direction

@@ -60,7 +60,7 @@
 #include "LocalMixingSerial.h"
 
 #include "DTEHeightField.h"
-#include "Cut_cell.h"
+#include "CutCell.h"
 #include "Wall.h"
 
 // #include "util/Mesh.h"
@@ -169,7 +169,6 @@ public:
   // long numcell_cent; /**< Total number of cell-centered values in domain */
   // long numcell_face; /**< Total number of face-centered values in domain */
 
-public:
   // std::vector<size_t> start; /**< :document this: */
   // std::vector<size_t> count; /**< :document this: */
 
@@ -296,8 +295,8 @@ public:
 
   Cell *cells{}; /**< :document this: */
   // bool DTEHFExists = false;
-  Cut_cell *cut_cell{}; /**< :document this: */
-  Wall *wall{}; /**< :document this: */
+  CutCell *cut_cell; /**< :document this: */
+  Wall *wall; /**< :document this: */
 
   // NetCDFInput* NCDFInput;     /**< :document this: */
   ///@{
