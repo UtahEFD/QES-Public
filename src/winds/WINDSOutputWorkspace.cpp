@@ -45,9 +45,7 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, const std::str
   m_WGD = WGD;
 
   // domain size information:
-  int nx = m_WGD->domain.nx();
-  int ny = m_WGD->domain.ny();
-  int nz = m_WGD->domain.nz();
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
 
   // Location of cell centers in x-dir
   m_x.resize(nx - 1);

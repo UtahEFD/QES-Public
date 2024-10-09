@@ -415,7 +415,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
   for (int j = 0; j < domain.ny() - 1; j++) {
     for (int i = 0; i < domain.nx() - 1; i++) {
       // long icell_cent = i + j * (domain.nx() - 1);
-      icellflag[domain.getCellIdx(i, j, 0)] = 2;
+      icellflag[domain.cell(i, j, 0)] = 2;
     }
   }
 
@@ -603,7 +603,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
             break;
           }
           // icell_cent = i + j * (nx - 1) + (k + 1) * (nx - 1) * (ny - 1);
-          long icell_cent = domain.getCellIdx(i, j, k + 1);
+          long icell_cent = domain.cell(i, j, k + 1);
           center_id[icell_cent] = 0;// Marks the cell center as inside solid
         }
       }
@@ -627,7 +627,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
             }
 
             // icell_cent = i + j * (nx - 1) + (k + 1) * (nx - 1) * (ny - 1);
-            long icell_cent = domain.getCellIdx(i, j, k + 1);
+            long icell_cent = domain.cell(i, j, k + 1);
             icellflag[icell_cent] = 2;
           }
         }
@@ -1296,7 +1296,7 @@ void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex
   for (auto i = 0; i < domain.nx(); i++) {
     for (auto j = 0; j < domain.ny(); j++) {
       // int icell_face = i + j * nx + (nz - 2) * nx * ny;
-      long icell_face = domain.getFaceIdx(i, j, domain.nz() - 2);
+      long icell_face = domain.face(i, j, domain.nz() - 2);
       max_velmag = MAX_S(max_velmag, sqrt(pow(u0[icell_face], 2.0) + pow(v0[icell_face], 2.0)));
     }
   }
