@@ -830,7 +830,7 @@ void TURBGeneralData::stressTensor()
 
     int k_ref = 0;
     float refHeight = 15.0;// reference height for rotation wind direction is arbitrarily set to 15m above terrain
-    while (m_WGD->z_face[k_ref] < (refHeight + m_WGD->terrain[i + j * (domain.nx() - 1)])) {
+    while (m_WGD->domain.z_face[k_ref] < (refHeight + m_WGD->terrain[m_WGD->domain.cell2d(i, j)])) {
       k_ref += 1;
     }
 
