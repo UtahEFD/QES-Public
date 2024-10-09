@@ -270,7 +270,7 @@ void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
         // float u_H = (WGD->canopy_ustar[id]/WGD->vk)*
         //  log((WGD->canopy_top[id]-WGD->canopy_d[id])/WGD->canopy_z0[id]);
 
-        for (auto k = 1; k < WGD->nz - 1; k++) {
+        for (auto k = 1; k < nz - 1; k++) {
           long icell_face = WGD->domain.face(i, j, k);
           float z_rel = WGD->domain.z[k] - WGD->terrain[icell_2d];
 
