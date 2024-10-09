@@ -116,7 +116,6 @@ void InterpTriLinear::interpValues(const WINDSGeneralData *WGD,
   setInterp3Dindex_wFace(xPos, yPos, zPos, wgt);
   // interpolation of variables on wFace
   interp3D_faceVar(WGD->w, wgt, wMean_out);
-
 }
 void InterpTriLinear::interpValues(const TURBGeneralData *TGD,
                                    const double &xPos,
@@ -186,10 +185,10 @@ void InterpTriLinear::setInterp3Dindex_uFace(const double &par_xPos,
   wgt.jw = (par_y / dy) - floor(par_y / (dy + 1e-7));
   // wgt.kw = (par_z / dz) - floor(par_z / (dz + 1e-7));
 
-  auto itr = std::lower_bound(m_WGD->z.begin(), m_WGD->z.end(), par_zPos);
-  wgt.kk = itr - m_WGD->z.begin() - 1;
+  auto itr = std::lower_bound(m_WGD->domain.z.begin(), m_WGD->domain.z.end(), par_zPos);
+  wgt.kk = itr - m_WGD->domain.z.begin() - 1;
 
-  wgt.kw = (par_zPos - m_WGD->z[wgt.kk]) / (m_WGD->z[wgt.kk + 1] - m_WGD->z[wgt.kk]);
+  wgt.kw = (par_zPos - m_WGD->domain.z[wgt.kk]) / (m_WGD->domain.z[wgt.kk + 1] - m_WGD->domain.z[wgt.kk]);
 }
 
 
@@ -216,10 +215,10 @@ void InterpTriLinear::setInterp3Dindex_vFace(const double &par_xPos,
   wgt.jw = (par_y / dy) - floor(par_y / (dy + 1e-4));
   // wgt.kw = (par_z / dz) - floor(par_z / (dz + 1e-4));
 
-  auto itr = std::lower_bound(m_WGD->z.begin(), m_WGD->z.end(), par_zPos);
-  wgt.kk = itr - m_WGD->z.begin() - 1;
+  auto itr = std::lower_bound(m_WGD->domain.z.begin(), m_WGD->domain.z.end(), par_zPos);
+  wgt.kk = itr - m_WGD->domain.z.begin() - 1;
 
-  wgt.kw = (par_zPos - m_WGD->z[wgt.kk]) / (m_WGD->z[wgt.kk + 1] - m_WGD->z[wgt.kk]);
+  wgt.kw = (par_zPos - m_WGD->domain.z[wgt.kk]) / (m_WGD->domain.z[wgt.kk + 1] - m_WGD->domain.z[wgt.kk]);
 }
 
 void InterpTriLinear::setInterp3Dindex_wFace(const double &par_xPos,
@@ -245,10 +244,10 @@ void InterpTriLinear::setInterp3Dindex_wFace(const double &par_xPos,
   wgt.jw = (par_y / dy) - floor(par_y / (dy + 1e-7));
   // wgt.kw = (par_z / dz) - floor(par_z / (dz + 1e-7));
 
-  auto itr = std::lower_bound(m_WGD->z_face.begin(), m_WGD->z_face.end(), par_zPos);
-  wgt.kk = itr - m_WGD->z_face.begin() - 1;
+  auto itr = std::lower_bound(m_WGD->domain.z_face.begin(), m_WGD->domain.z_face.end(), par_zPos);
+  wgt.kk = itr - m_WGD->domain.z_face.begin() - 1;
 
-  wgt.kw = (par_zPos - m_WGD->z_face[wgt.kk]) / (m_WGD->z_face[wgt.kk + 1] - m_WGD->z_face[wgt.kk]);
+  wgt.kw = (par_zPos - m_WGD->domain.z_face[wgt.kk]) / (m_WGD->domain.z_face[wgt.kk + 1] - m_WGD->domain.z_face[wgt.kk]);
 }
 
 // always call this after setting the interpolation indices with the setInterp3Dindex_u/v/wFace() function!
@@ -365,10 +364,10 @@ void InterpTriLinear::setInterp3Dindex_cellVar(const double &par_xPos,
   wgt.jw = (par_y / dy) - floor(par_y / (dy + 1e-7));
   // wgt.kw = (par_z / dz) - floor(par_z / (dz + 1e-7));
 
-  auto itr = std::lower_bound(m_WGD->z.begin(), m_WGD->z.end(), par_zPos);
-  wgt.kk = itr - m_WGD->z.begin() - 1;
+  auto itr = std::lower_bound(m_WGD->domain.z.begin(), m_WGD->domain.z.end(), par_zPos);
+  wgt.kk = itr - m_WGD->domain.z.begin() - 1;
 
-  wgt.kw = (par_zPos - m_WGD->z[wgt.kk]) / (m_WGD->z[wgt.kk + 1] - m_WGD->z[wgt.kk]);
+  wgt.kw = (par_zPos - m_WGD->domain.z[wgt.kk]) / (m_WGD->domain.z[wgt.kk + 1] - m_WGD->domain.z[wgt.kk]);
 }
 
 
