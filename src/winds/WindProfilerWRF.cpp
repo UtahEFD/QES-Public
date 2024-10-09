@@ -65,27 +65,30 @@ void WindProfilerWRF::interpolateWindProfile(const WINDSInputData *WID, WINDSGen
 
   long id, icell_face;
   float zm;
+
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+
   WRFInput *wrf_ptr = WID->simParams->wrfInputData;
 
   // Create initial wind field in the area WRF data is available
-  for (auto k = 1; k < WGD->domain.nz() - 1; ++k) {
+  for (auto k = 1; k < nz - 1; ++k) {
     for (auto j = WGD->halo_index_y; j < WGD->wrf_ny + WGD->halo_index_y; ++j) {
       for (auto i = WGD->halo_index_x + 1; i < WGD->wrf_nx + WGD->halo_index_x; ++i) {
         id = (i - WGD->halo_index_x) + (j - WGD->halo_index_y) * WGD->wrf_nx;
-        zm = WGD->domain.z[k] - WGD->domain.z_face[WGD->terrain_face_id[i + j * WGD->domain.nx()]];
-        // icell_face = i + j * WGD->domain.nx() + k * WGD->domain.nx() * WGD->domain.ny();
-        icell_face = WGD->domain.getFaceIdx(i, j, k);
+        zm = WGD->domain.z[k] - WGD->domain.z_face[WGD->terrain_face_id[i + j * nx]];
+        // icell_face = i + j * nx + k * nx * ny;
+        icell_face = WGD->domain.face(i, j, k);
         interpolate(WGD->u0[icell_face], zm, id, wrf_ptr->u0_fmw, wrf_ptr->ht_fmw, 1, WGD->wrf_nx * WGD->wrf_ny);
       }
     }
   }
-  for (auto k = 1; k < WGD->domain.nz() - 1; ++k) {
+  for (auto k = 1; k < nz - 1; ++k) {
     for (auto j = WGD->halo_index_y + 1; j < WGD->wrf_ny + WGD->halo_index_y; ++j) {
       for (auto i = WGD->halo_index_x; i < WGD->wrf_nx + WGD->halo_index_x; ++i) {
         id = (i - WGD->halo_index_x) + (j - WGD->halo_index_y) * WGD->wrf_nx;
-        zm = WGD->domain.z[k] - WGD->domain.z_face[WGD->terrain_face_id[i + j * WGD->domain.nx()]];
-        // icell_face = i + j * WGD->domain.nx() + k * WGD->domain.nx() * WGD->domain.ny();
-        icell_face = WGD->domain.getFaceIdx(i, j, k);
+        zm = WGD->domain.z[k] - WGD->domain.z_face[WGD->terrain_face_id[i + j * nx]];
+        // icell_face = i + j * nx + k * nx * ny;
+        icell_face = WGD->domain.face(i, j, k);
         interpolate(WGD->v0[icell_face], zm, id, wrf_ptr->v0_fmw, wrf_ptr->ht_fmw, WGD->wrf_nx, WGD->wrf_nx * WGD->wrf_ny);
       }
     }
@@ -94,18 +97,18 @@ void WindProfilerWRF::interpolateWindProfile(const WINDSInputData *WID, WINDSGen
   // top ghost cell (above domain)
   for (auto j = WGD->halo_index_y + 1; j < WGD->wrf_ny + WGD->halo_index_y; ++j) {
     for (auto i = WGD->halo_index_x + 1; i < WGD->wrf_nx + WGD->halo_index_x; ++i) {
-      // int icell_face_up = i + j * WGD->domain.nx() + (WGD->domain.nz() - 1) * WGD->domain.nx() * WGD->domain.ny();
-      long icell_face_up = WGD->domain.getFaceIdx(i, j, WGD->domain.nz() - 1);
-      // int icell_face_down = i + j * WGD->domain.nx() + (WGD->domain.nz() - 2) * WGD->domain.nx() * WGD->domain.ny();
-      long icell_face_down = WGD->domain.getFaceIdx(i, j, WGD->domain.nz() - 2);
+      // int icell_face_up = i + j * nx + (nz - 1) * nx * ny;
+      long icell_face_up = WGD->domain.face(i, j, nz - 1);
+      // int icell_face_down = i + j * nx + (nz - 2) * nx * ny;
+      long icell_face_down = WGD->domain.face(i, j, nz - 2);
       WGD->u0[icell_face_up] = WGD->u0[icell_face_down];
       WGD->v0[icell_face_up] = WGD->v0[icell_face_down];
     }
   }
   // bottom ghost cell (under the terrain)
-  for (auto j = 0; j < WGD->domain.ny(); ++j) {
-    for (auto i = 0; i < WGD->domain.nx(); ++i) {
-      icell_face = i + j * WGD->domain.nx();
+  for (auto j = 0; j < ny; ++j) {
+    for (auto i = 0; i < nx; ++i) {
+      icell_face = i + j * nx;
       WGD->u0[icell_face] = 0.0;
       WGD->v0[icell_face] = 0.0;
     }
@@ -113,88 +116,88 @@ void WindProfilerWRF::interpolateWindProfile(const WINDSInputData *WID, WINDSGen
 
   // sides (including halo cells)
   // u-velocity
-  for (auto k = 1; k < WGD->domain.nz(); ++k) {
+  for (auto k = 1; k < nz; ++k) {
     // West side (inside domain only)
     for (auto j = WGD->halo_index_y + 1; j < WGD->wrf_ny + WGD->halo_index_y; ++j) {
       for (auto i = 0; i <= WGD->halo_index_x; ++i) {
-        // icell_face = i + j * WGD->domain.nx() + k * WGD->domain.nx() * WGD->domain.ny();
-        icell_face = WGD->domain.getFaceIdx(i, j, k);
-        // id = (WGD->halo_index_x + 1) + j * WGD->domain.nx() + k * WGD->domain.nx() * WGD->domain.ny();
-        id = WGD->domain.getFaceIdx(WGD->halo_index_x + 1, j, k);
+        // icell_face = i + j * nx + k * nx * ny;
+        icell_face = WGD->domain.face(i, j, k);
+        // id = (WGD->halo_index_x + 1) + j * nx + k * nx * ny;
+        id = WGD->domain.face(WGD->halo_index_x + 1, j, k);
         WGD->u0[icell_face] = WGD->u0[id];
       }
     }
     // East side (inside domain only)
     for (auto j = WGD->halo_index_y + 1; j < WGD->wrf_ny + WGD->halo_index_y; ++j) {
-      for (auto i = WGD->wrf_ny + WGD->halo_index_y; i < WGD->domain.nx(); ++i) {
-        // icell_face = i + j * WGD->domain.nx() + k * WGD->domain.nx() * WGD->domain.ny();
-        icell_face = WGD->domain.getFaceIdx(i, j, k);
-        // id = (WGD->wrf_ny + WGD->halo_index_x - 1) + j * WGD->domain.nx() + k * WGD->domain.nx() * WGD->domain.ny();
-        id = WGD->domain.getFaceIdx(WGD->wrf_ny + WGD->halo_index_x - 1, j, k);
+      for (auto i = WGD->wrf_ny + WGD->halo_index_y; i < nx; ++i) {
+        // icell_face = i + j * nx + k * nx * ny;
+        icell_face = WGD->domain.face(i, j, k);
+        // id = (WGD->wrf_ny + WGD->halo_index_x - 1) + j * nx + k * nx * ny;
+        id = WGD->domain.face(WGD->wrf_ny + WGD->halo_index_x - 1, j, k);
         WGD->u0[icell_face] = WGD->u0[id];
       }
     }
     // South side (whole domain)
     for (auto j = 0; j <= WGD->halo_index_y; ++j) {
-      for (auto i = 0; i < WGD->domain.nx(); ++i) {
-        // icell_face = i + j * WGD->domain.nx() + k * WGD->domain.nx() * WGD->domain.ny();
-        icell_face = WGD->domain.getFaceIdx(i, j, k);
-        // id = i + (WGD->halo_index_y + 1) * WGD->domain.nx() + k * WGD->domain.nx() * WGD->domain.ny();
-        id = WGD->domain.getFaceIdx(i, WGD->halo_index_y + 1, k);
+      for (auto i = 0; i < nx; ++i) {
+        // icell_face = i + j * nx + k * nx * ny;
+        icell_face = WGD->domain.face(i, j, k);
+        // id = i + (WGD->halo_index_y + 1) * nx + k * nx * ny;
+        id = WGD->domain.face(i, WGD->halo_index_y + 1, k);
         WGD->u0[icell_face] = WGD->u0[id];
       }
     }
     // North side (whole domain)
-    for (auto j = WGD->wrf_nx + WGD->halo_index_x; j < WGD->domain.ny(); ++j) {
-      for (auto i = 0; i < WGD->domain.nx(); ++i) {
-        // icell_face = i + j * WGD->domain.nx() + k * WGD->domain.nx() * WGD->domain.ny();
-        icell_face = WGD->domain.getFaceIdx(i, j, k);
-        // id = i + (WGD->wrf_ny + WGD->halo_index_y - 1) * WGD->domain.nx() + k * WGD->domain.nx() * WGD->domain.ny();
-        id = WGD->domain.getFaceIdx(i, WGD->wrf_ny + WGD->halo_index_y - 1, k);
+    for (auto j = WGD->wrf_nx + WGD->halo_index_x; j < ny; ++j) {
+      for (auto i = 0; i < nx; ++i) {
+        // icell_face = i + j * nx + k * nx * ny;
+        icell_face = WGD->domain.face(i, j, k);
+        // id = i + (WGD->wrf_ny + WGD->halo_index_y - 1) * nx + k * nx * ny;
+        id = WGD->domain.face(i, WGD->wrf_ny + WGD->halo_index_y - 1, k);
         WGD->u0[icell_face] = WGD->u0[id];
       }
     }
   }
 
   // v-velocity
-  for (auto k = 1; k < WGD->domain.nz(); ++k) {
+  for (auto k = 1; k < nz; ++k) {
     // South side (inside domain only)
     for (auto j = 0; j <= WGD->halo_index_y; ++j) {
       for (auto i = WGD->halo_index_x + 1; i < WGD->wrf_nx + WGD->halo_index_x; ++i) {
-        // icell_face = i + j * WGD->domain.nx() + k * WGD->domain.nx() * WGD->domain.ny();
-        icell_face = WGD->domain.getFaceIdx(i, j, k);
-        // id = i + (WGD->halo_index_y + 1) * WGD->domain.nx() + k * WGD->domain.nx() * WGD->domain.ny();
-        id = WGD->domain.getFaceIdx(i, WGD->halo_index_y + 1, k);
+        // icell_face = i + j * nx + k * nx * ny;
+        icell_face = WGD->domain.face(i, j, k);
+        // id = i + (WGD->halo_index_y + 1) * nx + k * nx * ny;
+        id = WGD->domain.face(i, WGD->halo_index_y + 1, k);
         WGD->v0[icell_face] = WGD->v0[id];
       }
     }
     // North side (inside domain only)
-    for (auto j = WGD->wrf_nx + WGD->halo_index_y; j < WGD->domain.ny(); ++j) {
+    for (auto j = WGD->wrf_nx + WGD->halo_index_y; j < ny; ++j) {
       for (auto i = WGD->halo_index_x + 1; i < WGD->wrf_nx + WGD->halo_index_x; ++i) {
-        // icell_face = i + j * WGD->domain.nx() + k * WGD->domain.nx() * WGD->domain.ny();
-        icell_face = WGD->domain.getFaceIdx(i, j, k);
-        // id = i + (WGD->wrf_nx + WGD->halo_index_x - 1) * WGD->domain.nx() + k * WGD->domain.nx() * WGD->domain.ny();
-        id = WGD->domain.getFaceIdx(i, WGD->wrf_nx + WGD->halo_index_x - 1, k);
+        // icell_face = i + j * nx + k * nx * ny;
+        icell_face = WGD->domain.face(i, j, k);
+        // id = i + (WGD->wrf_nx + WGD->halo_index_x - 1) * nx + k * nx * ny;
+        id = WGD->domain.face(i, WGD->wrf_nx + WGD->halo_index_x - 1, k);
         WGD->v0[icell_face] = WGD->v0[id];
       }
     }
     // West side (whole domain)
-    for (auto j = 0; j < WGD->domain.ny(); ++j) {
+    for (auto j = 0; j < ny; ++j) {
       for (auto i = 0; i <= WGD->halo_index_x; ++i) {
-        // icell_face = i + j * WGD->domain.nx() + k * WGD->domain.nx() * WGD->domain.ny();
-        icell_face = WGD->domain.getFaceIdx(i, j, k);
-        // id = (WGD->halo_index_x + 1) + j * WGD->domain.nx() + k * WGD->domain.nx() * WGD->domain.ny();
-        id = WGD->domain.getFaceIdx(WGD->halo_index_x + 1, j, k);
+        // icell_face = i + j * nx + k * nx * ny;
+        icell_face = WGD->domain.face(i, j, k);
+        // id = (WGD->halo_index_x + 1) + j * nx + k * nx * ny;
+        id = WGD->domain.face(WGD->halo_index_x + 1, j, k);
         WGD->v0[icell_face] = WGD->v0[id];
       }
     }
     // East side (whole domain)
-    for (auto j = 0; j < WGD->domain.ny(); ++j) {
-      for (auto i = WGD->wrf_nx + WGD->halo_index_x; i < WGD->domain.nx(); ++i) {
-        // icell_face = i + j * WGD->domain.nx() + k * WGD->domain.nx() * WGD->domain.ny();
-        icell_face = WGD->domain.getFaceIdx(i, j, k);
-        // id = (WGD->wrf_ny + WGD->halo_index_x - 1) + j * WGD->domain.nx() + k * WGD->domain.nx() * WGD->domain.ny();
-        id = WGD->domain.getFaceIdx(WGD->wrf_ny + WGD->halo_index_x - 1, j, k);
+    for (auto j = 0; j < ny; ++j) {
+      for (auto i = WGD->wrf_nx + WGD->halo_index_x; i < nx; ++i) {
+        // icell_face = i + j * nx + k * nx * ny;
+        icell_face = WGD->domain.face(i, j, k);
+        // id = (WGD->wrf_ny + WGD->halo_index_x - 1) + j * nx + k * nx * ny;
+        id = WGD->domain.face(WGD->wrf_ny + WGD->halo_index_x - 1, j, k);
         WGD->v0[icell_face] = WGD->v0[id];
       }
     }

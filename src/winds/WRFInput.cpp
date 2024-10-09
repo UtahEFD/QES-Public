@@ -1218,8 +1218,8 @@ void WRFInput::readDomainInfo()
 
     // external = infile->getDim(name);
     //
-    // input->getDimensionSize("x",grid.nx);
-    // input->getDimensionSize("y",grid.ny);
+    // input->getDimensionSize("x",nx);
+    // input->getDimensionSize("y",ny);
     //
     // input->getVariableData("u",start,count,wind.u);
 
@@ -2339,14 +2339,16 @@ void WRFInput::extractWind(WINDSGeneralData *wgd)
   // We use QES dimensions here since those are used to access the
   // wind field and at the moment, the fire mesh and the QES domain
   // should match up (as stated above).
+  auto [nx, ny, nz] = wgd->domain.getDomainCellNum();
+  auto [dx, dy, dz] = wgd->domain.getDomainSize();
 
   std::cout << "QES Extracting fire height wind field into WRF UF and VF" << std::endl;
-  std::cout << "fm_nx=" << fm_nx << ", wgd->domain.nx()=" << wgd->domain.nx() << ", haloX=" << m_haloX_DimAddition << "( " << std::endl;
-  std::cout << "fm_ny=" << fm_ny << ", wgd->domain.ny()=" << wgd->domain.ny() << ", haloY=" << m_haloY_DimAddition << std::endl;
+  std::cout << "fm_nx=" << fm_nx << ", wgd nx=" << nx << ", haloX=" << m_haloX_DimAddition << "( " << std::endl;
+  std::cout << "fm_ny=" << fm_ny << ", wgd ny=" << ny << ", haloY=" << m_haloY_DimAddition << std::endl;
 
   // why?
-  // assert( fm_nx != (wgd->domain.nx() - 1 - 2*m_haloX_DimAddition) );
-  // assert( fm_ny != (wgd->domain.ny() - 1 - 2*m_haloY_DimAddition) );
+  // assert( fm_nx != (nx - 1 - 2*m_haloX_DimAddition) );
+  // assert( fm_ny != (ny - 1 - 2*m_haloY_DimAddition) );
 
   // Initialize the two fields to 0.0
   std::vector<float> ufOut(fm_nx * fm_ny, 0.0);
@@ -2355,7 +2357,7 @@ void WRFInput::extractWind(WINDSGeneralData *wgd)
   // default FWH, just in case
   auto FWH = 6.09;
 
-  if (FWH <= wgd->domain.dz()) {
+  if (FWH <= dz) {
     std::cout << "Warning: resolution in z-direction is not fine enough to define above ground cells for calculating wind" << std::endl;
     std::cout << "Try running the model with finer resolution in z-direction" << std::endl;
   }
@@ -2373,7 +2375,7 @@ void WRFInput::extractWind(WINDSGeneralData *wgd)
 
       // Use qes index
       // Gets height of the terrain for each cell
-      auto qes2DIdx = jQES * (wgd->domain.nx() - 1) + iQES;
+      auto qes2DIdx = jQES * (nx - 1) + iQES;
       auto tHeight = wgd->terrain[qes2DIdx];
 
       // fire mesh idx
@@ -2381,7 +2383,7 @@ void WRFInput::extractWind(WINDSGeneralData *wgd)
 
       // fwh lookup
       FWH = fwh[fireMeshIdx];
-      if (FWH < wgd->domain.dz()) FWH = wgd->domain.dz() * 1.5;
+      if (FWH < dz) FWH = dz * 1.5;
 
       // find the k index value at this height in the domain,
       // need to take into account the variable dz
@@ -2392,24 +2394,24 @@ void WRFInput::extractWind(WINDSGeneralData *wgd)
           break;
         }
       }
-      // auto kQES = (int)floor( ((tHeight + FWH)/float(wgd->domain.dz()) ));
+      // auto kQES = (int)floor( ((tHeight + FWH)/float(dz) ));
 
       // kQES represents the first cell in which the height is above
       // the tHeight + FWH.  Use this to linearly interpolate
       // vertical, face centered winds in U and V.  Normalize by dz.
       // kQES - 1 should represent the cell below.
-      float t = (wgd->domain.z[kQES] - (tHeight + FWH)) / wgd->domain.dz();
+      float t = (wgd->domain.z[kQES] - (tHeight + FWH)) / dz;
 
       // 3D QES Idx
-      auto qes3DIdx = kQES * (wgd->domain.nx()) * (wgd->domain.ny()) + jQES * (wgd->domain.nx()) + iQES;
+      auto qes3DIdx = kQES * (nx) * (ny) + jQES * (nx) + iQES;
 
       // provide cell centered data to WRF
       // -- Need to switch to linear interpolation within the cells...
       //      ufOut[fireMeshIdx] = 0.5 * (wgd->u[qes3DIdx + 1] + wgd->u[qes3DIdx]);
-      //      vfOut[fireMeshIdx] = 0.5 * (wgd->v[qes3DIdx + wgd->domain.nx()] + wgd->v[qes3DIdx]);
+      //      vfOut[fireMeshIdx] = 0.5 * (wgd->v[qes3DIdx + nx] + wgd->v[qes3DIdx]);
 
       ufOut[fireMeshIdx] = t * wgd->u[qes3DIdx - 1] + (1 - t) * wgd->u[qes3DIdx];
-      vfOut[fireMeshIdx] = t * wgd->v[qes3DIdx - wgd->domain.nx()] + (1 - t) * wgd->v[qes3DIdx];
+      vfOut[fireMeshIdx] = t * wgd->v[qes3DIdx - nx] + (1 - t) * wgd->v[qes3DIdx];
     }
   }
 
