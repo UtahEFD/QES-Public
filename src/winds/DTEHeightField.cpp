@@ -630,51 +630,69 @@ void DTEHeightField::setCells(WINDSGeneralData *WGD, const WINDSInputData *WID)
 
   std::vector<int> cutCells;
 
-  int ii = WID->simParams->halo_x / WGD->dx;
-  int jj = WID->simParams->halo_y / WGD->dy;
-  int i_domain_end = ii + (m_nXSize * pixelSizeX) / WGD->dx;
-  int j_domain_end = jj + (m_nYSize * pixelSizeY) / WGD->dy;
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
 
-  for (int i = 0; i < WGD->nx - 2; i++)
-    for (int j = 0; j < WGD->ny - 2; j++) {
+  int ii = WID->simParams->halo_x / dx;
+  int jj = WID->simParams->halo_y / dy;
+  int i_domain_end = ii + (m_nXSize * pixelSizeX) / dx;
+  int j_domain_end = jj + (m_nYSize * pixelSizeY) / dy;
+
+  for (int i = 0; i < nx - 2; i++)
+    for (int j = 0; j < ny - 2; j++) {
 
       // all work here is done for each column of cells in the z direction from the xy plane.
 
       Vector3Float corners[4];// stored from top Left in clockwise order
       if (i >= ii && j >= jj && i <= i_domain_end && j <= j_domain_end) {
-        corners[0] = Vector3Float(i * WGD->dx,
-                                  j * WGD->dy,
+        corners[0] = Vector3Float(i * dx,
+                                  j * dy,
                                   CLAMP(0,
                                         max[2],
-                                        queryHeight(pafScanline, ((i - ii) * WGD->dx) / pixelSizeX, ((j - jj) * WGD->dy) / pixelSizeY) - min[2]));
-        corners[1] = Vector3Float(i * WGD->dx,
-                                  (j + 1) * WGD->dy,
+                                        queryHeight(pafScanline, ((i - ii) * dx) / pixelSizeX, ((j - jj) * dy) / pixelSizeY) - min[2]));
+        corners[1] = Vector3Float(i * dx,
+                                  (j + 1) * dy,
                                   CLAMP(0,
                                         max[2],
-                                        queryHeight(pafScanline, ((i - ii) * WGD->dx) / pixelSizeX, (((j - jj) + 1) * WGD->dy) / pixelSizeY) - min[2]));
-        corners[2] = Vector3Float((i + 1) * WGD->dx,
-                                  (j + 1) * WGD->dy,
+                                        queryHeight(pafScanline, ((i - ii) * dx) / pixelSizeX, (((j - jj) + 1) * dy) / pixelSizeY) - min[2]));
+        corners[2] = Vector3Float((i + 1) * dx,
+                                  (j + 1) * dy,
                                   CLAMP(0,
                                         max[2],
-                                        queryHeight(pafScanline, (((i - ii) + 1) * WGD->dx) / pixelSizeX, (((j - jj) + 1) * WGD->dy) / pixelSizeY) - min[2]));
-        corners[3] = Vector3Float((i + 1) * WGD->dx,
-                                  j * WGD->dy,
+                                        queryHeight(pafScanline, (((i - ii) + 1) * dx) / pixelSizeX, (((j - jj) + 1) * dy) / pixelSizeY) - min[2]));
+        corners[3] = Vector3Float((i + 1) * dx,
+                                  j * dy,
                                   CLAMP(0,
                                         max[2],
-                                        queryHeight(pafScanline, (((i - ii) + 1) * WGD->dx) / pixelSizeX, ((j - jj) * WGD->dy) / pixelSizeY) - min[2]));
+                                        queryHeight(pafScanline, (((i - ii) + 1) * dx) / pixelSizeX, ((j - jj) * dy) / pixelSizeY) - min[2]));
       } else {
-        corners[0] = Vector3Float(i * WGD->dx, j * WGD->dy, 0.0f);
-        corners[1] = Vector3Float(i * WGD->dx, (j + 1) * WGD->dy, 0.0f);
-        corners[2] = Vector3Float((i + 1) * WGD->dx, (j + 1) * WGD->dy, 0.0f);
-        corners[3] = Vector3Float((i + 1) * WGD->dx, j * WGD->dy, 0.0f);
+        corners[0] = Vector3Float(i * dx, j * dy, 0.0f);
+        corners[1] = Vector3Float(i * dx, (j + 1) * dy, 0.0f);
+        corners[2] = Vector3Float((i + 1) * dx, (j + 1) * dy, 0.0f);
+        corners[3] = Vector3Float((i + 1) * dx, j * dy, 0.0f);
       }
 
-      setCellPoints(i, j, WGD->nx, WGD->ny, WGD->nz, WGD->dz_array, WGD->z_face, corners, cutCells, WGD);
+      setCellPoints(i, j, nx, ny, nz, dx, dy, WGD->domain.dz_array, WGD->domain.x, WGD->domain.y, WGD->domain.z, WGD->domain.z_face, corners, cutCells, WGD);
     }
 }
 
-void DTEHeightField::setCellPoints(int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3Float corners[], std::vector<int> &cutCells, WINDSGeneralData *WGD)
+void DTEHeightField::setCellPoints(const int &i_in,
+                                   const int &j_in,
+                                   const int &nx,
+                                   const int &ny,
+                                   const int &nz,
+                                   const float &dx,
+                                   const float &dy,
+                                   const std::vector<float> &dz_array,
+                                   const std::vector<float> &x,
+                                   const std::vector<float> &y,
+                                   const std::vector<float> &z,
+                                   const std::vector<float> &z_face,
+                                   Vector3Float corners[],
+                                   std::vector<int> &cutCells,
+                                   WINDSGeneralData *WGD)
 {
+
   float coordsMin, coordsMax;
   coordsMin = coordsMax = corners[0][2];
   for (int l = 1; l <= 3; l++) {
@@ -691,13 +709,13 @@ void DTEHeightField::setCellPoints(int i, int j, int nx, int ny, int nz, std::ve
     float cellTop = cellBot + dz_array[k];
 
     if (cellTop <= coordsMin)
-      WGD->icellflag[CELL(i, j, k)] = 2;
+      WGD->icellflag[CELL(i_in, j_in, k)] = 2;
     else if (cellBot >= coordsMax)
-      WGD->icellflag[CELL(i, j, k)] = 1;
+      WGD->icellflag[CELL(i_in, j_in, k)] = 1;
     else {
-      WGD->icellflag[CELL(i, j, k)] = 8;
+      WGD->icellflag[CELL(i_in, j_in, k)] = 8;
 
-      int cutcell_index = CELL(i, j, k);
+      int cutcell_index = CELL(i_in, j_in, k);
 
       std::vector<Vector3Float> pointsInCell;
       std::vector<Edge<int>> edgesInCell;
@@ -1020,9 +1038,7 @@ void DTEHeightField::setCellPoints(int i, int j, int nx, int ny, int nz, std::ve
       S_front = S_behind = S_right = S_left = S_below = S_above = 0.0;
       S_cut = 0.0;
       const float pi = 4.0f * atan(1.0); /**< pi constant */
-      int kkk = cutcell_index / ((WGD->nx - 1) * (WGD->ny - 1));
-      int jjj = (cutcell_index - kkk * (WGD->nx - 1) * (WGD->ny - 1)) / (WGD->nx - 1);
-      int iii = cutcell_index - kkk * (WGD->nx - 1) * (WGD->ny - 1) - jjj * (WGD->nx - 1);
+      auto [iii, jjj, kkk] = WGD->domain.getCellIdx(cutcell_index);
       for (int i = 0; i < 6; i++) {
 
         ni = nj = nk = 0.0;
@@ -1041,34 +1057,34 @@ void DTEHeightField::setCellPoints(int i, int j, int nx, int ny, int nz, std::ve
           if (i < 4) {
             WGD->cut_cell->reorderPoints(cut_points, i, pi);
             if (i == 0) {
-              S_right = WGD->cut_cell->calculateArea(cut_points, cutcell_index, WGD->dx, WGD->dy, WGD->dz_array[k], WGD->n, WGD->m, WGD->f, WGD->e, WGD->h, WGD->g, i);
+              S_right = WGD->cut_cell->calculateArea(cut_points, cutcell_index, dx, dy, dz_array[k], WGD->n, WGD->m, WGD->f, WGD->e, WGD->h, WGD->g, i);
             }
             if (i == 1) {
-              S_left = WGD->cut_cell->calculateArea(cut_points, cutcell_index, WGD->dx, WGD->dy, WGD->dz_array[k], WGD->n, WGD->m, WGD->f, WGD->e, WGD->h, WGD->g, i);
+              S_left = WGD->cut_cell->calculateArea(cut_points, cutcell_index, dx, dy, dz_array[k], WGD->n, WGD->m, WGD->f, WGD->e, WGD->h, WGD->g, i);
             }
             if (i == 2) {
-              S_front = WGD->cut_cell->calculateArea(cut_points, cutcell_index, WGD->dx, WGD->dy, WGD->dz_array[k], WGD->n, WGD->m, WGD->f, WGD->e, WGD->h, WGD->g, i);
+              S_front = WGD->cut_cell->calculateArea(cut_points, cutcell_index, dx, dy, dz_array[k], WGD->n, WGD->m, WGD->f, WGD->e, WGD->h, WGD->g, i);
             }
             if (i == 3) {
-              S_behind = WGD->cut_cell->calculateArea(cut_points, cutcell_index, WGD->dx, WGD->dy, WGD->dz_array[k], WGD->n, WGD->m, WGD->f, WGD->e, WGD->h, WGD->g, i);
+              S_behind = WGD->cut_cell->calculateArea(cut_points, cutcell_index, dx, dy, dz_array[k], WGD->n, WGD->m, WGD->f, WGD->e, WGD->h, WGD->g, i);
             }
           }
         } else {
           if (i < 4) {
             if (i == 0) {
-              S_right = (WGD->dx * WGD->dz_array[k]);
+              S_right = (dx * dz_array[k]);
               WGD->h[cutcell_index] = 0.0;
             }
             if (i == 1) {
-              S_left = (WGD->dx * WGD->dz_array[k]);
+              S_left = (dx * dz_array[k]);
               WGD->g[cutcell_index] = 0.0;
             }
             if (i == 2) {
-              S_front = (WGD->dy * WGD->dz_array[k]);
+              S_front = (dy * dz_array[k]);
               WGD->e[cutcell_index] = 0.0;
             }
             if (i == 3) {
-              S_behind = (WGD->dy * WGD->dz_array[k]);
+              S_behind = (dy * dz_array[k]);
               WGD->f[cutcell_index] = 0.0;
             }
           }
@@ -1076,11 +1092,11 @@ void DTEHeightField::setCellPoints(int i, int j, int nx, int ny, int nz, std::ve
         // for the top and bottom faces of the cell (XY planes)
 
         if (i == 4) {
-          S_below = WGD->cut_cell->calculateAreaTopBot(terrainPoints, terrainEdges, cutcell_index, WGD->dx, WGD->dy, WGD->dz_array[k], location, WGD->n, true);
+          S_below = WGD->cut_cell->calculateAreaTopBot(terrainPoints, terrainEdges, cutcell_index, dx, dy, dz_array[k], location, WGD->n, true);
         }
 
         if (i == 5) {
-          S_above = WGD->cut_cell->calculateAreaTopBot(terrainPoints, terrainEdges, cutcell_index, WGD->dx, WGD->dy, WGD->dz_array[k], location, WGD->m, false);
+          S_above = WGD->cut_cell->calculateAreaTopBot(terrainPoints, terrainEdges, cutcell_index, dx, dy, dz_array[k], location, WGD->m, false);
         }
 
         S_cut = sqrt(pow(S_behind - S_front, 2.0) + pow(S_right - S_left, 2.0) + pow(S_below - S_above, 2.0));
@@ -1092,39 +1108,39 @@ void DTEHeightField::setCellPoints(int i, int j, int nx, int ny, int nz, std::ve
         }
 
         if (i == 0) {
-          solid_V_frac += (0.0 * (-1) * S_right) / (3 * WGD->dx * WGD->dy * WGD->dz_array[k]);
+          solid_V_frac += (0.0 * (-1) * S_right) / (3 * dx * dy * dz_array[k]);
         }
 
         if (i == 1) {
-          solid_V_frac += (WGD->dy * (1) * S_left) / (3 * WGD->dx * WGD->dy * WGD->dz_array[k]);
+          solid_V_frac += (dy * (1) * S_left) / (3 * dx * dy * dz_array[k]);
         }
 
         if (i == 2) {
-          solid_V_frac += (WGD->dx * (1) * S_front) / (3 * WGD->dx * WGD->dy * WGD->dz_array[k]);
+          solid_V_frac += (dx * (1) * S_front) / (3 * dx * dy * dz_array[k]);
         }
 
         if (i == 3) {
-          solid_V_frac += (0.0 * (-1) * S_behind) / (3 * WGD->dx * WGD->dy * WGD->dz_array[k]);
+          solid_V_frac += (0.0 * (-1) * S_behind) / (3 * dx * dy * dz_array[k]);
         }
 
         if (i == 4) {
-          solid_V_frac += (0.0 * (-1) * S_below) / (3 * WGD->dx * WGD->dy * WGD->dz_array[k]);
+          solid_V_frac += (0.0 * (-1) * S_below) / (3 * dx * dy * dz_array[k]);
         }
 
         if (i == 5) {
-          solid_V_frac += (WGD->dz_array[k] * (1) * S_above) / (3 * WGD->dx * WGD->dy * WGD->dz_array[k]);
+          solid_V_frac += (dz_array[k] * (1) * S_above) / (3 * dx * dy * dz_array[k]);
         }
       }
 
       if (terrainPoints.size() != 0) {
         solid_V_frac += (((terrainPoints[0][0] - location[0]) * ni * S_cut)
                          + ((terrainPoints[0][1] - location[1]) * nj * S_cut) + ((terrainPoints[0][2] - location[2]) * nk * S_cut))
-                        / (3 * WGD->dx * WGD->dy * WGD->dz_array[k]);
+                        / (3 * dx * dy * dz_array[k]);
       }
 
-      distance_x = (terrainPoints[0][0] - WGD->x[iii]) * ni;
-      distance_y = (terrainPoints[0][1] - WGD->y[jjj]) * nj;
-      distance_z = (terrainPoints[0][2] - WGD->z[kkk]) * nk;
+      distance_x = (terrainPoints[0][0] - x[iii]) * ni;
+      distance_y = (terrainPoints[0][1] - y[jjj]) * nj;
+      distance_z = (terrainPoints[0][2] - z[kkk]) * nk;
 
       distance = sqrt(pow(distance_x, 2.0) + pow(distance_y, 2.0) + pow(distance_z, 2.0));
 

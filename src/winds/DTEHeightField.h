@@ -225,7 +225,21 @@ private:
    * @param cutCells List of all cells which the terrain goes through
    */
   // void setCellPoints(Cell *cells, int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3Float corners[], std::vector<int> &cutCells, WINDSGeneralData *WGD);
-  void setCellPoints(int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3Float corners[], std::vector<int> &cutCells, WINDSGeneralData *WGD);
+  void setCellPoints(const int &i_in,
+                     const int &j_in,
+                     const int &nx,
+                     const int &ny,
+                     const int &nz,
+                     const float &dx,
+                     const float &dy,
+                     const std::vector<float> &dz_array,
+                     const std::vector<float> &x,
+                     const std::vector<float> &y,
+                     const std::vector<float> &z,
+                     const std::vector<float> &z_face,
+                     Vector3Float corners[],
+                     std::vector<int> &cutCells,
+                     WINDSGeneralData *WGD);
 
   /**
    * :document this:
