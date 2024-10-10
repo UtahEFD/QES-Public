@@ -106,6 +106,7 @@ TEST_CASE("Plume test inputs for multiple particle models with uniform winds and
   float gridRes[3] = { 1.0, 1.0, 1.0 };
   qes::Domain domain(gridSize[0], gridSize[1], gridSize[2], gridRes[0], gridRes[1], gridRes[2]);
   WINDSGeneralData *WGD = new WINDSGeneralData(domain);
+  WGD->timestamp.emplace_back("2020-01-01T00:00:00");
   TURBGeneralData *TGD = new TURBGeneralData(WGD);
 
   for (int k = 0; k < WGD->domain.nz(); ++k) {

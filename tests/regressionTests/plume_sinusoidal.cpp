@@ -55,7 +55,7 @@ TEST_CASE("Regression test of QES-Plume: sinusoidal stress")
   for (int k = 0; k < WGD->domain.nz() - 1; ++k) {
     for (int j = 0; j < WGD->domain.ny() - 1; ++j) {
       for (int i = 0; i < WGD->domain.nx() - 1; ++i) {
-        int cellID = WGD->domain.cell(i, j, k);
+        long cellID = WGD->domain.cell(i, j, k);
         TGD->txx[cellID] = sig2_new[k];
         TGD->tyy[cellID] = sig2_new[k];
         TGD->tzz[cellID] = sig2_new[k];
