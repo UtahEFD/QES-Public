@@ -34,8 +34,10 @@
 
 #include <iostream>
 #include <string>
+#ifdef HAS_CUDA
 #include <cuda.h>
 #include <cuda_runtime.h>
+#endif
 
 namespace QESout {
 void splashScreen();
