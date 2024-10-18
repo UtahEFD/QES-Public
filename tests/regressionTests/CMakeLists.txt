@@ -18,8 +18,6 @@ ELSE ($CACHE{HAS_CUDA_SUPPORT})
 
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
-
-
 set(REGRESSTESTS
   plume_sinusoidal
   plume_uniform)
