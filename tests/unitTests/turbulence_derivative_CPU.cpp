@@ -30,19 +30,19 @@ std::string check1DDerivative(std::vector<float> *,
                               std::vector<float> *,
                               std::vector<float> *,
                               WINDSGeneralData *,
-                              test_TURBGeneralData *);
+                              TURBGeneralData *);
 float compError1Dx(std::vector<float> *,
                    std::vector<float> *,
                    WINDSGeneralData *,
-                   test_TURBGeneralData *);
+                   TURBGeneralData *);
 float compError1Dy(std::vector<float> *,
                    std::vector<float> *,
                    WINDSGeneralData *,
-                   test_TURBGeneralData *);
+                   TURBGeneralData *);
 float compError1Dz(std::vector<float> *,
                    std::vector<float> *,
                    WINDSGeneralData *,
-                   test_TURBGeneralData *);
+                   TURBGeneralData *);
 
 TEST_CASE("Testing QES-Turb derivatives CPU")
 {
@@ -52,8 +52,8 @@ TEST_CASE("Testing QES-Turb derivatives CPU")
   float gridRes[3] = { 1.0, 1.0, 1.0 };
   qes::Domain domain(gridSize[0], gridSize[1], gridSize[2], gridRes[0], gridRes[1], gridRes[2]);
 
-  WINDSGeneralData *WGD = new WINDSGeneralData(domain);
-  auto TGD = new test_TURBGeneralData(WGD);
+  auto *WGD = new WINDSGeneralData(domain);
+  auto *TGD = new TURBGeneralData(WGD);
 
 
   std::cout << "Checking derivatives" << std::endl;
@@ -76,7 +76,7 @@ TEST_CASE("Testing QES-Turb derivatives CPU")
   set1DDerivative(&dudx, &dudy, &dudz, &dvdx, &dvdy, &dvdz, &dwdx, &dwdy, &dwdz, WGD);
 
   std::cout << "Calculation derivatives CPU" << std::endl;
-  TGD->test_compDerivatives_CPU(WGD);
+  TGD->derivativeVelocity();
 
   std::cout << "Checking derivatives CPU" << std::endl;
 
@@ -177,7 +177,7 @@ void set1DDerivative(std::vector<float> *dudx,
 float compError1Dx(std::vector<float> *deriv,
                    std::vector<float> *var,
                    WINDSGeneralData *WGD,
-                   test_TURBGeneralData *TGD)
+                   TURBGeneralData *TGD)
 {
 
   float error(0.0), numcell(0.0);
@@ -197,7 +197,7 @@ float compError1Dx(std::vector<float> *deriv,
 float compError1Dy(std::vector<float> *deriv,
                    std::vector<float> *var,
                    WINDSGeneralData *WGD,
-                   test_TURBGeneralData *TGD)
+                   TURBGeneralData *TGD)
 {
 
   float error(0.0), numcell(0.0);
@@ -217,7 +217,7 @@ float compError1Dy(std::vector<float> *deriv,
 float compError1Dz(std::vector<float> *deriv,
                    std::vector<float> *var,
                    WINDSGeneralData *WGD,
-                   test_TURBGeneralData *TGD)
+                   TURBGeneralData *TGD)
 {
 
   float error(0.0), numcell(0.0);

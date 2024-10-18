@@ -68,6 +68,7 @@ public:
 
   void loadNetCDFData(int);
   void divergenceStress();
+  void derivativeVelocity();
 
   // General QUIC Domain Data
   qes::Domain domain;
@@ -201,8 +202,6 @@ protected:
 
   void getDerivativesGPU();
 
-  void derivativeVelocity();
-
   void getTurbulentViscosity();
   void stressTensor();
 
@@ -227,7 +226,7 @@ private:
   const float vonKar = 0.4;
   float backgroundMixing = 0.0;
 
-  //float dx, dy, dz;
+  // float dx, dy, dz;
 
   // input: store here for multiple time instance.
   NetCDFInput *input;

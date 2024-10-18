@@ -190,7 +190,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
   // std::cout << "\t\t max terrain height = "<< terrainH_max << std::endl;
 
   // calculate the mean building h
-  if (m_WGD->allBuildingsV.size() > 0) {
+  if (!m_WGD->allBuildingsV.empty()) {
     float heffmax = 0.0;
     for (size_t i = 0; i < m_WGD->allBuildingsV.size(); i++) {
       bldgH_mean += m_WGD->allBuildingsV[m_WGD->building_id[i]]->H;
@@ -319,6 +319,7 @@ TURBGeneralData::TURBGeneralData(const std::string inputFile, WINDSGeneralData *
       }
     }
   }
+
   /*
   // comp. of the velocity gradient tensor
   Gxx.resize(numcell_cent, 0);
@@ -356,12 +357,12 @@ TURBGeneralData::TURBGeneralData(const std::string inputFile, WINDSGeneralData *
    */
 }
 
-TURBGeneralData::TURBGeneralData(WINDSGeneralData *WGDin)
-  : domain(WGDin->domain)
+TURBGeneralData::TURBGeneralData(WINDSGeneralData *WGD)
+  : domain(WGD->domain)
 {
   std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "[QES-TURB]\t Initialization of turbulence model...\n";
-  m_WGD = WGDin;
+  m_WGD = WGD;
 
   allocateMemory();
 
@@ -506,17 +507,16 @@ void TURBGeneralData::allocateMemory()
   nuT.resize(numcell_cent, 0);
   // std::cout << "\t\t Memory allocation completed.\n";
 
-  if (flagCompDivStress) {
-    // comp of the divergence of the stress tensor
-    tmp_dtoxdx.resize(numcell_cent, 0);
-    tmp_dtoydy.resize(numcell_cent, 0);
-    tmp_dtozdz.resize(numcell_cent, 0);
+  // comp of the divergence of the stress tensor
+  tmp_dtoxdx.resize(numcell_cent, 0);
+  tmp_dtoydy.resize(numcell_cent, 0);
+  tmp_dtozdz.resize(numcell_cent, 0);
 
-    // comp of the divergence of the stress tensor
-    div_tau_x.resize(numcell_cent, 0);
-    div_tau_y.resize(numcell_cent, 0);
-    div_tau_z.resize(numcell_cent, 0);
-  }
+  // comp of the divergence of the stress tensor
+  div_tau_x.resize(numcell_cent, 0);
+  div_tau_y.resize(numcell_cent, 0);
+  div_tau_z.resize(numcell_cent, 0);
+
   std::cout << "\r[QES-TURB]\t Allocating memory... [DONE]\n";
 }
 void TURBGeneralData::loadNetCDFData(int stepin)
@@ -830,7 +830,7 @@ void TURBGeneralData::stressTensor()
 
     int k_ref = 0;
     float refHeight = 15.0;// reference height for rotation wind direction is arbitrarily set to 15m above terrain
-    while (m_WGD->domain.z_face[k_ref] < (refHeight + m_WGD->terrain[m_WGD->domain.cell2d(i, j)])) {
+    while (domain.z_face[k_ref] < (refHeight + m_WGD->terrain[domain.cell2d(i, j)])) {
       k_ref += 1;
     }
 
@@ -1059,7 +1059,7 @@ void TURBGeneralData::derivativeStress(const std::vector<float> &tox,
   for (auto i = 0u; i < wallVec.size(); i++) {
     wallVec.at(i)->setWallsStressDeriv(m_WGD, this, tox, toy, toz);
   }
-  // compute the the divergence
+  // compute the divergence
   for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
     int cellID = *it;
     div_tau_o[cellID] = tmp_dtoxdx[cellID] + tmp_dtoydy[cellID] + tmp_dtozdz[cellID];
