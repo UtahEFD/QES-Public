@@ -1045,7 +1045,7 @@ void TURBGeneralData::derivativeStress(const std::vector<float> &tox,
     tmp_dtoydy[cellID] = (toy[domain.cellAdd(cellID, 0, 1, 0)] - toy[domain.cellAdd(cellID, 0, -1, 0)]) / (2.0f * domain.dy());
 
     if (flagUniformZGrid) {
-      tmp_dtozdz[cellID] = (toz[domain.cellAdd(cellID, 0, 0, 1)] - toz[domain.cellAdd(cellID, 0, 0, 1)])
+      tmp_dtozdz[cellID] = (toz[domain.cellAdd(cellID, 0, 0, 1)] - toz[domain.cellAdd(cellID, 0, 0, -1)])
                            / (2.0f * domain.dz());
     } else {
       tmp_dtozdz[cellID] = ((domain.z[k] - domain.z[k - 1]) / (domain.z[k + 1] - domain.z[k])
