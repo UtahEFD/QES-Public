@@ -71,8 +71,8 @@ private:
   void _cudaCheck(T e, const char *func, const char *call, const int line);
 
 public:
-  SharedMemory(const WINDSInputData *WID, WINDSGeneralData *WGD)
-    : Solver(WID, WGD)
+  SharedMemory(qes::Domain domain_in, const float &tolerance)
+    : Solver(std::move(domain_in), tolerance)
   {
     std::cout << "-------------------------------------------------------------------" << std::endl;
     std::cout << "[Solver]\t Initializing Shared Memory Solver (GPU) ..." << std::endl;

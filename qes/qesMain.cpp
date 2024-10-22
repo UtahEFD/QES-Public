@@ -207,11 +207,11 @@ Solver *setSolver(const int solveType, WINDSInputData *WID, WINDSGeneralData *WG
 
 #ifdef HAS_CUDA
   } else if (solveType == DYNAMIC_P) {
-    solver = new DynamicParallelism(WID, WGD);
+    solver = new DynamicParallelism(WGD->domain, WID->simParams->tolerance);
   } else if (solveType == Global_M) {
-    solver = new GlobalMemory(WID, WGD);
+    solver = new GlobalMemory(WGD->domain, WID->simParams->tolerance);
   } else if (solveType == Shared_M) {
-    solver = new SharedMemory(WID, WGD);
+    solver = new SharedMemory(WGD->domain, WID->simParams->tolerance);
 #endif
   } else {
     QESout::error("Invalid solver type");

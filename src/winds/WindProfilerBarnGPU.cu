@@ -309,11 +309,11 @@ void WindProfilerBarnGPU::BarnesInterpolationGPU(const WINDSInputData *WID, WIND
 {
   int num_sites = available_sensor_id.size();
 
-  auto [nx,ny,nz] = WGD->domain.getDomainCellNum();
-  auto [dx,dy,dz] = WGD->domain.detDomainSize();
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
   long numcell_face = WGD->domain.numFaceCentered();
 
-  //std::vector<float> u_prof_1d, v_prof_1d;
+  // std::vector<float> u_prof_1d, v_prof_1d;
   std::vector<float> wm, wms, u0_int, v0_int;
   std::vector<float> site_xcoord, site_ycoord, sum_wm, sum_wu, sum_wv;
   std::vector<float> dxx, dyy, u12, u34, v12, v34;
@@ -321,8 +321,8 @@ void WindProfilerBarnGPU::BarnesInterpolationGPU(const WINDSInputData *WID, WIND
   std::vector<int> k_mod;
   std::vector<int> surf_layer_height;
 
-  //u_prof_1d.resize(num_sites * nz, 0.0);
-  //v_prof_1d.resize(num_sites * nz, 0.0);
+  // u_prof_1d.resize(num_sites * nz, 0.0);
+  // v_prof_1d.resize(num_sites * nz, 0.0);
   wm.resize(num_sites * nx * ny, 0.0);
   wms.resize(num_sites * nx * ny, 0.0);
   u0_int.resize(num_sites * nz, 0.0);

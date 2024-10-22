@@ -74,7 +74,7 @@ private:
   void _cudaCheck(T e, const char *func, const char *call, const int line);
 
 public:
-  DynamicParallelism(const WINDSInputData *WID, WINDSGeneralData *WGD);
+  DynamicParallelism(qes::Domain, const float &);
 
 protected:
   ///@{

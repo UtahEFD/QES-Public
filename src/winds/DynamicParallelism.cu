@@ -236,8 +236,8 @@ __global__ void SOR_iteration(float *d_lambda, float *d_lambda_old, int nx, int 
 }
 
 
-DynamicParallelism::DynamicParallelism(const WINDSInputData *WID, WINDSGeneralData *WGD)
-  : Solver(WID, WGD)
+DynamicParallelism::DynamicParallelism(qes::Domain domain_in, const float &tolerance)
+  : Solver(std::move(domain_in), tolerance)
 {
   std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "[Solver]\t Initialoization of Dynamic Parallelism Solver" << std::endl;
@@ -312,9 +312,10 @@ DynamicParallelism::DynamicParallelism(const WINDSInputData *WID, WINDSGeneralDa
   }
   cudaSetDevice(0);
 
+#if 0
   char msg[256];
   int numblocks = (WGD->numcell_cent / BLOCKSIZE) + 1;
-  long long memory_req = (10 * WGD->numcell_cent + 6 * WGD->numcell_face + numblocks + (WGD->nz - 1)) * sizeof(float)
+  long long memory_req = (10 * numcell_cent + 6 * WGD->numcell_face + numblocks + (WGD->nz - 1)) * sizeof(float)
                          + (WGD->numcell_cent) * sizeof(int) + 2308964352;
 
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -331,15 +332,21 @@ DynamicParallelism::DynamicParallelism(const WINDSInputData *WID, WINDSGeneralDa
            (unsigned long long)memory_req);
 #endif
   std::cout << "[Solver] " << msg << std::endl;
+#endif
 }
 
 
 void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind)
 {
   itermax = WID->simParams->maxIterations;
-  int numblocks = (WGD->numcell_cent / BLOCKSIZE) + 1;
+  auto [nx, ny, nz] = domain.getDomainCellNum();
+  auto [dx, dy, dz] = domain.getDomainSize();
+  long numcell_face = domain.numFaceCentered();
+  long numcell_cent = domain.numCellCentered();
 
-  std::vector<float> value(WGD->numcell_cent, 0.0);
+  int numblocks = (numcell_cent / BLOCKSIZE) + 1;
+
+  std::vector<float> value(numcell_cent, 0.0);
   std::vector<float> bvalue(numblocks, 0.0);
   // float *d_u0, *d_v0, *d_w0;
   float *d_value, *d_bvalue;
@@ -351,25 +358,25 @@ void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD,
 
   auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
 
-  cudaMalloc((void **)&d_e, WGD->numcell_cent * sizeof(float));
-  cudaMalloc((void **)&d_f, WGD->numcell_cent * sizeof(float));
-  cudaMalloc((void **)&d_g, WGD->numcell_cent * sizeof(float));
-  cudaMalloc((void **)&d_h, WGD->numcell_cent * sizeof(float));
-  cudaMalloc((void **)&d_m, WGD->numcell_cent * sizeof(float));
-  cudaMalloc((void **)&d_n, WGD->numcell_cent * sizeof(float));
-  cudaMalloc((void **)&d_R, WGD->numcell_cent * sizeof(float));
-  cudaMalloc((void **)&d_lambda, WGD->numcell_cent * sizeof(float));
-  cudaMalloc((void **)&d_lambda_old, WGD->numcell_cent * sizeof(float));
-  cudaMalloc((void **)&d_icellflag, WGD->numcell_cent * sizeof(int));
-  cudaMalloc((void **)&d_value, WGD->numcell_cent * sizeof(float));
+  cudaMalloc((void **)&d_e, numcell_cent * sizeof(float));
+  cudaMalloc((void **)&d_f, numcell_cent * sizeof(float));
+  cudaMalloc((void **)&d_g, numcell_cent * sizeof(float));
+  cudaMalloc((void **)&d_h, numcell_cent * sizeof(float));
+  cudaMalloc((void **)&d_m, numcell_cent * sizeof(float));
+  cudaMalloc((void **)&d_n, numcell_cent * sizeof(float));
+  cudaMalloc((void **)&d_R, numcell_cent * sizeof(float));
+  cudaMalloc((void **)&d_lambda, numcell_cent * sizeof(float));
+  cudaMalloc((void **)&d_lambda_old, numcell_cent * sizeof(float));
+  cudaMalloc((void **)&d_icellflag, numcell_cent * sizeof(int));
+  cudaMalloc((void **)&d_value, numcell_cent * sizeof(float));
   cudaMalloc((void **)&d_bvalue, numblocks * sizeof(float));
-  cudaMalloc((void **)&d_dz_array, (WGD->nz - 1) * sizeof(float));
-  cudaMalloc((void **)&d_u, WGD->numcell_face * sizeof(float));
-  cudaMalloc((void **)&d_v, WGD->numcell_face * sizeof(float));
-  cudaMalloc((void **)&d_w, WGD->numcell_face * sizeof(float));
+  cudaMalloc((void **)&d_dz_array, (nz - 1) * sizeof(float));
+  cudaMalloc((void **)&d_u, numcell_face * sizeof(float));
+  cudaMalloc((void **)&d_v, numcell_face * sizeof(float));
+  cudaMalloc((void **)&d_w, numcell_face * sizeof(float));
 
 #if 0
-  long long memory_req = (10 * WGD->numcell_cent + 6 * WGD->numcell_face + numblocks + (WGD->nz - 1)) * sizeof(float) + (WGD->numcell_cent) * sizeof(int) + 2308964352;
+  long long memory_req = (10 * numcell_cent + 6 * numcell_face + numblocks + (nz - 1)) * sizeof(float) + (numcell_cent) * sizeof(int) + 2308964352;
   char msg[256];
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
   sprintf_s(msg, sizeof(msg),
@@ -387,37 +394,37 @@ void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD,
   std::cout << msg;
 #endif
 
-  cudaMemcpy(d_icellflag, WGD->icellflag.data(), WGD->numcell_cent * sizeof(int), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_u, WGD->u0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_v, WGD->v0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_w, WGD->w0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_R, R.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_value, value.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_icellflag, WGD->icellflag.data(), numcell_cent * sizeof(int), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_u, WGD->u0.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_v, WGD->v0.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_w, WGD->w0.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_R, R.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_value, value.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_bvalue, bvalue.data(), numblocks * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_e, WGD->e.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_f, WGD->f.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_g, WGD->g.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_h, WGD->h.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_m, WGD->m.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_n, WGD->n.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_dz_array, WGD->dz_array.data(), (WGD->nz - 1) * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_lambda, lambda.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_lambda_old, lambda_old.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_e, WGD->e.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_f, WGD->f.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_g, WGD->g.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_h, WGD->h.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_m, WGD->m.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_n, WGD->n.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_dz_array, WGD->domain.dz_array.data(), (nz - 1) * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_lambda, lambda.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_lambda_old, lambda_old.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
 
   /////////////////////////////////////////////////
   //                 SOR solver              //////
   /////////////////////////////////////////////////
 
   // Invoke the main (mother) kernel
-  SOR_iteration<<<1, 1>>>(d_lambda, d_lambda_old, WGD->nx, WGD->ny, WGD->nz, omega, A, B, WGD->dx, WGD->dy, WGD->dz, d_dz_array, d_e, d_f, d_g, d_h, d_m, d_n, d_R, itermax, tol, d_value, d_bvalue, alpha1, alpha2, d_u, d_v, d_w, d_icellflag);
+  SOR_iteration<<<1, 1>>>(d_lambda, d_lambda_old, nx, ny, nz, omega, A, B, dx, dy, dz, d_dz_array, d_e, d_f, d_g, d_h, d_m, d_n, d_R, itermax, tol, d_value, d_bvalue, alpha1, alpha2, d_u, d_v, d_w, d_icellflag);
   cudaCheck(cudaGetLastError());
 
-  cudaMemcpy(WGD->u.data(), d_u, WGD->numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
-  cudaMemcpy(WGD->v.data(), d_v, WGD->numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
-  cudaMemcpy(WGD->w.data(), d_w, WGD->numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
-  cudaMemcpy(lambda.data(), d_lambda, WGD->numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
-  cudaMemcpy(lambda_old.data(), d_lambda_old, WGD->numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
-  cudaMemcpy(R.data(), d_R, WGD->numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
+  cudaMemcpy(WGD->u.data(), d_u, numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
+  cudaMemcpy(WGD->v.data(), d_v, numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
+  cudaMemcpy(WGD->w.data(), d_w, numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
+  cudaMemcpy(lambda.data(), d_lambda, numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
+  cudaMemcpy(lambda_old.data(), d_lambda_old, numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
+  cudaMemcpy(R.data(), d_R, numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
 
   cudaFree(d_lambda);
   cudaFree(d_lambda_old);

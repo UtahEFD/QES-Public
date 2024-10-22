@@ -69,8 +69,8 @@ private:
   void _cudaCheck(T e, const char *func, const char *call, const int line);
 
 public:
-  GlobalMemory(const WINDSInputData *WID, WINDSGeneralData *WGD)
-    : Solver(WID, WGD)
+  GlobalMemory(qes::Domain domain_in, const float &tolerance)
+    : Solver(std::move(domain_in), tolerance)
   {
     std::cout << "-------------------------------------------------------------------" << std::endl;
     std::cout << "[Solver]\t Initializing Global Memory Solver (GPU) ..." << std::endl;

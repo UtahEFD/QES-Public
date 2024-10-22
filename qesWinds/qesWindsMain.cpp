@@ -150,11 +150,11 @@ int main(int argc, char *argv[])
 
 #ifdef HAS_CUDA
   } else if (arguments.solveType == DYNAMIC_P) {
-    solver = new DynamicParallelism(WID, WGD);
+    solver = new DynamicParallelism(WGD->domain, WID->simParams->tolerance);
   } else if (arguments.solveType == Global_M) {
-    solver = new GlobalMemory(WID, WGD);
+    solver = new GlobalMemory(WGD->domain, WID->simParams->tolerance);
   } else if (arguments.solveType == Shared_M) {
-    solver = new SharedMemory(WID, WGD);
+    solver = new SharedMemory(WGD->domain, WID->simParams->tolerance);
 #endif
   } else {
     QESout::error("Invalid solver type");
