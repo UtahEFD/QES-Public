@@ -57,23 +57,23 @@ endif()
 # ----------------------------------------------------------
 include(CheckCXXCompilerFlag)
 MESSAGE(STATUS "Compiling with ${CMAKE_CXX_COMPILER_ID}, Version: ${CMAKE_CXX_COMPILER_VERSION}")
-CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
-CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+CHECK_CXX_COMPILER_FLAG("-std=c++17" COMPILER_SUPPORTS_CXX17)
+#CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
 
-if(COMPILER_SUPPORTS_CXX11)
+if(COMPILER_SUPPORTS_CXX17)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
   #
-  # This code used C++ 11 and 14 features so enable these on CXX Flags
+  # This code used C++ 17 features so enable these on CXX Flags
   #
   set(CMAKE_CXX_STANDARD 17)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   set(CMAKE_CXX_EXTENSIONS OFF)
   
-elseif(COMPILER_SUPPORTS_CXX0X)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+#elseif(COMPILER_SUPPORTS_CXX0X)
+#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 else()
-  message(FATAL_ERROR "Compiler ${CMAKE_CXX_COMPILER} has no C++11 support.")
+  message(FATAL_ERROR "Compiler ${CMAKE_CXX_COMPILER} has no C++17 support.")
 endif()
 
 # ----------------------------------------------------------
@@ -234,6 +234,23 @@ ENDIF(${GDAL_FOUND})
 # CUDA
 # - check if CUDA is available
 # ----------------------------------------------------------
+include(CheckLanguage)
+check_language(CUDA)
+
+If (CMAKE_CUDA_COMPILER)
+
+   MESSAGE(STATUS "CUDA is available; CUDA_COMPILER=${CMAKE_CUDA_COMPILER}, Version=${CMAKE_CUDA_COMPILER_VERSION}")
+   ENABLE_LANGUAGE( CUDA )
+
+   IF(NOT DEFINED CMAKE_CUDA_STANDARD)
+      set(CMAKE_CUDA_STANDARD 17)
+      set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+   ENDIF()
+   
+ELSE()
+  MESSAGE(STATUS "CUDA is not available.")
+ENDIF()
+
 SET(CUDA_SEPARABLE_COMPILATION ON)
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_52;-rdc=true;" )
 
@@ -245,6 +262,11 @@ FIND_PACKAGE(CUDA)
 IF(CUDA_FOUND)
   MESSAGE(STATUS "CUDA Libraries: ${CUDA_LIBRARIES}")
   SET(HAS_CUDA_SUPPORT ON CACHE BOOL "Determines if CUDA/GPU functionality is compiled into the code base" )
+
+  if(NOT DEFINED CMAKE_CUDA_STANDARD)
+      set(CMAKE_CUDA_STANDARD 17)
+      set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+   endif()
   
   INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
   #INCLUDE_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/samples/common/inc)
@@ -268,6 +290,11 @@ if(HAS_CUDA_SUPPORT)
 
   ADD_DEFINITIONS(-DHAS_CUDA)
 
+  if(NOT DEFINED CMAKE_CUDA_STANDARD)
+      set(CMAKE_CUDA_STANDARD 17)
+      set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+   endif()
+   
   MESSAGE(STATUS "Using CUDA Version: ${CUDA_VERSION}")
   if (${CUDA_VERSION} VERSION_GREATER_EQUAL 10.2)
     MESSAGE(STATUS "Found CUDA 10.2 or higher! Now searching for OptiX support...")
@@ -382,7 +409,7 @@ endif (DOXYGEN_FOUND)
 function(link_external_libraries exec)
   target_link_libraries(${exec} ${Boost_PROGRAM_OPTIONS_LIBRARIES})
   target_link_libraries(${exec} ${Boost_DATE_TIME_LIBRARIES})
-  target_link_libraries(${exec} ${Boost_FILESYSTEM_LIBRARIES})
+  #target_link_libraries(${exec} ${Boost_FILESYSTEM_LIBRARIES})
   target_link_libraries(${exec} ${GDAL_LIBRARY})
   target_link_libraries(${exec} ${NETCDF_LIBRARIES_CXX})
   target_link_libraries(${exec} ${NETCDF_LIBRARIES_C})
