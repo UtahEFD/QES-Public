@@ -43,7 +43,6 @@
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
 
-#include "WINDSInputData.h"
 #include "Solver.h"
 
 
@@ -90,9 +89,8 @@ protected:
   /**
    * :document this:
    *
-   * @param WID :document this:
    * @param WGD :document this:
-   * @param solveWind :document this:
+   * @param itermax :document this:
    */
-  virtual void solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind);
+  virtual void solve(WINDSGeneralData *, const int &) override;
 };

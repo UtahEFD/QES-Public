@@ -44,14 +44,13 @@ using std::cout;
  * Complete by continuting to write implementation details here.
  * (remove :document this: tag when done)
  */
-void Solver_CPU::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind)
+void Solver_CPU::solve(WINDSGeneralData *WGD, const int &itermax)
 {
   auto startOfSolveMethod = std::chrono::high_resolution_clock::now();// Start recording execution time
 
   /***************************************************************
    *********   Divergence of the initial velocity field   ********
    ***************************************************************/
-  itermax = WID->simParams->maxIterations;
   long icell_face;// cell-face index
   long icell_cent;// cell-centered index
 

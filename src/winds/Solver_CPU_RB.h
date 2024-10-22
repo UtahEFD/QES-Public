@@ -45,7 +45,6 @@
 #include <omp.h>
 #endif
 
-#include "WINDSInputData.h"
 #include "Solver.h"
 
 /**
@@ -64,15 +63,11 @@ public:
   }
 
 protected:
-  /** :document this:
-   * Start by writing a one sentence description here
+  /**
+   * :document this:
    *
-   * Document the implementation details in the .cpp file, not here.
-   * (remove the placeholder comments and :document this: tag when done)
-   *
-   * @param WID :document this:
    * @param WGD :document this:
-   * @param solveWind :document this:
+   * @param itermax :document this:
    */
-  void solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind) override;
+  virtual void solve(WINDSGeneralData *, const int &) override;
 };

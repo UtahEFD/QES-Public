@@ -336,9 +336,8 @@ Solver_GPU_DynamicParallelism::Solver_GPU_DynamicParallelism(qes::Domain domain_
 }
 
 
-void Solver_GPU_DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind)
+void Solver_GPU_DynamicParallelism::solve(WINDSGeneralData *WGD, const int &itermax)
 {
-  itermax = WID->simParams->maxIterations;
   auto [nx, ny, nz] = domain.getDomainCellNum();
   auto [dx, dy, dz] = domain.getDomainSize();
   long numcell_face = domain.numFaceCentered();

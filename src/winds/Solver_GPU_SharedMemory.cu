@@ -200,14 +200,13 @@ __global__ void finalVelocityShared(float *d_lambda, float *d_u, float *d_v, flo
 }
 
 
-void Solver_GPU_SharedMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind)
+void Solver_GPU_SharedMemory::solve(WINDSGeneralData *WGD, const int &itermax)
 {
   auto [nx, ny, nz] = domain.getDomainCellNum();
   auto [dx, dy, dz] = domain.getDomainSize();
   long numcell_face = domain.numFaceCentered();
   long numcell_cent = domain.numCellCentered();
 
-  itermax = WID->simParams->maxIterations;
   int numblocks = (numcell_cent / BLOCKSIZE) + 1;
   R.resize(numcell_cent, 0.0);
 

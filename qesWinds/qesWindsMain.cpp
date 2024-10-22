@@ -181,8 +181,7 @@ int main(int argc, char *argv[])
 
     // Applying the log law and solver iteratively
     if (WID->simParams->logLawFlag == 1) {
-      WID->simParams->maxIterations = tempMaxIter;
-      solver->solve(WID, WGD, !arguments.solveWind);
+      solver->solve(WGD, tempMaxIter);
 
       WGD->u0 = WGD->u;
       WGD->v0 = WGD->v;
@@ -193,7 +192,7 @@ int main(int argc, char *argv[])
       WGD->w = WGD->w0;
     } else {
       // Run WINDS simulation code
-      solver->solve(WID, WGD, !arguments.solveWind);
+      solver->solve(WGD, tempMaxIter);
     }
 
     // std::cout << "Solver done!\n";

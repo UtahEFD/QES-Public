@@ -200,10 +200,8 @@ __global__ void finalVelocityGlobal(float *d_lambda, float *d_u, float *d_v, flo
 }
 
 
-void Solver_GPU_GlobalMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind)
+void Solver_GPU_GlobalMemory::solve(WINDSGeneralData *WGD, const int &itermax)
 {
-
-  itermax = WID->simParams->maxIterations;
   auto [nx, ny, nz] = domain.getDomainCellNum();
   auto [dx, dy, dz] = domain.getDomainSize();
   long numcell_face = domain.numFaceCentered();

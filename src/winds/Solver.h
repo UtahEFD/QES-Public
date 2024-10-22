@@ -40,10 +40,9 @@
 #include <chrono>
 #include <limits>
 
-#include "WINDSInputData.h"
-#include "WINDSGeneralData.h"
-
 #include "qes/Domain.h"
+
+#include "WINDSGeneralData.h"
 
 using namespace std;
 
@@ -85,7 +84,7 @@ protected:
   float tol; /**< Error tolerance */
   const float omega = 1.78f; /**< Over-relaxation factor */
 
-  int itermax; /**< Maximum number of iterations */
+  // int itermax; /**< Maximum number of iterations */
 
   // SOLVER-based parameters
   std::vector<float> R; /**< Divergence of initial velocity field */
@@ -106,7 +105,13 @@ public:
   void resetLambda();
   void copyLambda();
 
-  virtual void solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind) = 0;
+  /**
+   * :document this:
+   *
+   * @param WGD :document this:
+   * @param itermax Maximum number of iterations
+   */
+  virtual void solve(WINDSGeneralData *, const int &) = 0;
 };
 
 inline void Solver::resetLambda()

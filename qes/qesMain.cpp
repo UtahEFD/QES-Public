@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
     WGD->applyParametrizations(WID);
 
     // Run WINDS simulation code
-    solver->solve(WID, WGD, arguments.solveWind);
+    solver->solve(WGD, WID->simParams->maxIterations);
 
     // Run turbulence
     if (TGD != nullptr) {
