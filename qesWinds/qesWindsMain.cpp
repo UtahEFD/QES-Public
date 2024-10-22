@@ -52,9 +52,9 @@
 #include "winds/Solver_CPU.h"
 #include "winds/Solver_CPU_RB.h"
 #ifdef HAS_CUDA
-#include "winds/DynamicParallelism.h"
-#include "winds/GlobalMemory.h"
-#include "winds/SharedMemory.h"
+#include "winds/Solver_GPU_DynamicParallelism.h"
+#include "winds/Solver_GPU_GlobalMemory.h"
+#include "winds/Solver_GPU_SharedMemory.h"
 #endif
 #include "winds/Sensor.h"
 
@@ -150,11 +150,11 @@ int main(int argc, char *argv[])
 
 #ifdef HAS_CUDA
   } else if (arguments.solveType == DYNAMIC_P) {
-    solver = new DynamicParallelism(WGD->domain, WID->simParams->tolerance);
+    solver = new Solver_GPU_DynamicParallelism(WGD->domain, WID->simParams->tolerance);
   } else if (arguments.solveType == Global_M) {
-    solver = new GlobalMemory(WGD->domain, WID->simParams->tolerance);
+    solver = new Solver_GPU_GlobalMemory(WGD->domain, WID->simParams->tolerance);
   } else if (arguments.solveType == Shared_M) {
-    solver = new SharedMemory(WGD->domain, WID->simParams->tolerance);
+    solver = new Solver_GPU_SharedMemory(WGD->domain, WID->simParams->tolerance);
 #endif
   } else {
     QESout::error("Invalid solver type");

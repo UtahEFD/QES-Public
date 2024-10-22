@@ -29,15 +29,15 @@
  ***************************************************************************/
 
 /**
- * @file GlobalMemory.cu
+ * @file Solver_GPU_GlobalMemory.cu
  * @brief Child class of the Solver that runs the convergence
- * algorithm using DynamicParallelism on a single GPU.
+ * algorithm using Global Memory on a single GPU.
  *
  * @sa Solver
- * @sa DynamicParallelism
+ * @sa Solver_GPU_GlobalMemory
  */
 
-#include "GlobalMemory.h"
+#include "Solver_GPU_GlobalMemory.h"
 
 using namespace std::chrono;
 using namespace std;
@@ -56,7 +56,7 @@ using std::to_string;
 
 
 template<typename T>
-void GlobalMemory::_cudaCheck(T e, const char *func, const char *call, const int line)
+void Solver_GPU_GlobalMemory::_cudaCheck(T e, const char *func, const char *call, const int line)
 {
   if (e != cudaSuccess) {
     printf("\"%s\" at %d in %s\n\treturned %d\n-> %s\n", func, line, call, (int)e, cudaGetErrorString(e));
@@ -200,7 +200,7 @@ __global__ void finalVelocityGlobal(float *d_lambda, float *d_u, float *d_v, flo
 }
 
 
-void GlobalMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind)
+void Solver_GPU_GlobalMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind)
 {
 
   itermax = WID->simParams->maxIterations;

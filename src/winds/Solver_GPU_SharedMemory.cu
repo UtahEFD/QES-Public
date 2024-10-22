@@ -29,16 +29,15 @@
  ****************************************************************************/
 
 /**
- * @file SharedMemory.cu
+ * @file Solver_GPU_SharedMemory.cu
  * @brief Child class of the Solver that runs the convergence
  * algorithm using DynamicParallelism on a single GPU.
  *
  * @sa Solver
- * @sa DynamicParallelism
- * @sa WINDSInputData
+ * @sa Solver_GPU_SharedMemory
  */
 
-#include "SharedMemory.h"
+#include "Solver_GPU_SharedMemory.h"
 
 using namespace std::chrono;
 using namespace std;
@@ -57,7 +56,7 @@ using std::to_string;
 
 
 template<typename T>
-void SharedMemory::_cudaCheck(T e, const char *func, const char *call, const int line)
+void Solver_GPU_SharedMemory::_cudaCheck(T e, const char *func, const char *call, const int line)
 {
   if (e != cudaSuccess) {
     printf("\"%s\" at %d in %s\n\treturned %d\n-> %s\n", func, line, call, (int)e, cudaGetErrorString(e));
@@ -201,7 +200,7 @@ __global__ void finalVelocityShared(float *d_lambda, float *d_u, float *d_v, flo
 }
 
 
-void SharedMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind)
+void Solver_GPU_SharedMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind)
 {
   auto [nx, ny, nz] = domain.getDomainCellNum();
   auto [dx, dy, dz] = domain.getDomainSize();

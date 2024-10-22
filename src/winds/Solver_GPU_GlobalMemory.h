@@ -28,7 +28,7 @@
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file GlobalMemory.h */
+/** @file Solver_GPU_GlobalMemory.h */
 
 #pragma once
 
@@ -48,14 +48,14 @@
 
 
 /**
- * @class GlobalMemory
+ * @class Solver_GPU_GlobalMemory
  * @brief Child class of the Solver that runs the convergence
  * algorithm using DynamicParallelism on a single GPU.
  *
  * @sa Solver
- * @sa DynamicParallelism
+ * @sa Solver_GPU_GlobalMemory
  */
-class GlobalMemory : public Solver
+class Solver_GPU_GlobalMemory : public Solver
 {
 private:
   /**
@@ -69,7 +69,7 @@ private:
   void _cudaCheck(T e, const char *func, const char *call, const int line);
 
 public:
-  GlobalMemory(qes::Domain domain_in, const float &tolerance)
+  Solver_GPU_GlobalMemory(qes::Domain domain_in, const float &tolerance)
     : Solver(std::move(domain_in), tolerance)
   {
     std::cout << "-------------------------------------------------------------------" << std::endl;

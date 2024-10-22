@@ -28,9 +28,9 @@
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file DynamicParallelism.cu */
+/** @file Solver_GPU_DynamicParallelism.cu */
 
-#include "DynamicParallelism.h"
+#include "Solver_GPU_DynamicParallelism.h"
 
 using namespace std::chrono;
 using namespace std;
@@ -51,7 +51,7 @@ __device__ float error;
 
 
 template<typename T>
-void DynamicParallelism::_cudaCheck(T e, const char *func, const char *call, const int line)
+void Solver_GPU_DynamicParallelism::_cudaCheck(T e, const char *func, const char *call, const int line)
 {
   if (e != cudaSuccess) {
     printf("\"%s\" at %d in %s\n\treturned %d\n-> %s\n", func, line, call, (int)e, cudaGetErrorString(e));
@@ -236,7 +236,7 @@ __global__ void SOR_iteration(float *d_lambda, float *d_lambda_old, int nx, int 
 }
 
 
-DynamicParallelism::DynamicParallelism(qes::Domain domain_in, const float &tolerance)
+Solver_GPU_DynamicParallelism::Solver_GPU_DynamicParallelism(qes::Domain domain_in, const float &tolerance)
   : Solver(std::move(domain_in), tolerance)
 {
   std::cout << "-------------------------------------------------------------------" << std::endl;
@@ -336,7 +336,7 @@ DynamicParallelism::DynamicParallelism(qes::Domain domain_in, const float &toler
 }
 
 
-void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind)
+void Solver_GPU_DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind)
 {
   itermax = WID->simParams->maxIterations;
   auto [nx, ny, nz] = domain.getDomainCellNum();

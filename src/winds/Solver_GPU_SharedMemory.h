@@ -48,15 +48,15 @@
 
 
 /**
- * @class SharedMemory
+ * @class Solver_GPU_SharedMemory
  * @brief Child class of the Solver that runs the convergence
- * algorithm using DynamicParallelism on a single GPU.
+ * algorithm using shared Memory on a single GPU.
  *
  * @sa Solver
  * @sa DynamicParallelism
  * @sa WINDSInputData
  */
-class SharedMemory : public Solver
+class Solver_GPU_SharedMemory : public Solver
 {
 private:
   /**
@@ -71,7 +71,7 @@ private:
   void _cudaCheck(T e, const char *func, const char *call, const int line);
 
 public:
-  SharedMemory(qes::Domain domain_in, const float &tolerance)
+  Solver_GPU_SharedMemory(qes::Domain domain_in, const float &tolerance)
     : Solver(std::move(domain_in), tolerance)
   {
     std::cout << "-------------------------------------------------------------------" << std::endl;

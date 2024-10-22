@@ -28,7 +28,7 @@
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file DynamicParallelism.h */
+/** @file Solver_GPU_DynamicParallelism.h */
 
 #pragma once
 
@@ -53,13 +53,14 @@
 
 
 /**
- * @class DynamicParallelism
+ * @class Solver_GPU_DynamicParallelism
  * @brief Child class of the Solver that runs the convergence algorithm using
  * DynamicParallelism on a single GPU.
  *
  * @sa Solver
+ * @sa  Solver_GPU_DynamicParallelism
  */
-class DynamicParallelism : public Solver
+class Solver_GPU_DynamicParallelism : public Solver
 {
 private:
   /**
@@ -74,7 +75,7 @@ private:
   void _cudaCheck(T e, const char *func, const char *call, const int line);
 
 public:
-  DynamicParallelism(qes::Domain, const float &);
+  Solver_GPU_DynamicParallelism(qes::Domain, const float &);
 
 protected:
   ///@{
