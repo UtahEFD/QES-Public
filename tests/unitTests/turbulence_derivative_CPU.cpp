@@ -276,7 +276,7 @@ float compError1Dy(std::vector<float> *deriv, std::vector<float> *var, const qes
   for (int k = 1; k < domain.nz() - 2; ++k) {
     for (int j = 1; j < domain.ny() - 2; ++j) {
       for (int i = 1; i < domain.nx() - 2; ++i) {
-        error += std::powf((var->at(domain.cell(i, j, k)) - deriv->at(j)), 2.0);
+        error += powf((var->at(domain.cell(i, j, k)) - deriv->at(j)), 2.0);
         numcell++;
       }
     }

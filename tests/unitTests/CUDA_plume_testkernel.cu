@@ -10,43 +10,6 @@
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
 #define PBWIDTH 60
 
-class test_WINDSGeneralData : public WINDSGeneralData
-{
-public:
-  test_WINDSGeneralData()
-  {}
-  test_WINDSGeneralData(const int gridSize[3], const float gridRes[3])
-  {
-
-    nx = gridSize[0];
-    ny = gridSize[1];
-    nz = gridSize[2];
-
-    // Modify the domain size to fit the Staggered Grid used in the solver
-    nx += 1;// +1 for Staggered grid
-    ny += 1;// +1 for Staggered grid
-    nz += 2;// +2 for staggered grid and ghost cell
-
-    dx = gridRes[0];// Grid resolution in x-direction
-    dy = gridRes[1];// Grid resolution in y-direction
-    dz = gridRes[2];// Grid resolution in z-direction
-    dxy = MIN_S(dx, dy);
-
-    defineVerticalStretching(dz);
-    defineVerticalGrid();
-    defineHorizontalGrid();
-
-    timestamp.emplace_back("2020-01-01T00:00:00");
-
-    allocateMemory();
-  }
-
-  virtual ~test_WINDSGeneralData()
-  {}
-
-private:
-};
-
 __device__ __managed__ QESgrid qes_grid;
 __device__ __managed__ BC_Params bc_param;
 __device__ __managed__ ConcentrationParam param;
@@ -135,43 +98,35 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
   float zi = 1000;
 
   // set QES grid
-  qes_grid.dx = 1;
-  qes_grid.dy = 1;
-  qes_grid.dz = 1;
+  qes::Domain domain(102, 102, 141, 1.0, 1.0, 1.0);
+  std::tie(qes_grid.nx, qes_grid.ny, qes_grid.nz) = domain.getDomainCellNum();
+  std::tie(qes_grid.dx, qes_grid.dy, qes_grid.dz) = domain.getDomainSize();
 
-  qes_grid.nx = 102;
-  qes_grid.ny = 102;
-  qes_grid.nz = 141;
+  auto *WGD = new WINDSGeneralData(domain);
+  WGD->timestamp.emplace_back("2020-01-01T00:00:00");
 
-  initTimer.start();
-
-  int gridSize[3] = { qes_grid.nx, qes_grid.ny, qes_grid.nz };
-  float gridRes[3] = { qes_grid.dx, qes_grid.dy, qes_grid.dz };
-
-  WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes);
   TURBGeneralData *TGD = new TURBGeneralData(WGD);
 
-  for (int k = 0; k < WGD->nz; ++k) {
-    for (int j = 0; j < WGD->ny; ++j) {
-      for (int i = 0; i < WGD->nx; ++i) {
-        int faceID = i + j * (WGD->nx) + k * (WGD->nx) * (WGD->ny);
-        WGD->u[faceID] = uMean;
+  for (int k = 0; k < domain.nz(); ++k) {
+    for (int j = 0; j < domain.ny(); ++j) {
+      for (int i = 0; i < domain.nx(); ++i) {
+        WGD->u[domain.face(i, j, k)] = uMean;
       }
     }
   }
 
-  for (int k = 1; k < WGD->nz - 1; ++k) {
-    for (int j = 0; j < WGD->ny - 1; ++j) {
-      for (int i = 0; i < WGD->nx - 1; ++i) {
-        int cellID = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-        TGD->txx[cellID] = pow(2.50 * uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
-        TGD->tyy[cellID] = pow(1.78 * uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
-        TGD->tzz[cellID] = pow(1.27 * uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
-        TGD->txz[cellID] = -pow(uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
+  for (int k = 1; k < domain.nz() - 1; ++k) {
+    for (int j = 0; j < domain.ny() - 1; ++j) {
+      for (int i = 0; i < domain.nx() - 1; ++i) {
+        int cellID = domain.cell(i, j, k);
+        TGD->txx[cellID] = pow(2.50 * uStar, 2) * pow(1 - domain.z[k] / zi, 3. / 2.);
+        TGD->tyy[cellID] = pow(1.78 * uStar, 2) * pow(1 - domain.z[k] / zi, 3. / 2.);
+        TGD->tzz[cellID] = pow(1.27 * uStar, 2) * pow(1 - domain.z[k] / zi, 3. / 2.);
+        TGD->txz[cellID] = -pow(uStar, 2) * pow(1 - domain.z[k] / zi, 3. / 2.);
 
         TGD->tke[cellID] = pow(uStar / 0.55, 2.0);
         TGD->CoEps[cellID] = C0 * pow(uStar, 3)
-                             / (0.4 * WGD->z[k]) * pow(1 - 0.85 * WGD->z[k] / zi, 3.0 / 2.0);
+                             / (0.4 * domain.z[k]) * pow(1 - 0.85 * domain.z[k] / zi, 3.0 / 2.0);
       }
     }
   }
@@ -216,12 +171,12 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     copy_data_gpu(TGD, d_qes_turb_data);
 
     // set boundary condition
-    bc_param.xStartDomain = 0 + 0.5 * qes_grid.dx;
-    bc_param.yStartDomain = 0 + 0.5 * qes_grid.dy;
+    bc_param.xStartDomain = 0 + 0.5 * domain.dx();
+    bc_param.yStartDomain = 0 + 0.5 * domain.dy();
     bc_param.zStartDomain = 0;
 
-    bc_param.xEndDomain = 200 - 0.5 * qes_grid.dx;
-    bc_param.yEndDomain = 100 - 0.5 * qes_grid.dy;
+    bc_param.xEndDomain = 200 - 0.5 * domain.dx();
+    bc_param.yEndDomain = 100 - 0.5 * domain.dy();
     bc_param.zEndDomain = 140;
 
     // concnetration calculation

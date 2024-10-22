@@ -96,7 +96,8 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
        turbulence_derivative_CPU.cpp)
 
    cuda_add_executable(plume_interpolation_CPU
-           plume_interpolation_CPU.cpp)
+     test_functions.cpp
+     plume_interpolation_CPU.cpp)
 
   cuda_add_executable(plume_input
           plume_input.cpp)
