@@ -186,11 +186,9 @@ TEST_CASE("CUDA Random Gen - Frequency of Zeros and Ones")
   unsigned int *devPRNVals, *hostData, *devResults, *hostResults;
 
   // Create pseudo-random number generator
-  // CURAND_CALL(
   curandCreateGenerator(&gen, CURAND_RNG_PSEUDO_MTGP32);
 
-  // Set the seed --- not sure how we'll do this yet in general
-  // CURAND_CALL(
+  // Set the seed using random's device...
   curandSetPseudoRandomGeneratorSeed(gen, std::random_device{}());
 
   // start with 15k "particles"
@@ -204,21 +202,18 @@ TEST_CASE("CUDA Random Gen - Frequency of Zeros and Ones")
 
     hostResults = (unsigned int *)calloc(n, sizeof(unsigned int));
 
-    // Allocate n floats on device to hold random numbers
-    // CUDA_CALL();
     cudaMalloc((void **)&devPRNVals, n * sizeof(unsigned int));
-    // CUDA_CALL();
     cudaMalloc((void **)&devResults, n * sizeof(unsigned int));
 
-    // Generate n random floats on device
-    // CURAND_CALL();
-    // generates n vals between [0, 1]
+    // Generate n random integers on device - doing that in this test
+    // so we can verify if random distribution of 0s and 1s is
+    // approximately equal.
+    //
+    // If we generate floats between [0, 1], the distribution will be
+    // biased due to floating point number representation.
     curandGenerate(gen, devPRNVals, n);
 
-    /* Copy device memory to host */
-    // CUDA_CALL(cudaMemcpy(hostData, devPRNVals, n * sizeof(float),
-    // cudaMemcpyDeviceToHost));
-    // CUDA_CALL();
+    // Copy device memory to host
     cudaMemcpy(hostResults, devPRNVals, n * sizeof(unsigned int), cudaMemcpyDeviceToHost);
 
     long onesCount = 0;
@@ -246,15 +241,11 @@ TEST_CASE("CUDA Random Gen - Frequency of Zeros and Ones")
     double ratio = onesCount / (double)numBits;
 
     // std::cout << "Ratio: " << ratio << ", ones=" << onesCount << ", zeros=" << zerosCount << std::endl;
-
     CHECK((0.45 < ratio && ratio < 0.55));
 
     numParticles *= 2;
 
-    // CUDA_CALL();
     cudaFree(devPRNVals);
-
-    // CUDA_CALL();
     cudaFree(devResults);
 
     free(hostResults);
