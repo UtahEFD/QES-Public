@@ -452,7 +452,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
         id = ii + jj * domain.nx();
         for (size_t k = 0; k < domain.z.size() - 1; k++) {
           terrain_face_id[id] = k;
-          if (terrain[idx] <= domain.z_face[k+1]) {
+          if (terrain[idx] <= domain.z_face[k + 1]) {
             break;
           }
         }

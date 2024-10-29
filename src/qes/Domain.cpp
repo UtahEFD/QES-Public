@@ -38,8 +38,6 @@ Domain::Domain(const std::string &inputFile)
   input->getDimensionSize("y_face", domainData.ny);
   // nz - face centered value + bottom ghost (consistant with QES-Winds)
   input->getDimensionSize("z_face", domainData.nz);
-  // nt - number of time instance in data
-  // input->getDimensionSize("t", nt);
 
   x.resize(domainData.nx - 1);
   y.resize(domainData.ny - 1);
