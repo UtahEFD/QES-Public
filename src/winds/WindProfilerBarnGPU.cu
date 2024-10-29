@@ -262,6 +262,7 @@ __global__ void CorrectInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_wu
 }
 
 
+/* FM 10/29/2024 Removing dynamic parallelism because cudaDeviceSynchronize from device code is deprecated
 __global__ void BarnesScheme(float *d_u_prof, float *d_v_prof, float *d_wm, float *d_wms, float *d_u0_int, float *d_v0_int, float *d_x, float *d_y, float *d_z, float *d_site_xcoord, float *d_site_ycoord, float *d_sum_wm, float *d_sum_wu, float *d_sum_wv, float *d_u0, float *d_v0, float *d_w0, int *d_iwork, int *d_jwork, int *d_site_id, int *d_terrain_face_id, int *d_k_mod, float *d_dxx, float *d_dyy, float *d_u12, float *d_u34, float *d_v12, float *d_v34, int num_sites, int nx, int ny, int nz, float dx, float dy, float asl_percent, float abl_height, float *d_surf_layer_height)
 {
   float rc_sum, rc_val, xc, yc, rc;
@@ -304,6 +305,7 @@ __global__ void BarnesScheme(float *d_u_prof, float *d_v_prof, float *d_wm, floa
   CorrectInitialWind<<<numberOfBlocks1, numberOfThreadsPerBlock1>>>(d_wm, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_u_prof, d_v_prof, d_u0_int, d_v0_int, d_site_id, d_terrain_face_id, d_k_mod, num_sites, nx, ny, nz, asl_percent, abl_height, d_z, d_surf_layer_height);
   cudaDeviceSynchronize();
 }
+*/
 
 void WindProfilerBarnGPU::BarnesInterpolationGPU(const WINDSInputData *WID, WINDSGeneralData *WGD)
 {
@@ -369,6 +371,25 @@ void WindProfilerBarnGPU::BarnesInterpolationGPU(const WINDSInputData *WID, WIND
   for (auto j = 0; j < ny; j++) {
     y[j] = (j - 0.5) * dy; /**< Location of face centers in y-dir */
   }
+
+  float rc_sum, rc_val, xc, yc, rc;
+  float dn, lamda, s_gamma;
+  rc_sum = 0.0;
+  for (int i = 0; i < num_sites; i++) {
+    rc_val = 1000000.0;
+    for (int ii = 0; ii < num_sites; ii++) {
+      xc = site_xcoord[ii] - site_xcoord[i];
+      yc = site_ycoord[ii] - site_ycoord[i];
+      rc = sqrt(pow(xc, 2.0) + pow(yc, 2.0));
+      if (rc < rc_val && ii != i) {
+        rc_val = rc;
+      }
+    }
+    rc_sum = rc_sum + rc_val;
+  }
+  dn = rc_sum / num_sites;
+  lamda = 5.052 * pow((2 * dn / M_PI), 2.0);
+  s_gamma = 0.2;
 
   float *d_u_prof, *d_v_prof, *d_wm, *d_wms, *d_u0_int, *d_v0_int;
   float *d_x, *d_y, *d_site_xcoord, *d_site_ycoord, *d_sum_wm, *d_sum_wu, *d_sum_wv;
@@ -438,7 +459,33 @@ void WindProfilerBarnGPU::BarnesInterpolationGPU(const WINDSInputData *WID, WIND
   cudaMemcpy(d_k_mod, k_mod.data(), nx * ny * sizeof(int), cudaMemcpyHostToDevice);
   cudaMemcpy(d_surf_layer_height, surf_layer_height.data(), nx * ny * sizeof(float), cudaMemcpyHostToDevice);
 
-  BarnesScheme<<<1, 1>>>(d_u_prof, d_v_prof, d_wm, d_wms, d_u0_int, d_v0_int, d_x, d_y, d_z, d_site_xcoord, d_site_ycoord, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_iwork, d_jwork, d_site_id, d_terrain_face_id, d_k_mod, d_dxx, d_dyy, d_u12, d_u34, d_v12, d_v34, num_sites, nx, ny, nz, dx, dy, asl_percent, abl_height, d_surf_layer_height);
+  // FM 10/29/2024 Removing dynamic parallelism because cudaDeviceSynchronize from device code is deprecated
+  // BarnesScheme<<<1, 1>>>(d_u_prof, d_v_prof, d_wm, d_wms, d_u0_int, d_v0_int, d_x, d_y, d_z, d_site_xcoord, d_site_ycoord, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_iwork, d_jwork, d_site_id, d_terrain_face_id, d_k_mod, d_dxx, d_dyy, d_u12, d_u34, d_v12, d_v34, num_sites, nx, ny, nz, dx, dy, asl_percent, abl_height, d_surf_layer_height);
+
+  dim3 numberOfThreadsPerBlock(BLOCKSIZE, 1, 1);
+
+  dim3 numberOfBlocks(ceil((num_sites * nx * ny) / (float)(BLOCKSIZE)), 1, 1);
+
+  // add comment here
+  Calculatewm<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_wm, d_wms, d_sum_wm, d_site_xcoord, d_site_ycoord, d_x, d_y, lamda, s_gamma, num_sites, nx, ny, nz);
+  cudaDeviceSynchronize();
+
+  dim3 numberOfBlocks1(ceil((nx * ny) / (float)(BLOCKSIZE)), 1, 1);
+
+  // add comment here
+  CalculateInitialWind<<<numberOfBlocks1, numberOfThreadsPerBlock>>>(d_wm, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_u_prof, d_v_prof, d_site_id, d_terrain_face_id, d_k_mod, num_sites, nx, ny, nz, asl_percent, abl_height, d_z, d_surf_layer_height);
+  cudaDeviceSynchronize();
+
+  dim3 numberOfBlocks2(ceil((num_sites) / (float)(BLOCKSIZE)), 1, 1);
+
+  // add comment here
+  CalculateInit<<<numberOfBlocks2, numberOfThreadsPerBlock>>>(d_site_xcoord, d_site_ycoord, d_x, d_y, d_dxx, d_dyy, d_iwork, d_jwork, d_u12, d_u34, d_v12, d_v34, d_u0_int, d_v0_int, d_u0, d_v0, d_u_prof, d_v_prof, d_site_id, d_terrain_face_id, num_sites, dx, dy, nx, ny, nz);
+  cudaDeviceSynchronize();
+
+  // add comment here
+  CorrectInitialWind<<<numberOfBlocks1, numberOfThreadsPerBlock>>>(d_wm, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_u_prof, d_v_prof, d_u0_int, d_v0_int, d_site_id, d_terrain_face_id, d_k_mod, num_sites, nx, ny, nz, asl_percent, abl_height, d_z, d_surf_layer_height);
+  cudaDeviceSynchronize();
+
   cudaCheck(cudaGetLastError());
 
   cudaMemcpy(WGD->u0.data(), d_u0, numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
