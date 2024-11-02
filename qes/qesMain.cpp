@@ -36,6 +36,8 @@
 
 #include "handleQESArgs.h"
 
+#include "qes/Domain.h"
+
 #include "winds/WINDSInputData.h"
 #include "winds/WINDSGeneralData.h"
 #include "winds/WINDSOutputVisualization.h"
@@ -45,12 +47,12 @@
 #include "winds/TURBOutput.h"
 
 #include "winds/Solver.h"
-#include "winds/CPUSolver.h"
+#include "winds/Solver_CPU.h"
 #include "winds/Solver_CPU_RB.h"
 #ifdef HAS_CUDA
-#include "winds/DynamicParallelism.h"
-#include "winds/GlobalMemory.h"
-#include "winds/SharedMemory.h"
+#include "winds/Solver_GPU_DynamicParallelism.h"
+#include "winds/Solver_GPU_GlobalMemory.h"
+#include "winds/Solver_GPU_SharedMemory.h"
 #endif
 
 #include "winds/Sensor.h"
@@ -106,9 +108,10 @@ int main(int argc, char *argv[])
       QESout::error("No dem file specified as input");
     }
   }
+  qes::Domain domain(WID->simParams->domain[0], WID->simParams->domain[1], WID->simParams->domain[2], WID->simParams->grid[0], WID->simParams->grid[1], WID->simParams->grid[2]);
 
   // Generate the general WINDS data from all inputs
-  WINDSGeneralData *WGD = new WINDSGeneralData(WID, arguments.solveType);
+  WINDSGeneralData *WGD = new WINDSGeneralData(WID, domain, arguments.solveType);
 
   // create WINDS output classes
   std::vector<QESNetCDFOutput *> outputVec;
@@ -153,7 +156,7 @@ int main(int argc, char *argv[])
     WGD->applyParametrizations(WID);
 
     // Run WINDS simulation code
-    solver->solve(WID, WGD, arguments.solveWind);
+    solver->solve(WGD, WID->simParams->maxIterations);
 
     // Run turbulence
     if (TGD != nullptr) {
@@ -197,18 +200,18 @@ Solver *setSolver(const int solveType, WINDSInputData *WID, WINDSGeneralData *WG
   Solver *solver = nullptr;
   if (solveType == CPU_Type) {
 #ifdef _OPENMP
-    solver = new Solver_CPU_RB(WID, WGD);
+    solver = new Solver_CPU_RB(WGD->domain, WID->simParams->tolerance);
 #else
-    solver = new CPUSolver(WID, WGD);
+    solver = new Solver_CPU(WGD->domain, WID->simParams->tolerance);
 #endif
 
 #ifdef HAS_CUDA
   } else if (solveType == DYNAMIC_P) {
-    solver = new DynamicParallelism(WID, WGD);
+    solver = new Solver_GPU_DynamicParallelism(WGD->domain, WID->simParams->tolerance);
   } else if (solveType == Global_M) {
-    solver = new GlobalMemory(WID, WGD);
+    solver = new Solver_GPU_GlobalMemory(WGD->domain, WID->simParams->tolerance);
   } else if (solveType == Shared_M) {
-    solver = new SharedMemory(WID, WGD);
+    solver = new Solver_GPU_SharedMemory(WGD->domain, WID->simParams->tolerance);
 #endif
   } else {
     QESout::error("Invalid solver type");

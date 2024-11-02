@@ -48,25 +48,24 @@ WINDSOutputVisualization::WINDSOutputVisualization(WINDSGeneralData *WGD,
   // copy of WGD pointer
   m_WGD = WGD;
 
-  int nx = m_WGD->nx;
-  int ny = m_WGD->ny;
-  int nz = m_WGD->nz;
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
 
   long numcell_cout = (nx - 1) * (ny - 1) * (nz - 2);
 
   z_out.resize(nz - 2);
   for (auto k = 1; k < nz - 1; k++) {
-    z_out[k - 1] = m_WGD->z[k];// Location of face centers in z-dir
+    z_out[k - 1] = m_WGD->domain.z[k];// Location of face centers in z-dir
   }
 
   x_out.resize(nx - 1);
   for (auto i = 0; i < nx - 1; i++) {
-    x_out[i] = (i + 0.5) * m_WGD->dx;// Location of face centers in x-dir
+    x_out[i] = (i + 0.5) * dx;// Location of face centers in x-dir
   }
 
   y_out.resize(ny - 1);
   for (auto j = 0; j < ny - 1; j++) {
-    y_out[j] = (j + 0.5) * m_WGD->dy;// Location of face centers in y-dir
+    y_out[j] = (j + 0.5) * dy;// Location of face centers in y-dir
   }
 
   // Output related data
@@ -114,9 +113,7 @@ WINDSOutputVisualization::WINDSOutputVisualization(WINDSGeneralData *WGD,
 void WINDSOutputVisualization::save(QEStime timeOut)
 {
   // get grid size (not output var size)
-  int nx = m_WGD->nx;
-  int ny = m_WGD->ny;
-  int nz = m_WGD->nz;
+  auto [nx, ny, nz] = m_WGD->domain.getDomainCellNum();
 
   // set time
   timeCurrent = timeOut;
@@ -125,17 +122,17 @@ void WINDSOutputVisualization::save(QEStime timeOut)
   for (auto k = 1; k < nz - 1; k++) {
     for (auto j = 0; j < ny - 1; j++) {
       for (auto i = 0; i < nx - 1; i++) {
-        int icell_face = i + j * nx + k * nx * ny;
-        int icell_cent = i + j * (nx - 1) + (k - 1) * (nx - 1) * (ny - 1);
-        u_out[icell_cent] = 0.5 * (m_WGD->u[icell_face + 1] + m_WGD->u[icell_face]);
-        v_out[icell_cent] = 0.5 * (m_WGD->v[icell_face + nx] + m_WGD->v[icell_face]);
-        w_out[icell_cent] = 0.5 * (m_WGD->w[icell_face + nx * ny] + m_WGD->w[icell_face]);
+        long icell_face = m_WGD->domain.face(i, j, k);
+        long icell_cent = m_WGD->domain.cell(i, j, k - 1);
+        u_out[icell_cent] = 0.5f * (m_WGD->u[m_WGD->domain.faceAdd(icell_face, 1, 0, 0)] + m_WGD->u[icell_face]);
+        v_out[icell_cent] = 0.5f * (m_WGD->v[m_WGD->domain.faceAdd(icell_face, 0, 1, 0)] + m_WGD->v[icell_face]);
+        w_out[icell_cent] = 0.5f * (m_WGD->w[m_WGD->domain.faceAdd(icell_face, 0, 0, 1)] + m_WGD->w[icell_face]);
         mag_out[icell_cent] = sqrt(u_out[icell_cent] * u_out[icell_cent]
                                    + v_out[icell_cent] * v_out[icell_cent]
                                    + w_out[icell_cent] * w_out[icell_cent]);
 
-        icellflag_out[icell_cent] = m_WGD->icellflag[icell_cent + ((nx - 1) * (ny - 1))];
-        icellflag2_out[icell_cent] = m_WGD->icellflag_initial[icell_cent + ((nx - 1) * (ny - 1))];
+        icellflag_out[icell_cent] = m_WGD->icellflag[m_WGD->domain.cellAdd(icell_cent, 0, 0, 1)];
+        icellflag2_out[icell_cent] = m_WGD->icellflag_initial[m_WGD->domain.cellAdd(icell_cent, 0, 0, 1)];
       }
     }
   }

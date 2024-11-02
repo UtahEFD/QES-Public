@@ -35,7 +35,7 @@
 #include "Deposition.h"
 
 Deposition::Deposition(const WINDSGeneralData *WGD)
-  : x(WGD->x), y(WGD->y), z(WGD->z), z_face(WGD->z_face)
+  : x(WGD->domain.x), y(WGD->domain.y), z(WGD->domain.z), z_face(WGD->domain.z_face)
 {
   /* use constructor to make copies.
   x.resize(WGD->nx - 1);
@@ -60,12 +60,12 @@ Deposition::Deposition(const WINDSGeneralData *WGD)
   boxSizeZ = 1;
 
 #ifdef _OPENMP
-  thread_depcvol.resize(WGD->numcell_cent);
+  thread_depcvol.resize(WGD->domain.numCellCentered());
   for (auto &it : thread_depcvol) {
     it.resize(omp_get_num_threads(), 0.0);
   }
 #else
-  depcvol.resize(WGD->numcell_cent, 0.0);
+  depcvol.resize(WGD->domain.numCellCentered(), 0.0);
 #endif
 
   nbrFace = WGD->wall_below_indices.size()
@@ -169,7 +169,7 @@ void Deposition::deposit(Particle *p,
       // Take deposited mass away from particle
       p->m *= P_v;
       // p->m_kg *= P_v;
-    } else if (WGD->isTerrain(cellId - (WGD->nx - 1) * (WGD->ny - 1))) {// Ground deposition
+    } else if (WGD->isTerrain(WGD->domain.cellAdd(cellId, 0, 0, -1))) {// Ground deposition
       double dt = partDist / MTot;
       double ustarDep = pow(pow(p->txz, 2.0) + pow(p->tyz, 2.0), 0.25);
       double Sc = nuAir / p->nuT;
@@ -178,7 +178,7 @@ void Deposition::deposit(Particle *p,
       double Stk_ground = (vs * pow(ustarDep, 2.0)) / (9.81 * nuAir);
       double rb = 1.0 / (ustarDep * (pow(Sc, -2.0 / 3.0) + pow(10.0, -3.0 / Stk_ground)));
       double vd = 1.0 / (ra + rb + ra * rb * vs) + vs;
-      double dz_g = WGD->z_face[k] - WGD->z_face[k - 1];
+      double dz_g = WGD->domain.z_face[k] - WGD->domain.z_face[k - 1];
 
       double P_g = exp(-vd * dt / dz_g);
 

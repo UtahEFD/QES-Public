@@ -32,6 +32,8 @@
  * @brief
  */
 
+#include <numeric>
+
 #include "WallReflection_StairStep.h"
 
 bool WallReflection_StairStep::reflect(const WINDSGeneralData *WGD,
@@ -192,12 +194,8 @@ void WallReflection_StairStep::oneReflection(const WINDSGeneralData *WGD,
   const int maxCount = 10;
 
   // QES-winds grid information
-  int nx = WGD->nx;
-  int ny = WGD->ny;
-  // int nz = WGD->nz;
-  double dx = WGD->dx;
-  double dy = WGD->dy;
-  // double dz = WGD->dz;
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
 
   // cartesian basis vectors
   const Vector3Double e1 = { 1.0, 0.0, 0.0 }, e2 = { 0.0, 1.0, 0.0 }, e3 = { 0.0, 0.0, 1.0 };
@@ -272,20 +270,20 @@ void WallReflection_StairStep::oneReflection(const WINDSGeneralData *WGD,
 
     // x-drection
     N = -f1 * e1;
-    S = { WGD->x[i] + f1 * 0.50 * dx, double(WGD->y[j]), double(WGD->z[k]) };
+    S = { WGD->domain.x[i] + f1 * 0.50 * dx, double(WGD->domain.y[j]), double(WGD->domain.z[k]) };
     l1 = -(Xold * N - S * N) / (U * N);
 
     // y-drection
     N = -f2 * e2;
-    S = { double(WGD->x[i]), WGD->y[j] + f2 * 0.50 * dy, double(WGD->z[k]) };
+    S = { double(WGD->domain.x[i]), WGD->domain.y[j] + f2 * 0.50 * dy, double(WGD->domain.z[k]) };
     l2 = -(Xold * N - S * N) / (U * N);
 
     // z-drection (dz can be variable with hieght)
     N = -f3 * e3;
     if (f3 >= 0.0) {
-      S = { double(WGD->x[i]), double(WGD->y[j]), double(WGD->z_face[k + 1]) };
+      S = { double(WGD->domain.x[i]), double(WGD->domain.y[j]), double(WGD->domain.z_face[k + 1]) };
     } else {
-      S = { double(WGD->x[i]), double(WGD->y[j]), double(WGD->z_face[k]) };
+      S = { double(WGD->domain.x[i]), double(WGD->domain.y[j]), double(WGD->domain.z_face[k]) };
     }
     l3 = -(Xold * N - S * N) / (U * N);
 

@@ -1,6 +1,38 @@
-//
-// Created by Fabien Margairaz on 4/2/23.
-//
+/****************************************************************************
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
+ *
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
+ *
+ * This file is part of QES-Winds
+ *
+ * GPL-3.0 License
+ *
+ * QES-Winds is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Winds is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
+/**
+ * @file plume_uniform.cpp
+ * @brief This is a regression test based on the uniform Gaussian plume model
+ */
+
 #include <catch2/catch_test_macros.hpp>
 
 #include <iostream>
@@ -8,16 +40,15 @@
 #include <algorithm>
 
 #include "util/calcTime.h"
-
-#include "plume/PlumeInputData.hpp"
 #include "util/NetCDFInput.h"
 #include "util/QESout.h"
 
-#include "test_WINDSGeneralData.h"
+#include "qes/Domain.h"
 
 #include "winds/WINDSGeneralData.h"
-#include "plume/PLUMEGeneralData.h"
 
+#include "plume/PlumeInputData.hpp"
+#include "plume/PLUMEGeneralData.h"
 #include "plume/TracerParticle_Concentration.h"
 
 // float calcEntropy(int nbrBins, Plume *plume);
@@ -40,7 +71,7 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
   qesPlumeParamFile.append("/tests/regressionTests/plume_uniform_parameters.xml");
 
   // parse xml settings
-  auto PID = new PlumeInputData(qesPlumeParamFile);
+  auto *PID = new PlumeInputData(qesPlumeParamFile);
 
   float uMean = 2.0;
   float uStar = 0.174;
@@ -51,30 +82,34 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
   int gridSize[3] = { 102, 102, 141 };
   float gridRes[3] = { 1.0, 1.0, 1.0 };
 
-  WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes);
-  TURBGeneralData *TGD = new TURBGeneralData(WGD);
+  qes::Domain domain(102, 102, 141, 1.0, 1.0, 1.0);
 
-  for (int k = 0; k < WGD->nz; ++k) {
-    for (int j = 0; j < WGD->ny; ++j) {
-      for (int i = 0; i < WGD->nx; ++i) {
-        int faceID = i + j * (WGD->nx) + k * (WGD->nx) * (WGD->ny);
-        WGD->u[faceID] = uMean;
+  auto *WGD = new WINDSGeneralData(domain);
+  WGD->timestamp.emplace_back("2020-01-01T00:00:00");
+
+  auto *TGD = new TURBGeneralData(WGD);
+
+  for (int k = 0; k < WGD->domain.nz(); ++k) {
+    for (int j = 0; j < WGD->domain.ny(); ++j) {
+      for (int i = 0; i < WGD->domain.nx(); ++i) {
+        // int faceID = i + j * (WGD->nx) + k * (WGD->nx) * (WGD->ny);
+        WGD->u[WGD->domain.face(i, j, k)] = uMean;
       }
     }
   }
 
-  for (int k = 1; k < WGD->nz - 1; ++k) {
-    for (int j = 0; j < WGD->ny - 1; ++j) {
-      for (int i = 0; i < WGD->nx - 1; ++i) {
-        int cellID = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-        TGD->txx[cellID] = pow(2.50 * uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
-        TGD->tyy[cellID] = pow(1.78 * uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
-        TGD->tzz[cellID] = pow(1.27 * uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
-        TGD->txz[cellID] = -pow(uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
+  for (int k = 1; k < WGD->domain.nz() - 1; ++k) {
+    for (int j = 0; j < WGD->domain.ny() - 1; ++j) {
+      for (int i = 0; i < WGD->domain.nx() - 1; ++i) {
+        int cellID = WGD->domain.cell(i, j, k);
+        TGD->txx[cellID] = pow(2.50 * uStar, 2) * pow(1 - WGD->domain.z[k] / zi, 3. / 2.);
+        TGD->tyy[cellID] = pow(1.78 * uStar, 2) * pow(1 - WGD->domain.z[k] / zi, 3. / 2.);
+        TGD->tzz[cellID] = pow(1.27 * uStar, 2) * pow(1 - WGD->domain.z[k] / zi, 3. / 2.);
+        TGD->txz[cellID] = -pow(uStar, 2) * pow(1 - WGD->domain.z[k] / zi, 3. / 2.);
 
         TGD->tke[cellID] = pow(uStar / 0.55, 2.0);
         TGD->CoEps[cellID] = C0 * pow(uStar, 3)
-                             / (0.4 * WGD->z[k]) * pow(1 - 0.85 * WGD->z[k] / zi, 3.0 / 2.0);
+                             / (0.4 * WGD->domain.z[k]) * pow(1 - 0.85 * WGD->domain.z[k] / zi, 3.0 / 2.0);
       }
     }
   }

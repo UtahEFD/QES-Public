@@ -1,6 +1,39 @@
-//
-// Created by Fabien Margairaz on 3/24/23.
-//
+/****************************************************************************
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
+ *
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
+ *
+ * This file is part of QES-Winds
+ *
+ * GPL-3.0 License
+ *
+ * QES-Winds is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Winds is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
+/**
+ * @file plume_sinusoidal.cpp
+ * @brief This is a regression test for the well-mixed condition for an arbitrary sinusoidal
+ * stress tensor
+ */
+
 #include <catch2/catch_test_macros.hpp>
 
 #include <iostream>
@@ -8,14 +41,16 @@
 #include <algorithm>
 
 #include "util/calcTime.h"
-
-#include "plume/PlumeInputData.hpp"
 #include "util/NetCDFInput.h"
 #include "util/QESout.h"
 
-#include "test_WINDSGeneralData.h"
+#include "qes/Domain.h"
 
+#include "winds/WINDSGeneralData.h"
+
+#include "plume/PlumeInputData.hpp"
 #include "plume/PLUMEGeneralData.h"
+#include "plume/TracerParticle_Concentration.h"
 
 float calcEntropy(int nbrBins, ManagedContainer<TracerParticle> *particles);
 void calcRMSE_wFluct(int nbrBins, ManagedContainer<TracerParticle> *particles, std::map<std::string, float> &rmse);
@@ -40,24 +75,26 @@ TEST_CASE("Regression test of QES-Plume: sinusoidal stress")
 
   int gridSize[3] = { 20, 20, 50 };
   float gridRes[3] = { 1.0 / 20.0, 1.0 / 20.0, 1.0 / 49.0 };
+  qes::Domain domain(gridSize[0], gridSize[1], gridSize[2], gridRes[0], gridRes[1], gridRes[2]);
 
-  WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes);
+  WINDSGeneralData *WGD = new WINDSGeneralData(domain);
+  WGD->timestamp.emplace_back("2020-01-01T00:00:00");
   TURBGeneralData *TGD = new TURBGeneralData(WGD);
 
-  std::vector<float> sig2_new(WGD->nz - 1);
+  std::vector<float> sig2_new(WGD->domain.nz() - 1);
 
-  for (int k = 0; k < WGD->nz - 1; ++k) {
-    sig2_new[k] = 1.1 + sin(2.0 * M_PI * WGD->z[k]);
+  for (int k = 0; k < WGD->domain.nz() - 1; ++k) {
+    sig2_new[k] = 1.1 + sin(2.0 * M_PI * WGD->domain.z[k]);
   }
 
-  for (int k = 0; k < WGD->nz - 1; ++k) {
-    for (int j = 0; j < WGD->ny - 1; ++j) {
-      for (int i = 0; i < WGD->nx - 1; ++i) {
-        int cellID = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+  for (int k = 0; k < WGD->domain.nz() - 1; ++k) {
+    for (int j = 0; j < WGD->domain.ny() - 1; ++j) {
+      for (int i = 0; i < WGD->domain.nx() - 1; ++i) {
+        long cellID = WGD->domain.cell(i, j, k);
         TGD->txx[cellID] = sig2_new[k];
         TGD->tyy[cellID] = sig2_new[k];
         TGD->tzz[cellID] = sig2_new[k];
-        TGD->tke[cellID] = pow(WGD->z[k] * pow(sig2_new[k], 3.0 / 2.0), 2.0 / 3.0);
+        TGD->tke[cellID] = pow(WGD->domain.z[k] * pow(sig2_new[k], 3.0 / 2.0), 2.0 / 3.0);
         TGD->CoEps[cellID] = 4.0 * pow(sig2_new[k], 3.0 / 2.0);
       }
     }

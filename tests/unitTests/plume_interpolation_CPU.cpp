@@ -1,3 +1,38 @@
+/****************************************************************************
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
+ *
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
+ *
+ * This file is part of QES-Winds
+ *
+ * GPL-3.0 License
+ *
+ * QES-Winds is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Winds is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
+/**
+ * @file plume_interpolation_CPU.cpp
+ * @brief This is a unit test of tri-linear interpolation for CPU
+ */
+
 #include <catch2/catch_test_macros.hpp>
 
 #include <string>
@@ -5,28 +40,28 @@
 #include <algorithm>
 #include <vector>
 
-#include "test_functions.h"
-#include "test_WINDSGeneralData.h"
-#include "test_TURBGeneralData.h"
-#include "test_PlumeGeneralData.h"
+#include "winds/WINDSGeneralData.h"
+#include "winds/TURBGeneralData.h"
 
-TEST_CASE("interpolation fine grid", "[Working]")
+#include "plume/InterpTriLinear.h"
+
+#include "test_functions.h"
+
+TEST_CASE("test tri-linear interpolation fine grid", "[Working]")
 {
 
   int gridSize[3] = { 200, 200, 200 };
   float gridRes[3] = { 1.0, 1.0, 1.0 };
+  qes::Domain domain(gridSize[0], gridSize[1], gridSize[2], gridRes[0], gridRes[1], gridRes[2]);
+  WINDSGeneralData *WGD = new WINDSGeneralData(domain);
+  TURBGeneralData *TGD = new TURBGeneralData(WGD);
 
-  test_WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes);
-  test_TURBGeneralData *TGD = new test_TURBGeneralData(WGD);
-  PlumeParameters PP("", false, false);
-  test_PlumeGeneralData *PGD = new test_PlumeGeneralData(PP, WGD, TGD);
-  PGD->setInterpMethod("triLinear", WGD, TGD);
+  auto interp = new InterpTriLinear(WGD, TGD, true);
 
-  test_functions *tf = new test_functions(WGD, TGD, "trig");
+  auto *tf = new test_functions(WGD, TGD, "trig");
 
   SECTION("testing for accuracy")
   {
-    // results = PGD->testInterp(WGD, TGD);
     std::vector<float> xArray = { 10 + .01, 10 + .01, 10 + .51, 10 + .00, 125 };
     std::vector<float> yArray = { 10 + .51, 10 + .51, 10 + .51, 10 + .00, 136 };
     std::vector<float> zArray = { 10 + .51, 10 + .50, 10 + .01, 10 + .01, 190 };
@@ -43,8 +78,8 @@ TEST_CASE("interpolation fine grid", "[Working]")
       double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
       double CoEps = 1e-6, nuT = 0.0;
 
-      PGD->interp->interpValues(WGD, xPos, yPos, zPos, uMean, vMean, wMean);
-      PGD->interp->interpValues(TGD, xPos, yPos, zPos, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
+      interp->interpValues(WGD, xPos, yPos, zPos, uMean, vMean, wMean);
+      interp->interpValues(TGD, xPos, yPos, zPos, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
       float err = 0.0;
 
       err = std::abs(tf->u_test_function->val(xPos, yPos, zPos) - uMean);
@@ -69,9 +104,9 @@ TEST_CASE("interpolation fine grid", "[Working]")
     std::random_device rnd_device;
     // Specify the engine and distribution.
     std::mt19937 mersenne_engine{ rnd_device() };// Generates random integers
-    std::uniform_real_distribution<float> disX{ WGD->x[0], WGD->x.back() };
-    std::uniform_real_distribution<float> disY{ WGD->y[0], WGD->y.back() };
-    std::uniform_real_distribution<float> disZ{ 0, WGD->z_face[WGD->nz - 3] };
+    std::uniform_real_distribution<float> disX{ WGD->domain.x[0], WGD->domain.x.back() };
+    std::uniform_real_distribution<float> disY{ WGD->domain.y[0], WGD->domain.y.back() };
+    std::uniform_real_distribution<float> disZ{ 0, WGD->domain.z_face[WGD->domain.nz() - 3] };
 
     std::vector<float> xArray, yArray, zArray;
 
@@ -94,8 +129,8 @@ TEST_CASE("interpolation fine grid", "[Working]")
       double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
       double CoEps = 1e-6, nuT = 0.0;
 
-      PGD->interp->interpValues(WGD, xPos, yPos, zPos, uMean, vMean, wMean);
-      PGD->interp->interpValues(TGD, xPos, yPos, zPos, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
+      interp->interpValues(WGD, xPos, yPos, zPos, uMean, vMean, wMean);
+      interp->interpValues(TGD, xPos, yPos, zPos, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
 
       errU += std::abs(tf->u_test_function->val(xPos, yPos, zPos) - uMean);
       errV += std::abs(tf->v_test_function->val(xPos, yPos, zPos) - vMean);
@@ -115,20 +150,19 @@ TEST_CASE("interpolation fine grid", "[Working]")
 
   delete WGD;
   delete TGD;
-  delete PGD;
+  delete interp;
 }
 
-TEST_CASE("interpolation coarse grid", "[Working]")
+TEST_CASE("test tri-linear interpolation coarse grid", "[Working]")
 {
 
   int gridSize[3] = { 200, 200, 200 };
   float gridRes[3] = { 2.0, 2.0, 2.0 };
+  qes::Domain domain(gridSize[0], gridSize[1], gridSize[2], gridRes[0], gridRes[1], gridRes[2]);
+  WINDSGeneralData *WGD = new WINDSGeneralData(domain);
+  TURBGeneralData *TGD = new TURBGeneralData(WGD);
 
-  test_WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes);
-  test_TURBGeneralData *TGD = new test_TURBGeneralData(WGD);
-  PlumeParameters PP("", false, false);
-  test_PlumeGeneralData *PGD = new test_PlumeGeneralData(PP, WGD, TGD);
-  PGD->setInterpMethod("triLinear", WGD, TGD);
+  auto interp = new InterpTriLinear(WGD, TGD, true);
 
   test_functions *tf = new test_functions(WGD, TGD, "trig");
 
@@ -151,8 +185,8 @@ TEST_CASE("interpolation coarse grid", "[Working]")
       double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
       double CoEps = 1e-6, nuT = 0.0;
 
-      PGD->interp->interpValues(WGD, xPos, yPos, zPos, uMean, vMean, wMean);
-      PGD->interp->interpValues(TGD, xPos, yPos, zPos, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
+      interp->interpValues(WGD, xPos, yPos, zPos, uMean, vMean, wMean);
+      interp->interpValues(TGD, xPos, yPos, zPos, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
       float err = 0.0;
 
       err = std::abs(tf->u_test_function->val(xPos, yPos, zPos) - uMean);
@@ -170,25 +204,23 @@ TEST_CASE("interpolation coarse grid", "[Working]")
   }
   delete WGD;
   delete TGD;
-  delete PGD;
+  delete interp;
 }
 
-TEST_CASE("interpolation stretched grid", "[Working]")
+TEST_CASE("test tri-linear interpolation stretched grid", "[in progress]")
 {
 
   int gridSize[3] = { 200, 200, 200 };
-  float gridRes[3] = { 2.0, 2.0, 0.1 };
+  float gridRes[3] = { 2.0, 2.0, 1.0 };
   float dz_array[200] = {};
   for (int k = 0; k < gridSize[2]; ++k) {
     dz_array[k] = (k + 1) * gridRes[2];
   }
+  qes::Domain domain(gridSize[0], gridSize[1], gridSize[2], gridRes[0], gridRes[1], gridRes[2]);
+  WINDSGeneralData *WGD = new WINDSGeneralData(domain);
+  TURBGeneralData *TGD = new TURBGeneralData(WGD);
 
-  test_WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes, dz_array);
-
-  test_TURBGeneralData *TGD = new test_TURBGeneralData(WGD);
-  PlumeParameters PP("", false, false);
-  test_PlumeGeneralData *PGD = new test_PlumeGeneralData(PP, WGD, TGD);
-  PGD->setInterpMethod("triLinear", WGD, TGD);
+  auto interp = new InterpTriLinear(WGD, TGD, true);
 
   test_functions *tf = new test_functions(WGD, TGD, "trig");
 
@@ -211,21 +243,21 @@ TEST_CASE("interpolation stretched grid", "[Working]")
       double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
       double CoEps = 1e-6, nuT = 0.0;
 
-      PGD->interp->interpValues(WGD, xPos, yPos, zPos, uMean, vMean, wMean);
-      PGD->interp->interpValues(TGD, xPos, yPos, zPos, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
+      interp->interpValues(WGD, xPos, yPos, zPos, uMean, vMean, wMean);
+      interp->interpValues(TGD, xPos, yPos, zPos, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
 
       float err = 0.0;
 
-      err = std::abs(tf->u_test_function->val(xPos, yPos, zPos) - uMean);
+      err = std::fabs(tf->u_test_function->val(xPos, yPos, zPos) - uMean);
       REQUIRE(err < tol);
 
-      err = std::abs(tf->v_test_function->val(xPos, yPos, zPos) - vMean);
+      err = std::fabs(tf->v_test_function->val(xPos, yPos, zPos) - vMean);
       REQUIRE(err < tol);
 
-      err = std::abs(tf->w_test_function->val(xPos, yPos, zPos) - wMean);
+      err = std::fabs(tf->w_test_function->val(xPos, yPos, zPos) - wMean);
       REQUIRE(err < tol);
 
-      err = std::abs(tf->c_test_function->val(xPos, yPos, zPos) - txx);
+      err = std::fabs(tf->c_test_function->val(xPos, yPos, zPos) - txx);
       REQUIRE(err < tol);
     }
   }
@@ -238,9 +270,9 @@ TEST_CASE("interpolation stretched grid", "[Working]")
     std::random_device rnd_device;
     // Specify the engine and distribution.
     std::mt19937 mersenne_engine{ rnd_device() };// Generates random integers
-    std::uniform_real_distribution<float> disX{ WGD->x[0], WGD->x.back() };
-    std::uniform_real_distribution<float> disY{ WGD->y[0], WGD->y.back() };
-    std::uniform_real_distribution<float> disZ{ 0, WGD->z_face[WGD->nz - 3] };
+    std::uniform_real_distribution<float> disX{ WGD->domain.x[0], WGD->domain.x.back() };
+    std::uniform_real_distribution<float> disY{ WGD->domain.y[0], WGD->domain.y.back() };
+    std::uniform_real_distribution<float> disZ{ 0, WGD->domain.z_face[WGD->domain.nz() - 3] };
 
     std::vector<float> xArray, yArray, zArray;
 
@@ -263,13 +295,13 @@ TEST_CASE("interpolation stretched grid", "[Working]")
       double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
       double CoEps = 1e-6, nuT = 0.0;
 
-      PGD->interp->interpValues(WGD, xPos, yPos, zPos, uMean, vMean, wMean);
-      PGD->interp->interpValues(TGD, xPos, yPos, zPos, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
+      interp->interpValues(WGD, xPos, yPos, zPos, uMean, vMean, wMean);
+      interp->interpValues(TGD, xPos, yPos, zPos, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
 
-      errU += std::abs(tf->u_test_function->val(xPos, yPos, zPos) - uMean);
-      errV += std::abs(tf->v_test_function->val(xPos, yPos, zPos) - vMean);
-      errW += std::abs(tf->w_test_function->val(xPos, yPos, zPos) - wMean);
-      errT += std::abs(tf->c_test_function->val(xPos, yPos, zPos) - txx);
+      errU += std::fabs(tf->u_test_function->val(xPos, yPos, zPos) - uMean);
+      errV += std::fabs(tf->v_test_function->val(xPos, yPos, zPos) - vMean);
+      errW += std::fabs(tf->w_test_function->val(xPos, yPos, zPos) - wMean);
+      errT += std::fabs(tf->c_test_function->val(xPos, yPos, zPos) - txx);
     }
 
     errU = errU / float(N);
@@ -284,5 +316,5 @@ TEST_CASE("interpolation stretched grid", "[Working]")
 
   delete WGD;
   delete TGD;
-  delete PGD;
+  delete interp;
 }

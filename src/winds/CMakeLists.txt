@@ -2,6 +2,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 SET( qesWindCoreSources
+  ../qes/Domain.cpp ../qes/Domain.h
   Canopy.cpp
   CanopyElement.cpp
   CanopyHomogeneous.cpp
@@ -9,8 +10,8 @@ SET( qesWindCoreSources
   CanopyWindbreak.cpp
   CanopyROC.cpp
   Cell.cpp
-  CPUSolver.cpp
-  Cut_cell.cpp
+  CutCell.cpp
+  CutBuilding.cpp
   DTEHeightField.cpp
   LocalMixing.cpp
   LocalMixingDefault.cpp
@@ -20,6 +21,7 @@ SET( qesWindCoreSources
   PolyBuilding.cpp PolyBuilding.h
   Sensor.cpp
   Solver.cpp
+  Solver_CPU.cpp
   Solver_CPU_RB.cpp
   TURBParams.h
   TURBGeneralData.cpp
@@ -62,10 +64,9 @@ ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
   CUDA_ADD_LIBRARY(qeswindsgpu
-    DynamicParallelism.cu
-    GlobalMemory.cu GlobalMemory.h
-    SharedMemory.cu SharedMemory.h
-    WINDSGeneralData.cu
+    Solver_GPU_DynamicParallelism.cu
+    Solver_GPU_GlobalMemory.cu 
+    Solver_GPU_SharedMemory.cu 
     TURBGeneralData.cu
     WindProfilerBarnGPU.cu)
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})

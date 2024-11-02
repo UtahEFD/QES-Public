@@ -43,14 +43,9 @@ PLUMEGeneralData::PLUMEGeneralData(const PlumeParameters &PP,
   verbose = false;// arguments->verbose;
 
   // make local copies of the QES-Winds nVals for each dimension
-  nx = WGD->nx;
-  ny = WGD->ny;
-  nz = WGD->nz;
-
-  dx = WGD->dx;
-  dy = WGD->dy;
-  dz = WGD->dz;
-  dxy = WGD->dxy;
+  std::tie(nx, ny, nz) = WGD->domain.getDomainCellNum();
+  std::tie(dx, dy, dz) = WGD->domain.getDomainSize();
+  dxy = WGD->domain.dxy();
 }
 
 PLUMEGeneralData::PLUMEGeneralData(const PlumeParameters &PP,
@@ -67,14 +62,9 @@ PLUMEGeneralData::PLUMEGeneralData(const PlumeParameters &PP,
   verbose = false;// arguments->verbose;
 
   // make local copies of the QES-Winds nVals for each dimension
-  nx = WGD->nx;
-  ny = WGD->ny;
-  nz = WGD->nz;
-
-  dx = WGD->dx;
-  dy = WGD->dy;
-  dz = WGD->dz;
-  dxy = WGD->dxy;
+  std::tie(nx, ny, nz) = WGD->domain.getDomainCellNum();
+  std::tie(dx, dy, dz) = WGD->domain.getDomainSize();
+  dxy = WGD->domain.dxy();
 
   // Create instance of Interpolation class
   std::cout << "[QES-Plume]\t Interpolation Method set to: "

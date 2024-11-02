@@ -51,7 +51,12 @@
 void PolyBuilding::upwindCavity(const WINDSInputData *WID, WINDSGeneralData *WGD)
 {
   float tol = 10.0 * M_PI / 180.0;// Upwind cavity is applied if the angle
-    // is in 10 degree of the perpendicular direction
+                                  // is in 10 degree of the perpendicular direction
+
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
+  float dxy = WGD->domain.dxy();
+
   float retarding_factor = 0.4;// In the outer region, velocities are reduced by 40% (Bagal et al. (2004))
   float height_factor = 0.6;// Height of both elipsoids (inner and outer) extends to 0.6H
   float length_factor = 0.4;
@@ -68,6 +73,7 @@ void PolyBuilding::upwindCavity(const WINDSInputData *WID, WINDSGeneralData *WGD
   float x_intersect_w, x_ellipse_w;
   float rz_end;
   float u_rotation, v_rotation;// Velocity components in rotated coordinates
+  long icell_face, icell_cent;
   std::vector<float> perpendicular_dir;// Perpendicular angle to each face
   std::vector<float> effective_gamma;// Effective angle of each face in rotated coordinates
   std::vector<float> face_length;// Length of each face
@@ -82,7 +88,7 @@ void PolyBuilding::upwindCavity(const WINDSInputData *WID, WINDSGeneralData *WGD
   effective_gamma.resize(polygonVertices.size(), 0.0);
   int counter = 0;
 
-  int index_building_face = i_building_cent + j_building_cent * WGD->nx + (k_end)*WGD->nx * WGD->ny;
+  long index_building_face = WGD->domain.face(i_building_cent, j_building_cent, k_end);
   u0_h = WGD->u0[index_building_face];// u velocity at the height of building at the centroid
   v0_h = WGD->v0[index_building_face];// v velocity at the height of building at the centroid
   // Wind direction of initial velocity at the height of building at the centroid
@@ -135,40 +141,40 @@ void PolyBuilding::upwindCavity(const WINDSInputData *WID, WINDSGeneralData *WGD
       }
 
       // Defining index related to the height that upwind cavity is being applied
-      for (size_t k = k_start; k < WGD->z.size(); k++) {
+      for (size_t k = k_start; k < WGD->domain.z.size(); k++) {
         k_top = k + 1;
-        if (height_factor * retarding_height + base_height <= WGD->z[k]) {
+        if (height_factor * retarding_height + base_height <= WGD->domain.z[k]) {
           break;
         }
       }
       // Defining limits of the upwind cavity in x and y directions
-      upwind_i_start = MAX_S(std::round(MIN_S(polygonVertices[id].x_poly, polygonVertices[id + 1].x_poly) / WGD->dx)
-                               - std::round(1.5 * Lf_face[counter] / WGD->dx) - 1,
+      upwind_i_start = MAX_S(std::round(MIN_S(polygonVertices[id].x_poly, polygonVertices[id + 1].x_poly) / dx)
+                               - std::round(1.5 * Lf_face[counter] / dx) - 1,
                              1);
-      upwind_i_end = MIN_S(std::round(MAX_S(polygonVertices[id].x_poly, polygonVertices[id + 1].x_poly) / WGD->dx)
-                             + std::round(1.5 * Lf_face[counter] / WGD->dx),
-                           WGD->nx - 2);
-      upwind_j_start = MAX_S(std::round(MIN_S(polygonVertices[id].y_poly, polygonVertices[id + 1].y_poly) / WGD->dy)
-                               - std::round(1.5 * Lf_face[counter] / WGD->dy) - 1,
+      upwind_i_end = MIN_S(std::round(MAX_S(polygonVertices[id].x_poly, polygonVertices[id + 1].x_poly) / dx)
+                             + std::round(1.5 * Lf_face[counter] / dx),
+                           nx - 2);
+      upwind_j_start = MAX_S(std::round(MIN_S(polygonVertices[id].y_poly, polygonVertices[id + 1].y_poly) / dy)
+                               - std::round(1.5 * Lf_face[counter] / dy) - 1,
                              1);
-      upwind_j_end = MIN_S(std::round(MAX_S(polygonVertices[id].y_poly, polygonVertices[id + 1].y_poly) / WGD->dy)
-                             + std::round(1.5 * Lf_face[counter] / WGD->dy),
-                           WGD->ny - 2);
+      upwind_j_end = MIN_S(std::round(MAX_S(polygonVertices[id].y_poly, polygonVertices[id + 1].y_poly) / dy)
+                             + std::round(1.5 * Lf_face[counter] / dy),
+                           ny - 2);
 
       x_average = 0.5 * (polygonVertices[id].x_poly + polygonVertices[id + 1].x_poly);// x-location of middle of the face
       y_average = 0.5 * (polygonVertices[id].y_poly + polygonVertices[id + 1].y_poly);// y-location of middle of the face
 
       // Apply the upwind parameterization
       for (auto k = k_start; k < k_top; k++) {
-        z_front = WGD->z[k] - base_height;// Height from the base of the building
+        z_front = WGD->domain.z[k] - base_height;// Height from the base of the building
         for (auto j = upwind_j_start; j < upwind_j_end; j++) {
           for (auto i = upwind_i_start; i < upwind_i_end; i++) {
-            x_u = (i * WGD->dx - x_average) * cos(upwind_dir) + ((j + 0.5) * WGD->dy - y_average) * sin(upwind_dir);// x-location of u velocity
-            y_u = -(i * WGD->dx - x_average) * sin(upwind_dir) + ((j + 0.5) * WGD->dy - y_average) * cos(upwind_dir);// y-location of u velocity
-            x_v = ((i + 0.5) * WGD->dx - x_average) * cos(upwind_dir) + (j * WGD->dy - y_average) * sin(upwind_dir);// x-location of v velocity
-            y_v = -((i + 0.5) * WGD->dx - x_average) * sin(upwind_dir) + (j * WGD->dy - y_average) * cos(upwind_dir);// y-location of v velocity
-            x_w = ((i + 0.5) * WGD->dx - x_average) * cos(upwind_dir) + ((j + 0.5) * WGD->dy - y_average) * sin(upwind_dir);// x-location of w velocity
-            y_w = -((i + 0.5) * WGD->dx - x_average) * sin(upwind_dir) + ((j + 0.5) * WGD->dy - y_average) * cos(upwind_dir);// y-location of w velocity
+            x_u = (i * dx - x_average) * cos(upwind_dir) + ((j + 0.5) * dy - y_average) * sin(upwind_dir);// x-location of u velocity
+            y_u = -(i * dx - x_average) * sin(upwind_dir) + ((j + 0.5) * dy - y_average) * cos(upwind_dir);// y-location of u velocity
+            x_v = ((i + 0.5) * dx - x_average) * cos(upwind_dir) + (j * dy - y_average) * sin(upwind_dir);// x-location of v velocity
+            y_v = -((i + 0.5) * dx - x_average) * sin(upwind_dir) + (j * dy - y_average) * cos(upwind_dir);// y-location of v velocity
+            x_w = ((i + 0.5) * dx - x_average) * cos(upwind_dir) + ((j + 0.5) * dy - y_average) * sin(upwind_dir);// x-location of w velocity
+            y_w = -((i + 0.5) * dx - x_average) * sin(upwind_dir) + ((j + 0.5) * dy - y_average) * cos(upwind_dir);// y-location of w velocity
 
             if ((abs(y_u) <= abs(yf2[id])) && (height_factor * vortex_height > z_front)) {
               // Intersection of a parallel line to the line goes through (xf1,yf1) and (xf2,yf2) and the y=y_u
@@ -176,11 +182,11 @@ void PolyBuilding::upwindCavity(const WINDSInputData *WID, WINDSGeneralData *WGD
               x_ellipse_u = -Lf_face[counter] * sqrt((1 - pow(y_u / abs(yf2[id]), 2.0)) * (1 - pow(z_front / (height_factor * vortex_height), 2.0)));
               xrz_u = -Lf_face[counter] * sqrt((1 - pow(y_u / abs(yf2[id]), 2.0)) * (1 - pow(z_front / (height_factor * retarding_height), 2.0)));
               rz_end = length_factor * x_ellipse_u;
-              icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-              icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+              icell_cent = WGD->domain.cell(i, j, k);
+              icell_face = WGD->domain.face(i, j, k);
               if (WID->buildingsParams->upwindCavityFlag == 1)// Rockle parameterization
               {
-                if ((x_u - x_intersect_u >= x_ellipse_u) && (x_u - x_intersect_u <= 0.1 * WGD->dxy)
+                if ((x_u - x_intersect_u >= x_ellipse_u) && (x_u - x_intersect_u <= 0.1 * dxy)
                     && (WGD->icellflag[icell_cent] != 0) && (WGD->icellflag[icell_cent] != 2)) {
                   WGD->u0[icell_face] = 0.0;
                 }
@@ -195,7 +201,7 @@ void PolyBuilding::upwindCavity(const WINDSInputData *WID, WINDSGeneralData *WGD
                     WGD->u0[icell_face] *= retarding_factor;
                   }
                 }
-                if ((x_u - x_intersect_u >= length_factor * x_ellipse_u) && (x_u - x_intersect_u <= 0.1 * WGD->dxy)
+                if ((x_u - x_intersect_u >= length_factor * x_ellipse_u) && (x_u - x_intersect_u <= 0.1 * dxy)
                     && (WGD->icellflag[icell_cent] != 0) && (WGD->icellflag[icell_cent] != 2)) {
                   u_rotation = WGD->u0[icell_face] * cos(effective_gamma[id]);
                   v_rotation = WGD->u0[icell_face] * sin(effective_gamma[id]);
@@ -216,11 +222,11 @@ void PolyBuilding::upwindCavity(const WINDSInputData *WID, WINDSGeneralData *WGD
               x_ellipse_v = -Lf_face[counter] * sqrt((1 - pow(y_v / abs(yf2[id]), 2.0)) * (1 - pow(z_front / (height_factor * vortex_height), 2.0)));
               xrz_v = -Lf_face[counter] * sqrt((1 - pow(y_v / abs(yf2[id]), 2.0)) * (1 - pow(z_front / (height_factor * retarding_height), 2.0)));
               rz_end = length_factor * x_ellipse_v;
-              icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-              icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+              icell_cent = WGD->domain.cell(i, j, k);
+              icell_face = WGD->domain.face(i, j, k);
               if (WID->buildingsParams->upwindCavityFlag == 1)// Rockle parameterization
               {
-                if ((x_v - x_intersect_v >= x_ellipse_v) && (x_v - x_intersect_v <= 0.1 * WGD->dxy)
+                if ((x_v - x_intersect_v >= x_ellipse_v) && (x_v - x_intersect_v <= 0.1 * dxy)
                     && (WGD->icellflag[icell_cent] != 0) && (WGD->icellflag[icell_cent] != 2)) {
                   WGD->v0[icell_face] = 0.0;
                 }
@@ -235,7 +241,7 @@ void PolyBuilding::upwindCavity(const WINDSInputData *WID, WINDSGeneralData *WGD
                     WGD->v0[icell_face] *= retarding_factor;
                   }
                 }
-                if ((x_v - x_intersect_v >= length_factor * x_ellipse_v) && (x_v - x_intersect_v <= 0.1 * WGD->dxy)
+                if ((x_v - x_intersect_v >= length_factor * x_ellipse_v) && (x_v - x_intersect_v <= 0.1 * dxy)
                     && (WGD->icellflag[icell_cent] != 0) && (WGD->icellflag[icell_cent] != 2)) {
                   u_rotation = WGD->v0[icell_face] * sin(effective_gamma[id]);
                   v_rotation = WGD->v0[icell_face] * cos(effective_gamma[id]);
@@ -255,14 +261,14 @@ void PolyBuilding::upwindCavity(const WINDSInputData *WID, WINDSGeneralData *WGD
             if ((abs(y_w) <= abs(yf2[id])) && (height_factor * vortex_height > z_front)) {
               x_intersect_w = ((xf2[id] - xf1[id]) / (yf2[id] - yf1[id])) * (y_w - yf1[id]) + xf1[id];
               x_ellipse_w = -Lf_face[counter] * sqrt((1 - pow(y_w / abs(yf2[id]), 2.0)) * (1 - pow(z_front / (height_factor * vortex_height), 2.0)));
-              icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-              icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+              icell_cent = WGD->domain.cell(i, j, k);
+              icell_face = WGD->domain.face(i, j, k);
               if (WID->buildingsParams->upwindCavityFlag == 1)// Rockle parameterization
               {
-                if ((x_w - x_intersect_w >= x_ellipse_w) && (x_w - x_intersect_w <= 0.1 * WGD->dxy)
+                if ((x_w - x_intersect_w >= x_ellipse_w) && (x_w - x_intersect_w <= 0.1 * dxy)
                     && (WGD->icellflag[icell_cent] != 0) && (WGD->icellflag[icell_cent] != 2)) {
                   WGD->w0[icell_face] = 0.0;
-                  if (i < WGD->nx - 1 && j < WGD->ny - 1 && k < WGD->nz - 2
+                  if (i < nx - 1 && j < ny - 1 && k < nz - 2
                       && (WGD->icellflag[icell_cent] != 7) && (WGD->icellflag[icell_cent] != 8)) {
                     WGD->icellflag[icell_cent] = 3;
                   }
@@ -271,16 +277,16 @@ void PolyBuilding::upwindCavity(const WINDSInputData *WID, WINDSGeneralData *WGD
                 if ((x_w - x_intersect_w >= x_ellipse_w) && (x_w - x_intersect_w < length_factor * x_ellipse_w)
                     && (WGD->icellflag[icell_cent] != 0) && (WGD->icellflag[icell_cent] != 2)) {
                   WGD->w0[icell_face] *= retarding_factor;
-                  if (i < WGD->nx - 1 && j < WGD->ny - 1 && k < WGD->nz - 2
+                  if (i < nx - 1 && j < ny - 1 && k < nz - 2
                       && (WGD->icellflag[icell_cent] != 7) && (WGD->icellflag[icell_cent] != 8)) {
                     WGD->icellflag[icell_cent] = 3;
                   }
                 }
                 if ((x_w - x_intersect_w >= length_factor * x_ellipse_w)
-                    && (x_w - x_intersect_w <= 0.1 * WGD->dxy) && (WGD->icellflag[icell_cent] != 0) && (WGD->icellflag[icell_cent] != 2)) {
+                    && (x_w - x_intersect_w <= 0.1 * dxy) && (WGD->icellflag[icell_cent] != 0) && (WGD->icellflag[icell_cent] != 2)) {
                   WGD->w0[icell_face] = -sqrt(pow(u0_h, 2.0) + pow(v0_h, 2.0))
                                         * (0.1 * cos(M_PI * abs(x_w - x_intersect_w) / (length_factor * Lf_face[counter])) - 0.05);
-                  if (i < WGD->nx - 1 && j < WGD->ny - 1 && k < WGD->nz - 2
+                  if (i < nx - 1 && j < ny - 1 && k < nz - 2
                       && (WGD->icellflag[icell_cent] != 7) && (WGD->icellflag[icell_cent] != 8)) {
                     WGD->icellflag[icell_cent] = 3;
                   }

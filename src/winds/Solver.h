@@ -40,10 +40,9 @@
 #include <chrono>
 #include <limits>
 
-#include "WINDSInputData.h"
-#include "WINDSGeneralData.h"
+#include "qes/Domain.h"
 
-#include "util/Vector3Float.h"
+#include "WINDSGeneralData.h"
 
 using namespace std;
 
@@ -63,7 +62,19 @@ using namespace std;
  */
 class Solver
 {
+private:
+  Solver()
+    : domain(1, 1, 1, 1.0, 1.0, 1.0),
+      alpha1(1),
+      alpha2(1),
+      eta(1),
+      A(1),
+      B(1)
+  {}
+
 protected:
+  qes::Domain domain;
+
   const int alpha1; /**< Gaussian precision moduli */
   const int alpha2; /**< Gaussian precision moduli */
   const float eta; /**< :document this: */
@@ -71,15 +82,16 @@ protected:
   const float B; /**< :document this: */
 
   float tol; /**< Error tolerance */
-  const float omega = 1.0f; /**< Over-relaxation factor */
+  const float omega = 1.78f; /**< Over-relaxation factor */
 
-  int itermax; /**< Maximum number of iterations */
+  // int itermax; /**< Maximum number of iterations */
 
   // SOLVER-based parameters
   std::vector<float> R; /**< Divergence of initial velocity field */
   std::vector<float> lambda, lambda_old; /**< :document these as group or indiv: */
 
-  Solver(const WINDSInputData *WID, WINDSGeneralData *WGD);
+
+  Solver(qes::Domain domain_in, const float &tolerance);
   /**
    * Prints out the current amount that a process
    * has finished with a progress bar.
@@ -93,7 +105,13 @@ public:
   void resetLambda();
   void copyLambda();
 
-  virtual void solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind) = 0;
+  /**
+   * :document this:
+   *
+   * @param WGD :document this:
+   * @param itermax Maximum number of iterations
+   */
+  virtual void solve(WINDSGeneralData *, const int &) = 0;
 };
 
 inline void Solver::resetLambda()

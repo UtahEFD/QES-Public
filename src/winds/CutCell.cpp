@@ -29,19 +29,19 @@
  ****************************************************************************/
 
 /**
- * @file Cut_cell.cpp
+ * @file CutCell.cpp
  * @brief Designed to store and handle information related to the Cut_cells.
  *
  * @sa Cell
  */
 
-#include "Cut_cell.h"
+#include "CutCell.h"
 
 #include "WINDSInputData.h"
 #include "WINDSGeneralData.h"
 
 
-void Cut_cell::reorderPoints(std::vector<Vector3Float> &cut_points, int index, float pi)
+void CutCell::reorderPoints(std::vector<Vector3Float> &cut_points, int index, float pi)
 {
 
   Vector3Float centroid;
@@ -80,7 +80,7 @@ void Cut_cell::reorderPoints(std::vector<Vector3Float> &cut_points, int index, f
 }
 
 
-void Cut_cell::mergeSort(std::vector<float> &angle, std::vector<Vector3Float> &cutPoints)
+void CutCell::mergeSort(std::vector<float> &angle, std::vector<Vector3Float> &cutPoints)
 {
   // if the size of the array is 1, it is already sorted
   if (angle.size() == 1)
@@ -126,7 +126,7 @@ void Cut_cell::mergeSort(std::vector<float> &angle, std::vector<Vector3Float> &c
   return;
 }
 
-float Cut_cell::calculateArea(std::vector<Vector3Float> &cut_points, int cutcell_index, float dx, float dy, float dz, std::vector<float> &n, std::vector<float> &m, std::vector<float> &f, std::vector<float> &e, std::vector<float> &h, std::vector<float> &g, int index)
+float CutCell::calculateArea(std::vector<Vector3Float> &cut_points, int cutcell_index, float dx, float dy, float dz, std::vector<float> &n, std::vector<float> &m, std::vector<float> &f, std::vector<float> &e, std::vector<float> &h, std::vector<float> &g, int index)
 {
   float S = 0.0;
   float coeff = 0;
@@ -173,15 +173,15 @@ float Cut_cell::calculateArea(std::vector<Vector3Float> &cut_points, int cutcell
 }
 
 
-float Cut_cell::calculateAreaTopBot(std::vector<Vector3Float> &terrainPoints,
-                                    const std::vector<Edge<int>> &terrainEdges,
-                                    const int cellIndex,
-                                    const float dx,
-                                    const float dy,
-                                    const float dz,
-                                    Vector3Float location,
-                                    std::vector<float> &coef,
-                                    const bool isBot)
+float CutCell::calculateAreaTopBot(std::vector<Vector3Float> &terrainPoints,
+                                   const std::vector<Edge<int>> &terrainEdges,
+                                   const int cellIndex,
+                                   const float dx,
+                                   const float dy,
+                                   const float dz,
+                                   Vector3Float location,
+                                   std::vector<float> &coef,
+                                   const bool isBot)
 {
   float S = 0.0;
   float area = 0.0f;

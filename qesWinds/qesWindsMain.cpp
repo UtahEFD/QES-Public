@@ -38,6 +38,8 @@
 
 #include "handleWINDSArgs.h"
 
+#include "qes/Domain.h"
+
 #include "winds/WINDSInputData.h"
 #include "winds/WINDSGeneralData.h"
 #include "winds/WINDSOutputVisualization.h"
@@ -47,12 +49,12 @@
 #include "winds/TURBOutput.h"
 
 #include "winds/Solver.h"
-#include "winds/CPUSolver.h"
+#include "winds/Solver_CPU.h"
 #include "winds/Solver_CPU_RB.h"
 #ifdef HAS_CUDA
-#include "winds/DynamicParallelism.h"
-#include "winds/GlobalMemory.h"
-#include "winds/SharedMemory.h"
+#include "winds/Solver_GPU_DynamicParallelism.h"
+#include "winds/Solver_GPU_GlobalMemory.h"
+#include "winds/Solver_GPU_SharedMemory.h"
 #endif
 #include "winds/Sensor.h"
 
@@ -98,18 +100,19 @@ int main(int argc, char *argv[])
     }
   }
 
-  // 
+  //
   // WID should be deleted at this point....
   //
   // transfer to other things through some Factory???
 
   // Somehere... we initialize the QESDomain... some class that holds ifo for
   // Singleton????
-  // 
+  //
+  qes::Domain domain(WID->simParams->domain[0], WID->simParams->domain[1], WID->simParams->domain[2], WID->simParams->grid[0], WID->simParams->grid[1], WID->simParams->grid[2]);
 
   // Generate the general WINDS data from all inputs
-  WINDSGeneralData *WGD = new WINDSGeneralData(WID, arguments.solveType);
-  // 
+  WINDSGeneralData *WGD = new WINDSGeneralData(WID, domain, arguments.solveType);
+  //
   // get Domain data to WGD... have it constructed, setup outside of this class as a start....
   // WINDSGeneralData *WGD = new WINDSGeneralData(WID, arguments.solveType, qes->getCopyDomain());
 
@@ -140,23 +143,18 @@ int main(int argc, char *argv[])
   Solver *solver = nullptr;
   if (arguments.solveType == CPU_Type) {
 #ifdef _OPENMP
-    std::cout << "Run Red/Black Solver (CPU) ..." << std::endl;
-    solver = new Solver_CPU_RB(WID, WGD);
+    solver = new Solver_CPU_RB(WGD->domain, WID->simParams->tolerance);
 #else
-    std::cout << "Run Serial Solver (CPU) ..." << std::endl;
-    solver = new CPUSolver(WID, WGD);
+    solver = new Solver_CPU(WGD->domain, WID->simParams->tolerance);
 #endif
 
 #ifdef HAS_CUDA
   } else if (arguments.solveType == DYNAMIC_P) {
-    std::cout << "Run Dynamic Parallel Solver (GPU) ..." << std::endl;
-    solver = new DynamicParallelism(WID, WGD);
+    solver = new Solver_GPU_DynamicParallelism(WGD->domain, WID->simParams->tolerance);
   } else if (arguments.solveType == Global_M) {
-    std::cout << "Run Global Memory Solver (GPU) ..." << std::endl;
-    solver = new GlobalMemory(WID, WGD);
+    solver = new Solver_GPU_GlobalMemory(WGD->domain, WID->simParams->tolerance);
   } else if (arguments.solveType == Shared_M) {
-    std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
-    solver = new SharedMemory(WID, WGD);
+    solver = new Solver_GPU_SharedMemory(WGD->domain, WID->simParams->tolerance);
 #endif
   } else {
     QESout::error("Invalid solver type");
@@ -183,8 +181,7 @@ int main(int argc, char *argv[])
 
     // Applying the log law and solver iteratively
     if (WID->simParams->logLawFlag == 1) {
-      WID->simParams->maxIterations = tempMaxIter;
-      solver->solve(WID, WGD, !arguments.solveWind);
+      solver->solve(WGD, tempMaxIter);
 
       WGD->u0 = WGD->u;
       WGD->v0 = WGD->v;
@@ -195,7 +192,7 @@ int main(int argc, char *argv[])
       WGD->w = WGD->w0;
     } else {
       // Run WINDS simulation code
-      solver->solve(WID, WGD, !arguments.solveWind);
+      solver->solve(WGD, tempMaxIter);
     }
 
     // std::cout << "Solver done!\n";

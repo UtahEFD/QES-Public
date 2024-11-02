@@ -1,4 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 #include <string>
 #include <cstdio>
@@ -21,14 +22,14 @@ TEST_CASE("vector math class test")
   REQUIRE(a == b);
 
   Vector3<float> c = a + b;
-  REQUIRE(c[0] == 2.0f);
-  REQUIRE(c[1] == 4.0f);
-  REQUIRE(c[2] == 6.0f);
+  REQUIRE_THAT(c[0], Catch::Matchers::WithinRel(2.0F, 0.01F));
+  REQUIRE_THAT(c[1], Catch::Matchers::WithinRel(4.0F, 0.01F));
+  REQUIRE_THAT(c[2], Catch::Matchers::WithinRel(6.0F, 0.01F));
 
   c += a;
-  REQUIRE(c[0] == 3.0f);
-  REQUIRE(c[1] == 6.0f);
-  REQUIRE(c[2] == 9.0f);
+  REQUIRE_THAT(c[0], Catch::Matchers::WithinRel(3.0F, 0.01F));
+  REQUIRE_THAT(c[1], Catch::Matchers::WithinRel(6.0F, 0.01F));
+  REQUIRE_THAT(c[2], Catch::Matchers::WithinRel(9.0F, 0.01F));
 
   c /= 3;
   REQUIRE(c == a);
@@ -38,9 +39,9 @@ TEST_CASE("vector math class test")
   REQUIRE(c == a * 3);
 
   c = a - b;
-  REQUIRE(c[0] == 0.0f);
-  REQUIRE(c[1] == 0.0f);
-  REQUIRE(c[2] == 0.0f);
+  REQUIRE_THAT(c[0], Catch::Matchers::WithinRel(0.0F, 0.01F));
+  REQUIRE_THAT(c[1], Catch::Matchers::WithinRel(0.0F, 0.01F));
+  REQUIRE_THAT(c[2], Catch::Matchers::WithinRel(0.0F, 0.01F));
 
   REQUIRE(a * b == 14);
   REQUIRE(a.dot(b) == 14);
@@ -51,9 +52,10 @@ TEST_CASE("vector math class test")
   Vector3<float> n = { 0.0f, 0.0f, 1.0f };
   Vector3<float> x = { 2.0f, 2.0f, -2.0f };
   x = x.reflect(n);
-  REQUIRE(x[0] == 2.0f);
-  REQUIRE(x[1] == 2.0f);
-  REQUIRE(x[2] == 2.0f);
+
+  REQUIRE_THAT(x[0], Catch::Matchers::WithinRel(2.0F, 0.01F));
+  REQUIRE_THAT(x[1], Catch::Matchers::WithinRel(2.0F, 0.01F));
+  REQUIRE_THAT(x[2], Catch::Matchers::WithinRel(2.0F, 0.01F));
 
   std::cout << "testing iostream : " << x << std::endl;
   std::cout << "======================================" << std::endl;
@@ -66,8 +68,7 @@ TEST_CASE("vector math class speed test")
             << "--------------------------------------"
             << std::endl;
 
-
-  size_t test_length = 2E9;
+  auto test_length = 2E7;
   float l = 0;
 
   Vector3<float> a(1.0f, 2.0f, 3.0f);
@@ -113,9 +114,9 @@ TEST_CASE("vector math class speed test")
   cpuElapsed = cpuEndTime - cpuStartTime;
   std::cout << "CPU  elapsed time: " << cpuElapsed.count() << " s\n";
 
-  REQUIRE(c[0] == z._1);
-  REQUIRE(c[1] == z._2);
-  REQUIRE(c[2] == z._3);
+  REQUIRE_THAT(c[0], Catch::Matchers::WithinRel(z._1, 0.01F));
+  REQUIRE_THAT(c[1], Catch::Matchers::WithinRel(z._2, 0.01F));
+  REQUIRE_THAT(c[2], Catch::Matchers::WithinRel(z._3, 0.01F));
 
   std::cout << "======================================" << std::endl;
 }

@@ -28,7 +28,7 @@
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file GlobalMemory.h */
+/** @file Solver_GPU_GlobalMemory.h */
 
 #pragma once
 
@@ -43,29 +43,18 @@
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
 
-#include "WINDSInputData.h"
 #include "Solver.h"
 
 
-struct SolverCoeff
-{
-  float *e;
-  float *f;
-  float *g;
-  float *h;
-  float *m;
-  float *n;
-};
-
 /**
- * @class GlobalMemory
+ * @class Solver_GPU_GlobalMemory
  * @brief Child class of the Solver that runs the convergence
  * algorithm using DynamicParallelism on a single GPU.
  *
  * @sa Solver
- * @sa DynamicParallelism
+ * @sa Solver_GPU_GlobalMemory
  */
-class GlobalMemory : public Solver
+class Solver_GPU_GlobalMemory : public Solver
 {
 private:
   /**
@@ -79,7 +68,7 @@ private:
   void _cudaCheck(T e, const char *func, const char *call, const int line);
 
 public:
-  GlobalMemory(const WINDSInputData *WID, WINDSGeneralData *WGD);
+  Solver_GPU_GlobalMemory(qes::Domain domain_in, const float &tolerance);
 
 protected:
   ///@{
@@ -95,9 +84,8 @@ protected:
   /**
    * :document this:
    *
-   * @param WID :document this:
    * @param WGD :document this:
-   * @param solveWind :document this:
+   * @param itermax :document this:
    */
-  virtual void solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind);
+  virtual void solve(WINDSGeneralData *, const int &) override;
 };

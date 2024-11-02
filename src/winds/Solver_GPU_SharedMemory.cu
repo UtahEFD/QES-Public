@@ -29,16 +29,15 @@
  ****************************************************************************/
 
 /**
- * @file SharedMemory.cu
+ * @file Solver_GPU_SharedMemory.cu
  * @brief Child class of the Solver that runs the convergence
  * algorithm using DynamicParallelism on a single GPU.
  *
  * @sa Solver
- * @sa DynamicParallelism
- * @sa WINDSInputData
+ * @sa Solver_GPU_SharedMemory
  */
 
-#include "SharedMemory.h"
+#include "Solver_GPU_SharedMemory.h"
 
 using namespace std::chrono;
 using namespace std;
@@ -57,7 +56,7 @@ using std::to_string;
 
 
 template<typename T>
-void SharedMemory::_cudaCheck(T e, const char *func, const char *call, const int line)
+void Solver_GPU_SharedMemory::_cudaCheck(T e, const char *func, const char *call, const int line)
 {
   if (e != cudaSuccess) {
     printf("\"%s\" at %d in %s\n\treturned %d\n-> %s\n", func, line, call, (int)e, cudaGetErrorString(e));
@@ -201,15 +200,19 @@ __global__ void finalVelocityShared(float *d_lambda, float *d_u, float *d_v, flo
 }
 
 
-void SharedMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind)
+void Solver_GPU_SharedMemory::solve(WINDSGeneralData *WGD, const int &itermax)
 {
-  itermax = WID->simParams->maxIterations;
-  int numblocks = (WGD->numcell_cent / BLOCKSIZE) + 1;
-  R.resize(WGD->numcell_cent, 0.0);
+  auto [nx, ny, nz] = domain.getDomainCellNum();
+  auto [dx, dy, dz] = domain.getDomainSize();
+  long numcell_face = domain.numFaceCentered();
+  long numcell_cent = domain.numCellCentered();
+
+  int numblocks = (numcell_cent / BLOCKSIZE) + 1;
+  R.resize(numcell_cent, 0.0);
 
   std::cout << "[Solver]\t Running Shared Memory Solver (GPU) ..." << std::endl;
 
-  std::vector<float> value(WGD->numcell_cent, 0.0);
+  std::vector<float> value(numcell_cent, 0.0);
   std::vector<float> bvalue(numblocks, 0.0);
 
   float *d_u, *d_v, *d_w;
@@ -220,45 +223,45 @@ void SharedMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool 
 
   auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
 
-  cudaMalloc((void **)&d_e, WGD->numcell_cent * sizeof(float));
-  cudaMalloc((void **)&d_f, WGD->numcell_cent * sizeof(float));
-  cudaMalloc((void **)&d_g, WGD->numcell_cent * sizeof(float));
-  cudaMalloc((void **)&d_h, WGD->numcell_cent * sizeof(float));
-  cudaMalloc((void **)&d_m, WGD->numcell_cent * sizeof(float));
-  cudaMalloc((void **)&d_n, WGD->numcell_cent * sizeof(float));
-  cudaMalloc((void **)&d_lambda, WGD->numcell_cent * sizeof(float));
-  cudaMalloc((void **)&d_lambda_old, WGD->numcell_cent * sizeof(float));
-  cudaMalloc((void **)&d_dz_array, (WGD->nz - 1) * sizeof(float));
-  cudaMalloc((void **)&d_R, WGD->numcell_cent * sizeof(float));
-  cudaMalloc((void **)&d_value, WGD->numcell_cent * sizeof(float));
+  cudaMalloc((void **)&d_e, numcell_cent * sizeof(float));
+  cudaMalloc((void **)&d_f, numcell_cent * sizeof(float));
+  cudaMalloc((void **)&d_g, numcell_cent * sizeof(float));
+  cudaMalloc((void **)&d_h, numcell_cent * sizeof(float));
+  cudaMalloc((void **)&d_m, numcell_cent * sizeof(float));
+  cudaMalloc((void **)&d_n, numcell_cent * sizeof(float));
+  cudaMalloc((void **)&d_lambda, numcell_cent * sizeof(float));
+  cudaMalloc((void **)&d_lambda_old, numcell_cent * sizeof(float));
+  cudaMalloc((void **)&d_dz_array, (nz - 1) * sizeof(float));
+  cudaMalloc((void **)&d_R, numcell_cent * sizeof(float));
+  cudaMalloc((void **)&d_value, numcell_cent * sizeof(float));
   cudaMalloc((void **)&d_bvalue, numblocks * sizeof(float));
-  cudaMalloc((void **)&d_icellflag, WGD->numcell_cent * sizeof(int));
-  cudaMalloc((void **)&d_u, WGD->numcell_face * sizeof(float));
-  cudaMalloc((void **)&d_v, WGD->numcell_face * sizeof(float));
-  cudaMalloc((void **)&d_w, WGD->numcell_face * sizeof(float));
+  cudaMalloc((void **)&d_icellflag, numcell_cent * sizeof(int));
+  cudaMalloc((void **)&d_u, numcell_face * sizeof(float));
+  cudaMalloc((void **)&d_v, numcell_face * sizeof(float));
+  cudaMalloc((void **)&d_w, numcell_face * sizeof(float));
 
-  cudaMemcpy(d_u, WGD->u0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_v, WGD->v0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_w, WGD->w0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_R, R.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_e, WGD->e.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_f, WGD->f.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_g, WGD->g.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_h, WGD->h.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_m, WGD->m.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_n, WGD->n.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_dz_array, WGD->dz_array.data(), (WGD->nz - 1) * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_lambda_old, lambda_old.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_value, value.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_u, WGD->u0.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_v, WGD->v0.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_w, WGD->w0.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_R, R.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_e, WGD->e.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_f, WGD->f.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_g, WGD->g.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_h, WGD->h.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_m, WGD->m.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_n, WGD->n.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_dz_array, domain.dz_array.data(), (nz - 1) * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_lambda_old, lambda_old.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_value, value.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_bvalue, bvalue.data(), numblocks * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_lambda, lambda.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_icellflag, WGD->icellflag.data(), WGD->numcell_cent * sizeof(int), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_lambda, lambda.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_icellflag, WGD->icellflag.data(), numcell_cent * sizeof(int), cudaMemcpyHostToDevice);
 
   dim3 numberOfThreadsPerBlock(BLOCKSIZE, 1, 1);
-  dim3 numberOfBlocks(ceil(((WGD->nx - 1) * (WGD->ny - 1) * (WGD->nz - 1)) / (float)(BLOCKSIZE)), 1, 1);
+  dim3 numberOfBlocks(ceil(domain.numCellCentered() / (float)(BLOCKSIZE)), 1, 1);
 
   // Invoke divergence kernel
-  divergenceShared<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_u, d_v, d_w, d_R, d_e, d_f, d_g, d_h, d_m, d_n, alpha1, WGD->nx, WGD->ny, WGD->nz, WGD->dx, WGD->dy, d_dz_array);
+  divergenceShared<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_u, d_v, d_w, d_R, d_e, d_f, d_g, d_h, d_m, d_n, alpha1, nx, ny, nz, dx, dy, d_dz_array);
 
 
   /////////////////////////////////////////////////
@@ -276,22 +279,22 @@ void SharedMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool 
   while ((iter < itermax) && (max_error[0] > tol)) {
     // Save previous iteration values for error calculation
 
-    saveLambdaShared<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, WGD->nx, WGD->ny, WGD->nz);
+    saveLambdaShared<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, nx, ny, nz);
     cudaCheck(cudaGetLastError());
-    // cudaMemcpy(d_lambda , lambda.data() , WGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
+    // cudaMemcpy(d_lambda , lambda.data() , numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
     int offset = 0;// Red nodes pass
-    SOR_RB_Shared<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_lambda, WGD->nx, WGD->ny, WGD->nz, omega, A, B, d_e, d_f, d_g, d_h, d_m, d_n, d_R, offset);
+    SOR_RB_Shared<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_lambda, nx, ny, nz, omega, A, B, d_e, d_f, d_g, d_h, d_m, d_n, d_R, offset);
     cudaCheck(cudaGetLastError());
 
     offset = 1;// Black nodes pass
-    SOR_RB_Shared<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_lambda, WGD->nx, WGD->ny, WGD->nz, omega, A, B, d_e, d_f, d_g, d_h, d_m, d_n, d_R, offset);
+    SOR_RB_Shared<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_lambda, nx, ny, nz, omega, A, B, d_e, d_f, d_g, d_h, d_m, d_n, d_R, offset);
     cudaCheck(cudaGetLastError());
 
-    dim3 numberOfBlocks2(ceil(((WGD->nx - 1) * (WGD->ny - 1)) / (float)(BLOCKSIZE)), 1, 1);
+    dim3 numberOfBlocks2(ceil(domain.numHorizontalCellCentered() / (float)(BLOCKSIZE)), 1, 1);
     // Invoke kernel to apply Neumann boundary condition (lambda (@k=0) = lambda (@k=1))
-    applyNeumannBCShared<<<numberOfBlocks2, numberOfThreadsPerBlock>>>(d_lambda, WGD->nx, WGD->ny);
+    applyNeumannBCShared<<<numberOfBlocks2, numberOfThreadsPerBlock>>>(d_lambda, nx, ny);
 
-    calculateErrorShared<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, WGD->nx, WGD->ny, WGD->nz, d_value, d_bvalue, d_error);
+    calculateErrorShared<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, nx, ny, nz, d_value, d_bvalue, d_error);
     cudaMemcpy(max_error.data(), d_error, 1 * sizeof(float), cudaMemcpyDeviceToHost);
     iter += 1;
   }
@@ -300,14 +303,14 @@ void SharedMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool 
   // std::cout << "Error:" << max_error[0] << "\n";
   // std::cout << "Number of iterations:" << iter << "\n";// Print the number of iterations
 
-  dim3 numberOfBlocks3(ceil((WGD->nx * WGD->ny * WGD->nz) / (float)(BLOCKSIZE)), 1, 1);
+  dim3 numberOfBlocks3(ceil(domain.numFaceCentered() / (float)(BLOCKSIZE)), 1, 1);
   // Invoke final velocity (Euler) kernel
-  finalVelocityShared<<<numberOfBlocks3, numberOfThreadsPerBlock>>>(d_lambda, d_u, d_v, d_w, d_icellflag, d_f, d_h, d_n, alpha1, alpha2, WGD->dx, WGD->dy, WGD->dz, d_dz_array, WGD->nx, WGD->ny, WGD->nz);
+  finalVelocityShared<<<numberOfBlocks3, numberOfThreadsPerBlock>>>(d_lambda, d_u, d_v, d_w, d_icellflag, d_f, d_h, d_n, alpha1, alpha2, dx, dy, dz, d_dz_array, nx, ny, nz);
   cudaCheck(cudaGetLastError());
 
-  cudaMemcpy(WGD->u.data(), d_u, WGD->numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
-  cudaMemcpy(WGD->v.data(), d_v, WGD->numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
-  cudaMemcpy(WGD->w.data(), d_w, WGD->numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
+  cudaMemcpy(WGD->u.data(), d_u, numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
+  cudaMemcpy(WGD->v.data(), d_v, numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
+  cudaMemcpy(WGD->w.data(), d_w, numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
 
 
   cudaFree(d_lambda);

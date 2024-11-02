@@ -104,13 +104,11 @@ void InterpNearestCell::interpValues(const WINDSGeneralData *WGD,
 {
 
   Vector3Int cellIndex = getCellIndex(xPos, yPos, zPos);
-  int faceId = cellIndex[0]
-               + cellIndex[1] * WGD->nx
-               + cellIndex[2] * WGD->nx * WGD->ny;
+  long faceId = WGD->domain.face(cellIndex[0], cellIndex[1], cellIndex[2]);
 
-  uMean_out = 0.5 * (WGD->u[faceId] + WGD->u[faceId + 1]);
-  vMean_out = 0.5 * (WGD->v[faceId] + WGD->v[faceId + WGD->nx]);
-  vMean_out = 0.5 * (WGD->w[faceId] + WGD->w[faceId + WGD->nx * WGD->ny]);
+  uMean_out = 0.5 * (WGD->u[faceId] + WGD->u[WGD->domain.faceAdd(faceId, 1, 0, 0)]);
+  vMean_out = 0.5 * (WGD->v[faceId] + WGD->v[WGD->domain.faceAdd(faceId, 0, 1, 0)]);
+  vMean_out = 0.5 * (WGD->w[faceId] + WGD->w[WGD->domain.faceAdd(faceId, 0, 0, 1)]);
 }
 
 void InterpNearestCell::interpValues(const TURBGeneralData *TGD,
@@ -131,9 +129,7 @@ void InterpNearestCell::interpValues(const TURBGeneralData *TGD,
 {
 
   Vector3Int cellIndex = getCellIndex(xPos, yPos, zPos);
-  int cellId = cellIndex[0]
-               + cellIndex[1] * (TGD->nx - 1)
-               + cellIndex[2] * (TGD->nx - 1) * (TGD->ny - 1);
+  long cellId = TGD->domain.cell(cellIndex[0], cellIndex[1], cellIndex[2]);
 
   CoEps_out = TGD->CoEps[cellId];
   // make sure CoEps is always bigger than zero

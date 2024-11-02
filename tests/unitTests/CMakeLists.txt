@@ -1,19 +1,6 @@
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(.)
 
-IF ($CACHE{HAS_CUDA_SUPPORT})
-  cuda_add_library(unittestcore
-        test_functions.h test_functions.cpp
-        test_WINDSGeneralData.h test_WINDSGeneralData.cpp
-        test_TURBGeneralData.h test_TURBGeneralData.cpp
-        test_PlumeGeneralData.h test_PlumeGeneralData.cpp)
-ELSE ($CACHE{HAS_CUDA_SUPPORT})
-  add_library(unittestcore
-        test_functions.h test_functions.cpp
-        test_WINDSGeneralData.h test_WINDSGeneralData.cpp
-        test_TURBGeneralData.h test_TURBGeneralData.cpp
-        test_PlumeGeneralData.h test_PlumeGeneralData.cpp)
-ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 #FILE(GLOB files "*.h")
 #INSTALL(FILES ${files} DESTINATION include/unitTests)
 
@@ -31,14 +18,12 @@ add_executable(plume_IDGenerator plume_IDGenerator.cpp)
 IF ($CACHE{HAS_CUDA_SUPPORT})
 
   cuda_add_executable(test_GPU
-    test_GPU.cpp
-    )
+    test_GPU.cpp)
    target_link_libraries(test_GPU ${CUDA_LIBRARIES})
 
   cuda_add_executable(test_CUDARandomGen
     CUDARandomKernel.cu CUDARandomKernel.h
-    test_CUDARandomGen.cpp
-    )
+    test_CUDARandomGen.cpp)
    target_link_libraries(test_CUDARandomGen ${CUDA_LIBRARIES})
    target_link_libraries(test_CUDARandomGen ${CUDA_curand_LIBRARY})
 
@@ -99,8 +84,7 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
    
   cuda_add_executable(test_CUDAPartition
     CUDAPartitionKernel.cu CUDAPartitionKernel.h
-    test_CUDAPartition.cpp
-    )
+    test_CUDAPartition.cpp)
    target_link_libraries(test_CUDAPartition ${CUDA_LIBRARIES})
    target_link_libraries(test_CUDAPartition ${CUDA_curand_LIBRARY})
 
@@ -112,7 +96,8 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
        turbulence_derivative_CPU.cpp)
 
    cuda_add_executable(plume_interpolation_CPU
-           plume_interpolation_CPU.cpp)
+     test_functions.cpp
+     plume_interpolation_CPU.cpp)
 
   cuda_add_executable(plume_input
           plume_input.cpp)
@@ -152,6 +137,7 @@ ELSE ($CACHE{HAS_CUDA_SUPPORT})
            turbulence_derivative_CPU.cpp)
 
    add_executable(plume_interpolation_CPU
+           test_functions.cpp
            plume_interpolation_CPU.cpp)
 
    add_executable(plume_input
@@ -175,7 +161,6 @@ ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 foreach (unittest ${UNITTESTS})
   
-  target_link_libraries(${unittest} unittestcore)
   target_link_libraries(${unittest} qesplumecore)
   target_link_libraries(${unittest} qeswindscore)
   IF ($CACHE{HAS_CUDA_SUPPORT})

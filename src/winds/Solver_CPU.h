@@ -28,14 +28,9 @@
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file DynamicParallelism.h */
+/** @file Solver_CPU.h */
 
 #pragma once
-
-/*
- * This is child class of the solver that runs the convergence
- * algorithm using Dynamic Parallelism on a single GPU.
- */
 
 #include <cstdio>
 #include <iostream>
@@ -44,57 +39,30 @@
 #include <math.h>
 #include <vector>
 #include <chrono>
-#include <cuda.h>
-#include <cuda_runtime.h>
-#include <cuda_gl_interop.h>
 
-#include "WINDSInputData.h"
 #include "Solver.h"
 
-
 /**
- * @class DynamicParallelism
- * @brief Child class of the Solver that runs the convergence algorithm using
- * DynamicParallelism on a single GPU.
- *
- * @sa Solver
+ * @class Solver_CPU
+ * @brief Child class of the Solver that runs the convergence
+ * algorithm in serial order on a CPU.
  */
-class DynamicParallelism : public Solver
+class Solver_CPU : public Solver
 {
-private:
-  /**
-   * :brief desc here:
-   *
-   * @param e :document this:
-   * @param func :document this:
-   * @param call :document this:
-   * @param line :document this:
-   */
-  template<typename T>
-  void _cudaCheck(T e, const char *func, const char *call, const int line);
-
 public:
-  DynamicParallelism(const WINDSInputData *WID, WINDSGeneralData *WGD);
+  Solver_CPU(qes::Domain domain_in, const float &tolerance)
+    : Solver(std::move(domain_in), tolerance)
+  {
+    std::cout << "-------------------------------------------------------------------" << std::endl;
+    std::cout << "[Solver]\t Initializing Serial Solver (CPU) ..." << std::endl;
+  }
 
 protected:
-  ///@{
-  /** Solver coefficient on device (GPU) */
-  float *d_e, *d_f, *d_g, *d_h, *d_m, *d_n;
-  ///@}
-
-  float *d_R; /**< Divergence of initial velocity field on device (GPU) */
-
-  ///@{
-  /** Lagrange multipliers on device (GPU) */
-  float *d_lambda, *d_lambda_old;
-  ///@}
-
   /**
-   * :brief desc here:
+   * :document this:
    *
-   * @param WID :document this:
    * @param WGD :document this:
-   * @param solveWind :document this:
+   * @param itermax :document this:
    */
-  virtual void solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind);
+  virtual void solve(WINDSGeneralData *, const int &) override;
 };

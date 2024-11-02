@@ -45,46 +45,44 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, const std::str
   m_WGD = WGD;
 
   // domain size information:
-  int nx = m_WGD->nx;
-  int ny = m_WGD->ny;
-  int nz = m_WGD->nz;
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
 
   // Location of cell centers in x-dir
   m_x.resize(nx - 1);
   for (auto i = 0; i < nx - 1; i++) {
     // x_cc[i] = (i + 0.5) * m_WGD->dx;
-    m_x[i] = m_WGD->x[i];
+    m_x[i] = m_WGD->domain.x[i];
   }
   // Location of cell centers in y-dir
   m_y.resize(ny - 1);
   for (auto j = 0; j < ny - 1; j++) {
     // y_cc[j] = (j + 0.5) * m_WGD->dy;
-    m_y[j] = m_WGD->y[j];
+    m_y[j] = m_WGD->domain.y[j];
   }
   // Location of cell centers in z-dir
   m_z.resize(nz - 1);
   m_dz_array.resize(nz - 1, 0.0);
   for (auto k = 0; k < nz - 1; k++) {
-    m_z[k] = m_WGD->z[k];
-    m_dz_array[k] = m_WGD->dz_array[k];
+    m_z[k] = m_WGD->domain.z[k];
+    m_dz_array[k] = m_WGD->domain.dz_array[k];
   }
 
   // Location of face centers in x-dir
   m_x_face.resize(nx);
-  m_x_face[0] = m_WGD->x[0] - m_WGD->dx;
+  m_x_face[0] = m_WGD->domain.x[0] - m_WGD->domain.dx();
   for (auto i = 0; i < nx - 1; i++) {
-    m_x_face[i + 1] = m_WGD->x[i];
+    m_x_face[i + 1] = m_WGD->domain.x[i];
   }
   // Location of cell centers in y-dir
   m_y_face.resize(ny);
-  m_y_face[0] = m_WGD->y[0] - m_WGD->dy;
+  m_y_face[0] = m_WGD->domain.y[0] - m_WGD->domain.dy();
   for (auto j = 0; j < ny - 1; j++) {
-    m_y_face[j + 1] = m_WGD->y[j] + m_WGD->dy;
+    m_y_face[j + 1] = m_WGD->domain.y[j] + m_WGD->domain.dy();
   }
   // Location of cell centers in z-dir
   m_z_face.resize(nz);
   for (auto k = 0; k < nz; ++k) {
-    m_z_face[k] = m_WGD->z_face[k];
+    m_z_face[k] = m_WGD->domain.z_face[k];
   }
 
   // set face-centered data dimensions

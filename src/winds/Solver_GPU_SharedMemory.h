@@ -28,7 +28,7 @@
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file CPUSolver.h */
+/** @file SharedMemory.h */
 
 #pragma once
 
@@ -39,34 +39,60 @@
 #include <math.h>
 #include <vector>
 #include <chrono>
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <cuda_gl_interop.h>
 
-#include "WINDSInputData.h"
 #include "Solver.h"
 
+
 /**
- * @class CPUSolver
+ * @class Solver_GPU_SharedMemory
  * @brief Child class of the Solver that runs the convergence
- * algorithm in serial order on a CPU.
+ * algorithm using shared Memory on a single GPU.
+ *
+ * @sa Solver
+ * @sa DynamicParallelism
+ * @sa WINDSInputData
  */
-class CPUSolver : public Solver
+class Solver_GPU_SharedMemory : public Solver
 {
+private:
+  /**
+   * :document this:
+   *
+   * @param e :document this:
+   * @param func :document this:
+   * @param call :document this:
+   * @param line :document this:
+   */
+  template<typename T>
+  void _cudaCheck(T e, const char *func, const char *call, const int line);
+
 public:
-  CPUSolver(const WINDSInputData *WID, WINDSGeneralData *WGD)
-    : Solver(WID, WGD)
+  Solver_GPU_SharedMemory(qes::Domain domain_in, const float &tolerance)
+    : Solver(std::move(domain_in), tolerance)
   {
-    std::cout << "[Solver]\t Initializing Serial Solver (CPU) ..." << std::endl;
+    std::cout << "-------------------------------------------------------------------" << std::endl;
+    std::cout << "[Solver]\t Initializing Shared Memory Solver (GPU) ..." << std::endl;
   }
 
 protected:
-  /** :document this:
-   * Start by writing a one sentence description here
+  ///@{
+  /** Solver coefficient on device (GPU) */
+  float *d_e, *d_f, *d_g, *d_h, *d_m, *d_n;
+  ///@}
+  float *d_R; /**< Divergence of initial velocity field on device (GPU) */
+  ///@{
+  /** Lagrange multiplier on device (GPU) */
+  float *d_lambda, *d_lambda_old;
+  ///@}
+
+  /**
+   * :document this:
    *
-   * Document the implementation details in the .cpp file, not here.
-   * (remove the placeholder comments and :document this: tag when done)
-   *
-   * @param WID :document this:
    * @param WGD :document this:
-   * @param solveWind :document this:
+   * @param itermax :document this:
    */
-  virtual void solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind);
+  virtual void solve(WINDSGeneralData *, const int &) override;
 };

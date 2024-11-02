@@ -86,8 +86,8 @@ void TURBWallBuilding::setWallsStressDeriv(WINDSGeneralData *WGD,
 
 void TURBWallBuilding::set_loglaw_stairstep(WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
-  int nx = WGD->nx;
-  int ny = WGD->ny;
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
 
   // ## HORIZONTAL WALL
   // set BC for horizontal wall below the cell
@@ -98,10 +98,10 @@ void TURBWallBuilding::set_loglaw_stairstep(WINDSGeneralData *WGD, TURBGeneralDa
 
     // Gxz = dudz
     TGD->Gxz[it->cellID] = 0.5 * (WGD->u[it->faceID] + WGD->u[it->faceID + 1])
-                           / (0.5 * WGD->dz_array[k] * log(0.5 * WGD->dz_array[k] / WGD->z0));
+                           / (0.5 * WGD->domain.dz_array[k] * log(0.5 * WGD->domain.dz_array[k] / WGD->z0));
     // Gyz = dvdz
     TGD->Gyz[it->cellID] = 0.5 * (WGD->v[it->faceID] + WGD->v[it->faceID + nx])
-                           / (0.5 * WGD->dz_array[k] * log(0.5 * WGD->dz_array[k] / WGD->z0));
+                           / (0.5 * WGD->domain.dz_array[k] * log(0.5 * WGD->domain.dz_array[k] / WGD->z0));
   }
   // set BC for horizontal wall above the cell
   for (std::vector<pairCellFaceID>::iterator it = wall_above_indices.begin();
@@ -111,10 +111,10 @@ void TURBWallBuilding::set_loglaw_stairstep(WINDSGeneralData *WGD, TURBGeneralDa
 
     // Gxz = dudz
     TGD->Gxz[it->cellID] = 0.5 * (WGD->u[it->faceID] + WGD->u[it->faceID + 1])
-                           / (0.5 * WGD->dz_array[k] * log(0.5 * WGD->dz_array[k] / WGD->z0));
+                           / (0.5 * WGD->domain.dz_array[k] * log(0.5 * WGD->domain.dz_array[k] / WGD->z0));
     // Gyz = dvdz
-    TGD->Gyz[it->cellID] = 0.5 * (WGD->v[it->faceID] + WGD->v[it->faceID + WGD->nx])
-                           / (0.5 * WGD->dz_array[k] * log(0.5 * WGD->dz_array[k] / WGD->z0));
+    TGD->Gyz[it->cellID] = 0.5 * (WGD->v[it->faceID] + WGD->v[it->faceID + nx])
+                           / (0.5 * WGD->domain.dz_array[k] * log(0.5 * WGD->domain.dz_array[k] / WGD->z0));
   }
 
   // ## VERTICAL WALL ALONG X (front/back)
@@ -124,10 +124,10 @@ void TURBWallBuilding::set_loglaw_stairstep(WINDSGeneralData *WGD, TURBGeneralDa
        ++it) {
     // Gyx = dvdx
     TGD->Gyx[it->cellID] = 0.5 * (WGD->v[it->faceID] + WGD->v[it->faceID + nx])
-                           / (0.5 * WGD->dx * log(0.5 * WGD->dx / WGD->z0));
+                           / (0.5 * dx * log(0.5 * dx / WGD->z0));
     // Gzx = dwdx
     TGD->Gzx[it->cellID] = 0.5 * (WGD->w[it->faceID] + WGD->w[it->faceID + nx * ny])
-                           / (0.5 * WGD->dx * log(0.5 * WGD->dx / WGD->z0));
+                           / (0.5 * dx * log(0.5 * dx / WGD->z0));
   }
   // set BC for vertical wall in front of the cell
   for (std::vector<pairCellFaceID>::iterator it = wall_front_indices.begin();
@@ -135,10 +135,10 @@ void TURBWallBuilding::set_loglaw_stairstep(WINDSGeneralData *WGD, TURBGeneralDa
        ++it) {
     // Gyx = dvdx
     TGD->Gyx[it->cellID] = 0.5 * (WGD->v[it->faceID] + WGD->v[it->faceID + nx])
-                           / (0.5 * WGD->dx * log(0.5 * WGD->dx / WGD->z0));
+                           / (0.5 * dx * log(0.5 * dx / WGD->z0));
     // Gzx = dwdx
     TGD->Gzx[it->cellID] = 0.5 * (WGD->w[it->faceID] + WGD->w[it->faceID + nx * ny])
-                           / (0.5 * WGD->dx * log(0.5 * WGD->dx / WGD->z0));
+                           / (0.5 * dx * log(0.5 * dx / WGD->z0));
   }
 
   // ## VERTICAL WALL ALONG Y (right/left)
@@ -148,10 +148,10 @@ void TURBWallBuilding::set_loglaw_stairstep(WINDSGeneralData *WGD, TURBGeneralDa
        ++it) {
     // Gxy = dudy
     TGD->Gxy[it->cellID] = 0.5 * (WGD->u[it->faceID] + WGD->u[it->faceID + 1])
-                           / (0.5 * WGD->dy * log(0.5 * WGD->dy / WGD->z0));
+                           / (0.5 * dy * log(0.5 * dy / WGD->z0));
     // Gzy = dwdy
     TGD->Gzy[it->cellID] = 0.5 * (WGD->w[it->faceID] + WGD->w[it->faceID + nx * ny])
-                           / (0.5 * WGD->dy * log(0.5 * WGD->dy / WGD->z0));
+                           / (0.5 * dy * log(0.5 * dy / WGD->z0));
   }
   // set BC for vertical wall left of the cell
   for (std::vector<pairCellFaceID>::iterator it = wall_below_indices.begin();
@@ -159,10 +159,10 @@ void TURBWallBuilding::set_loglaw_stairstep(WINDSGeneralData *WGD, TURBGeneralDa
        ++it) {
     // Gxy = dudy
     TGD->Gxy[it->cellID] = 0.5 * (WGD->u[it->faceID] + WGD->u[it->faceID + 1])
-                           / (0.5 * WGD->dy * log(0.5 * WGD->dy / WGD->z0));
+                           / (0.5 * dy * log(0.5 * dy / WGD->z0));
     // Gzy = dwdy
     TGD->Gzy[it->cellID] = 0.5 * (WGD->w[it->faceID] + WGD->w[it->faceID + nx * ny])
-                           / (0.5 * WGD->dy * log(0.5 * WGD->dy / WGD->z0));
+                           / (0.5 * dy * log(0.5 * dy / WGD->z0));
   }
 
   return;
