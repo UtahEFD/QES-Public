@@ -198,8 +198,8 @@ __global__ void finalVelocityGlobal(float *d_lambda, float *d_u, float *d_v, flo
   }
 }
 
-Solver_GPU_GlobalMemory::Solver_GPU_GlobalMemory(const WINDSInputData *WID, WINDSGeneralData *WGD)
-  : Solver(WID, WGD)
+Solver_GPU_GlobalMemory::Solver_GPU_GlobalMemory(qes::Domain domain_in, const float &tolerance)
+  : Solver(std::move(domain_in), tolerance)
 {
   std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "[Solver]\t Initializing Global Memory Solver (GPU) ..." << std::endl;
@@ -233,7 +233,7 @@ void Solver_GPU_GlobalMemory::solve(WINDSGeneralData *WGD, const int &itermax)
   long numcell_face = domain.numFaceCentered();
   long numcell_cent = domain.numCellCentered();
 
-  //int numblocks = (numcell_cent / BLOCKSIZE) + 1;
+  // int numblocks = (numcell_cent / BLOCKSIZE) + 1;
   R.resize(numcell_cent, 0.0);
 
   std::cout << "[Solver] Running Global Memory Solver (GPU) ..." << std::endl;
