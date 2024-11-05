@@ -149,11 +149,11 @@ if (ENABLE_DEV_MODE)
     # Sanitizer options
     # The following will turn on Debugging (-g flag) and the Address Sanitizer
     # which is turned on with the -fsanitize=address option to the compiler.
-    add_compile_options(-g -fsanitize=address,undefined)
+#    add_compile_options(-g -fsanitize=address,undefined)
 
     # When we turn on the sanitizer, you also need to instruct the linker that it
     # will be used which happens with the following link option command.
-    add_link_options(-g -fsanitize=address,undefined)
+#    add_link_options(-g -fsanitize=address,undefined)
     
   elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
     # using Intel C++
@@ -192,14 +192,10 @@ if(DEFINED ENV{BOOST_DIR})
   SET(BOOST_ROOT $ENV{BOOST_DIR})
 endif()
 
-# If you want to get more info on what the Find Boost macro is
-# doing...  
-# SET(Boost_DEBUG 1)
-
 # May be necessary to get Win32 version to work
 # SET(Boost_USE_STATIC_LIBS TRUE)
 
-FIND_PACKAGE(Boost REQUIRED filesystem date_time program_options system thread unit_test_framework chrono timer)
+FIND_PACKAGE(Boost REQUIRED program_options date_time property_tree)
 IF(${Boost_FOUND})
   INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
   MESSAGE(STATUS "Found Boost Libraries in ${Boost_LIBRARIES}, Version ${Boost_VERSION}")
