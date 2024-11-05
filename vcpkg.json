@@ -1,8 +1,12 @@
 {
-  "dependencies": [
-      "boost-program-options",
-      "netcdf-cxx4",
-      "gdal",
-      "nlohmann-json"
-  ]
+    "dependencies": [
+	"boost-program-options",
+	"boost-date-time",
+	"boost-filesystem",
+	"boost-property-tree",
+	"netcdf-c",
+	"netcdf-cxx4",
+	"gdal",
+	"nlohmann-json"
+    ]
 }

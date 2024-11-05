@@ -15,10 +15,10 @@ CMAKE_POLICY(SET CMP0074 NEW)
 # This creates a variable we could use for tacking on to various folders
 # or install locations based on the version info.  It pulls the Verson information
 # from CMake based on the Version number provided in the PROJECT command.
-PROJECT(QES VERSION 2.2.0)
-SET(QES_VERSION_INFO v${QES_VERSION_MAJOR}.${QES_VERSION_MINOR}.${QES_VERSION_PATCH})
+PROJECT(QES VERSION 2.2.0 LANGUAGES CXX)
 
 # The following will pass the version into the code as a preprocessor variable
+SET(QES_VERSION_INFO v${QES_VERSION_MAJOR}.${QES_VERSION_MINOR}.${QES_VERSION_PATCH})
 ADD_DEFINITIONS(-DQES_VERSION_INFO="${QES_VERSION_INFO}")
 MESSAGE(STATUS "Building QES ${QES_VERSION_INFO}")
 
@@ -58,7 +58,6 @@ endif()
 include(CheckCXXCompilerFlag)
 MESSAGE(STATUS "Compiling with ${CMAKE_CXX_COMPILER_ID}, Version: ${CMAKE_CXX_COMPILER_VERSION}")
 CHECK_CXX_COMPILER_FLAG("-std=c++17" COMPILER_SUPPORTS_CXX17)
-#CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
 
 if(COMPILER_SUPPORTS_CXX17)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
@@ -69,9 +68,7 @@ if(COMPILER_SUPPORTS_CXX17)
   set(CMAKE_CXX_STANDARD 17)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   set(CMAKE_CXX_EXTENSIONS OFF)
-  
-#elseif(COMPILER_SUPPORTS_CXX0X)
-#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+
 else()
   message(FATAL_ERROR "Compiler ${CMAKE_CXX_COMPILER} has no C++17 support.")
 endif()
