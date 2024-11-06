@@ -1,10 +1,28 @@
-//
-//  Fire.hpp
-//
-//  This class models fire spread rate using Balbi (2019)
-//
-//  Created by Matthew Moody, Jeremy Gibbs on 12/27/18.
-//
+/****************************************************************************
+ * Copyright (c) 2024 University of Utah
+ *
+ * Copyright (c) 2024 Matthew Moody
+ * Copyright (c) 2024 Jeremy Gibbs
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Brian Bailey
+ *
+ * This file is part of QES-Fire
+ *
+ * GPL-3.0 License
+ *
+ * QES-Fire is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Fire is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
 
 #ifndef FIRE_H
 #define FIRE_H

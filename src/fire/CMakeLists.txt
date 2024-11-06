@@ -4,17 +4,17 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 CUDA_ADD_LIBRARY( qesfirecore
   Fire.cpp
-  FIREOutput.cpp
   Fire.h
+  FIREOutput.cpp
   FIREOutput.h
   Fires.hpp
   FuelProperties.hpp
+  FuelRead.cpp
+  FuelRead.h
   ignition.h
   OldFuelProperties.hpp
-  FuelRead.h
-  FuelRead.cpp
+  Potential.cpp  
   )
-
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
     CUDA_ADD_LIBRARY( qesfirecore
@@ -25,7 +25,3 @@ ELSE ($CACHE{HAS_CUDA_SUPPORT})
             ${qesFireCoreSources}
             )
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
-
-
-
-
