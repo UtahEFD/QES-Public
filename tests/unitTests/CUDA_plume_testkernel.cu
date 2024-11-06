@@ -150,7 +150,6 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     // std::cout << threadsPerBlock << std::endl;
 
     curandGenerator_t gen;
-    float *d_RNG_vals, *d_RNG_newvals;
 
     // Create pseudo-random number generator
     // CURAND_CALL(
@@ -221,12 +220,26 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
     // Allocate n floats on device to hold random numbers
     // Allocate numParticle * 3 floats on host
+    float *d_RNG_vals, *d_RNG_newvals;
     cudaMalloc((void **)&d_RNG_vals, 3 * length * sizeof(float));
     cudaMalloc((void **)&d_RNG_newvals, 3 * new_particle * sizeof(float));
+
+    int *d_sorting_index;
+    cudaMalloc((void **)&d_sorting_index, length * sizeof(int));
 
     int *d_lower_count, *d_upper_count;
     cudaMalloc(&d_lower_count, sizeof(int));
     cudaMalloc(&d_upper_count, sizeof(int));
+
+    int h_active_count_1, h_empty_count_1;
+    int *d_active_count_1, *d_empty_count_1;
+    cudaMalloc(&d_active_count_1, sizeof(int));
+    cudaMalloc(&d_empty_count_1, sizeof(int));
+
+    int h_active_count_2, h_empty_count_2;
+    int *d_active_count_2, *d_empty_count_2;
+    cudaMalloc(&d_active_count_2, sizeof(int));
+    cudaMalloc(&d_empty_count_2, sizeof(int));
 
     gpuInitTimer.stop();
 
@@ -245,6 +258,14 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
       cudaMemset(d_lower_count, 0, sizeof(int));
       cudaMemset(d_upper_count, 0, sizeof(int));
+
+      cudaMemset(d_active_count_1, 0, sizeof(int));
+      cudaMemset(d_empty_count_1, 0, sizeof(int));
+
+      cudaMemset(d_active_count_2, 0, sizeof(int));
+      cudaMemset(d_empty_count_2, 0, sizeof(int));
+
+      cudaMemset(d_sorting_index, 0, sizeof(int));
 
       cudaMemset(d_new_particle.state, ACTIVE, new_particle * sizeof(int));
       std::vector<uint32_t> new_ID(new_particle);
@@ -273,13 +294,35 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
       partitonTimer.start();
 
-      partition_particle<<<numBlocks_buffer, blockSize>>>(d_particle[idx],
+      partition_particle_select<<<numBlocks_buffer, blockSize>>>(d_particle[alt_idx],
+                                                                 d_lower_count,
+                                                                 d_upper_count,
+                                                                 d_sorting_index,
+                                                                 length);
+      partition_particle_reset<<<numBlocks_buffer, blockSize>>>(d_particle[idx],
+                                                                length);
+      partition_particle_sorting<<<numBlocks_buffer, blockSize>>>(d_particle[idx],
+                                                                  d_particle[alt_idx],
+                                                                  d_sorting_index,
+                                                                  length);
+
+      /*partition_particle<<<numBlocks_buffer, blockSize>>>(d_particle[idx],
                                                           d_particle[alt_idx],
                                                           d_lower_count,
                                                           d_upper_count,
-                                                          length);
+                                                          length);*/
+
       cudaDeviceSynchronize();
+      cudaMemcpy(&h_lower_count, d_lower_count, sizeof(int), cudaMemcpyDeviceToHost);
+      cudaMemcpy(&h_upper_count, d_upper_count, sizeof(int), cudaMemcpyDeviceToHost);
       partitonTimer.stop();
+
+      check_buffer<<<numBlocks_buffer, blockSize>>>(d_particle[idx],
+                                                    d_active_count_2,
+                                                    d_empty_count_2,
+                                                    length);
+      cudaMemcpy(&h_active_count_2, d_active_count_2, sizeof(int), cudaMemcpyDeviceToHost);
+      cudaMemcpy(&h_empty_count_2, d_empty_count_2, sizeof(int), cudaMemcpyDeviceToHost);
 
       interpolate<<<numBlocks_new_particle, blockSize>>>(new_particle,
                                                          d_new_particle.pos,
@@ -287,6 +330,8 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
                                                          d_new_particle.velFluct_old,
                                                          d_qes_turb_data,
                                                          qes_grid);
+      cudaDeviceSynchronize();
+
       set_new_particle<<<numBlocks_new_particle, blockSize>>>(new_particle,
                                                               d_new_particle,
                                                               d_RNG_newvals);
@@ -298,6 +343,11 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
                                                              d_new_particle,
                                                              d_particle[idx]);
       cudaDeviceSynchronize();
+
+      check_buffer<<<numBlocks_buffer, blockSize>>>(d_particle[idx],
+                                                    d_active_count_1,
+                                                    d_empty_count_1,
+                                                    length);
 
       interpTimer.start();
       /*interpolate<<<numBlocks_all_particle, blockSize>>>(num_particle,
@@ -328,9 +378,21 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       // this is slower that calling devive function bc in the kernel
       // boundary_conditions<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle[idx]);
 
-      cudaMemcpy(&h_lower_count, d_lower_count, sizeof(int), cudaMemcpyDeviceToHost);
-      cudaMemcpy(&h_upper_count, d_upper_count, sizeof(int), cudaMemcpyDeviceToHost);
-      // std::cout << k << " " << h_lower_count << " " << h_upper_count << std::endl;
+      // cudaMemcpy(&h_lower_count, d_lower_count, sizeof(int), cudaMemcpyDeviceToHost);
+      // cudaMemcpy(&h_upper_count, d_upper_count, sizeof(int), cudaMemcpyDeviceToHost);
+      //  std::cout << k << " " << h_lower_count << " " << num_particle << std::endl;
+
+      cudaMemcpy(&h_active_count_1, d_active_count_1, sizeof(int), cudaMemcpyDeviceToHost);
+      cudaMemcpy(&h_empty_count_1, d_empty_count_1, sizeof(int), cudaMemcpyDeviceToHost);
+
+      /*std::cout << k + 1 << " "
+                << h_lower_count << " "
+                << h_active_count_2 << " "
+                << h_active_count_1 << " "
+                << h_lower_count + new_particle - h_active_count_1 << " "
+                << h_lower_count + h_upper_count << " "
+                << h_active_count_1 + h_empty_count_1 << " "
+                << h_active_count_2 + h_empty_count_2 << std::endl;*/
 
       cudaDeviceSynchronize();
       advectTimer.stop();
@@ -352,10 +414,10 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     timeLoopTimer.stop();
 
     int numBlocks_buffer = (length + blockSize - 1) / blockSize;
+
     cudaMemset(d_lower_count, 0, sizeof(int));
     cudaMemset(d_upper_count, 0, sizeof(int));
     check_buffer<<<numBlocks_buffer, blockSize>>>(d_particle[idx], d_lower_count, d_upper_count, length);
-
     cudaMemcpy(&h_lower_count, d_lower_count, sizeof(int), cudaMemcpyDeviceToHost);
     cudaMemcpy(&h_upper_count, d_upper_count, sizeof(int), cudaMemcpyDeviceToHost);
 
@@ -397,6 +459,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     free_device_particle_list(d_particle[0]);
     free_device_particle_list(d_particle[1]);
     free_device_particle_list(d_new_particle);
+    cudaFree(d_sorting_index);
     cudaFree(d_pBox);
     cudaFree(d_RNG_vals);
     cudaFree(d_RNG_newvals);
@@ -409,11 +472,11 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     for (auto &p : particle_list) {
       if (p.state == ACTIVE) { count++; }
     }
-    std::cout << "--------------------------------------" << std::endl;
+    std::cout << "-------------------------------------------------------------------" << std::endl;
     std::cout << "buffer status: " << h_lower_count << " " << h_upper_count << " " << length << std::endl;
-    print_percentage((float)h_lower_count / (float)length);
-    std::cout << std::endl;
-    std::cout << "--------------------------------------" << std::endl;
+    // print_percentage((float)h_lower_count / (float)length);
+    // std::cout << std::endl;
+    // std::cout << "--------------------------------------" << std::endl;
     std::cout << "number of active particle: " << count << std::endl;
 
     // print_particle(particle_list[0]);
@@ -435,6 +498,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     // normalization of particle count #particle -> time-averaged # particle/m3
     float CC = dt / tAvg / volume;
 
+    std::cout << "total time for current on going average: " << tAvg << std::endl;
     std::cout << "normalization of particle count: " << CC << std::endl;
     std::cout << "normalization for source: " << CNorm << std::endl;
 
@@ -556,29 +620,32 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     delete WGD, TGD;
 
     // check the results
-    std::cout << "--------------------------------------------------------------" << std::endl;
+    std::cout << "-------------------------------------------------------------------" << std::endl;
     std::cout << "TEST RESULTS" << std::endl;
-    std::cout << "--------------------------------------------------------------" << std::endl;
+    std::cout << "-------------------------------------------------------------------" << std::endl;
     std::cout << "x / H \t maxRelErr \t relRMSE" << std::endl;
     for (auto k = 0u; k < xoH.size(); ++k) {
       printf("%.3f \t %.6f \t %.6f\n", xoH[k], maxRelErr[k], relRMSE[k]);
       // std::cout << xoH[k] << " " << maxRelErr[k] << "\t " << relRMSE[k] << std::endl;
     }
-    std::cout << std::endl;
+    std::cout << "-------------------------------------------------------------------" << std::endl;
     std::cout << "QES-Plume r2 coeff: r2 = " << R2 << std::endl;
-    std::cout << "--------------------------------------------------------------" << std::endl;
+    std::cout << "-------------------------------------------------------------------" << std::endl;
+    std::cout << std::endl;
 
-    std::cout << "--------------------------------------------------------------" << std::endl;
+    std::cout << "-------------------------------------------------------------------" << std::endl;
+    std::cout << "TEST PROFILING" << std::endl;
+    std::cout << "-------------------------------------------------------------------" << std::endl;
     initTimer.show();
     gpuTimer.show();
     gpuInitTimer.show();
-    std::cout << "--------------------------------------------------------------" << std::endl;
+    std::cout << "-------------------------------------------------------------------" << std::endl;
     timeLoopTimer.show();
     partitonTimer.show();
     interpTimer.show();
     advectTimer.show();
     concenTimer.show();
-    std::cout << "--------------------------------------------------------------" << std::endl;
+    std::cout << "-------------------------------------------------------------------" << std::endl;
 
     // std::cout << "interpolation elapsed time: " << interpElapsed.count() << " s\n";
     // std::cout << "advection elapsed time: " << advectElapsed.count() << " s\n";

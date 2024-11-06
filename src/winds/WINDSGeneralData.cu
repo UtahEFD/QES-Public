@@ -37,6 +37,7 @@
 
 void WINDSGeneralData::allocateDevice()
 {
+  long numcell_face = domain.numFaceCentered();
   // velocity field components
   cudaMalloc((void **)&d_data.u, numcell_face * sizeof(float));
   cudaMalloc((void **)&d_data.v, numcell_face * sizeof(float));
@@ -50,6 +51,7 @@ void WINDSGeneralData::freeDevice()
 }
 void WINDSGeneralData::copyDataToDevice()
 {
+  long numcell_face = domain.numFaceCentered();
   // velocity field components
   cudaMemcpy(d_data.u, u.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_data.v, v.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
@@ -57,6 +59,7 @@ void WINDSGeneralData::copyDataToDevice()
 }
 void WINDSGeneralData::copyDataFromDevice()
 {
+  long numcell_face = domain.numFaceCentered();
   // velocity field components
   cudaMemcpy(u.data(), d_data.u, numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
   cudaMemcpy(v.data(), d_data.v, numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
