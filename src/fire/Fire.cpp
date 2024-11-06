@@ -525,7 +525,19 @@ void Fire ::run(Solver *solver, WINDSGeneralData *WGD)
 	* Reset forcing function for level set
 	*/
   std::fill(Force.begin(), Force.end(), 0);
-
+  /**
+  float terrain_min=WGD->terrain[0];
+  for (int j = 1; j < ny-2; j++) {
+    for (int i = 1; i< nx-2; i++) {
+      int idx = i + j*(nx-1);
+      float ter_min = WGD->terrain[idx];
+      if (ter_min < terrain_min) {
+	terrain_min = ter_min;
+      }
+    }
+  }
+  std::cout<<"Minimum terrain = "<<terrain_min<<std::endl;
+  */
   /**
 	* Calculate Forcing Function (Balbi model at mid-flame height or first grid cell if no fire)
 	*/
@@ -597,7 +609,7 @@ void Fire ::run(Solver *solver, WINDSGeneralData *WGD)
     // convert flat index to i, j at cell center
     int ii = id % (nx - 1);
     int jj = (id / (nx - 1)) % (ny - 1);
-    int idx = ii + jj * nx;
+    int idx = ii + jj * (nx-1);
     float T = WGD->terrain[idx];
     float D = fuel->fuelDepth * 0.3048;
     int TID = std::round(T / dz);
@@ -615,7 +627,7 @@ void Fire ::run(Solver *solver, WINDSGeneralData *WGD)
     }
 
     // get horizontal wind at flame height
-    int cell_face = ii + jj * nx + (kh+1) * ny * nx;
+    int cell_face = ii + jj * nx + (kh) * ny * nx;
     float u = 0.5 * (WGD->u[cell_face] + WGD->u[cell_face + 1]);
     float v = 0.5 * (WGD->v[cell_face] + WGD->v[cell_face + nx]);
     // run Balbi model
@@ -627,6 +639,7 @@ void Fire ::run(Solver *solver, WINDSGeneralData *WGD)
     for (int k = TID; k <= maxkh; k++) {
       int icell_cent = ii + jj * (nx - 1) + (k) * (nx - 1) * (ny - 1);
       WGD->icellflag[icell_cent] = 12;
+      // std::cout<<"TID = "<<TID<<", T = "<<T<<", i = "<<ii<<", j = "<<jj<<std::endl;
     }
   }
   // compute time step

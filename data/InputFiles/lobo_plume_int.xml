@@ -1,7 +1,7 @@
 <QESPlumeParameters>
   <plumeParameters>
     <CourantNumber> 0.25 </CourantNumber>
-    <simDur> 1000.0 </simDur><!-- this is the amount of time to run the simulation -->
+    <simDur> 14400.0 </simDur><!-- this is the amount of time to run the simulation -->
     <timeStep> 1.0 </timeStep><!-- this is the overall integration timestep -->
     <invarianceTol> 1e-5 </invarianceTol>     <!-- tolerance in makeRealizeable on the stress tensor -->
     <interpolationMethod>triLinear</interpolationMethod> 
@@ -11,15 +11,15 @@
   <collectionParameters><!-- collecting output parameters -->
     <timeAvgStart> 1.0 </timeAvgStart>   <!-- time to start concentration averaging -->
     <timeAvgFreq> 10.0 </timeAvgFreq>   <!-- time averaging frequency and output frequency -->
-    <boxBoundsX1> 1 </boxBoundsX1>
-    <boxBoundsX2> 109 </boxBoundsX2>
-    <boxBoundsY1> 1 </boxBoundsY1>
-    <boxBoundsY2> 109 </boxBoundsY2>
+    <boxBoundsX1> 30 </boxBoundsX1>
+    <boxBoundsX2> 2970 </boxBoundsX2>
+    <boxBoundsY1> 30 </boxBoundsY1>
+    <boxBoundsY2> 2310 </boxBoundsY2>
     <boxBoundsZ1> 0.0 </boxBoundsZ1>
-    <boxBoundsZ2> 35 </boxBoundsZ2>
-    <nBoxesX> 108 </nBoxesX>
-    <nBoxesY> 108 </nBoxesY>
-    <nBoxesZ> 70 </nBoxesZ>
+    <boxBoundsZ2> 500 </boxBoundsZ2>
+    <nBoxesX> 100 </nBoxesX>
+    <nBoxesY> 78 </nBoxesY>
+    <nBoxesZ> 120 </nBoxesZ>
   </collectionParameters>
 <sourceParameters>
   <source>
@@ -27,9 +27,9 @@
 	  <parPerTimestep> 1 </parPerTimestep>
     </releaseType_continuous>
     <sourceGeometry_Point>
-      <posX> 45 </posX>
-      <posY> 15 </posY>
-      <posZ> 1 </posZ>
+      <posX> 1200 </posX>
+      <posY> 390 </posY>
+      <posZ> 270 </posZ>
     </sourceGeometry_Point>
   </source>
 </sourceParameters>

@@ -1,9 +1,10 @@
 <QESWindsParameters>
-<simulationParameters>       
-  	<halo_x> 2.0 </halo_x >						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
-  	<halo_y> 2.0 </halo_y >						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
-    <domain> 110 110 70 </domain> <!-- nx,ny,nz-->
-	<cellSize> 1 1 0.5 </cellSize> <!-- dx, dy,dz [Meters]-->	
+  <simulationParameters>
+    <DEM>../GISFiles/NCAElev_edit.tif</DEM>
+  	<halo_x> 0.0 </halo_x >						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
+  	<halo_y> 0.0 </halo_y >						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
+    <domain> 72 94 100 </domain> <!-- nx,ny,nz-->
+	<cellSize> 30 30 5 </cellSize> <!-- dx, dy,dz [Meters]-->	
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 1 </totalTimeIncrements>
 	<maxIterations> 500 </maxIterations>
@@ -22,14 +23,14 @@
        		<boundaryLayerFlag> 1 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
        		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
        		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
-       		<height> 5.0 </height> 				<!-- Height of the sensor -->
-       		<speed> 3.0 </speed> 					<!-- Measured speed at the sensor height -->
+       		<height> 20.0 </height> 				<!-- Height of the sensor -->
+       		<speed> 10.0 </speed> 					<!-- Measured speed at the sensor height -->
        		<direction> 180 </direction> 				<!-- Wind direction of sensor -->
     	    </timeSeries>
 	</sensor>                      					<!-- End of sensor section -->
 </metParams>
 <turbParams>
-  <method>0</method>   <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
+  <method>3</method>   <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
   <samples>2000</samples>
 </turbParams>
 <buildingsParams>
@@ -39,39 +40,27 @@
     	<streetCanyonFlag> 0 </streetCanyonFlag> 			<!-- Street canyon flag (0-none, 1-Roeckle w/ Fackrel (default)) -->
     	<streetIntersectionFlag> 0 </streetIntersectionFlag> 		<!--Street intersection flag (0-off, 1-on) -->
     	<wakeFlag> 1 </wakeFlag> 					<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle (default), 3-Area Scaled) -->
+    	<sidewallFlag> 1 </sidewallFlag> 				<!-- Sidewall flag (0-off, 1-on (default)) -->
+	<numBuildings> 0 </numBuildings>
 	<highRiseFlag> 0 </highRiseFlag>
-	<sidewallFlag> 1 </sidewallFlag> 				<!-- Sidewall flag (0-off, 1-on (default)) -->
-	<numBuildings> 1 </numBuildings>
-	<numPolygonNodes> 0 </numPolygonNodes>
 
-	<rectangularBuilding>
-		<groupID> 1 </groupID>
-      		<buildingType> 1 </buildingType>
-      		<height> 10.0 </height>
-      		<baseHeight> 0 </baseHeight>
-      		<xStart> 45.0 </xStart>
-      		<yStart> 35.0 </yStart>
-      		<length> 20.0 </length>
-      		<width> 40.0 </width>
-      		<buildingRotation> 0.0 </buildingRotation>
-    	</rectangularBuilding>
 </buildingsParams>
 
 <fires>
-	<fireDur> 3600 </fireDur>
+	<fireDur> 3000 </fireDur>
 	<fuelType> 203 </fuelType>
-	<!-- fuelMap>../data/FireFiles/test.tif</fuelMap -->
-	<fmc> 0.02 </fmc>
+	<fuelMap>../FireFiles/NCAFuel_edit.tif</fuelMap>
+	<fmc> 0.12 </fmc>
 
-    <courant> 0.9 </courant>
+    <courant> 0.8 </courant>
     <fieldFlag> 0 </fieldFlag> <!-- flag for if multiple timesteps for fire -->
     <ignition>
     	<height> 2 </height>
     	<baseHeight> 0 </baseHeight> <!--meters-->
-    	<xStart> 45.0 </xStart> <!--meters-->
-    	<yStart> 15.0 </yStart> <!--meters-->
-    	<length> 10.0 </length> <!--meters-->
-    	<width>  1.0 </width> <!--meters-->
+    	<xStart> 90.0 </xStart> <!--meters-->
+    	<yStart> 90.0 </yStart> <!--meters-->
+    	<length> 120.0 </length> <!--meters-->
+    	<width>  120.0 </width> <!--meters-->
     </ignition>
 
 </fires>
