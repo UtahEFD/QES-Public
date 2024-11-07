@@ -50,8 +50,8 @@
     	    </timeSeries>
 	</sensor>                      					<!-- End of sensor section -->
 </metParams>
-<!--vegetationParams>
-  <num_canopies>1</num_canopies>
+<vegetationParams>
+  <num_canopies>2</num_canopies>
   <Homogeneous>
     <attenuationCoefficient>0.81</attenuationCoefficient>
     <height>5.1</height>
@@ -65,8 +65,16 @@
     <xVertex>175</xVertex>
     <yVertex>25</yVertex>
   </Homogeneous> 
-
-</vegetationParams -->
+  <IsolatedTree>
+    <attenuationCoefficient>2.68</attenuationCoefficient>
+    <height>20.0</height>
+    <baseHeight>0.0</baseHeight>
+    <zMaxLAI>0.5</zMaxLAI>
+    <xCenter>40.0</xCenter>
+    <yCenter>80.0</yCenter>
+    <width>20.0</width>
+  </IsolatedTree>
+</vegetationParams>
 <!--localMixingParam -->
   <!--method>3</method --> <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
   <!--samples>2000</samples --> <!-- Samples per air cell for ray-traced mixing length calculations -->

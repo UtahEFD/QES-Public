@@ -42,7 +42,7 @@ Plume::Plume(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   caseBaseName = "";// arguments->caseBaseName;
   debug = false;// arguments->debug;
 
-  verbose = false;// arguments->verbose;
+  verbose = true;// arguments->verbose;
 
   // make local copies of the QES-Winds nVals for each dimension
   nx = WGD->nx;
@@ -500,7 +500,7 @@ int Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBGe
   for (auto source : allSources) {
     numNewParticles += source->emitParticles((float)sim_dt, currentTime, nextSetOfParticles);
   }
-
+  numNewParticles = (int)nextSetOfParticles.size();
   setParticleVals(WGD, TGD, nextSetOfParticles);
 
   // append all the new particles on to the big particle
@@ -612,14 +612,14 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, std::li
     par_ptr->isActive = true;
 
     int cellIdNew = interp->getCellId(par_ptr->xPos, par_ptr->yPos, par_ptr->zPos);
-    if ((WGD->icellflag[cellIdNew] == 0) && (WGD->icellflag[cellIdNew] == 2)) {
-      // std::cerr << "WARNING invalid initial position" << std::endl;
+    if ((WGD->icellflag[cellIdNew] == 0) || (WGD->icellflag[cellIdNew] == 2)) {
+       std::cerr << "WARNING invalid initial position" << std::endl;
       par_ptr->isActive = false;
     }
 
     double det = txx * (tyy * tzz - tyz * tyz) - txy * (txy * tzz - tyz * txz) + txz * (txy * tyz - tyy * txz);
     if (std::abs(det) < 1e-10) {
-      // std::cerr << "WARNING invalid position stress" << std::endl;
+       std::cerr << "WARNING invalid position stress" << std::endl;
       par_ptr->isActive = false;
     }
   }

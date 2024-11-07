@@ -76,7 +76,10 @@
 
 #include "fire/Fire.h"
 #include "fire/FIREOutput.h"
+#include "fire/SourceFire.h"
 #include <chrono>
+#include "fire/Smoke.h"
+
 namespace pt = boost::property_tree;
 
 using namespace boost::gregorian;
@@ -137,33 +140,7 @@ int main(int argc, char *argv[])
       QESout::error("No dem file specified as input");
     }
   }
-  // Generate the general TURB data from WINDS data
-  // based on if the turbulence output file is defined
-  TURBGeneralData *TGD = nullptr;
-  if (arguments.compTurb) {
-    TGD = new TURBGeneralData(WID, WGD);
-  }
-  if (arguments.compTurb && arguments.turbOutput) {
-    outputVec.push_back(new TURBOutput(TGD, arguments.netCDFFileTurb));
-  }
-  // parse Plume xml settings
-  PlumeInputData *PID = nullptr;
-  Plume *plume = nullptr;
-  // create output instance
-  std::vector<QESNetCDFOutput *> PoutputVec;
-  if(arguments.compPlume){
-    PID = new PlumeInputData(arguments.qesPlumeParamFile);
-    if (!PID)
-      QESout::error("QES-Plume input file: " + arguments.qesPlumeParamFile + " not able to be read successfully.");
-    // Create instance of Plume model class
-    plume = new Plume(PID, WGD, TGD);
-    
-    // always supposed to output lagrToEulOutput data
-    PoutputVec.push_back(new PlumeOutput(PID, plume, arguments.outputPlumeFile));
-    if (arguments.doParticleDataOutput == true) {
-      PoutputVec.push_back(new PlumeOutputParticleData(PID, plume, arguments.outputParticleDataFile));
-    }
-  }
+
   
 
 
@@ -225,10 +202,42 @@ int main(int argc, char *argv[])
   QEStime simTimeStart = WGD->timestamp[0];
   QEStime simTimeCurr = simTimeStart;
 
-
   std::vector<float> Fu0;//
   std::vector<float> Fv0;
   std::vector<float> Fw0;
+
+
+  // Generate the general TURB data from WINDS data
+  // based on if the turbulence output file is defined
+  TURBGeneralData *TGD = nullptr;
+  if (arguments.compTurb) {
+    TGD = new TURBGeneralData(WID, WGD);
+  }
+  if (arguments.compTurb && arguments.turbOutput) {
+    outputVec.push_back(new TURBOutput(TGD, arguments.netCDFFileTurb));
+  }
+  // parse Plume xml settings
+  PlumeInputData *PID = nullptr;
+  Plume *plume = nullptr;
+  Smoke *smoke = nullptr;
+  // create output instance
+  std::vector<QESNetCDFOutput *> PoutputVec;
+  if(arguments.compPlume){
+    PID = new PlumeInputData(arguments.qesPlumeParamFile);
+    if (!PID)
+      QESout::error("QES-Plume input file: " + arguments.qesPlumeParamFile + " not able to be read successfully.");
+    // Create instance of Plume model class
+    plume = new Plume(PID, WGD, TGD);
+    smoke = new Smoke();
+    
+    // always supposed to output lagrToEulOutput data
+    PoutputVec.push_back(new PlumeOutput(PID, plume, arguments.outputPlumeFile));
+    if (arguments.doParticleDataOutput == true) {
+      PoutputVec.push_back(new PlumeOutputParticleData(PID, plume, arguments.outputParticleDataFile));
+    }
+  }
+
+
 
   /**
 	 * Loop  for sensor time data
@@ -342,16 +351,35 @@ int main(int argc, char *argv[])
 	* Advance fire time from variable fire timestep
 	**/
       simTimeCurr += fire->dt;
-      //simTimeCurr += 10;
+      
       std::cout << "time = " << simTimeCurr << endl;
 
       if (plume != nullptr){
 	std::cout << "------Running Plume------" << std::endl;
-	
-	//std::vector<Source *> &newSources;
-	//plume->addSources(newSources);
+        // Loop through domain to find new smoke sources
+	for (int j=1;j<WGD->ny-2;j++){
+	  for (int i=1;i<WGD->nx-2;i++){
+	    int idx = i+j*(WGD->nx-1);
+	    // If smoke flag set in fire program, get x, y, z location and set source
+	    if (fire->smoke_flag[idx] == 1){
+	      float x_pos = i*WGD->dx;
+	      float y_pos = j*WGD->dy;
+	      float z_pos = WGD->terrain[idx]+1;
+	      float ppt = 20;
+	      std::cout<<"x = "<<x_pos<<", y = "<<y_pos<<", z = "<<z_pos<<std::endl;
+	      SourceFire *source = new SourceFire(x_pos, y_pos, z_pos, ppt);
+	      source->setSource(); 
+	      std::vector<Source *> sourceList;
+	      sourceList.push_back(dynamic_cast<Source*>(source));
+	      // Add source to plume
+	      plume->addSources(sourceList);
+	      // Clear smoke flag in fire program so no duplicate source set next time step
+	      fire->smoke_flag[idx] = 0;
+	    }
+	  }	  
+	}
+	std::cout<<"Plume run"<<std::endl;
 	QEStime pendtime;///< End time for fire time loop
-	//pendtime = WGD->timestamp[index] + PID->plumeParams->simDur;
 	pendtime = simTimeCurr; //run until end of fire timestep
 	plume->run(pendtime, WGD, TGD, PoutputVec);
 	std::cout << "------Plume Finished------" << std::endl;
