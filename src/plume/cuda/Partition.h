@@ -28,8 +28,8 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Particle.hpp
- * @brief This class represents information stored for each particle
+/** @file
+ * @brief
  */
 
 #include <cmath>
@@ -41,11 +41,20 @@
 class Partition
 {
 public:
-  Partition(const int &s) : length(s) {}
-  ~Partition() = default;
+  Partition(const int &s) : m_length(s)
+  {
+    allocate_device();
+  }
+  ~Partition()
+  {
+    // std::cout << "call partition KABOOM" << std::endl;
+    free_device();
+  }
 
-  void allocate_device();
-  void free_device();
+  int active() { return h_lower_count; }
+  int empty() { return h_upper_count; }
+  int length() { return m_length; }
+
   void allocate_device_particle_list(particle_array &d_particle_list, const int &length);
   void free_device_particle_list(particle_array &d_particle_list);
 
@@ -54,13 +63,17 @@ public:
   void insert(int new_particle, particle_array d_new_particle, particle_array d_particle);
   void check(particle_array d_particle, int &active, int &empty);
 
+private:
+  Partition() : m_length(0) {}
+
+  void allocate_device();
+  void free_device();
+
+  int m_length;
+  int m_gpuID = 0;
+
   int h_lower_count = 0, h_upper_count = 0;
   int *d_lower_count, *d_upper_count;
 
   int *d_sorting_index;
-
-private:
-  Partition() : length(0) {}
-
-  int length;
 };

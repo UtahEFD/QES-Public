@@ -8,6 +8,7 @@
 #include "CUDA_concentration.cuh"
 
 #include "plume/cuda/Partition.h"
+#include "plume/cuda/RandomGenerator.h"
 
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
 #define PBWIDTH 60
@@ -158,8 +159,10 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     curandCreateGenerator(&gen, CURAND_RNG_PSEUDO_DEFAULT);
 
     // Set the seed --- not sure how we'll do this yet in general
-    // CURAND_CALL(
+    // CURAND_CALL()
     curandSetPseudoRandomGeneratorSeed(gen, 1234ULL);
+
+    auto random = new RandomGenerator();
 
     IDGenerator *id_gen;
     id_gen = IDGenerator::getInstance();
@@ -206,7 +209,6 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     int h_lower_count = 0, h_upper_count;
 
     auto *partition = new Partition(length);
-    partition->allocate_device();
 
     // Allocate particle array on the device ONLY
     particle_array d_particle[2];
@@ -228,6 +230,9 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     float *d_RNG_vals, *d_RNG_newvals;
     cudaMalloc((void **)&d_RNG_vals, 3 * length * sizeof(float));
     cudaMalloc((void **)&d_RNG_newvals, 3 * new_particle * sizeof(float));
+
+    random->create("advect", 3 * length);
+    random->create("new_particle", 3 * new_particle);
 
     /*int *d_sorting_index;
       cudaMalloc((void **)&d_sorting_index, length * sizeof(int));*/
@@ -253,6 +258,8 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     float ongoingAveragingTime = 0.0;
     float timeStep = 1.0;
     float volume = param.dx * param.dy * param.dz;
+
+    int idx = 0;
 
     timeLoopTimer.start();
     // call kernel
@@ -281,7 +288,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
 
       // int num_particle = length;
-      int num_particle = partition->h_lower_count + new_particle;
+      int num_particle = partition->active() + new_particle;
       // std::cout << num_particle << std::endl;
 
       int numBlocks_buffer = (length + blockSize - 1) / blockSize;
@@ -295,9 +302,12 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       curandGenerateNormal(gen, d_RNG_vals, 3 * length, 0.0, 1.0);
       curandGenerateNormal(gen, d_RNG_newvals, 3 * new_particle, 0.0, 1.0);
 
+      random->generate("advect", 0.0, 1.0);
+      random->generate("new_particle", 0.0, 1.0);
+
       partitonTimer.start();
 
-      int idx = partition->run(k, d_particle);
+      idx = partition->run(k, d_particle);
 
       /*partition_particle_select<<<numBlocks_buffer, blockSize>>>(d_particle[alt_idx],
                                                                  d_lower_count,
@@ -337,9 +347,14 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
                                                          d_qes_turb_data,
                                                          qes_grid);
       // cudaDeviceSynchronize();
+      /*set_new_particle<<<numBlocks_new_particle, blockSize>>>(new_particle,
+                                                              d_new_particle,
+                                                              d_RNG_newvals);*/
+
       set_new_particle<<<numBlocks_new_particle, blockSize>>>(new_particle,
                                                               d_new_particle,
-                                                              d_RNG_newvals);
+                                                              random->get("new_particle"));
+
       // cudaDeviceSynchronize();
       partition->insert(new_particle, d_new_particle, d_particle[idx]);
 
@@ -377,10 +392,16 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
 
       advectTimer.start();
-      advect_particle<<<numBlocks_all_particle, blockSize>>>(d_particle[idx],
+      /*advect_particle<<<numBlocks_all_particle, blockSize>>>(d_particle[idx],
                                                              d_RNG_vals,
                                                              bc_param,
+                                                             num_particle);*/
+
+      advect_particle<<<numBlocks_all_particle, blockSize>>>(d_particle[idx],
+                                                             random->get("advect"),
+                                                             bc_param,
                                                              num_particle);
+
 
       // this is slower that calling devive function bc in the kernel
       // boundary_conditions<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle[idx]);
@@ -412,7 +433,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
         concenTimer.stop();
       }
 
-      print_percentage((float)partition->h_lower_count / (float)length);
+      print_percentage((float)partition->active() / (float)length);
     }
     std::cout << std::endl;
     timeLoopTimer.stop();
@@ -424,6 +445,9 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     // check_buffer<<<numBlocks_buffer, blockSize>>>(d_particle[idx], d_lower_count, d_upper_count, length);
     // cudaMemcpy(&h_lower_count, d_lower_count, sizeof(int), cudaMemcpyDeviceToHost);
     // cudaMemcpy(&h_upper_count, d_upper_count, sizeof(int), cudaMemcpyDeviceToHost);
+
+    int active_count = 0, empty_count = 0;
+    partition->check(d_particle[idx], active_count, empty_count);
 
     // cudamemcpy back to host
     std::vector<int> particle_state(length);
@@ -464,12 +488,14 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     partition->free_device_particle_list(d_particle[1]);
     partition->free_device_particle_list(d_new_particle);
     // cudaFree(d_sorting_index);
-    partition->free_device();
     cudaFree(d_pBox);
     cudaFree(d_RNG_vals);
     cudaFree(d_RNG_newvals);
 
     WGD->freeDevice();
+
+    delete partition;
+    delete random;
 
     gpuTimer.stop();
 
@@ -478,7 +504,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       if (p.state == ACTIVE) { count++; }
     }
     std::cout << "-------------------------------------------------------------------" << std::endl;
-    std::cout << "buffer status: " << partition->h_lower_count << " " << partition->h_upper_count << " " << length << std::endl;
+    std::cout << "buffer status: " << active_count << " " << empty_count << " " << length << std::endl;
     // print_percentage((float)h_lower_count / (float)length);
     // std::cout << std::endl;
     // std::cout << "--------------------------------------" << std::endl;

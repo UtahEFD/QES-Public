@@ -1,3 +1,37 @@
+/****************************************************************************
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
+ *
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
+ *
+ * This file is part of QES-Plume
+ *
+ * GPL-3.0 License
+ *
+ * QES-Plume is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Plume is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
+/** @file
+ * @brief
+ */
+
 #include "Partition.h"
 
 __device__ void copy_particle(particle_array d_particle_list_left,
@@ -146,13 +180,20 @@ __global__ void insert_particle(int new_particle,
 
 void Partition::allocate_device()
 {
-  cudaMalloc(&d_lower_count, sizeof(int));
-  cudaMalloc(&d_upper_count, sizeof(int));
-  cudaMalloc((void **)&d_sorting_index, length * sizeof(int));
+  cudaError_t errorCheck = cudaGetDevice(&m_gpuID);
+  if (errorCheck == cudaSuccess) {
+    // std::cout << "allocate partition working device variables" << std::endl;
+    cudaMalloc(&d_lower_count, sizeof(int));
+    cudaMalloc(&d_upper_count, sizeof(int));
+    cudaMalloc((void **)&d_sorting_index, m_length * sizeof(int));
+  } else {
+    std::cerr << "CUDA ERROR!" << std::endl;
+    exit(1);
+  }
 }
-
 void Partition::free_device()
 {
+  // std::cout << "free partition working device variables" << std::endl;
   cudaFree(d_lower_count);
   cudaFree(d_upper_count);
   cudaFree(d_sorting_index);
@@ -204,13 +245,13 @@ void Partition::free_device_particle_list(particle_array &d_particle_list)
 
 int Partition::run(int k, particle_array d_particle[])
 {
-  if (d_particle[0].length != length || d_particle[1].length != length) {
+  if (d_particle[0].length != m_length || d_particle[1].length != m_length) {
     std::cerr << "ERROR PARTICLE LIST WRONG SIZE" << std::endl;
     exit(1);
   }
 
   int blockSize = 256;
-  int numBlocks_buffer = (length + blockSize - 1) / blockSize;
+  int numBlocks = (m_length + blockSize - 1) / blockSize;
 
   // these indeces are used to leap-frog the lists of the particles.
   int idx = k % 2;
@@ -219,19 +260,19 @@ int Partition::run(int k, particle_array d_particle[])
   cudaMemset(d_lower_count, 0, sizeof(int));
   cudaMemset(d_upper_count, 0, sizeof(int));
 
-  cudaMemset(d_sorting_index, -1, length * sizeof(int));
+  cudaMemset(d_sorting_index, -1, m_length * sizeof(int));
 
-  partition_particle_select<<<numBlocks_buffer, blockSize>>>(d_particle[alt_idx],
-                                                             d_lower_count,
-                                                             d_upper_count,
-                                                             d_sorting_index,
-                                                             length);
-  partition_particle_reset<<<numBlocks_buffer, blockSize>>>(d_particle[idx],
-                                                            length);
-  partition_particle_sorting<<<numBlocks_buffer, blockSize>>>(d_particle[idx],
-                                                              d_particle[alt_idx],
-                                                              d_sorting_index,
-                                                              length);
+  partition_particle_select<<<numBlocks, blockSize>>>(d_particle[alt_idx],
+                                                      d_lower_count,
+                                                      d_upper_count,
+                                                      d_sorting_index,
+                                                      m_length);
+  partition_particle_reset<<<numBlocks, blockSize>>>(d_particle[idx],
+                                                     m_length);
+  partition_particle_sorting<<<numBlocks, blockSize>>>(d_particle[idx],
+                                                       d_particle[alt_idx],
+                                                       d_sorting_index,
+                                                       m_length);
 
   cudaMemcpy(&h_lower_count, d_lower_count, sizeof(int), cudaMemcpyDeviceToHost);
   cudaMemcpy(&h_upper_count, d_upper_count, sizeof(int), cudaMemcpyDeviceToHost);
@@ -242,36 +283,36 @@ int Partition::run(int k, particle_array d_particle[])
 
 void Partition::insert(int new_particle, particle_array d_new_particle, particle_array d_particle)
 {
-  if (d_particle.length != length) {
+  if (d_particle.length != m_length) {
     std::cerr << "ERROR PARTICLE LIST WRONG SIZE" << std::endl;
     exit(1);
   }
 
   int blockSize = 256;
-  int numBlocks_new_particle = (new_particle + blockSize - 1) / blockSize;
+  int numBlocks = (new_particle + blockSize - 1) / blockSize;
 
-  insert_particle<<<numBlocks_new_particle, blockSize>>>(new_particle,
-                                                         d_lower_count,
-                                                         d_new_particle,
-                                                         d_particle,
-                                                         length);
+  insert_particle<<<numBlocks, blockSize>>>(new_particle,
+                                            d_lower_count,
+                                            d_new_particle,
+                                            d_particle,
+                                            m_length);
 }
 
 void Partition::check(particle_array d_particle, int &h_active_count, int &h_empty_count)
 {
-  if (d_particle.length != length) {
+  if (d_particle.length != m_length) {
     std::cerr << "ERROR PARTICLE LIST WRONG SIZE" << std::endl;
     exit(1);
   }
 
   int blockSize = 256;
-  int numBlocks_buffer = (length + blockSize - 1) / blockSize;
+  int numBlocks = (m_length + blockSize - 1) / blockSize;
 
   int *d_active_count, *d_empty_count;
   cudaMalloc(&d_active_count, sizeof(int));
   cudaMalloc(&d_empty_count, sizeof(int));
 
-  check_buffer<<<numBlocks_buffer, blockSize>>>(d_particle, d_active_count, d_empty_count, length);
+  check_buffer<<<numBlocks, blockSize>>>(d_particle, d_active_count, d_empty_count, m_length);
 
   cudaMemcpy(&h_active_count, d_active_count, sizeof(int), cudaMemcpyDeviceToHost);
   cudaMemcpy(&h_empty_count, d_empty_count, sizeof(int), cudaMemcpyDeviceToHost);
