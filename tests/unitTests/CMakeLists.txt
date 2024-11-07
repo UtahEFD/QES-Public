@@ -6,9 +6,9 @@ include_directories(.)
 
 add_executable(unit_test_example_t00 t00.cpp)
 
-target_link_libraries(unit_test_example_t00 qesutil)
+target_link_libraries(unit_test_example_t00 PRIVATE qesutil)
 link_external_libraries(unit_test_example_t00)
-target_link_libraries(unit_test_example_t00 Catch2::Catch2WithMain)
+target_link_libraries(unit_test_example_t00 PRIVATE Catch2::Catch2WithMain)
 
 add_executable(util_time util_time.cpp)
 add_executable(util_vector_classes_CPU util_vector_classes_CPU.cpp)
@@ -19,13 +19,13 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
 
   cuda_add_executable(test_GPU
     test_GPU.cpp)
-   target_link_libraries(test_GPU ${CUDA_LIBRARIES})
+   target_link_libraries(test_GPU PRIVATE ${CUDA_LIBRARIES})
 
   cuda_add_executable(test_CUDARandomGen
     CUDARandomKernel.cu CUDARandomKernel.h
     test_CUDARandomGen.cpp)
-   target_link_libraries(test_CUDARandomGen ${CUDA_LIBRARIES})
-   target_link_libraries(test_CUDARandomGen ${CUDA_curand_LIBRARY})
+   target_link_libraries(test_CUDARandomGen PRIVATE ${CUDA_LIBRARIES})
+   target_link_libraries(test_CUDARandomGen PRIVATE ${CUDA_curand_LIBRARY})
 
    cuda_add_executable(util_vector_classes_GPU
      CUDA_vector_testkernel.cu CUDA_vector_testkernel.h
@@ -38,8 +38,8 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
    cuda_add_executable(test_particle_partition_GPU
      CUDA_particle_partition_testkernel.cu
      test_particle_partition_GPU.cpp)
-   target_link_libraries(test_particle_partition_GPU ${CUDA_LIBRARIES})
-   target_link_libraries(test_particle_partition_GPU ${CUDA_curand_LIBRARY})
+   target_link_libraries(test_particle_partition_GPU PRIVATE ${CUDA_LIBRARIES})
+   target_link_libraries(test_particle_partition_GPU PRIVATE ${CUDA_curand_LIBRARY})
    
    cuda_add_executable(test_advect_partition_GPU
      CUDA_particle_partition.cu
@@ -47,24 +47,24 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
      CUDA_advection.cu
      CUDA_advect_partition_testkernel.cu
      test_advect_partition_GPU.cpp)
-   target_link_libraries(test_advect_partition_GPU ${CUDA_LIBRARIES})
-   target_link_libraries(test_advect_partition_GPU ${CUDA_curand_LIBRARY})
+   target_link_libraries(test_advect_partition_GPU PRIVATE ${CUDA_LIBRARIES})
+   target_link_libraries(test_advect_partition_GPU PRIVATE ${CUDA_curand_LIBRARY})
 
    cuda_add_executable(test_interpolation_GPU
      CUDA_QES_Data.cu
      CUDA_interpolation.cu
      CUDA_interpolation_testkernel.cu
      test_interpolation_GPU.cpp)
-   target_link_libraries(test_interpolation_GPU ${CUDA_LIBRARIES})
-   target_link_libraries(test_interpolation_GPU ${CUDA_curand_LIBRARY})
+   target_link_libraries(test_interpolation_GPU PRIVATE ${CUDA_LIBRARIES})
+   target_link_libraries(test_interpolation_GPU PRIVATE ${CUDA_curand_LIBRARY})
 
    cuda_add_executable(test_concentration_GPU
      CUDA_concentration.cu
      CUDA_particle_partition.cu
      CUDA_concentration_testkernel.cu
      test_concentration_GPU.cpp)
-   target_link_libraries(test_concentration_GPU ${CUDA_LIBRARIES})
-   target_link_libraries(test_concentration_GPU ${CUDA_curand_LIBRARY})
+   target_link_libraries(test_concentration_GPU PRIVATE ${CUDA_LIBRARIES})
+   target_link_libraries(test_concentration_GPU PRIVATE ${CUDA_curand_LIBRARY})
    
    cuda_add_executable(test_plume_GPU
      CUDA_QES_Data.cu
@@ -75,8 +75,8 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
      CUDA_concentration.cu
      CUDA_plume_testkernel.cu
      test_plume_GPU.cpp)
-   target_link_libraries(test_plume_GPU ${CUDA_LIBRARIES})
-   target_link_libraries(test_plume_GPU ${CUDA_curand_LIBRARY})
+   target_link_libraries(test_plume_GPU PRIVATE ${CUDA_LIBRARIES})
+   target_link_libraries(test_plume_GPU PRIVATE ${CUDA_curand_LIBRARY})
    
    cuda_add_executable(util_buffer_GPU
      CUDA_buffer_testkernel.cu
@@ -85,8 +85,8 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
   cuda_add_executable(test_CUDAPartition
     CUDAPartitionKernel.cu CUDAPartitionKernel.h
     test_CUDAPartition.cpp)
-   target_link_libraries(test_CUDAPartition ${CUDA_LIBRARIES})
-   target_link_libraries(test_CUDAPartition ${CUDA_curand_LIBRARY})
+   target_link_libraries(test_CUDAPartition PRIVATE ${CUDA_LIBRARIES})
+   target_link_libraries(test_CUDAPartition PRIVATE ${CUDA_curand_LIBRARY})
 
    cuda_add_executable(winds_terrain
      test_DTEHeightField.h test_DTEHeightField.cpp
@@ -161,22 +161,22 @@ ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 foreach (unittest ${UNITTESTS})
   
-  target_link_libraries(${unittest} qesplumecore)
-  target_link_libraries(${unittest} qeswindscore)
+  target_link_libraries(${unittest} PRIVATE qesplumecore)
+  target_link_libraries(${unittest} PRIVATE qeswindscore)
   IF ($CACHE{HAS_CUDA_SUPPORT})
-    target_link_libraries(${unittest} qeswindsgpu)
+    target_link_libraries(${unittest} PRIVATE qeswindsgpu)
   ENDIF()
-  target_link_libraries(${unittest} qeswindscore)
+  target_link_libraries(${unittest} PRIVATE qeswindscore)
   IF ($CACHE{HAS_CUDA_SUPPORT})
-    target_link_libraries(${unittest} qesutilgpu)
+    target_link_libraries(${unittest} PRIVATE qesutilgpu)
   ENDIF()
-  target_link_libraries(${unittest} qesutil)
+  target_link_libraries(${unittest} PRIVATE qesutil)
   IF($CACHE{HAS_OPTIX_SUPPORT})
-    target_link_libraries(${unittest} qesOptix)
+    target_link_libraries(${unittest} PRIVATE qesOptix)
   ENDIF()
 
   link_external_libraries(${unittest})
-  target_link_libraries(${unittest} Catch2::Catch2WithMain)
+  target_link_libraries(${unittest} PRIVATE Catch2::Catch2WithMain)
 
   add_test(NAME unit_test::${unittest} COMMAND ${unittest})
 

@@ -57,10 +57,16 @@ endif()
 # ----------------------------------------------------------
 include(CheckCXXCompilerFlag)
 MESSAGE(STATUS "Compiling with ${CMAKE_CXX_COMPILER_ID}, Version: ${CMAKE_CXX_COMPILER_VERSION}")
-CHECK_CXX_COMPILER_FLAG("-std=c++17" COMPILER_SUPPORTS_CXX17)
 
-if(COMPILER_SUPPORTS_CXX17)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+#if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+#   MESSAGE(STATUS "MSVC")
+#   CHECK_CXX_COMPILER_FLAG("/std:c++17" COMPILER_SUPPORTS_CXX17)
+#else()
+#   CHECK_CXX_COMPILER_FLAG("--std=c++17" COMPILER_SUPPORTS_CXX17)
+#endif()
+
+#if(COMPILER_SUPPORTS_CXX17)
+#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
   #
   # This code used C++ 17 features so enable these on CXX Flags
@@ -69,9 +75,9 @@ if(COMPILER_SUPPORTS_CXX17)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   set(CMAKE_CXX_EXTENSIONS OFF)
 
-else()
-  message(FATAL_ERROR "Compiler ${CMAKE_CXX_COMPILER} has no C++17 support.")
-endif()
+#else()
+#  message(FATAL_ERROR "Compiler ${CMAKE_CXX_COMPILER} has no C++17 support.")
+#endif()
 
 # ----------------------------------------------------------
 # OPENMP
@@ -205,12 +211,21 @@ ENDIF()
 # NetCDF
 # ----------------------------------------------------------
 SET(NETCDF_CXX "YES")
-FIND_PACKAGE(NetCDF REQUIRED)
-IF(NetCDF_FOUND)
-  MESSAGE(STATUS "Found NetCDF: ${NETCDF_INCLUDES}: ${NETCDF_LIBRARIES}, ${NETCDF_INCLUDES_CXX}, ${NETCDF_LIBRARIES_CXX}")
-  INCLUDE_DIRECTORIES(${NETCDF_INCLUDES})
-  INCLUDE_DIRECTORIES(${NETCDF_INCLUDES_CXX})
-ENDIF(NetCDF_FOUND)
+FIND_PACKAGE(netCDFCxx CONFIG REQUIRED)
+IF(netCDFCxx_FOUND)
+  MESSAGE(STATUS "Found NetCDF CXX: ${NETCDF_C_INCLUDE_DIR} ${NETCDF_C_LIBRARY}")
+  INCLUDE_DIRECTORIES(${NETCDF_C_INCLUDE_DIR})
+ENDIF(netCDFCxx_FOUND)
+
+#  target_link_libraries(main PRIVATE netCDF::netcdf netCDF::netcdf-cxx4)
+
+FIND_PACKAGE(netCDF CONFIG REQUIRED)
+IF(netCDF_FOUND)
+  MESSAGE(STATUS "Found NetCDF - Version: ${NetCDFVersion}, ${netCDF_INCLUDE_DIR}, ${netCDF_LIB_DIR}, ${netCDF_LIBRARIES}, ${netCDF_LDFLAGS}, ${netCDF_C_CPP_FLAGS}")
+#  ADD_LINK_OPTIONS("${netCDF_LDFLAGS}")
+  INCLUDE_DIRECTORIES(${netCDF_INCLUDE_DIR})
+  LINK_DIRECTORIES(${netCDF_LIB_DIR})
+ENDIF(netCDF_FOUND)
 
 # ----------------------------------------------------------
 # GDAL
@@ -244,22 +259,21 @@ ELSE()
   MESSAGE(STATUS "CUDA is not available.")
 ENDIF()
 
-SET(CUDA_SEPARABLE_COMPILATION ON)
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_52;-rdc=true;" )
+# SET(CUDA_SEPARABLE_COMPILATION ON)
+# set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_52;-rdc=true;" )
 
 #use fast math option is required for OptiX
 # set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-dlink;-rdc=true;--use_fast_math;--keep-device-functions")
 
 # Attempt to find CUDA
-FIND_PACKAGE(CUDA)
-IF(CUDA_FOUND)
+IF(CMAKE_CUDA_COMPILER)
   MESSAGE(STATUS "CUDA Libraries: ${CUDA_LIBRARIES}")
   SET(HAS_CUDA_SUPPORT ON CACHE BOOL "Determines if CUDA/GPU functionality is compiled into the code base" )
 
   if(NOT DEFINED CMAKE_CUDA_STANDARD)
-      set(CMAKE_CUDA_STANDARD 17)
-      set(CMAKE_CUDA_STANDARD_REQUIRED ON)
-   endif()
+    set(CMAKE_CUDA_STANDARD 17)
+    set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+  endif()
   
   INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
   #INCLUDE_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/samples/common/inc)
@@ -273,7 +287,9 @@ ELSE(CUDA_FOUND)
   
   MESSAGE(WARNING "CUDA is required for compiling GPU accelerated computations into this project.  Please install CUDA or re-run cmake with -i to specify the CUDA directories if you need these features.")
   MESSAGE(WARNING "GPU and related accelerations will be disable for this build.")
-ENDIF(CUDA_FOUND)
+ENDIF()
+
+find_package(CUDAToolkit REQUIRED)
 
 # ----------------------------------------------------------
 # CUDA and OPTIX
@@ -400,15 +416,15 @@ endif (DOXYGEN_FOUND)
 #   build the code
 # ----------------------------------------------------------
 function(link_external_libraries exec)
-  target_link_libraries(${exec} ${Boost_PROGRAM_OPTIONS_LIBRARIES})
-  target_link_libraries(${exec} ${Boost_DATE_TIME_LIBRARIES})
-  #target_link_libraries(${exec} ${Boost_FILESYSTEM_LIBRARIES})
-  target_link_libraries(${exec} ${GDAL_LIBRARY})
-  target_link_libraries(${exec} ${NETCDF_LIBRARIES_CXX})
-  target_link_libraries(${exec} ${NETCDF_LIBRARIES_C})
+  target_link_libraries(${exec} PRIVATE ${Boost_PROGRAM_OPTIONS_LIBRARIES})
+  target_link_libraries(${exec} PRIVATE ${Boost_DATE_TIME_LIBRARIES})
+  #target_link_libraries(${exec} PRIVATE ${Boost_FILESYSTEM_LIBRARIES})
+  target_link_libraries(${exec} PRIVATE ${GDAL_LIBRARY})
+  target_link_libraries(${exec} PRIVATE "netCDF::netcdf-cxx4")
+  target_link_libraries(${exec} PRIVATE ${NETCDF_C_LIBRARY})
   IF ($CACHE{HAS_CUDA_SUPPORT})
     # target_link_libraries(${exec} cudadevrt)
-    target_link_libraries(${exec} ${CUDA_LIBRARIES})
+    target_link_libraries(${exec} PRIVATE ${CUDA_LIBRARIES})
   ENDIF()
 
   IF (ENABLE_OPENMP AND ${OpenMP_FOUND})

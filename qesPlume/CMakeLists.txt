@@ -14,18 +14,18 @@ ELSE ($CACHE{HAS_CUDA_SUPPORT})
   )
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
-target_link_libraries(qesPlume qesplumecore)
+target_link_libraries(qesPlume PRIVATE qesplumecore)
 
-target_link_libraries(qesPlume qeswindscore)
+target_link_libraries(qesPlume PRIVATE qeswindscore)
 IF ($CACHE{HAS_CUDA_SUPPORT})
-  target_link_libraries(qesPlume qeswindsgpu)
+  target_link_libraries(qesPlume PRIVATE qeswindsgpu)
 ENDIF()
-target_link_libraries(qesPlume qeswindscore)
+target_link_libraries(qesPlume PRIVATE qeswindscore)
 
-target_link_libraries(qesPlume qesutil)
+target_link_libraries(qesPlume PRIVATE qesutil)
 
 IF ($CACHE{HAS_OPTIX_SUPPORT})
-  target_link_libraries(qesPlume qesOptix)
+  target_link_libraries(qesPlume PRIVATE qesOptix)
 ENDIF()
 
 link_external_libraries(qesPlume)
