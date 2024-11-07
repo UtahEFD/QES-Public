@@ -2,9 +2,6 @@
 
 #include "util/VectorMath.h"
 
-enum ParticleStates : int { ACTIVE,
-                            INACTIVE,
-                            ROGUE };
 
 typedef struct
 {
@@ -27,26 +24,3 @@ typedef struct
   vec3 fluxDiv;
 
 } particle;
-
-typedef struct
-{
-  int *state;
-  uint32_t *ID;
-
-  float *CoEps;
-  float *nuT;
-
-  vec3 *pos;
-
-  vec3 *velMean;
-
-  vec3 *velFluct;
-  vec3 *velFluct_old;
-  vec3 *delta_velFluct;
-
-  mat3sym *tau;
-  mat3sym *tau_old;
-
-  vec3 *flux_div;
-
-} particle_array;

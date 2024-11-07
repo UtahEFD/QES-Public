@@ -61,6 +61,11 @@ ELSE ($CACHE{HAS_CUDA_SUPPORT})
    )
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
+IF ($CACHE{HAS_CUDA_SUPPORT})
+  CUDA_ADD_LIBRARY(qesplumegpu
+    cuda/Partition.cu)
+ENDIF ($CACHE{HAS_CUDA_SUPPORT})
+
 #target_link_libraries (qesplumecore quicloader) 
 #target_link_libraries (qesplumecore util)
 #target_link_libraries (qesplumecore ${Boost_PROGRAM_OPTIONS_LIBRARIES} )  

@@ -45,6 +45,36 @@ enum ParticleType {
   heavy
 };
 
+enum ParticleStates : int { ACTIVE,
+                            INACTIVE,
+                            ROGUE };
+
+
+typedef struct
+{
+  int length;
+
+  int *state;
+  uint32_t *ID;
+
+  float *CoEps;
+  float *nuT;
+
+  vec3 *pos;
+
+  vec3 *velMean;
+
+  vec3 *velFluct;
+  vec3 *velFluct_old;
+  vec3 *delta_velFluct;
+
+  mat3sym *tau;
+  mat3sym *tau_old;
+
+  vec3 *flux_div;
+
+} particle_array;
+
 class Particle;
 
 class ParseParticle : public ParseInterface

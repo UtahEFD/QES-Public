@@ -69,7 +69,6 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
    cuda_add_executable(test_plume_GPU
      CUDA_QES_Data.cu
      CUDA_interpolation.cu
-     CUDA_particle_partition.cu
      CUDA_boundary_conditions.cu
      CUDA_advection.cu
      CUDA_concentration.cu
@@ -164,6 +163,7 @@ foreach (unittest ${UNITTESTS})
   target_link_libraries(${unittest} qesplumecore)
   target_link_libraries(${unittest} qeswindscore)
   IF ($CACHE{HAS_CUDA_SUPPORT})
+    target_link_libraries(${unittest} qesplumegpu)
     target_link_libraries(${unittest} qeswindsgpu)
   ENDIF()
   target_link_libraries(${unittest} qeswindscore)
