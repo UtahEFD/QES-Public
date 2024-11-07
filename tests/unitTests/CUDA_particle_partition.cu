@@ -92,7 +92,7 @@ __global__ void partition_particle_select(particle_array d_particle_list,
       d_sorting_index[idx] = pos;
     } else {
       int pos = atomicAdd(upper_count, 1);
-      d_sorting_index[idx] = -1;
+      // d_sorting_index[idx] = -1;
     }
   }
 }
@@ -116,14 +116,17 @@ __global__ void partition_particle_sorting(particle_array d_particle_list_left,
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
   if (idx < size) {
-    // resert the left particle state
     if (d_sorting_index[idx] >= 0) {
       copy_particle(d_particle_list_left, d_sorting_index[idx], d_particle_list_right, idx);
     }
   }
 }
 
-__global__ void partition_particle(particle_array d_particle_list_left, particle_array d_particle_list_right, int *lower_count, int *upper_count, int size)
+__global__ void partition_particle(particle_array d_particle_list_left,
+                                   particle_array d_particle_list_right,
+                                   int *lower_count,
+                                   int *upper_count,
+                                   int size)
 {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -166,7 +169,11 @@ __global__ void check_buffer(particle_array d_particle_list, int *lower_count, i
   }
 }
 
-__global__ void insert_particle(int length, int new_particle, int *lower, particle_array d_new_particle_list, particle_array d_particle_list)
+__global__ void insert_particle(int new_particle,
+                                int *lower,
+                                particle_array d_new_particle_list,
+                                particle_array d_particle_list,
+                                int length)
 {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
   if (idx < new_particle && idx + (*lower) < length) {
