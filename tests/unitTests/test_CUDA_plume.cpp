@@ -1,5 +1,22 @@
 
-#include "CUDA_plume_testkernel.h"
+#include <chrono>
+#include <string>
+#include <cstdio>
+#include <algorithm>
+#include <vector>
+
+#include <cuda.h>
+#include <curand.h>
+
+#include "util/TimerTool.h"
+#include "util/VectorMath.h"
+#include "util/QESFileOutput_v2.h"
+#include "util/QESNetCDFOutput_v2.h"
+
+#include "winds/WINDSGeneralData.h"
+
+#include "plume/IDGenerator.h"
+#include "plume/Particle.h"
 
 #include "plume/cuda/QES_data.h"
 #include "plume/cuda/Interpolation.h"
@@ -8,115 +25,42 @@
 #include "plume/cuda/Model.h"
 #include "plume/cuda/Concentration.h"
 
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
+
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
 #define PBWIDTH 60
 
-//__device__ __managed__ QESgrid qes_grid;
-//__device__ __managed__ BC_Params bc_param;
-//__device__ __managed__ ConcentrationParam param;
+void copy_data_gpu(const WINDSGeneralData *WGD, QESWindsData &d_qes_winds_data);
+void copy_data_gpu(const TURBGeneralData *TGD, QESTurbData &d_qes_turb_data);
+void print_percentage(const float &percentage);
+float calcRMSE(std::vector<float> &A, std::vector<float> &B);
+float calcMaxAbsErr(std::vector<float> &A, std::vector<float> &B);
+// void print_particle(const particle &p);
+void test_gpu(const int &ntest, const int &new_particle, const int &length);
 
-void copy_data_gpu(const WINDSGeneralData *WGD, QESWindsData &d_qes_winds_data)
+TEST_CASE("PLUME")
 {
-  // velocity field components
-  long numcell_face = WGD->domain.numFaceCentered();
-  cudaMalloc((void **)&d_qes_winds_data.u, numcell_face * sizeof(float));
-  cudaMemcpy(d_qes_winds_data.u, WGD->u.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMalloc((void **)&d_qes_winds_data.v, numcell_face * sizeof(float));
-  cudaMemcpy(d_qes_winds_data.v, WGD->v.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMalloc((void **)&d_qes_winds_data.w, numcell_face * sizeof(float));
-  cudaMemcpy(d_qes_winds_data.w, WGD->w.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  std::cout << "===================================================================\n"
+            << "testing PLUME on GPU     \n"
+            << "-------------------------------------------------------------------\n"
+            << std::endl;
+
+  // for (auto lIdx = 0; lIdx < 3; ++lIdx) {
+  Timer totTimer("test plume GPU");
+
+  totTimer.start();
+  // test_gpu(1000 + 1E4, 1E4, 2E6);
+  test_gpu(1000 + 1E3, 1E4, 2E6);
+  // test_gpu(1E4, 1E3, 5E5);
+  // test_gpu(5E4, 2E3, 2E5);
+  // test_gpu(2100, 1200, 5E5);
+  // test_gpu(1000 + 1E3, 400, 6E4);
+  totTimer.stop();
+
+  totTimer.show();
+  std::cout << "===================================================================" << std::endl;
 }
-
-void copy_data_gpu(const TURBGeneralData *TGD, QESTurbData &d_qes_turb_data)
-{
-  // stress tensor
-  long numcell_cent = TGD->domain.numCellCentered();
-  cudaMalloc((void **)&d_qes_turb_data.txx, numcell_cent * sizeof(float));
-  cudaMemcpy(d_qes_turb_data.txx, TGD->txx.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMalloc((void **)&d_qes_turb_data.txy, numcell_cent * sizeof(float));
-  cudaMemcpy(d_qes_turb_data.txy, TGD->txy.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMalloc((void **)&d_qes_turb_data.txz, numcell_cent * sizeof(float));
-  cudaMemcpy(d_qes_turb_data.txz, TGD->txz.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMalloc((void **)&d_qes_turb_data.tyy, numcell_cent * sizeof(float));
-  cudaMemcpy(d_qes_turb_data.tyy, TGD->tyy.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMalloc((void **)&d_qes_turb_data.tyz, numcell_cent * sizeof(float));
-  cudaMemcpy(d_qes_turb_data.tyz, TGD->tyz.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMalloc((void **)&d_qes_turb_data.tzz, numcell_cent * sizeof(float));
-  cudaMemcpy(d_qes_turb_data.tzz, TGD->tzz.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-
-  // divergence of stress tensor
-  cudaMalloc((void **)&d_qes_turb_data.div_tau_x, numcell_cent * sizeof(float));
-  cudaMemcpy(d_qes_turb_data.div_tau_x, TGD->div_tau_x.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMalloc((void **)&d_qes_turb_data.div_tau_y, numcell_cent * sizeof(float));
-  cudaMemcpy(d_qes_turb_data.div_tau_y, TGD->div_tau_y.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMalloc((void **)&d_qes_turb_data.div_tau_z, numcell_cent * sizeof(float));
-  cudaMemcpy(d_qes_turb_data.div_tau_z, TGD->div_tau_z.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-
-  // dissipation rate
-  cudaMalloc((void **)&d_qes_turb_data.CoEps, numcell_cent * sizeof(float));
-  cudaMemcpy(d_qes_turb_data.CoEps, TGD->CoEps.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-
-  // turbulent viscosity
-  cudaMalloc((void **)&d_qes_turb_data.nuT, numcell_cent * sizeof(float));
-  cudaMemcpy(d_qes_turb_data.nuT, TGD->nuT.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-
-  // turbulence kinetic energy
-  cudaMalloc((void **)&d_qes_turb_data.tke, numcell_cent * sizeof(float));
-  cudaMemcpy(d_qes_turb_data.tke, TGD->tke.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-}
-
-void print_percentage(const float &percentage)
-{
-  int val = (int)(percentage * 100);
-  int lpad = (int)(percentage * PBWIDTH);
-  int rpad = PBWIDTH - lpad;
-  printf("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
-  fflush(stdout);
-}
-
-float calcRMSE(std::vector<float> &A, std::vector<float> &B)
-{
-  int nbrBins = (int)A.size();
-  float rmse_var = 0.0;
-  for (int k = 0; k < nbrBins; ++k) {
-    rmse_var += pow(A[k] - B[k], 2);
-  }
-  return sqrt(rmse_var / (float)nbrBins);
-}
-
-float calcMaxAbsErr(std::vector<float> &A, std::vector<float> &B)
-{
-  int nbrBins = (int)A.size();
-  vector<float> tmp(nbrBins);
-  for (int k = 0; k < nbrBins; ++k) {
-    tmp[k] = std::abs(A[k] - B[k]);
-  }
-  return *max_element(std::begin(tmp), std::end(tmp));
-}
-
-void print_particle(const particle &p)
-{
-  std::string particle_state = "ERROR";
-  switch (p.state) {
-  case ACTIVE:
-    particle_state = "ACTIVE";
-    break;
-  case INACTIVE:
-    particle_state = "INACTIVE";
-    break;
-  case ROGUE:
-    particle_state = "ROGUE";
-    break;
-  }
-  std::cout << "--------------------------------------" << std::endl;
-  std::cout << "Particle test print:" << std::endl;
-  std::cout << " state   : " << particle_state << std::endl;
-  std::cout << " ID      : " << p.ID << std::endl;
-  std::cout << " position: " << p.pos._1 << ", " << p.pos._2 << ", " << p.pos._3 << std::endl;
-  std::cout << " velocity: " << p.velMean._1 << ", " << p.velMean._2 << ", " << p.velMean._3 << std::endl;
-  std::cout << " fluct   : " << p.velFluct._1 << ", " << p.velFluct._2 << ", " << p.velFluct._3 << std::endl;
-}
-
 
 void test_gpu(const int &ntest, const int &new_particle, const int &length)
 {
@@ -522,7 +466,96 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     advectTimer.show();
     concenTimer.show();
     std::cout << "-------------------------------------------------------------------" << std::endl;
+
+    // Catch2 requirements
+    // REQUIRE(PGD->getNumRogueParticles() == 0);
+    for (auto k = 0u; k < xoH.size(); ++k) {
+      REQUIRE(maxRelErr[k] < 0.1);
+      REQUIRE(relRMSE[k] < 0.02);
+    }
+    REQUIRE(R2 > 0.99);
+
   } else {
     printf("CUDA ERROR!\n");
   }
+}
+
+
+void copy_data_gpu(const WINDSGeneralData *WGD, QESWindsData &d_qes_winds_data)
+{
+  // velocity field components
+  long numcell_face = WGD->domain.numFaceCentered();
+  cudaMalloc((void **)&d_qes_winds_data.u, numcell_face * sizeof(float));
+  cudaMemcpy(d_qes_winds_data.u, WGD->u.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_winds_data.v, numcell_face * sizeof(float));
+  cudaMemcpy(d_qes_winds_data.v, WGD->v.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_winds_data.w, numcell_face * sizeof(float));
+  cudaMemcpy(d_qes_winds_data.w, WGD->w.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+}
+
+void copy_data_gpu(const TURBGeneralData *TGD, QESTurbData &d_qes_turb_data)
+{
+  // stress tensor
+  long numcell_cent = TGD->domain.numCellCentered();
+  cudaMalloc((void **)&d_qes_turb_data.txx, numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.txx, TGD->txx.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_turb_data.txy, numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.txy, TGD->txy.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_turb_data.txz, numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.txz, TGD->txz.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_turb_data.tyy, numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.tyy, TGD->tyy.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_turb_data.tyz, numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.tyz, TGD->tyz.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_turb_data.tzz, numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.tzz, TGD->tzz.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+
+  // divergence of stress tensor
+  cudaMalloc((void **)&d_qes_turb_data.div_tau_x, numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.div_tau_x, TGD->div_tau_x.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_turb_data.div_tau_y, numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.div_tau_y, TGD->div_tau_y.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_turb_data.div_tau_z, numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.div_tau_z, TGD->div_tau_z.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+
+  // dissipation rate
+  cudaMalloc((void **)&d_qes_turb_data.CoEps, numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.CoEps, TGD->CoEps.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+
+  // turbulent viscosity
+  cudaMalloc((void **)&d_qes_turb_data.nuT, numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.nuT, TGD->nuT.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+
+  // turbulence kinetic energy
+  cudaMalloc((void **)&d_qes_turb_data.tke, numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.tke, TGD->tke.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+}
+
+void print_percentage(const float &percentage)
+{
+  int val = (int)(percentage * 100);
+  int lpad = (int)(percentage * PBWIDTH);
+  int rpad = PBWIDTH - lpad;
+  printf("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
+  fflush(stdout);
+}
+
+float calcRMSE(std::vector<float> &A, std::vector<float> &B)
+{
+  int nbrBins = (int)A.size();
+  float rmse_var = 0.0;
+  for (int k = 0; k < nbrBins; ++k) {
+    rmse_var += pow(A[k] - B[k], 2);
+  }
+  return sqrt(rmse_var / (float)nbrBins);
+}
+
+float calcMaxAbsErr(std::vector<float> &A, std::vector<float> &B)
+{
+  int nbrBins = (int)A.size();
+  vector<float> tmp(nbrBins);
+  for (int k = 0; k < nbrBins; ++k) {
+    tmp[k] = std::abs(A[k] - B[k]);
+  }
+  return *max_element(std::begin(tmp), std::end(tmp));
 }
