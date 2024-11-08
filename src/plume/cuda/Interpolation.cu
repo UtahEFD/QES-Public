@@ -34,7 +34,9 @@
 
 #include "Interpolation.h"
 
-__device__ void setInterp3Dindex_uFace(vec3 &pos, interpWeight &wgt, const QESgrid &qes_grid)
+__device__ void setInterp3Dindex_uFace(vec3 &pos,
+                                       interpWeight &wgt,
+                                       const QESgrid qes_grid)
 {
 
   // set a particle position corrected by the start of the domain in each direction
@@ -58,7 +60,7 @@ __device__ void setInterp3Dindex_uFace(vec3 &pos, interpWeight &wgt, const QESgr
 }
 
 
-__device__ void setInterp3Dindex_vFace(vec3 &pos, interpWeight &wgt, const QESgrid &qes_grid)
+__device__ void setInterp3Dindex_vFace(vec3 &pos, interpWeight &wgt, const QESgrid qes_grid)
 {
 
   // set a particle position corrected by the start of the domain in each direction
@@ -81,7 +83,9 @@ __device__ void setInterp3Dindex_vFace(vec3 &pos, interpWeight &wgt, const QESgr
   // wgt.kw = (par_zPos - m_WGD->z[wgt.kk]) / (m_WGD->z[wgt.kk + 1] - m_WGD->z[wgt.kk]);
 }
 
-__device__ void setInterp3Dindex_wFace(vec3 &pos, interpWeight &wgt, const QESgrid &qes_grid)
+__device__ void setInterp3Dindex_wFace(vec3 &pos,
+                                       interpWeight &wgt,
+                                       const QESgrid qes_grid)
 {
 
   // set a particle position corrected by the start of the domain in each direction
@@ -105,7 +109,10 @@ __device__ void setInterp3Dindex_wFace(vec3 &pos, interpWeight &wgt, const QESgr
 }
 
 // always call this after setting the interpolation indices with the setInterp3Dindex_u/v/wFace() function!
-__device__ void interp3D_faceVar(float &out, const float *data, const interpWeight &wgt, const QESgrid &qes_grid)
+__device__ void interp3D_faceVar(float &out,
+                                 const float *data,
+                                 const interpWeight &wgt,
+                                 const QESgrid qes_grid)
 {
 
   float cube[2][2][2] = { 0.0 };
@@ -135,7 +142,9 @@ __device__ void interp3D_faceVar(float &out, const float *data, const interpWeig
   out = (u_high - u_low) * wgt.kw + u_low;
 }
 
-__device__ void setInterp3Dindex_cellVar(const vec3 &pos, interpWeight &wgt, const QESgrid &qes_grid)
+__device__ void setInterp3Dindex_cellVar(const vec3 &pos,
+                                         interpWeight &wgt,
+                                         const QESgrid qes_grid)
 {
   float par_x = pos._1 - 0.5 * qes_grid.dx;
   float par_y = pos._2 - 0.5 * qes_grid.dy;
@@ -159,7 +168,10 @@ __device__ void setInterp3Dindex_cellVar(const vec3 &pos, interpWeight &wgt, con
 
 
 // always call this after setting the interpolation indices with the setInterp3Dindexing() function!
-__device__ void interp3D_cellVar(float &out, const float *data, const interpWeight &wgt, const QESgrid &qes_grid)
+__device__ void interp3D_cellVar(float &out,
+                                 const float *data,
+                                 const interpWeight &wgt,
+                                 const QESgrid qes_grid)
 {
 
   // now set the cube to zero, then fill it using the indices and the counters from the indices
@@ -190,7 +202,10 @@ __device__ void interp3D_cellVar(float &out, const float *data, const interpWeig
   out = (u_high - u_low) * wgt.kw + u_low;
 }
 
-__global__ void interpolate(int length, particle_array d_particle_list, const QESWindsData data, const QESgrid &qes_grid)
+__global__ void interpolate(int length,
+                            particle_array d_particle_list,
+                            const QESWindsData data,
+                            const QESgrid qes_grid)
 {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -220,7 +235,10 @@ __global__ void interpolate(int length, particle_array d_particle_list, const QE
   }
 }
 
-__global__ void interpolate(int length, particle_array d_particle_list, const WINDSDeviceData data, const QESgrid &qes_grid)
+__global__ void interpolate(int length,
+                            particle_array d_particle_list,
+                            const WINDSDeviceData data,
+                            const QESgrid qes_grid)
 {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -251,7 +269,12 @@ __global__ void interpolate(int length, particle_array d_particle_list, const WI
 }
 
 
-__global__ void interpolate(int length, const vec3 *pos, mat3sym *tau, vec3 *sigma, const QESTurbData data, const QESgrid &qes_grid)
+__global__ void interpolate(int length,
+                            const vec3 *pos,
+                            mat3sym *tau,
+                            vec3 *sigma,
+                            const QESTurbData data,
+                            const QESgrid qes_grid)
 {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -285,7 +308,10 @@ __global__ void interpolate(int length, const vec3 *pos, mat3sym *tau, vec3 *sig
   }
 }
 
-__global__ void interpolate(int length, particle_array d_particle_list, const QESTurbData data, const QESgrid &qes_grid)
+__global__ void interpolate(int length,
+                            particle_array d_particle_list,
+                            const QESTurbData data,
+                            const QESgrid qes_grid)
 {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -329,7 +355,10 @@ __global__ void interpolate(int length, particle_array d_particle_list, const QE
 }
 
 
-__global__ void interpolate_1(int length, particle_array d_particle_list, const QESTurbData data, const QESgrid &qes_grid)
+__global__ void interpolate_1(int length,
+                              particle_array d_particle_list,
+                              const QESTurbData data,
+                              const QESgrid qes_grid)
 {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -356,7 +385,10 @@ __global__ void interpolate_1(int length, particle_array d_particle_list, const 
   }
 }
 
-__global__ void interpolate_2(int length, particle_array d_particle_list, const QESTurbData data, const QESgrid &qes_grid)
+__global__ void interpolate_2(int length,
+                              particle_array d_particle_list,
+                              const QESTurbData data,
+                              const QESgrid qes_grid)
 {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -381,7 +413,10 @@ __global__ void interpolate_2(int length, particle_array d_particle_list, const 
 }
 
 
-__global__ void interpolate_3(int length, particle_array d_particle_list, const QESTurbData data, const QESgrid &qes_grid)
+__global__ void interpolate_3(int length,
+                              particle_array d_particle_list,
+                              const QESTurbData data,
+                              const QESgrid qes_grid)
 {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
 

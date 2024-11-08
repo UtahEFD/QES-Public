@@ -157,7 +157,7 @@ __device__ bool enforce_reflection(float &pos, float &velFluct, const float &dom
   }
 }
 
-__device__ void boundary_conditions(particle_array p, int idx, const BC_Params &bc_param)
+__device__ void boundary_conditions(particle_array p, int idx, const BC_Params bc_param)
 {
   vec3 pos = p.pos[idx];
   if (!enforce_exiting(pos._1, bc_param.xStartDomain, bc_param.xEndDomain)) {
@@ -172,7 +172,7 @@ __device__ void boundary_conditions(particle_array p, int idx, const BC_Params &
 }
 
 // test boundary conditon as kernel vs device function
-__global__ void boundary_conditions(int length, particle_array p, const BC_Params &bc_param)
+__global__ void boundary_conditions(int length, particle_array p, const BC_Params bc_param)
 {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
   if (idx < length) {
@@ -193,7 +193,7 @@ __global__ void boundary_conditions(int length, particle_array p, const BC_Param
 __device__ void advect(particle_array p,
                        int tid,
                        float par_dt,
-                       const BC_Params &bc_param)
+                       const BC_Params bc_param)
 {
   vec3 dist{ (p.velMean[tid]._1 + p.velFluct[tid]._1) * par_dt,
              (p.velMean[tid]._2 + p.velFluct[tid]._2) * par_dt,
@@ -225,7 +225,7 @@ __global__ void set_new_particle(int new_particle, particle_array p, float *d_RN
 
 __global__ void advect_particle(particle_array d_particle_list,
                                 float *d_RNG_vals,
-                                const BC_Params &bc_param,
+                                const BC_Params bc_param,
                                 int length)
 {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;

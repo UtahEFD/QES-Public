@@ -11,9 +11,9 @@
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
 #define PBWIDTH 60
 
-__device__ __managed__ QESgrid qes_grid;
-__device__ __managed__ BC_Params bc_param;
-__device__ __managed__ ConcentrationParam param;
+//__device__ __managed__ QESgrid qes_grid;
+//__device__ __managed__ BC_Params bc_param;
+//__device__ __managed__ ConcentrationParam param;
 
 void copy_data_gpu(const WINDSGeneralData *WGD, QESWindsData &d_qes_winds_data)
 {
@@ -137,6 +137,10 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
   float C0 = 5.7;
   float zi = 1000;
 
+  QESgrid qes_grid;
+  BC_Params bc_param;
+  ConcentrationParam param;
+
   // set QES grid
   qes::Domain domain(102, 102, 141, 1.0, 1.0, 1.0);
   std::tie(qes_grid.nx, qes_grid.ny, qes_grid.nz) = domain.getDomainCellNum();
@@ -233,12 +237,6 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     param.dz = (param.ubndz - param.lbndz) / (param.nz);
 
     auto *concentration = new Concentration(param);
-    // std::vector<int> h_pBox(param.nx * param.ny * param.nz, 0.0);
-    // int *d_pBox;
-    // cudaMalloc(&d_pBox, param.nx * param.ny * param.nz * sizeof(int));
-
-    // int h_lower_count = 0, h_upper_count;
-
     auto *partition = new Partition(length);
 
     // Allocate particle array on the device ONLY
@@ -250,12 +248,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
     gpuInitTimer.stop();
 
-    int blockSize = 256;
-
-    // float ongoingAveragingTime = 0.0;
     float timeStep = 1.0;
-    // float volume = param.dx * param.dy * param.dz;
-
     int idx = 0;
 
     timeLoopTimer.start();
@@ -289,17 +282,10 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       if (k >= 1000) {
         concenTimer.start();
         concentration->collect(timeStep, d_particle[idx], param, num_particle);
-
-        /*int numBlocks_all_particle = (num_particle + blockSize - 1) / blockSize;
-        collect<<<numBlocks_all_particle, blockSize>>>(num_particle,
-                                                       d_particle[idx],
-                                                       d_pBox,
-                                                       param);
-        cudaDeviceSynchronize();
-        ongoingAveragingTime += timeStep;*/
         concenTimer.stop();
       }
 
+      // print buffer status
       print_percentage((float)partition->active() / (float)length);
     }
     std::cout << std::endl;
@@ -324,7 +310,6 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     cudaMemcpy(velMean.data(), d_particle[idx].velMean, length * sizeof(vec3), cudaMemcpyDeviceToHost);
     cudaMemcpy(velFluct.data(), d_particle[idx].velFluct, length * sizeof(vec3), cudaMemcpyDeviceToHost);
 
-    // cudaMemcpy(h_pBox.data(), d_pBox, param.nx * param.ny * param.nz * sizeof(int), cudaMemcpyDeviceToHost);
     concentration->copyback();
 
     std::vector<particle> particle_list(length);
@@ -346,11 +331,6 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     // cudafree
     partition->free_device_particle_list(d_particle[0]);
     partition->free_device_particle_list(d_particle[1]);
-    // partition->free_device_particle_list(d_new_particle);
-    // cudaFree(d_sorting_index);
-    // cudaFree(d_pBox);
-    // cudaFree(d_RNG_vals);
-    // cudaFree(d_RNG_newvals);
 
     WGD->freeDevice();
 
@@ -511,6 +491,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     outfile->pushAllFieldsToFile(time);
 
     delete outfile;
+    delete concentration;
     delete WGD, TGD;
 
     // check the results
@@ -541,12 +522,6 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     advectTimer.show();
     concenTimer.show();
     std::cout << "-------------------------------------------------------------------" << std::endl;
-
-    // std::cout << "interpolation elapsed time: " << interpElapsed.count() << " s\n";
-    // std::cout << "advection elapsed time: " << advectElapsed.count() << " s\n";
-    // std::cout << "concentration elapsed time: " << concenElapsed.count() << " s\n";
-    // std::cout << "kernel elapsed time: " << kernelElapsed.count() << " s\n";
-    // std::cout << "GPU elapsed time:    " << gpuElapsed.count() << " s\n";
   } else {
     printf("CUDA ERROR!\n");
   }
