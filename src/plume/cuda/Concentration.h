@@ -48,7 +48,7 @@ struct ConcentrationParam
 class Concentration
 {
 public:
-  Concentration(const ConcentrationParam param)
+  Concentration(const ConcentrationParam param_in) : param(param_in)
   {
     volume = param.dx * param.dy * param.dz;
     numcell = param.nx * param.ny * param.nz;
@@ -64,16 +64,17 @@ public:
 
   void collect(const float &timeStep,
                particle_array d_particle_list,
-               const ConcentrationParam param,
                const int &num_particle);
   void copyback();
 
   float ongoingAveragingTime = 0.0;
   float volume;
-  long numcell;
+
 
   int *d_pBox;
   std::vector<int> h_pBox;
 
 private:
+  const ConcentrationParam param;
+  long numcell;
 };

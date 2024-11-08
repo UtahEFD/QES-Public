@@ -281,7 +281,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
       if (k >= 1000) {
         concenTimer.start();
-        concentration->collect(timeStep, d_particle[idx], param, num_particle);
+        concentration->collect(timeStep, d_particle[idx], num_particle);
         concenTimer.stop();
       }
 

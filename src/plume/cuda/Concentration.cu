@@ -59,7 +59,6 @@ __global__ void compute(int length, particle_array d_particle_list, int *pBox, c
 
 void Concentration::collect(const float &dt,
                             particle_array d_particle_list,
-                            const ConcentrationParam param,
                             const int &num_particle)
 {
   int blockSize = 256;
