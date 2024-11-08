@@ -31,43 +31,52 @@
 /** @file
  * @brief
  */
-
 #pragma once
 
-#include <vector>
+#include "plume/IDGenerator.h"
 
-#include <cuda.h>
-#include <curand.h>
-
-#include "util/VectorMath.h"
-
-#include "plume/Particle.h"
 #include "plume/cuda/QES_data.h"
+#include "plume/cuda/Interpolation.h"
+#include "plume/cuda/Partition.h"
+#include "plume/cuda/RandomGenerator.h"
 
-struct interpWeight
+typedef struct
 {
-  int ii;// nearest cell index to the left in the x direction
-  int jj;// nearest cell index to the left in the y direction
-  int kk;// nearest cell index to the left in the z direction
-  float iw;// normalized distance to the nearest cell index to the left in the x direction
-  float jw;// normalized distance to the nearest cell index to the left in the y direction
-  float kw;// normalized distance to the nearest cell index to the left in the z direction
-};
+  float xStartDomain;
+  float yStartDomain;
+  float zStartDomain;
 
-class Interpolation
+  float xEndDomain;
+  float yEndDomain;
+  float zEndDomain;
+
+} BC_Params;
+
+class Model
 {
 public:
-  Interpolation()
+  Model()
+  {
+    id_gen = IDGenerator::getInstance();
+  }
+
+  ~Model()
   {
   }
 
-  ~Interpolation()
-  {
-  }
+  void getNewParticle(const int &num_new_particle,
+                      particle_array d_particle,
+                      const QESTurbData &d_qes_turb_data,
+                      const QESgrid &qes_grid,
+                      RandomGenerator *random,
+                      Interpolation *interpolation,
+                      Partition *partition);
 
-  void get(particle_array, const QESWindsData &, const QESTurbData &, const QESgrid &, const int &);
-
-  void get(particle_array, const QESTurbData &, const QESgrid &, const int &);
+  void advectParticle(particle_array d_particle,
+                      const int &num_new_particle,
+                      const BC_Params &bc_param,
+                      RandomGenerator *random);
 
 private:
+  IDGenerator *id_gen;
 };

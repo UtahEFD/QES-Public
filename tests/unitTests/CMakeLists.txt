@@ -66,8 +66,6 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
    target_link_libraries(test_concentration_GPU ${CUDA_curand_LIBRARY})
    
    cuda_add_executable(test_plume_GPU
-     CUDA_boundary_conditions.cu
-     CUDA_advection.cu
      CUDA_concentration.cu
      CUDA_plume_testkernel.cu
      test_plume_GPU.cpp)

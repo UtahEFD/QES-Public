@@ -1,16 +1,17 @@
 
 #include "CUDA_plume_testkernel.h"
 
-#include "CUDA_boundary_conditions.cuh"
+// #include "CUDA_boundary_conditions.cuh"
 // #include "CUDA_particle_partition.cuh"
 // #include "CUDA_interpolation.cuh"
-#include "CUDA_advection.cuh"
+// #include "CUDA_advection.cuh"
 #include "CUDA_concentration.cuh"
 
 #include "plume/cuda/QES_data.h"
 #include "plume/cuda/Interpolation.h"
 #include "plume/cuda/Partition.h"
 #include "plume/cuda/RandomGenerator.h"
+#include "plume/cuda/Model.h"
 
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
 #define PBWIDTH 60
@@ -69,7 +70,7 @@ void copy_data_gpu(const TURBGeneralData *TGD, QESTurbData &d_qes_turb_data)
   cudaMemcpy(d_qes_turb_data.tke, TGD->tke.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
 }
 
-__global__ void set_new_particle(int new_particle, particle_array p, float *d_RNG_vals)
+/*__global__ void set_new_particle(int new_particle, particle_array p, float *d_RNG_vals)
 {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
   if (idx < new_particle) {
@@ -78,7 +79,7 @@ __global__ void set_new_particle(int new_particle, particle_array p, float *d_RN
     p.velFluct_old[idx]._2 = p.velFluct_old[idx]._2 * d_RNG_vals[idx + new_particle];
     p.velFluct_old[idx]._3 = p.velFluct_old[idx]._3 * d_RNG_vals[idx + 2 * new_particle];
   }
-}
+  }*/
 
 void print_percentage(const float &percentage)
 {
@@ -215,11 +216,12 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     // CURAND_CALL()
     // curandSetPseudoRandomGeneratorSeed(gen, 1234ULL);
 
-    auto random = new RandomGenerator();
-    auto interpolation = new Interpolation();
+    auto *random = new RandomGenerator();
+    auto *interpolation = new Interpolation();
+    auto *model = new Model();
 
-    IDGenerator *id_gen;
-    id_gen = IDGenerator::getInstance();
+    // IDGenerator *id_gen;
+    // id_gen = IDGenerator::getInstance();
 
     QESWindsData d_qes_winds_data;
     copy_data_gpu(WGD, d_qes_winds_data);
@@ -393,7 +395,8 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
       sourceTimer.start();
 
-      particle_array d_new_particle;
+      model->getNewParticle(new_particle, d_particle[idx], d_qes_turb_data, qes_grid, random, interpolation, partition);
+      /*particle_array d_new_particle;
       partition->allocate_device_particle_list(d_new_particle, new_particle);
 
       cudaMemset(d_new_particle.state, ACTIVE, new_particle * sizeof(int));
@@ -403,7 +406,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       std::vector<vec3> new_pos(new_particle, { 20.0, 50.0, 70.0 });
       cudaMemcpy(d_new_particle.pos, new_pos.data(), new_particle * sizeof(vec3), cudaMemcpyHostToDevice);
 
-      interpolation->get(d_new_particle, d_qes_turb_data, qes_grid, new_particle);
+      interpolation->get(d_new_particle, d_qes_turb_data, qes_grid, new_particle);*/
       /*interpolate<<<numBlocks_new_particle, blockSize>>>(new_particle,
                                                          d_new_particle.pos,
                                                          d_new_particle.tau,
@@ -414,7 +417,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       /*set_new_particle<<<numBlocks_new_particle, blockSize>>>(new_particle,
                                                               d_new_particle,
                                                               d_RNG_newvals);*/
-      random->create("new_particle", 3 * new_particle);
+      /*random->create("new_particle", 3 * new_particle);
       random->generate("new_particle", 0.0, 1.0);
 
       set_new_particle<<<numBlocks_new_particle, blockSize>>>(new_particle,
@@ -422,15 +425,16 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
                                                               random->get("new_particle"));
 
       // cudaDeviceSynchronize();
-      partition->insert(new_particle, d_new_particle, d_particle[idx]);
+      partition->insert(new_particle, d_new_particle, d_particle[idx]);*/
 
       /*insert_particle<<<numBlocks_new_particle, blockSize>>>(new_particle,
                                                                d_lower_count,
                                                                d_new_particle,
                                                                d_particle[idx],
-                                                               length);*/
+                                                               length);
+
       random->destroy("new_particle");
-      partition->free_device_particle_list(d_new_particle);
+      partition->free_device_particle_list(d_new_particle);*/
 
 
       sourceTimer.stop();
@@ -468,13 +472,13 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
                                                              d_RNG_vals,
                                                              bc_param,
                                                              num_particle);*/
-      random->generate("advect", 0.0, 1.0);
+      /*random->generate("advect", 0.0, 1.0);
       advect_particle<<<numBlocks_all_particle, blockSize>>>(d_particle[idx],
                                                              random->get("advect"),
                                                              bc_param,
-                                                             num_particle);
+                                                             num_particle);*/
 
-
+      model->advectParticle(d_particle[idx], num_particle, bc_param, random);
       // this is slower that calling devive function bc in the kernel
       // boundary_conditions<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle[idx]);
 

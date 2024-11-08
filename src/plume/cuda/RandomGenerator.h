@@ -31,6 +31,7 @@
 /** @file
  * @brief
  */
+#pragma once
 
 #include <cmath>
 #include <map>
