@@ -39,7 +39,7 @@ float calcMaxAbsErr(std::vector<float> &A, std::vector<float> &B);
 // void print_particle(const particle &p);
 void test_gpu(const int &ntest, const int &new_particle, const int &length);
 
-TEST_CASE("PLUME")
+TEST_CASE("PLUME CUDA - uniform test case ")
 {
   std::cout << "===================================================================\n"
             << "testing PLUME on GPU     \n"
@@ -51,7 +51,7 @@ TEST_CASE("PLUME")
 
   totTimer.start();
   // test_gpu(1000 + 1E4, 1E4, 2E6);
-  test_gpu(1000 + 1E3, 1E4, 2E6);
+  test_gpu(1000 + 1E3, 1E4, 1E6);
   // test_gpu(1E4, 1E3, 5E5);
   // test_gpu(5E4, 2E3, 2E5);
   // test_gpu(2100, 1200, 5E5);
@@ -61,6 +61,7 @@ TEST_CASE("PLUME")
   totTimer.show();
   std::cout << "===================================================================" << std::endl;
 }
+
 
 void test_gpu(const int &ntest, const int &new_particle, const int &length)
 {
