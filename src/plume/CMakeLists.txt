@@ -66,7 +66,8 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
     cuda/Partition.cu
     cuda/RandomGenerator.cpp
     cuda/Interpolation.cu
-    cuda/Model.cu)
+    cuda/Model.cu
+    cuda/Concentration.cu)
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 #target_link_libraries (qesplumecore quicloader) 

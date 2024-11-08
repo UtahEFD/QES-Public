@@ -416,6 +416,7 @@ void Interpolation::get(particle_array d_particle,
   // interpolate_2<<<numBlocks_particle, blockSize>>>(num_particle, d_particle[idx], d_qes_turb_data, qes_grid);
   // interpolate_3<<<numBlocks_particle, blockSize>>>(num_particle, d_particle[idx], d_qes_turb_data, qes_grid);
   interpolate<<<numBlocks, blockSize>>>(num_particle, d_particle, d_qes_turb_data, qes_grid);
+  cudaDeviceSynchronize();
 }
 
 
@@ -432,4 +433,5 @@ void Interpolation::get(particle_array d_new_particle,
                                         d_new_particle.velFluct_old,
                                         d_qes_turb_data,
                                         qes_grid);
+  cudaDeviceSynchronize();
 }

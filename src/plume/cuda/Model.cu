@@ -273,6 +273,7 @@ void Model::getNewParticle(const int &num_new_particle,
 
   random->destroy("new_particle");
   partition->free_device_particle_list(d_new_particle);
+  cudaDeviceSynchronize();
 }
 
 
@@ -286,4 +287,5 @@ void Model::advectParticle(particle_array d_particle,
 
   random->generate("advect", 0.0, 1.0);
   advect_particle<<<numBlocks, blockSize>>>(d_particle, random->get("advect"), bc_param, num_particle);
+  cudaDeviceSynchronize();
 }

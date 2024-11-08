@@ -1,13 +1,12 @@
 
 #include "CUDA_plume_testkernel.h"
 
-#include "CUDA_concentration.cuh"
-
 #include "plume/cuda/QES_data.h"
 #include "plume/cuda/Interpolation.h"
 #include "plume/cuda/Partition.h"
 #include "plume/cuda/RandomGenerator.h"
 #include "plume/cuda/Model.h"
+#include "plume/cuda/Concentration.h"
 
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
 #define PBWIDTH 60
@@ -233,10 +232,10 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     param.dy = (param.ubndy - param.lbndy) / (param.ny);
     param.dz = (param.ubndz - param.lbndz) / (param.nz);
 
-    std::vector<int> h_pBox(param.nx * param.ny * param.nz, 0.0);
-
-    int *d_pBox;
-    cudaMalloc(&d_pBox, param.nx * param.ny * param.nz * sizeof(int));
+    auto *concentration = new Concentration(param);
+    // std::vector<int> h_pBox(param.nx * param.ny * param.nz, 0.0);
+    // int *d_pBox;
+    // cudaMalloc(&d_pBox, param.nx * param.ny * param.nz * sizeof(int));
 
     // int h_lower_count = 0, h_upper_count;
 
@@ -253,9 +252,9 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
     int blockSize = 256;
 
-    float ongoingAveragingTime = 0.0;
+    // float ongoingAveragingTime = 0.0;
     float timeStep = 1.0;
-    float volume = param.dx * param.dy * param.dz;
+    // float volume = param.dx * param.dy * param.dz;
 
     int idx = 0;
 
@@ -282,7 +281,6 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       interpolation->get(d_particle[idx], d_qes_winds_data, d_qes_turb_data, qes_grid, num_particle);
       interpTimer.stop();
 
-
       advectTimer.start();
       model->advectParticle(d_particle[idx], num_particle, bc_param, random);
       advectTimer.stop();
@@ -290,13 +288,15 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
       if (k >= 1000) {
         concenTimer.start();
-        int numBlocks_all_particle = (num_particle + blockSize - 1) / blockSize;
+        concentration->collect(timeStep, d_particle[idx], param, num_particle);
+
+        /*int numBlocks_all_particle = (num_particle + blockSize - 1) / blockSize;
         collect<<<numBlocks_all_particle, blockSize>>>(num_particle,
                                                        d_particle[idx],
                                                        d_pBox,
                                                        param);
         cudaDeviceSynchronize();
-        ongoingAveragingTime += timeStep;
+        ongoingAveragingTime += timeStep;*/
         concenTimer.stop();
       }
 
@@ -324,7 +324,8 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     cudaMemcpy(velMean.data(), d_particle[idx].velMean, length * sizeof(vec3), cudaMemcpyDeviceToHost);
     cudaMemcpy(velFluct.data(), d_particle[idx].velFluct, length * sizeof(vec3), cudaMemcpyDeviceToHost);
 
-    cudaMemcpy(h_pBox.data(), d_pBox, param.nx * param.ny * param.nz * sizeof(int), cudaMemcpyDeviceToHost);
+    // cudaMemcpy(h_pBox.data(), d_pBox, param.nx * param.ny * param.nz * sizeof(int), cudaMemcpyDeviceToHost);
+    concentration->copyback();
 
     std::vector<particle> particle_list(length);
 
@@ -347,7 +348,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     partition->free_device_particle_list(d_particle[1]);
     // partition->free_device_particle_list(d_new_particle);
     // cudaFree(d_sorting_index);
-    cudaFree(d_pBox);
+    // cudaFree(d_pBox);
     // cudaFree(d_RNG_vals);
     // cudaFree(d_RNG_newvals);
 
@@ -385,7 +386,8 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     float CNorm = (uMean * H * H / Q);
 
     float dt = timeStep;
-    float tAvg = ongoingAveragingTime;
+    float tAvg = concentration->ongoingAveragingTime;
+    float volume = concentration->volume;
 
     // normalization of particle count #particle -> time-averaged # particle/m3
     float CC = dt / tAvg / volume;
@@ -457,7 +459,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       for (int k = 0; k < param.nz; ++k) {
         for (int j = 0; j < param.ny; ++j) {
           int id = i + j * param.nx + k * param.nx * param.ny;
-          CStarQES[j + k * param.ny] = h_pBox[id] * CC * CNorm;
+          CStarQES[j + k * param.ny] = concentration->h_pBox[id] * CC * CNorm;
         }
       }
 
@@ -497,11 +499,11 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
     outfile->newDimensionSet("concentration", { "t", "z_c", "y_c", "x_c" });
 
-    outfile->newField("t_avg", "Averaging time", "s", "time", &ongoingAveragingTime);
-    outfile->newField("p_count", "number of particle per box", "#ofPar", "concentration", &h_pBox);
+    outfile->newField("t_avg", "Averaging time", "s", "time", &concentration->ongoingAveragingTime);
+    outfile->newField("p_count", "number of particle per box", "#ofPar", "concentration", &concentration->h_pBox);
     std::vector<float> CStar(param.nx * param.ny * param.nz);
     for (size_t id = 0; id < CStar.size(); ++id) {
-      CStar[id] = h_pBox[id] * CC * CNorm;
+      CStar[id] = concentration->h_pBox[id] * CC * CNorm;
     }
     outfile->newField("c", "normailzed concentration", "--", "concentration", &CStar);
 
