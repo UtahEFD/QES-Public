@@ -220,6 +220,9 @@ void Partition::allocate_device_particle_list(particle_array &d_particle_list, c
   cudaMalloc((void **)&d_particle_list.tau_old, length * sizeof(mat3sym));
 
   cudaMalloc((void **)&d_particle_list.flux_div, length * sizeof(vec3));
+
+  cudaMemset(d_particle_list.state, INACTIVE, length * sizeof(int));
+  cudaMemset(d_particle_list.ID, 0, length * sizeof(uint32_t));
 }
 
 void Partition::free_device_particle_list(particle_array &d_particle_list)

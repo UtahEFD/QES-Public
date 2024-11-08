@@ -18,7 +18,6 @@
 #include <cuda.h>
 #include <curand.h>
 
-#include "CUDA_QES_Data.h"
 #include "Particle.h"
 
 void test_gpu(const int &, const int &, const int &);

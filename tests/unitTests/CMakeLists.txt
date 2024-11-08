@@ -50,13 +50,12 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
    target_link_libraries(test_advect_partition_GPU ${CUDA_LIBRARIES})
    target_link_libraries(test_advect_partition_GPU ${CUDA_curand_LIBRARY})
 
-   cuda_add_executable(test_interpolation_GPU
-     CUDA_QES_Data.cu
-     CUDA_interpolation.cu
-     CUDA_interpolation_testkernel.cu
-     test_interpolation_GPU.cpp)
-   target_link_libraries(test_interpolation_GPU ${CUDA_LIBRARIES})
-   target_link_libraries(test_interpolation_GPU ${CUDA_curand_LIBRARY})
+   #cuda_add_executable(test_interpolation_GPU
+   #  CUDA_interpolation.cu
+   #  CUDA_interpolation_testkernel.cu
+   #  test_interpolation_GPU.cpp)
+   #target_link_libraries(test_interpolation_GPU ${CUDA_LIBRARIES})
+   #target_link_libraries(test_interpolation_GPU ${CUDA_curand_LIBRARY})
 
    cuda_add_executable(test_concentration_GPU
      CUDA_concentration.cu
@@ -67,8 +66,6 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
    target_link_libraries(test_concentration_GPU ${CUDA_curand_LIBRARY})
    
    cuda_add_executable(test_plume_GPU
-     CUDA_QES_Data.cu
-     CUDA_interpolation.cu
      CUDA_boundary_conditions.cu
      CUDA_advection.cu
      CUDA_concentration.cu
@@ -122,7 +119,7 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
     test_CUDAPartition
     test_particle_partition_GPU
     test_advect_partition_GPU
-    test_interpolation_GPU
+    #test_interpolation_GPU
     test_concentration_GPU
     test_plume_GPU)
 

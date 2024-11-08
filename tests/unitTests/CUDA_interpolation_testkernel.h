@@ -13,7 +13,7 @@
 #include <cuda.h>
 #include <curand.h>
 
-#include "CUDA_QES_Data.h"
+#include "plume/cuda/QES_data.h"
 
 
 void test_gpu(const int &, const int &, const int &);

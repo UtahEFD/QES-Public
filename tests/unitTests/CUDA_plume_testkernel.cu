@@ -3,10 +3,12 @@
 
 #include "CUDA_boundary_conditions.cuh"
 // #include "CUDA_particle_partition.cuh"
-#include "CUDA_interpolation.cuh"
+// #include "CUDA_interpolation.cuh"
 #include "CUDA_advection.cuh"
 #include "CUDA_concentration.cuh"
 
+#include "plume/cuda/QES_data.h"
+#include "plume/cuda/Interpolation.h"
 #include "plume/cuda/Partition.h"
 #include "plume/cuda/RandomGenerator.h"
 
@@ -16,6 +18,56 @@
 __device__ __managed__ QESgrid qes_grid;
 __device__ __managed__ BC_Params bc_param;
 __device__ __managed__ ConcentrationParam param;
+
+void copy_data_gpu(const WINDSGeneralData *WGD, QESWindsData &d_qes_winds_data)
+{
+  // velocity field components
+  long numcell_face = WGD->domain.numFaceCentered();
+  cudaMalloc((void **)&d_qes_winds_data.u, numcell_face * sizeof(float));
+  cudaMemcpy(d_qes_winds_data.u, WGD->u.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_winds_data.v, numcell_face * sizeof(float));
+  cudaMemcpy(d_qes_winds_data.v, WGD->v.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_winds_data.w, numcell_face * sizeof(float));
+  cudaMemcpy(d_qes_winds_data.w, WGD->w.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+}
+
+void copy_data_gpu(const TURBGeneralData *TGD, QESTurbData &d_qes_turb_data)
+{
+  // stress tensor
+  long numcell_cent = TGD->domain.numCellCentered();
+  cudaMalloc((void **)&d_qes_turb_data.txx, numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.txx, TGD->txx.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_turb_data.txy, numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.txy, TGD->txy.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_turb_data.txz, numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.txz, TGD->txz.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_turb_data.tyy, numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.tyy, TGD->tyy.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_turb_data.tyz, numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.tyz, TGD->tyz.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_turb_data.tzz, numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.tzz, TGD->tzz.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+
+  // divergence of stress tensor
+  cudaMalloc((void **)&d_qes_turb_data.div_tau_x, numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.div_tau_x, TGD->div_tau_x.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_turb_data.div_tau_y, numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.div_tau_y, TGD->div_tau_y.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMalloc((void **)&d_qes_turb_data.div_tau_z, numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.div_tau_z, TGD->div_tau_z.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+
+  // dissipation rate
+  cudaMalloc((void **)&d_qes_turb_data.CoEps, numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.CoEps, TGD->CoEps.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+
+  // turbulent viscosity
+  cudaMalloc((void **)&d_qes_turb_data.nuT, numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.nuT, TGD->nuT.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+
+  // turbulence kinetic energy
+  cudaMalloc((void **)&d_qes_turb_data.tke, numcell_cent * sizeof(float));
+  cudaMemcpy(d_qes_turb_data.tke, TGD->tke.data(), numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
+}
 
 __global__ void set_new_particle(int new_particle, particle_array p, float *d_RNG_vals)
 {
@@ -88,6 +140,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
   Timer gpuInitTimer("GPU initialization");
   Timer timeLoopTimer("time loop");
+  Timer sourceTimer("new particles creation");
   Timer partitonTimer("particle partitioning");
   Timer interpTimer("interpolation");
   Timer advectTimer("advection");
@@ -156,21 +209,22 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
     // Create pseudo-random number generator
     // CURAND_CALL(
-    curandCreateGenerator(&gen, CURAND_RNG_PSEUDO_DEFAULT);
+    // curandCreateGenerator(&gen, CURAND_RNG_PSEUDO_DEFAULT);
 
     // Set the seed --- not sure how we'll do this yet in general
     // CURAND_CALL()
-    curandSetPseudoRandomGeneratorSeed(gen, 1234ULL);
+    // curandSetPseudoRandomGeneratorSeed(gen, 1234ULL);
 
     auto random = new RandomGenerator();
+    auto interpolation = new Interpolation();
 
     IDGenerator *id_gen;
     id_gen = IDGenerator::getInstance();
 
-    // QESWindsData d_qes_winds_data;
-    // copy_data_gpu(WGD, d_qes_winds_data);
-    WGD->allocateDevice();
-    WGD->copyDataToDevice();
+    QESWindsData d_qes_winds_data;
+    copy_data_gpu(WGD, d_qes_winds_data);
+    // WGD->allocateDevice();
+    // WGD->copyDataToDevice();
 
     QESTurbData d_qes_turb_data;
     copy_data_gpu(TGD, d_qes_turb_data);
@@ -206,7 +260,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     int *d_pBox;
     cudaMalloc(&d_pBox, param.nx * param.ny * param.nz * sizeof(int));
 
-    int h_lower_count = 0, h_upper_count;
+    // int h_lower_count = 0, h_upper_count;
 
     auto *partition = new Partition(length);
 
@@ -215,24 +269,23 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     partition->allocate_device_particle_list(d_particle[0], length);
     partition->allocate_device_particle_list(d_particle[1], length);
 
-    particle_array d_new_particle;
-    partition->allocate_device_particle_list(d_new_particle, new_particle);
+    // particle_array d_new_particle;
+    // partition->allocate_device_particle_list(d_new_particle, new_particle);
 
     // initialize on the device
-    cudaMemset(d_particle[0].state, INACTIVE, length * sizeof(int));
-    cudaMemset(d_particle[0].ID, 0, length * sizeof(uint32_t));
+    // cudaMemset(d_particle[0].state, INACTIVE, length * sizeof(int));
+    // cudaMemset(d_particle[0].ID, 0, length * sizeof(uint32_t));
 
-    cudaMemset(d_particle[1].state, INACTIVE, length * sizeof(int));
-    cudaMemset(d_particle[1].ID, 0, length * sizeof(uint32_t));
+    // cudaMemset(d_particle[1].state, INACTIVE, length * sizeof(int));
+    // cudaMemset(d_particle[1].ID, 0, length * sizeof(uint32_t));
 
     // Allocate n floats on device to hold random numbers
     // Allocate numParticle * 3 floats on host
-    float *d_RNG_vals, *d_RNG_newvals;
+    /*float *d_RNG_vals, *d_RNG_newvals;
     cudaMalloc((void **)&d_RNG_vals, 3 * length * sizeof(float));
-    cudaMalloc((void **)&d_RNG_newvals, 3 * new_particle * sizeof(float));
+    cudaMalloc((void **)&d_RNG_newvals, 3 * new_particle * sizeof(float));*/
 
     random->create("advect", 3 * length);
-    random->create("new_particle", 3 * new_particle);
 
     /*int *d_sorting_index;
       cudaMalloc((void **)&d_sorting_index, length * sizeof(int));*/
@@ -277,14 +330,14 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
       // cudaMemset(d_sorting_index, -1, length * sizeof(int));
 
-      cudaMemset(d_new_particle.state, ACTIVE, new_particle * sizeof(int));
-      std::vector<uint32_t> new_ID(new_particle);
-      id_gen->get(new_ID);
-      cudaMemcpy(d_new_particle.ID, new_ID.data(), new_particle * sizeof(uint32_t), cudaMemcpyHostToDevice);
-      std::vector<vec3> new_pos(new_particle, { 20.0, 50.0, 70.0 });
-      cudaMemcpy(d_new_particle.pos, new_pos.data(), new_particle * sizeof(vec3), cudaMemcpyHostToDevice);
-      // std::vector<vec3> new_sig(new_particle, { 0.2, 0.2, 0.2 });
-      // cudaMemcpy(d_new_particle.velFluct_old, new_sig.data(), new_particle * sizeof(vec3), cudaMemcpyHostToDevice);
+      // cudaMemset(d_new_particle.state, ACTIVE, new_particle * sizeof(int));
+      // std::vector<uint32_t> new_ID(new_particle);
+      // id_gen->get(new_ID);
+      // cudaMemcpy(d_new_particle.ID, new_ID.data(), new_particle * sizeof(uint32_t), cudaMemcpyHostToDevice);
+      // std::vector<vec3> new_pos(new_particle, { 20.0, 50.0, 70.0 });
+      // cudaMemcpy(d_new_particle.pos, new_pos.data(), new_particle * sizeof(vec3), cudaMemcpyHostToDevice);
+      //  std::vector<vec3> new_sig(new_particle, { 0.2, 0.2, 0.2 });
+      //  cudaMemcpy(d_new_particle.velFluct_old, new_sig.data(), new_particle * sizeof(vec3), cudaMemcpyHostToDevice);
 
 
       // int num_particle = length;
@@ -299,11 +352,9 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       // int idx = k % 2;
       // int alt_idx = (k + 1) % 2;
 
-      curandGenerateNormal(gen, d_RNG_vals, 3 * length, 0.0, 1.0);
-      curandGenerateNormal(gen, d_RNG_newvals, 3 * new_particle, 0.0, 1.0);
+      // curandGenerateNormal(gen, d_RNG_vals, 3 * length, 0.0, 1.0);
+      // curandGenerateNormal(gen, d_RNG_newvals, 3 * new_particle, 0.0, 1.0);
 
-      random->generate("advect", 0.0, 1.0);
-      random->generate("new_particle", 0.0, 1.0);
 
       partitonTimer.start();
 
@@ -340,16 +391,31 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       cudaMemcpy(&h_active_count_2, d_active_count_2, sizeof(int), cudaMemcpyDeviceToHost);
       cudaMemcpy(&h_empty_count_2, d_empty_count_2, sizeof(int), cudaMemcpyDeviceToHost);*/
 
-      interpolate<<<numBlocks_new_particle, blockSize>>>(new_particle,
+      sourceTimer.start();
+
+      particle_array d_new_particle;
+      partition->allocate_device_particle_list(d_new_particle, new_particle);
+
+      cudaMemset(d_new_particle.state, ACTIVE, new_particle * sizeof(int));
+      std::vector<uint32_t> new_ID(new_particle);
+      id_gen->get(new_ID);
+      cudaMemcpy(d_new_particle.ID, new_ID.data(), new_particle * sizeof(uint32_t), cudaMemcpyHostToDevice);
+      std::vector<vec3> new_pos(new_particle, { 20.0, 50.0, 70.0 });
+      cudaMemcpy(d_new_particle.pos, new_pos.data(), new_particle * sizeof(vec3), cudaMemcpyHostToDevice);
+
+      interpolation->get(d_new_particle, d_qes_turb_data, qes_grid, new_particle);
+      /*interpolate<<<numBlocks_new_particle, blockSize>>>(new_particle,
                                                          d_new_particle.pos,
                                                          d_new_particle.tau,
                                                          d_new_particle.velFluct_old,
                                                          d_qes_turb_data,
-                                                         qes_grid);
+                                                         qes_grid);*/
       // cudaDeviceSynchronize();
       /*set_new_particle<<<numBlocks_new_particle, blockSize>>>(new_particle,
                                                               d_new_particle,
                                                               d_RNG_newvals);*/
+      random->create("new_particle", 3 * new_particle);
+      random->generate("new_particle", 0.0, 1.0);
 
       set_new_particle<<<numBlocks_new_particle, blockSize>>>(new_particle,
                                                               d_new_particle,
@@ -363,6 +429,11 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
                                                                d_new_particle,
                                                                d_particle[idx],
                                                                length);*/
+      random->destroy("new_particle");
+      partition->free_device_particle_list(d_new_particle);
+
+
+      sourceTimer.stop();
       cudaDeviceSynchronize();
       /*check_buffer < < < numBlocks_buffer, blockSize >>> (d_particle[idx],
                                                              d_active_count_1,
@@ -372,21 +443,22 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
       cudaMemcpy(&h_empty_count_1, d_empty_count_1, sizeof(int), cudaMemcpyDeviceToHost);*/
 
       interpTimer.start();
+      interpolation->get(d_particle[idx], d_qes_winds_data, d_qes_turb_data, qes_grid, num_particle);
       /*interpolate<<<numBlocks_all_particle, blockSize>>>(num_particle,
                                                          d_particle[idx],
                                                          d_qes_winds_data,
                                                          qes_grid);*/
-      interpolate<<<numBlocks_all_particle, blockSize>>>(num_particle,
+      /*interpolate<<<numBlocks_all_particle, blockSize>>>(num_particle,
                                                          d_particle[idx],
-                                                         WGD->d_data,
-                                                         qes_grid);
+                                                         d_qes_winds_data,
+                                                         qes_grid);*/
       // interpolate_1<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle[idx], d_qes_turb_data, qes_grid);
       // interpolate_2<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle[idx], d_qes_turb_data, qes_grid);
       // interpolate_3<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle[idx], d_qes_turb_data, qes_grid);
-      interpolate<<<numBlocks_all_particle, blockSize>>>(num_particle,
+      /*interpolate<<<numBlocks_all_particle, blockSize>>>(num_particle,
                                                          d_particle[idx],
                                                          d_qes_turb_data,
-                                                         qes_grid);
+                                                         qes_grid);*/
       cudaDeviceSynchronize();
       interpTimer.stop();
 
@@ -396,7 +468,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
                                                              d_RNG_vals,
                                                              bc_param,
                                                              num_particle);*/
-
+      random->generate("advect", 0.0, 1.0);
       advect_particle<<<numBlocks_all_particle, blockSize>>>(d_particle[idx],
                                                              random->get("advect"),
                                                              bc_param,
@@ -486,11 +558,11 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     // cudafree
     partition->free_device_particle_list(d_particle[0]);
     partition->free_device_particle_list(d_particle[1]);
-    partition->free_device_particle_list(d_new_particle);
+    // partition->free_device_particle_list(d_new_particle);
     // cudaFree(d_sorting_index);
     cudaFree(d_pBox);
-    cudaFree(d_RNG_vals);
-    cudaFree(d_RNG_newvals);
+    // cudaFree(d_RNG_vals);
+    // cudaFree(d_RNG_newvals);
 
     WGD->freeDevice();
 
@@ -673,6 +745,7 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
     std::cout << "-------------------------------------------------------------------" << std::endl;
     timeLoopTimer.show();
     partitonTimer.show();
+    sourceTimer.show();
     interpTimer.show();
     advectTimer.show();
     concenTimer.show();

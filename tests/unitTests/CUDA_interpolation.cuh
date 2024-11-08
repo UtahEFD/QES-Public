@@ -16,7 +16,7 @@
 #include <curand.h>
 
 #include "plume/Particle.h"
-#include "CUDA_QES_Data.h"
+#include "plume/cuda/QES_data.h"
 
 struct interpWeight
 {
