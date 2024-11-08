@@ -167,8 +167,8 @@ if (ENABLE_DEV_MODE)
   elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # using Visual Studio C++
     # MSVC uses a different warning flags
-    add_compile_options(/W4 /WX)
-    add_compile_options(/fsanitize=address /MTd)
+#    add_compile_options(/W4 /WX)
+#    add_compile_options(/fsanitize=address /MTd)
   endif()
   
 ELSE (ENABLE_DEV_MODE)
@@ -197,9 +197,6 @@ if(DEFINED ENV{BOOST_DIR})
   message(STATUS "Setting BOOST_DIR to $ENV{BOOST_DIR}")
   SET(BOOST_ROOT $ENV{BOOST_DIR})
 endif()
-
-# May be necessary to get Win32 version to work
-# SET(Boost_USE_STATIC_LIBS TRUE)
 
 FIND_PACKAGE(Boost REQUIRED program_options date_time property_tree)
 IF(${Boost_FOUND})
@@ -242,8 +239,10 @@ ENDIF(${GDAL_FOUND})
 # CUDA
 # - check if CUDA is available
 # ----------------------------------------------------------
-include(CheckLanguage)
-check_language(CUDA)
+INCLUDE(CheckLanguage)
+CHECK_LANGUAGE(CUDA)
+
+FIND_PACKAGE(CUDAToolkit REQUIRED)
 
 If (CMAKE_CUDA_COMPILER)
 
@@ -278,6 +277,8 @@ IF(CMAKE_CUDA_COMPILER)
   INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
   #INCLUDE_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/samples/common/inc)
   LINK_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/lib64)
+
+
 ELSE(CUDA_FOUND)
   #
   # CUDA was not found, so disable CUDA/GPU support
@@ -288,8 +289,6 @@ ELSE(CUDA_FOUND)
   MESSAGE(WARNING "CUDA is required for compiling GPU accelerated computations into this project.  Please install CUDA or re-run cmake with -i to specify the CUDA directories if you need these features.")
   MESSAGE(WARNING "GPU and related accelerations will be disable for this build.")
 ENDIF()
-
-find_package(CUDAToolkit REQUIRED)
 
 # ----------------------------------------------------------
 # CUDA and OPTIX
@@ -304,8 +303,8 @@ if(HAS_CUDA_SUPPORT)
       set(CMAKE_CUDA_STANDARD_REQUIRED ON)
    endif()
    
-  MESSAGE(STATUS "Using CUDA Version: ${CUDA_VERSION}")
-  if (${CUDA_VERSION} VERSION_GREATER_EQUAL 10.2)
+  MESSAGE(STATUS "Using CUDA Version: ${CMAKE_CUDA_COMPILER_VERSION}")
+  if (${CMAKE_CUDA_COMPILER_VERSION} VERSION_GREATER_EQUAL 10.2)
     MESSAGE(STATUS "Found CUDA 10.2 or higher! Now searching for OptiX support...")
     
     #
@@ -439,7 +438,7 @@ add_subdirectory(src/util)
 add_subdirectory(src/winds)
 add_subdirectory(src/plume)
 
-add_subdirectory(scratch)
+# add_subdirectory(scratch)
 add_subdirectory(examples)
 
 add_subdirectory(qesWinds)
