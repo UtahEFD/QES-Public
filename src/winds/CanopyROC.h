@@ -48,7 +48,8 @@ public:
 
     // x_start += UID->simParams->halo_x;
     // y_start += UID->simParams->halo_y;
-    canopy_rotation *= M_PI / 180.0;
+    const double m_pi = 3.14159265359;
+    canopy_rotation *= m_pi / 180.0;
     polygonVertices.resize(5);
   }
 

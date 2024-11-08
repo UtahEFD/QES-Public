@@ -35,6 +35,7 @@
  * @sa SourceType
  */
 
+#include "Random.h"
 #include "PI_SourceGeometry_Line.hpp"
 
 void PI_SourceGeometry_Line::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
@@ -78,7 +79,10 @@ void PI_SourceGeometry_Line::setInitialPosition(double &x, double &y, double &z)
   double diffX = posX_1 - posX_0;
   double diffY = posY_1 - posY_0;
   double diffZ = posZ_1 - posZ_0;
-  float t = drand48();
+
+  Random prng;
+  float t = prng.uniRan();
+  
   x = posX_0 + t * diffX;
   y = posY_0 + t * diffY;
   z = posZ_0 + t * diffZ;

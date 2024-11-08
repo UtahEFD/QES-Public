@@ -16,6 +16,8 @@
 #include "plume/Particle.h"
 #include "plume/TracerParticle.h"
 
+#include "plume/Random.h"
+
 void scrubParticleList(std::list<Particle *> &particleList)
 {
   for (auto parItr = particleList.begin(); parItr != particleList.end();) {
@@ -50,8 +52,9 @@ TEST_CASE("buffer", "[in progress]")
     }
     particleList.insert(particleList.end(), nextSetOfParticles.begin(), nextSetOfParticles.end());
 
+    Random prng;
     for (auto p : particleList) {
-      float t = drand48();
+      float t = prng.uniRan();
       advect(p);
       if (t > 0.8)
         p->isActive = false;
@@ -106,8 +109,9 @@ TEST_CASE("buffer", "[in progress]")
     for (int pidx = 0; pidx < new_tracers; ++pidx) {
       tracers.insert();
     }
+    Random prng;
     for (auto &tracer : tracers) {
-      float t = drand48();
+      float t = prng.uniRan();
       advect(&tracer);
       if (t > 0.8)
         tracer.isActive = false;
@@ -135,8 +139,9 @@ TEST_CASE("buffer large", "[in progress]")
     for (int pidx = 0; pidx < 2E3; ++pidx) {
       tracers.insert();
     }
+    Random prng;
     for (auto &tracer : tracers) {
-      float t = drand48();
+      float t = prng.uniRan();
       advect(&tracer);
       if (t > 0.8)
         tracer.isActive = false;
