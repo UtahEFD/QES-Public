@@ -13,6 +13,11 @@
 	    "binaryDir": "${sourceDir}/buildDev",
 	    "cacheVariables": {
 		"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+		"CMAKE_CUDA_COMPILER": "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.8/bin/nvcc.exe",
+		"CUDACXX": "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.8/bin/nvcc.exe",
+		"CMAKE_CUDA_FLAGS": " --allow-unsupported-compiler",
+		"CMAKE_CUDA_ARCHITECTURES": "native",
+		"CMAKE_CXX_COMPILER": "clang++",
 		"ENABLE_DEV_MODE": "ON",
 		"ENABLE_TESTS": "ON",
 		"TESTS_ENABLE_UNIT_TESTS": "ON"
