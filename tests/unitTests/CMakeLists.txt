@@ -50,6 +50,8 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
      CUDA_advection.cu
      CUDA_advect_partition_testkernel.cu
      test_advect_partition_GPU.cpp)
+   SET_TARGET_PROPERTIES(test_advect_partition_GPU PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+   target_link_libraries(test_advect_partition_GPU PRIVATE qesutilgpu)
    target_link_libraries(test_advect_partition_GPU PRIVATE ${CUDA_LIBRARIES})
    target_link_libraries(test_advect_partition_GPU PRIVATE ${CUDA_curand_LIBRARY})
 
@@ -78,6 +80,8 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
      CUDA_concentration.cu
      CUDA_plume_testkernel.cu
      test_plume_GPU.cpp)
+   SET_TARGET_PROPERTIES(test_plume_GPU PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+   target_link_libraries(test_plume_GPU PRIVATE qesutilgpu)
    target_link_libraries(test_plume_GPU PRIVATE ${CUDA_LIBRARIES})
    target_link_libraries(test_plume_GPU PRIVATE ${CUDA_curand_LIBRARY})
    
@@ -171,6 +175,7 @@ foreach (unittest ${UNITTESTS})
   ENDIF()
   target_link_libraries(${unittest} PRIVATE qeswindscore)
   IF ($CACHE{HAS_CUDA_SUPPORT})
+    SET_TARGET_PROPERTIES(${unittest} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
     target_link_libraries(${unittest} PRIVATE qesutilgpu)
   ENDIF()
   target_link_libraries(${unittest} PRIVATE qesutil)

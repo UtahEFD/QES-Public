@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __CUDA_BOUNDARY_CONDITIONS_H__
+#define __CUDA_BOUNDARY_CONDITIONS_H__
 
 #include <chrono>
 #include <string>
@@ -31,3 +32,5 @@ __device__ void boundary_conditions(particle_array p, int idx, const BC_Params &
 
 // test boundary conditon as kernel vs device function
 __global__ void boundary_conditions(int length, particle_array p, const BC_Params &bc_param);
+
+#endif
