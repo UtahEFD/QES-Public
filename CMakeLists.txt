@@ -193,18 +193,18 @@ ENDIF (ENABLE_DEV_MODE)
 # ----------------------------------------------------------
 # SET (Boost_MULTITHREADED TRUE)
 
-set(Boost_USE_STATIC_LIBS        ON)  # only find static libs
-set(Boost_USE_DEBUG_LIBS        OFF)  # ignore debug libs and
-set(Boost_USE_RELEASE_LIBS       ON)  # only find release libs
-set(Boost_USE_MULTITHREADED      ON)
-set(Boost_USE_STATIC_RUNTIME     ON)  # link Boost Static libraries
+#set(Boost_USE_STATIC_LIBS        ON)  # only find static libs
+#set(Boost_USE_DEBUG_LIBS        OFF)  # ignore debug libs and
+#set(Boost_USE_RELEASE_LIBS       ON)  # only find release libs
+#set(Boost_USE_MULTITHREADED      ON)
+#set(Boost_USE_STATIC_RUNTIME     ON)  # link Boost Static libraries
 
 if(DEFINED ENV{BOOST_DIR})
   message(STATUS "Setting BOOST_DIR to $ENV{BOOST_DIR}")
   SET(BOOST_ROOT $ENV{BOOST_DIR})
 endif()
 
-FIND_PACKAGE(Boost REQUIRED program_options date_time property_tree)
+FIND_PACKAGE(Boost REQUIRED COMPONENTS program_options date_time) # property_tree)
 IF(${Boost_FOUND})
   INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
   MESSAGE(STATUS "Found Boost Libraries in ${Boost_LIBRARIES}, Version ${Boost_VERSION}")
@@ -437,7 +437,7 @@ function(link_external_libraries exec)
   ENDIF()
 
   IF (ENABLE_OPENMP AND ${OpenMP_FOUND})
-    target_link_libraries(${exec} ${OpenMP_CXX_LIBRARIES})    
+    target_link_libraries(${exec} PRIVATE ${OpenMP_CXX_LIBRARIES})    
   ENDIF()
 endfunction()
 
