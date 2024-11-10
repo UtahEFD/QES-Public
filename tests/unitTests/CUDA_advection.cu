@@ -1,6 +1,6 @@
 #include "CUDA_advection.cuh"
 
-#include "util/VectorMath_CUDA.cuh"
+#include "util/VectorMath_CUDA.cu"
 
 __device__ void solve(particle_array p, int tid, float par_dt, float invarianceTol, float vel_threshold, vec3 vRandn)
 {

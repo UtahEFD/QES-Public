@@ -1,7 +1,7 @@
 
 #include "CUDA_buffer_testkernel.h"
 
-#include "util/VectorMath_CUDA.cuh"
+#include "util/VectorMath_CUDA.h"
 
 #include "CUDA_GLE_Solver.cuh"
 #include "Particle.cuh"

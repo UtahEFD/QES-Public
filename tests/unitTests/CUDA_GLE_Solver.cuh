@@ -35,7 +35,7 @@
 #pragma once
 
 #include "util/VectorMath.h"
-#include "util/VectorMath_CUDA.cuh"
+#include "util/VectorMath_CUDA.h"
 
 // #include "winds/TURBGeneralData.h"
 

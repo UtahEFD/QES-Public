@@ -2,7 +2,7 @@
 #pragma once
 
 #include "Particle.cuh"
-#include "util/VectorMath_CUDA.cuh"
+#include "util/VectorMath_CUDA.h"
 
 typedef struct
 {

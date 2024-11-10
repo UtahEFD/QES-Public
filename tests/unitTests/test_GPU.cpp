@@ -82,3 +82,7 @@ TEST_CASE("Verify GPU Accessibility")
 
 }
 
+TEST_CASE("Test VectorMath GPU")
+{
+  
+}

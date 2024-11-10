@@ -1,7 +1,7 @@
 
 #include "CUDA_particle_partition_testkernel.h"
 
-#include "util/VectorMath_CUDA.cuh"
+#include "util/VectorMath_CUDA.h"
 
 #include "plume/IDGenerator.h"
 

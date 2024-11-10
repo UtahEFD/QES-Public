@@ -1,7 +1,7 @@
 
 #include "CUDA_interpolation_testkernel.h"
 
-#include "util/VectorMath_CUDA.cuh"
+#include "util/VectorMath_CUDA.h"
 
 #include "CUDA_interpolation.cuh"
 

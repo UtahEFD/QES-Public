@@ -1,7 +1,7 @@
 
 #include "CUDA_concentration_testkernel.h"
 
-#include "util/VectorMath_CUDA.cuh"
+#include "util/VectorMath_CUDA.h"
 #include "CUDA_particle_partition.cuh"
 #include "CUDA_concentration.cuh"
 

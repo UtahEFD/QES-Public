@@ -1,5 +1,5 @@
 #include "CUDA_vector_testkernel.h"
-#include "util/VectorMath_CUDA.cuh"
+#include "util/VectorMath_CUDA.h"
 
 
 __global__ void testCUDA_vectormath()

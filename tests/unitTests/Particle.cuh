@@ -2,7 +2,7 @@
 #pragma once
 
 #include "util/VectorMath.h"
-#include "util/VectorMath_CUDA.cuh"
+#include "util/VectorMath_CUDA.h"
 
 enum state : int { ACTIVE = 0,
                    INACTIVE = 1,
