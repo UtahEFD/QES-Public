@@ -2,7 +2,6 @@
     "dependencies": [
 	"boost-program-options",
 	"boost-date-time",
-	"boost-filesystem",
 	"boost-property-tree",
 	"netcdf-c",
 	"netcdf-cxx4",

@@ -11,34 +11,47 @@
  * Copyright (c) 2024 Lucas Ulmer
  * Copyright (c) 2024 Pete Willemsen
  *
- * This file is part of QES-Winds
+ * This file is part of QES-Plume
  *
  * GPL-3.0 License
  *
- * QES-Winds is free software: you can redistribute it and/or modify
+ * QES-Plume is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3 of the License.
  *
- * QES-Winds is distributed in the hope that it will be useful,
+ * QES-Plume is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/**
- * @file vectorMath.cu
- * @brief :document this:
+/** @file VectorMath_CUDA.h
+ * @brief
  */
 
-#include "VectorMath_CUDA.h"
+#pragma once
 
-/*__device__ float length(const vec3 &x)
+#include <cmath>
+
+#include "VectorMath.h"
+
+/*__device__ float length(const vec3 &);
+__device__ float dot(const vec3 &, const vec3 &);
+__device__ void reflect(const vec3 &, vec3 &);
+__device__ float distance(const vec3 &, const vec3 &);
+
+__device__ void calcInvariants(const mat3sym &, vec3 &);
+__device__ void makeRealizable(const float &, mat3sym &);
+__device__ bool invert(mat3 &);
+__device__ void multiply(Const mat3 &, const vec3 &, vec3 &);*/
+
+__device__ float length(const vec3 &x)
 {
-  Return sqrt(x._1 * x._1 + x._2 * x._2 + x._3 * x._3);
-  }
+  return sqrt(x._1 * x._1 + x._2 * x._2 + x._3 * x._3);
+}
 
 __device__ float dot(const vec3 &a, const vec3 &b)
 {
@@ -143,7 +156,7 @@ __device__ void makeRealizable(const float &invarianceTol, mat3sym &tau)
 }
 
 
-__device__ bool invert3(mat3 &A)
+__device__ bool invert(mat3 &A)
 {
 
   // calculate the determinant
@@ -177,11 +190,10 @@ __device__ bool invert3(mat3 &A)
   }
 }
 
-__device__ void matmult(const mat3 &A, const vec3 &b, vec3 &x)
+__device__ void multiply(const mat3 &A, const vec3 &b, vec3 &x)
 {
   // now calculate the Ax=b x value from the input inverse A matrix and b matrix
   x._1 = b._1 * A._11 + b._2 * A._12 + b._3 * A._13;
   x._2 = b._1 * A._21 + b._2 * A._22 + b._3 * A._23;
   x._3 = b._1 * A._31 + b._2 * A._32 + b._3 * A._33;
 }
-*/
