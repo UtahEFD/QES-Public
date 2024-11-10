@@ -46,7 +46,6 @@
 #include <chrono>
 #include <cuda.h>
 #include <cuda_runtime.h>
-#include <cuda_gl_interop.h>
 
 #include "Solver.h"
 
