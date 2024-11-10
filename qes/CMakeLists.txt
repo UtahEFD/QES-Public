@@ -2,17 +2,17 @@
 # hierarchically integrate projects together.
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
-IF ($CACHE{HAS_CUDA_SUPPORT})
-	CUDA_ADD_EXECUTABLE( qes
-		     handleQESArgs.cpp
-                     qesMain.cpp	
-		     )
-ELSE ($CACHE{HAS_CUDA_SUPPORT})
+#IF ($CACHE{HAS_CUDA_SUPPORT})
+#	CUDA_ADD_EXECUTABLE( qes
+#		     handleQESArgs.cpp
+#                     qesMain.cpp	
+#		     )
+#ELSE ($CACHE{HAS_CUDA_SUPPORT})
 	ADD_EXECUTABLE( qes
 		     handleQESArgs.cpp
                      qesMain.cpp	
 		     )
-ENDIF ($CACHE{HAS_CUDA_SUPPORT})
+#ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 target_link_libraries(qes PRIVATE qesplumecore)
 target_link_libraries(qes PRIVATE qeswindscore)

@@ -1,18 +1,18 @@
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
-IF ($CACHE{HAS_CUDA_SUPPORT})
-  cuda_add_executable(util_output util_output.cpp)
+#IF ($CACHE{HAS_CUDA_SUPPORT})
+#  cuda_add_executable(util_output util_output.cpp)
   
-  set(examples
-          util_output)
+#  set(examples
+#          util_output)
 
-ELSE ($CACHE{HAS_CUDA_SUPPORT})
+#ELSE ($CACHE{HAS_CUDA_SUPPORT})
   add_executable(util_output util_output.cpp)
 
   set(examples
           util_output)
       
-ENDIF ($CACHE{HAS_CUDA_SUPPORT})
+#ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 foreach (example ${examples})
   

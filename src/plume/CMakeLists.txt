@@ -51,15 +51,15 @@ SET( qesPlumeCoreSources
     WallReflection_StairStep.cpp
     WallReflection_TriMesh.cpp)
 
-IF ($CACHE{HAS_CUDA_SUPPORT})
-   CUDA_ADD_LIBRARY( qesplumecore
-      ${qesPlumeCoreSources}
-   )
-ELSE ($CACHE{HAS_CUDA_SUPPORT})
+#IF ($CACHE{HAS_CUDA_SUPPORT})
+#   CUDA_ADD_LIBRARY( qesplumecore
+#      ${qesPlumeCoreSources}
+#   )
+#ELSE ($CACHE{HAS_CUDA_SUPPORT})
    ADD_LIBRARY( qesplumecore
       ${qesPlumeCoreSources}
    )
-ENDIF ($CACHE{HAS_CUDA_SUPPORT})
+#ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 #target_link_libraries (qesplumecore quicloader) 
 #target_link_libraries (qesplumecore util)

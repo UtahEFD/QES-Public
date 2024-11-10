@@ -193,6 +193,12 @@ ENDIF (ENABLE_DEV_MODE)
 # ----------------------------------------------------------
 # SET (Boost_MULTITHREADED TRUE)
 
+set(Boost_USE_STATIC_LIBS        ON)  # only find static libs
+set(Boost_USE_DEBUG_LIBS        OFF)  # ignore debug libs and
+set(Boost_USE_RELEASE_LIBS       ON)  # only find release libs
+set(Boost_USE_MULTITHREADED      ON)
+set(Boost_USE_STATIC_RUNTIME     ON)  # link Boost Static libraries
+
 if(DEFINED ENV{BOOST_DIR})
   message(STATUS "Setting BOOST_DIR to $ENV{BOOST_DIR}")
   SET(BOOST_ROOT $ENV{BOOST_DIR})
@@ -274,7 +280,7 @@ IF(CMAKE_CUDA_COMPILER)
     set(CMAKE_CUDA_STANDARD_REQUIRED ON)
   endif()
   
-  INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
+  INCLUDE_DIRECTORIES(${CUDAToolkit_INCLUDE_DIRS})
   #INCLUDE_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/samples/common/inc)
   LINK_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/lib64)
 
@@ -297,6 +303,10 @@ ENDIF()
 if(HAS_CUDA_SUPPORT)
 
   ADD_DEFINITIONS(-DHAS_CUDA)
+
+  # May need this only on Windows to get around an odd error from
+  # Boost where __builtin_FUNCSIG is undefined
+  ADD_DEFINITIONS(-DBOOST_DISABLE_CURRENT_LOCATION)
 
   if(NOT DEFINED CMAKE_CUDA_STANDARD)
       set(CMAKE_CUDA_STANDARD 17)
@@ -415,8 +425,8 @@ endif (DOXYGEN_FOUND)
 #   build the code
 # ----------------------------------------------------------
 function(link_external_libraries exec)
-  target_link_libraries(${exec} PRIVATE ${Boost_PROGRAM_OPTIONS_LIBRARIES})
-  target_link_libraries(${exec} PRIVATE ${Boost_DATE_TIME_LIBRARIES})
+  target_link_libraries(${exec} PRIVATE ${Boost_LIBRARIES})
+#  target_link_libraries(${exec} PRIVATE ${Boost_DATE_TIME_LIBRARIES})
   #target_link_libraries(${exec} PRIVATE ${Boost_FILESYSTEM_LIBRARIES})
   target_link_libraries(${exec} PRIVATE ${GDAL_LIBRARY})
   target_link_libraries(${exec} PRIVATE "netCDF::netcdf-cxx4")

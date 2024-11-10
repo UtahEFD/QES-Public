@@ -17,31 +17,34 @@ add_executable(plume_IDGenerator plume_IDGenerator.cpp)
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
 
-  cuda_add_executable(test_GPU
+  add_executable(test_GPU
     test_GPU.cpp)
+   TARGET_INCLUDE_DIRECTORIES(test_GPU PRIVATE {CUDAToolkit_INCLUDE_DIRS})
+   SET_TARGET_PROPERTIES(test_GPU PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+   target_link_libraries(test_GPU PRIVATE qesutilgpu)
    target_link_libraries(test_GPU PRIVATE ${CUDA_LIBRARIES})
 
-  cuda_add_executable(test_CUDARandomGen
+  add_executable(test_CUDARandomGen
     CUDARandomKernel.cu CUDARandomKernel.h
     test_CUDARandomGen.cpp)
    target_link_libraries(test_CUDARandomGen PRIVATE ${CUDA_LIBRARIES})
    target_link_libraries(test_CUDARandomGen PRIVATE ${CUDA_curand_LIBRARY})
 
-   cuda_add_executable(util_vector_classes_GPU
+  add_executable(util_vector_classes_GPU
      CUDA_vector_testkernel.cu CUDA_vector_testkernel.h
      util_vector_classes_GPU.cpp)
 
-   cuda_add_executable(util_advect_GPU
+  add_executable(util_advect_GPU
      CUDA_advect_testkernel.cu
      util_advect_GPU.cpp)
 
-   cuda_add_executable(test_particle_partition_GPU
+   add_executable(test_particle_partition_GPU
      CUDA_particle_partition_testkernel.cu
      test_particle_partition_GPU.cpp)
    target_link_libraries(test_particle_partition_GPU PRIVATE ${CUDA_LIBRARIES})
    target_link_libraries(test_particle_partition_GPU PRIVATE ${CUDA_curand_LIBRARY})
    
-   cuda_add_executable(test_advect_partition_GPU
+   add_executable(test_advect_partition_GPU
      CUDA_particle_partition.cu
      CUDA_boundary_conditions.cu
      CUDA_advection.cu
@@ -50,7 +53,7 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
    target_link_libraries(test_advect_partition_GPU PRIVATE ${CUDA_LIBRARIES})
    target_link_libraries(test_advect_partition_GPU PRIVATE ${CUDA_curand_LIBRARY})
 
-   cuda_add_executable(test_interpolation_GPU
+   add_executable(test_interpolation_GPU
      CUDA_QES_Data.cu
      CUDA_interpolation.cu
      CUDA_interpolation_testkernel.cu
@@ -58,7 +61,7 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
    target_link_libraries(test_interpolation_GPU PRIVATE ${CUDA_LIBRARIES})
    target_link_libraries(test_interpolation_GPU PRIVATE ${CUDA_curand_LIBRARY})
 
-   cuda_add_executable(test_concentration_GPU
+   add_executable(test_concentration_GPU
      CUDA_concentration.cu
      CUDA_particle_partition.cu
      CUDA_concentration_testkernel.cu
@@ -66,7 +69,7 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
    target_link_libraries(test_concentration_GPU PRIVATE ${CUDA_LIBRARIES})
    target_link_libraries(test_concentration_GPU PRIVATE ${CUDA_curand_LIBRARY})
    
-   cuda_add_executable(test_plume_GPU
+   add_executable(test_plume_GPU
      CUDA_QES_Data.cu
      CUDA_interpolation.cu
      CUDA_particle_partition.cu
@@ -78,31 +81,31 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
    target_link_libraries(test_plume_GPU PRIVATE ${CUDA_LIBRARIES})
    target_link_libraries(test_plume_GPU PRIVATE ${CUDA_curand_LIBRARY})
    
-   cuda_add_executable(util_buffer_GPU
+   add_executable(util_buffer_GPU
      CUDA_buffer_testkernel.cu
      util_buffer_GPU.cpp)
    
-  cuda_add_executable(test_CUDAPartition
+  add_executable(test_CUDAPartition
     CUDAPartitionKernel.cu CUDAPartitionKernel.h
     test_CUDAPartition.cpp)
    target_link_libraries(test_CUDAPartition PRIVATE ${CUDA_LIBRARIES})
    target_link_libraries(test_CUDAPartition PRIVATE ${CUDA_curand_LIBRARY})
 
-   cuda_add_executable(winds_terrain
+   add_executable(winds_terrain
      test_DTEHeightField.h test_DTEHeightField.cpp
      winds_terrain.cpp)
    
-   cuda_add_executable(turbulence_derivative_CPU
+   add_executable(turbulence_derivative_CPU
        turbulence_derivative_CPU.cpp)
 
-   cuda_add_executable(plume_interpolation_CPU
+   add_executable(plume_interpolation_CPU
      test_functions.cpp
      plume_interpolation_CPU.cpp)
 
-  cuda_add_executable(plume_input
+  add_executable(plume_input
           plume_input.cpp)
 
-  cuda_add_executable(plume_particle_buffer
+  add_executable(plume_particle_buffer
           plume_particle_buffer.cpp)
 
   set(UNITTESTS

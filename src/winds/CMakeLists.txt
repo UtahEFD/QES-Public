@@ -51,24 +51,28 @@ SET( qesWindCoreSources
   TimeSeries.h
   )
 
-IF ($CACHE{HAS_CUDA_SUPPORT})
-   CUDA_ADD_LIBRARY( qeswindscore
-      ${qesWindCoreSources}
-   )
-ELSE ($CACHE{HAS_CUDA_SUPPORT})
+#IF ($CACHE{HAS_CUDA_SUPPORT})
+#   CUDA_ADD_LIBRARY( qeswindscore
+#      ${qesWindCoreSources}
+#   )
+#ELSE ($CACHE{HAS_CUDA_SUPPORT})
    ADD_LIBRARY( qeswindscore
       ${qesWindCoreSources}
    )
-ENDIF ($CACHE{HAS_CUDA_SUPPORT})
+#ENDIF ($CACHE{HAS_CUDA_SUPPORT})
  
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
-  CUDA_ADD_LIBRARY(qeswindsgpu
+  MESSAGE(STATUS "CUDA Toolkit Include Directories: ${CUDAToolkit_INCLUDE_DIRS}")
+  ADD_LIBRARY(qeswindsgpu
     Solver_GPU_DynamicParallelism.cu
     Solver_GPU_GlobalMemory.cu 
     Solver_GPU_SharedMemory.cu 
     TURBGeneralData.cu
     WindProfilerBarnGPU.cu)
+    TARGET_INCLUDE_DIRECTORIES(qeswindsgpu PRIVATE {CUDAToolkit_INCLUDE_DIRS})
+
+    set_target_properties(qeswindsgpu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
   
 

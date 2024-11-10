@@ -101,7 +101,7 @@ ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
-  CUDA_ADD_EXECUTABLE( compareWindsResults
+  ADD_EXECUTABLE( compareWindsResults
           handleCompareArgs.cpp
           compareWindsResults.cpp
           )
