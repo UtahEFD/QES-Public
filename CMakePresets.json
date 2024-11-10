@@ -22,6 +22,17 @@
 		"TESTS_ENABLE_UNIT_TESTS": "ON"
 	    }
 	},
+	{
+	    "name": "unixDev",
+	    "binaryDir": "${sourceDir}/buildUnixDev",
+	    "cacheVariables": {
+		"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+		"ENABLE_OPENMP": "ON",
+		"ENABLE_DEV_MODE": "ON",
+		"ENABLE_TESTS": "ON",
+		"TESTS_ENABLE_UNIT_TESTS": "ON"
+	    }
+	},
 		{
 	    "name": "clangdev",
 	    "binaryDir": "${sourceDir}/buildClangDev",
