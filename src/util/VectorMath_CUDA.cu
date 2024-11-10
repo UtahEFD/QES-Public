@@ -32,21 +32,7 @@
  * @brief
  */
 
-#pragma once
-
-#include <cmath>
-
-#include "VectorMath.h"
-
-/*__device__ float length(const vec3 &);
-__device__ float dot(const vec3 &, const vec3 &);
-__device__ void reflect(const vec3 &, vec3 &);
-__device__ float distance(const vec3 &, const vec3 &);
-
-__device__ void calcInvariants(const mat3sym &, vec3 &);
-__device__ void makeRealizable(const float &, mat3sym &);
-__device__ bool invert(mat3 &);
-__device__ void multiply(Const mat3 &, const vec3 &, vec3 &);*/
+#include "VectorMath_CUDA.h"
 
 __device__ float length(const vec3 &x)
 {
