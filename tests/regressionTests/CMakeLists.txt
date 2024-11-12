@@ -1,22 +1,11 @@
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
-IF ($CACHE{HAS_CUDA_SUPPORT})
+add_executable(plume_sinusoidal
+  plume_sinusoidal.cpp)
 
-    CUDA_ADD_EXECUTABLE(plume_sinusoidal
-            plume_sinusoidal.cpp)
+add_executable(plume_uniform
+  plume_uniform.cpp)
 
-    CUDA_ADD_EXECUTABLE(plume_uniform
-            plume_uniform.cpp)
-
-ELSE ($CACHE{HAS_CUDA_SUPPORT})
-
-    add_executable(plume_sinusoidal
-            plume_sinusoidal.cpp)
-
-    add_executable(plume_uniform
-            plume_uniform.cpp)
-
-ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 set(REGRESSTESTS
   plume_sinusoidal
@@ -24,20 +13,20 @@ set(REGRESSTESTS
 
 foreach (regresstest ${REGRESSTESTS})
 
-  target_link_libraries(${regresstest} qesplumecore)
-  target_link_libraries(${regresstest} qeswindscore)
+  target_link_libraries(${regresstest} PRIVATE qesplumecore)
+  target_link_libraries(${regresstest} PRIVATE qeswindscore)
   IF ($CACHE{HAS_CUDA_SUPPORT})
-    target_link_libraries(${regresstest} qeswindsgpu)
+    target_link_libraries(${regresstest} PRIVATE qeswindsgpu)
   ENDIF()
-  target_link_libraries(${regresstest} qeswindscore)
-  target_link_libraries(${regresstest} qesutil)
+  target_link_libraries(${regresstest} PRIVATE qeswindscore)
+  target_link_libraries(${regresstest} PRIVATE qesutil)
   IF($CACHE{HAS_OPTIX_SUPPORT})
-    target_link_libraries(${regresstest} qesOptix)
+    target_link_libraries(${regresstest} PRIVATE qesOptix)
   ENDIF()
   link_external_libraries(${regresstest})
-  target_link_libraries(${regresstest} Catch2::Catch2WithMain)
+  target_link_libraries(${regresstest} PRIVATE Catch2::Catch2WithMain)
   
-  add_test(regression_test::${regresstest} ${regresstest})
+  add_test(NAME regression_test::${regresstest} COMMAND ${regresstest})
   
 endforeach(regresstest)
 
