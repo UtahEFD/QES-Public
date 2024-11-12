@@ -229,7 +229,15 @@ if (WIN32 OR (CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake$"))
     LINK_DIRECTORIES(${netCDF_LIB_DIR})
   ENDIF(netCDF_FOUND)
 else()
-  
+  # What we had before - but doesn't work so well with vcpkg or Windows
+  # NetCDF is odd in how it gets installed...
+  SET(NETCDF_CXX "YES")
+  FIND_PACKAGE(NetCDF REQUIRED)
+  IF(NetCDF_FOUND)
+    MESSAGE(STATUS "Found NetCDF: ${NETCDF_INCLUDES}: ${NETCDF_LIBRARIES}, ${NETCDF_INCLUDES_CXX}, ${NETCDF_LIBRARIES_CXX}")
+    INCLUDE_DIRECTORIES(${NETCDF_INCLUDES})
+    INCLUDE_DIRECTORIES(${NETCDF_INCLUDES_CXX})
+  ENDIF(NetCDF_FOUND)
 endif()
 
 # ----------------------------------------------------------
@@ -431,7 +439,7 @@ function(link_external_libraries exec)
 #  target_link_libraries(${exec} PRIVATE ${Boost_DATE_TIME_LIBRARIES})
   #target_link_libraries(${exec} PRIVATE ${Boost_FILESYSTEM_LIBRARIES})
   target_link_libraries(${exec} PRIVATE ${GDAL_LIBRARY})
-  target_link_libraries(${exec} PRIVATE "netCDF::netcdf-cxx4")
+  target_link_libraries(${exec} PRIVATE ${NETCDF_LIBRARIES_CXX}) # "netCDF::netcdf-cxx4")
   target_link_libraries(${exec} PRIVATE ${NETCDF_C_LIBRARY})
   IF ($CACHE{HAS_CUDA_SUPPORT})
     # target_link_libraries(${exec} cudadevrt)
