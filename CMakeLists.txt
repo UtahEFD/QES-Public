@@ -213,7 +213,12 @@ ENDIF()
 # ----------------------------------------------------------
 # NetCDF
 # ----------------------------------------------------------
-if (WIN32 OR (CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake$"))
+if (WIN32 OR CMAKE_TOOLCHAIN_FILE) # MATCHES "vcpkg.cmake$"))
+
+  # clear the module path as the findnetcdf.cmake that we need on
+  # unix at the moment causes major issues finding netcdf here.
+  set(CMAKE_MODULE_PATH "")
+
   SET(NETCDF_CXX "YES")
   FIND_PACKAGE(netCDFCxx CONFIG REQUIRED)
   IF(netCDFCxx_FOUND)
@@ -228,6 +233,10 @@ if (WIN32 OR (CMAKE_TOOLCHAIN_FILE MATCHES "vcpkg.cmake$"))
     INCLUDE_DIRECTORIES(${netCDF_INCLUDE_DIR})
     LINK_DIRECTORIES(${netCDF_LIB_DIR})
   ENDIF(netCDF_FOUND)
+
+  # reset the module path...
+  LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+  MESSAGE(STATUS "CMake Module Path: ${CMAKE_MODULE_PATH}")
 else()
   # What we had before - but doesn't work so well with vcpkg or Windows
   # NetCDF is odd in how it gets installed...
@@ -439,7 +448,12 @@ function(link_external_libraries exec)
 #  target_link_libraries(${exec} PRIVATE ${Boost_DATE_TIME_LIBRARIES})
   #target_link_libraries(${exec} PRIVATE ${Boost_FILESYSTEM_LIBRARIES})
   target_link_libraries(${exec} PRIVATE ${GDAL_LIBRARY})
-  target_link_libraries(${exec} PRIVATE ${NETCDF_LIBRARIES_CXX}) # "netCDF::netcdf-cxx4")
+  # want to clean this up!!! - Pete
+  if (WIN32 OR CMAKE_TOOLCHAIN_FILE) # MATCHES "vcpkg.cmake$"))
+    target_link_libraries(${exec} PRIVATE "netCDF::netcdf-cxx4")
+  else()
+    target_link_libraries(${exec} PRIVATE ${NETCDF_LIBRARIES_CXX})
+  endif()
   target_link_libraries(${exec} PRIVATE ${NETCDF_C_LIBRARY})
   IF ($CACHE{HAS_CUDA_SUPPORT})
     # target_link_libraries(${exec} cudadevrt)
