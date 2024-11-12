@@ -37,7 +37,7 @@ __global__ void testCUDA_invert(int length, mat3 *d_A)
   int index = blockIdx.x * blockDim.x + threadIdx.x;
   int stride = blockDim.x * gridDim.x;
   for (int it = index; it < length; it += stride) {
-    bool tt = invert(d_A[it]);
+    bool out = invert(d_A[it]);
   }
 }
 
@@ -81,9 +81,9 @@ void test_matrix_multiplication_gpu(const int &length, std::vector<mat3> &A, std
     // temp
 
     mat3 *d_A;
-    cudaMalloc((void **)&d_A, 9 * length * sizeof(float));
+    cudaMalloc((void **)&d_A, length * sizeof(mat3));
     vec3 *d_b;
-    cudaMalloc((void **)&d_b, 3 * length * sizeof(float));
+    cudaMalloc((void **)&d_b, length * sizeof(vec3));
     vec3 *d_x;
     cudaMalloc((void **)&d_x, length * sizeof(vec3));
 
@@ -95,11 +95,7 @@ void test_matrix_multiplication_gpu(const int &length, std::vector<mat3> &A, std
 
     // call kernel
     auto kernelStartTime = std::chrono::high_resolution_clock::now();
-    // testCUDA_vectormath<<<numberOfBlocks, numberOfThreadsPerBlock>>>();
     testCUDA_multiply<<<numberOfBlocks, numberOfThreadsPerBlock>>>(length, d_A, d_b, d_x);
-    // testCUDA_invert<<<numberOfBlocks, numberOfThreadsPerBlock>>>(length, d_A);
-    // testCUDA_invariant<<<numberOfBlocks, numberOfThreadsPerBlock>>>(length, d_tau, d_invar);
-    //  testCUDA_advection<<<numberOfBlocks, numberOfThreadsPerBlock>>>(length, d_x);
     cudaDeviceSynchronize();
     auto kernelEndTime = std::chrono::high_resolution_clock::now();
 
@@ -147,7 +143,7 @@ void test_matrix_inversion_gpu(const int &length, std::vector<mat3> &A)
     // temp
 
     mat3 *d_A;
-    cudaMalloc((void **)&d_A, 9 * length * sizeof(float));
+    cudaMalloc((void **)&d_A, length * sizeof(mat3));
 
     auto gpuStartTime = std::chrono::high_resolution_clock::now();
 

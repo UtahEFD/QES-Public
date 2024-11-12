@@ -1,4 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 #include <string>
 #include <cstdio>
@@ -9,15 +10,10 @@
 #include "util/VectorMath.h"
 #include "CUDA_vector_testkernel.h"
 
-TEST_CASE("vector math class test")
+const int length = 1E6;
+
+TEST_CASE("Matrix Multiplication")
 {
-
-  std::cout << "======================================\n"
-            << "testing vector math\n"
-            << "--------------------------------------" << std::endl;
-
-  int length = 1E6;
-
   std::cout << "--------------------------------------" << std::endl;
   std::cout << "Matrix Multiplication" << std::endl;
   mat3 A = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -34,20 +30,15 @@ TEST_CASE("vector math class test")
 
   test_matrix_multiplication_gpu(length, A_array, b_array, x_array);
 
-  REQUIRE(x_array[0]._1 == 6);
-  REQUIRE(x_array[0]._2 == 15);
-  REQUIRE(x_array[0]._3 == 24);
-
-  vec3 sum = { 0.0, 0.0, 0.0 };
   for (size_t k = 0; k < x_array.size(); ++k) {
-    sum._1 += x_array[k]._1;
-    sum._2 += x_array[k]._2;
-    sum._3 += x_array[k]._3;
+    REQUIRE_THAT(x_array[k]._1, Catch::Matchers::WithinRel(6.0f, 0.000001f));
+    REQUIRE_THAT(x_array[k]._2, Catch::Matchers::WithinRel(15.0f, 0.000001f));
+    REQUIRE_THAT(x_array[k]._3, Catch::Matchers::WithinRel(24.0F, 0.000001f));
   }
-  REQUIRE(sum._1 == 6 * length);
-  REQUIRE(sum._2 == 15 * length);
-  REQUIRE(sum._3 == 24 * length);
+}
 
+TEST_CASE("Matrix Inversion")
+{
   std::cout << "--------------------------------------" << std::endl;
   std::cout << "Matrix Inversion" << std::endl;
 
@@ -57,43 +48,39 @@ TEST_CASE("vector math class test")
 
   test_matrix_inversion_gpu(length, B_array);
 
-  REQUIRE(B_array[0]._11 == -0.375);
-  REQUIRE(B_array[0]._12 == 00.500);
-  REQUIRE(B_array[0]._13 == 00.125);
+  for (size_t k = 0; k < B_array.size(); ++k) {
+    REQUIRE_THAT(B_array[k]._11, Catch::Matchers::WithinRel(-0.375f, 0.000001f));
+    REQUIRE_THAT(B_array[k]._12, Catch::Matchers::WithinRel(0.500f, 0.000001f));
+    REQUIRE_THAT(B_array[k]._13, Catch::Matchers::WithinRel(0.125f, 0.000001f));
 
-  REQUIRE(B_array[0]._21 == 00.500);
-  REQUIRE(B_array[0]._22 == -1.000);
-  REQUIRE(B_array[0]._23 == 00.500);
+    REQUIRE_THAT(B_array[k]._21, Catch::Matchers::WithinRel(0.500f, 0.000001f));
+    REQUIRE_THAT(B_array[k]._22, Catch::Matchers::WithinRel(-1.000f, 0.000001f));
+    REQUIRE_THAT(B_array[k]._23, Catch::Matchers::WithinRel(0.500f, 0.000001f));
 
-  REQUIRE(B_array[0]._31 == 00.125);
-  REQUIRE(B_array[0]._32 == 00.500);
-  REQUIRE(B_array[0]._33 == -0.375);
+    REQUIRE_THAT(B_array[k]._31, Catch::Matchers::WithinRel(0.125f, 0.000001f));
+    REQUIRE_THAT(B_array[k]._32, Catch::Matchers::WithinRel(0.500f, 0.000001f));
+    REQUIRE_THAT(B_array[k]._33, Catch::Matchers::WithinRel(-0.375f, 0.000001f));
+  }
+}
 
-
+TEST_CASE("Symmetric Matrix Invariants")
+{
   std::cout << "--------------------------------------" << std::endl;
   std::cout << "Symmetric Matrix Invariants" << std::endl;
 
   mat3sym tau = { 1, 2, 3, 1, 2, 1 };
   std::vector<mat3sym> tau_array;
   tau_array.resize(length, tau);
+  std::vector<vec3> x_array;
   x_array.resize(length, { 0, 0, 0 });
 
   test_matrix_invariants_gpu(length, tau_array, x_array);
 
-  REQUIRE(x_array[0]._1 == 3.0);
-  REQUIRE(x_array[0]._2 == -14.0);
-  REQUIRE(x_array[0]._3 == 8.0);
-
-  sum = { 0.0, 0.0, 0.0 };
   for (size_t k = 0; k < x_array.size(); ++k) {
-    sum._1 += x_array[k]._1;
-    sum._2 += x_array[k]._2;
-    sum._3 += x_array[k]._3;
+    REQUIRE_THAT(x_array[k]._1, Catch::Matchers::WithinRel(3.0f, 0.000001f));
+    REQUIRE_THAT(x_array[k]._2, Catch::Matchers::WithinRel(-14.0f, 0.000001f));
+    REQUIRE_THAT(x_array[k]._3, Catch::Matchers::WithinRel(8.0f, 0.000001f));
   }
-  REQUIRE(sum._1 == 3.0 * length);
-  REQUIRE(sum._2 == -14.0 * length);
-  REQUIRE(sum._3 == 8.0 * length);
-  std::cout << "======================================" << std::endl;
 }
 
 /*
