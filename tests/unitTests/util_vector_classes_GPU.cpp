@@ -42,6 +42,78 @@ TEST_CASE("Matrix Inversion")
   std::cout << "--------------------------------------" << std::endl;
   std::cout << "Matrix Inversion" << std::endl;
 
+  mat3 A = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
+  std::vector<mat3> A_array;
+  A_array.resize(length, A);
+
+  test_matrix_inversion_gpu(length, A_array);
+
+  float eps = 1.0e-3;
+  for (size_t k = 0; k < A_array.size(); ++k) {
+      REQUIRE_THAT(A_array[k]._11, Catch::Matchers::WithinAbs(1.0F, eps));
+      REQUIRE_THAT(A_array[k]._12, Catch::Matchers::WithinRel(0.0f, eps));
+      REQUIRE_THAT(A_array[k]._13, Catch::Matchers::WithinRel(0.0f, eps));
+
+      REQUIRE_THAT(A_array[k]._21, Catch::Matchers::WithinAbs(0.0F, eps));
+      REQUIRE_THAT(A_array[k]._22, Catch::Matchers::WithinRel(1.0f, eps));
+      REQUIRE_THAT(A_array[k]._23, Catch::Matchers::WithinRel(0.0f, eps));
+
+      REQUIRE_THAT(A_array[k]._31, Catch::Matchers::WithinAbs(0.0F, eps));
+      REQUIRE_THAT(A_array[k]._32, Catch::Matchers::WithinRel(0.0f, eps));
+      REQUIRE_THAT(A_array[k]._33, Catch::Matchers::WithinRel(1.0f, eps));
+  }
+
+
+  mat3 D = { 1.0f, 2.0f, -1.0f, 2.0f, 1.0f, 2.0f, -1.0f, 2.0f, 1.0f };
+  std::vector<mat3> D_array;
+  D_array.resize(length, D);
+
+  test_matrix_inversion_gpu(length, D_array);
+
+  SECTION("D Array Test");
+  
+  eps = 1.0e-4;
+  for (size_t k = 0; k < D_array.size(); ++k) {
+    REQUIRE_THAT(D_array[k]._11, Catch::Matchers::WithinRel(3.0f/16.0f, eps));
+    REQUIRE_THAT(D_array[k]._12, Catch::Matchers::WithinRel(1.0f/4.0f, eps));
+    REQUIRE_THAT(D_array[k]._13, Catch::Matchers::WithinRel(-5.0f/16.0f, eps));
+
+    REQUIRE_THAT(D_array[k]._21, Catch::Matchers::WithinRel(1.0f/4.0f, eps));
+    REQUIRE_THAT(D_array[k]._22, Catch::Matchers::WithinRel(0.0f, eps));
+    REQUIRE_THAT(D_array[k]._23, Catch::Matchers::WithinRel(1.0f/4.0f, eps));
+
+    REQUIRE_THAT(D_array[k]._31, Catch::Matchers::WithinRel(-5.0f/16.0f, eps));
+    REQUIRE_THAT(D_array[k]._32, Catch::Matchers::WithinRel(1.0f/4.0f, eps));
+    REQUIRE_THAT(D_array[k]._33, Catch::Matchers::WithinRel(3.0f/16.0f, eps));
+  }
+
+
+  mat3 C = { 0.5, -1.2, 0.8, -0.3, 2.1, -0.4, 1.3, -0.7, 1.9 };
+  std::vector<mat3> C_array;
+  C_array.resize(length, C);
+
+  test_matrix_inversion_gpu(length, C_array);
+
+  SECTION("C Array Test");
+  
+  eps = 1.0e-4;
+  for (size_t k = 0; k < C_array.size(); ++k) {
+    REQUIRE_THAT(C_array[k]._11, Catch::Matchers::WithinRel(-16.7873f, eps));
+    REQUIRE_THAT(C_array[k]._12, Catch::Matchers::WithinRel(-7.7828f, eps));
+    REQUIRE_THAT(C_array[k]._13, Catch::Matchers::WithinRel(5.4299f, eps));
+
+    REQUIRE_THAT(C_array[k]._21, Catch::Matchers::WithinRel(-0.22624f, eps));
+    REQUIRE_THAT(C_array[k]._22, Catch::Matchers::WithinRel(0.4072f, eps));
+    REQUIRE_THAT(C_array[k]._23, Catch::Matchers::WithinRel(0.1810f, eps));
+
+    REQUIRE_THAT(C_array[k]._31, Catch::Matchers::WithinRel(11.4027f, eps));
+    REQUIRE_THAT(C_array[k]._32, Catch::Matchers::WithinRel(5.4752f, eps));
+    REQUIRE_THAT(C_array[k]._33, Catch::Matchers::WithinRel(-3.1222f, eps));
+  }
+
+  
+  SECTION("B Array Test");
+
   mat3 B = { 1, 2, 3, 2, 1, 2, 3, 2, 1 };
   std::vector<mat3> B_array;
   B_array.resize(length, B);
