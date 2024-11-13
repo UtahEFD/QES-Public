@@ -1,9 +1,9 @@
 <QESWindsParameters>
 <simulationParameters>       
-  	<halo_x> 2.0 </halo_x >						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
-  	<halo_y> 2.0 </halo_y >						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
-    <domain> 110 110 70 </domain> <!-- nx,ny,nz-->
-	<cellSize> 1 1 0.5 </cellSize> <!-- dx, dy,dz [Meters]-->	
+  	<halo_x> 0 </halo_x >						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
+  	<halo_y> 0 </halo_y >						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
+    <domain> 100 100 35 </domain> <!-- nx,ny,nz-->
+	<cellSize> 2 2 1 </cellSize> <!-- dx, dy,dz [Meters]-->	
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 1 </totalTimeIncrements>
 	<maxIterations> 500 </maxIterations>
@@ -58,9 +58,9 @@
 </buildingsParams>
 
 <fires>
-	<fireDur> 3600 </fireDur>
+	<fireDur> 360 </fireDur>
 	<fuelType> 203 </fuelType>
-	<!-- fuelMap>../data/FireFiles/test.tif</fuelMap -->
+	<fuelMap>../FireFiles/test.tif</fuelMap>
 	<fmc> 0.02 </fmc>
 
     <courant> 0.9 </courant>
@@ -71,7 +71,7 @@
     	<xStart> 45.0 </xStart> <!--meters-->
     	<yStart> 15.0 </yStart> <!--meters-->
     	<length> 10.0 </length> <!--meters-->
-    	<width>  1.0 </width> <!--meters-->
+    	<width>  2.0 </width> <!--meters-->
     </ignition>
 
 </fires>

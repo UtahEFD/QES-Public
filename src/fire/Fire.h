@@ -51,6 +51,8 @@
 
 using namespace netCDF;
 using namespace netCDF::exceptions;
+using namespace std::chrono;
+using namespace std;
 
 class FuelProperties;
 //class Smoke;

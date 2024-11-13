@@ -31,8 +31,25 @@
  */
 #include "Fire.h"
 
+
 void Fire ::potential(WINDSGeneralData *WGD)
 {
+
+    auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
+    float g = 9.81;
+    float rhoAir = 1.125;
+    float C_pa = 1150;
+    float T_a = 293.15;
+
+    float ur, uz;
+    float u_p;      ///< u velocity from potential field in target cell
+    float v_p;      ///< v velocity from potential field in target cell
+    float w_p;      ///< w velocity from potential field in target cell
+    float alpha_e = 0.09;///< entrainment constant (Kaye & Linden 2004)
+    float lambda_mix = 1 / alpha_e * sqrt(25.0 / 132.0);///< nondimensional plume mixing height
+    float U_c;      ///<characteristic velocity 
+    float L_c;      ///<characteristic length 
+
     // dr and dz, assume linear spacing between
     float drStar = rStar[1] - rStar[0];
     float dzStar = zStar[1] - zStar[0];
@@ -78,18 +95,6 @@ void Fire ::potential(WINDSGeneralData *WGD)
     }
 
     if (H0 != 0) {
-        float g = 9.81;
-        float rhoAir = 1.125;
-        float C_pa = 1150;
-        float T_a = 293.15;
-        float U_c = pow(g * g * H0 / rhoAir / T_a / C_pa, 1.0 / 5.0);
-        float L_c = pow(H0 / rhoAir / C_pa / T_a / pow(g, 1.0 / 2.0), 2.0 / 5.0);
-        float ur, uz;
-        float u_p;///< u velocity from potential field in target cell
-        float v_p;///< v velocity from potential field in target cell
-        float w_p;///< w velocity from potential field in target cell
-        float alpha_e = 0.09;///< entrainment constant (Kaye & Linden 2004)
-        float lambda_mix = 1 / alpha_e * sqrt(25.0 / 132.0);///< nondimensional plume mixing height
         float kmax = 0;///< plume mixing height
         int XIDX;
         int YIDX;
@@ -102,6 +107,7 @@ void Fire ::potential(WINDSGeneralData *WGD)
 
         while (filt < nx - 1) {
             filt = pow(2.0, ZIDX);
+            counter = filt*filt;
             ZIDX += 1;
             z_mix_old = z_mix;
             XIDX = 0;
@@ -113,13 +119,11 @@ void Fire ::potential(WINDSGeneralData *WGD)
                     k_fire_old = 0;
                     icent = 0;
                     jcent = 0;
-                    counter = 0;
                     for (int ii = XIDX; ii < XIDX + filt; ii++) {
                         for (int jj = YIDX; jj < YIDX + filt; jj++) {
                             int id = ii + jj * (nx - 1);
                             if (burn_flag[id] == 1) {
                                 struct FireProperties fp = fire_cells[id].properties;
-                                counter += 1;
                                 icent += ii;
                                 jcent += jj;
                                 H += fp.H0;
@@ -188,33 +192,9 @@ void Fire ::potential(WINDSGeneralData *WGD)
                                     } else {
                                         zeta = sqrt(h_k * h_k + z_k * z_k);
                                         x1 = (1 + cos(atan(h_k / z_k))) / 2.0;
-                                        if (x1 < 0.5) {
-                                            std::cout << "x1<0.5" << std::endl;
-                                            x1 = 0.5;
-                                        } else if (isnan(x1)) {
-                                            std::cout << "x1 is nan" << std::endl;
-                                        }
                                         // lookup indices for G(x) and G'(x) - spans 0.5 to 1.0
                                         int gMinIdx = floor(pot_G * (x1 - .5) / .5);
-                                        /* MM 11/13/24
-                                        if (gMinIdx < 0) {
-                                            std::cout << "gMin error" << std::endl;
-                                        } else if (gMinIdx > pot_G) {
-                                            std::cout << "gMin error" << std::endl;
-                                        } else if (isnan(gMinIdx)) {
-                                            std::cout << "gMin NaN" << std::endl;
-                                        }
-                                        */
                                         int gMaxIdx = ceil(pot_G * (x1 - .5) / .5);
-                                        /* MM 11/13/24
-                                        if (gMaxIdx > pot_G) {
-                                            std::cout << "gMax error" << std::endl;
-                                        } else if (gMaxIdx < 0) {
-                                            std::cout << "gMax error" << std::endl;
-                                        } else if (isnan(gMaxIdx)) {
-                                            std::cout << "gMax NaN" << std::endl;
-                                        }
-                                        */
                                         // values for G and G'
                                         float g_x = 0.5 * (G[gMinIdx] + G[gMaxIdx]);
                                         float gprime_x = 0.5 * (Gprime[gMinIdx] + Gprime[gMaxIdx]);
@@ -255,4 +235,8 @@ void Fire ::potential(WINDSGeneralData *WGD)
             }
         }
     }
+    auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
+
+    std::chrono::duration<float> elapsed = finish - start;
+    std::cout << "\t\t Elapsed time: " << elapsed.count() << " s\n";// Print out elapsed execution time
 }
