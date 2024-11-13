@@ -187,6 +187,10 @@ int main(int argc, char *argv[])
      **/
 
   Fire *fire = new Fire(WID, WGD);
+  /**
+   * Set fuel map
+   */
+  fire->FuelMap(WID, WGD);
 
   /**
      * Create FIREOutput manager
@@ -202,9 +206,9 @@ int main(int argc, char *argv[])
   QEStime simTimeStart = WGD->timestamp[0];
   QEStime simTimeCurr = simTimeStart;
 
-  std::vector<float> Fu0;//
-  std::vector<float> Fv0;
-  std::vector<float> Fw0;
+  //std::vector<float> Fu0;
+  //std::vector<float> Fv0;
+  //std::vector<float> Fw0;
 
 
   // Generate the general TURB data from WINDS data
@@ -283,9 +287,9 @@ int main(int argc, char *argv[])
     /**
        * Save initial fields from sensor time to reset after each time+fire loop
        **/
-    Fu0 = WGD->u0;///< Initial u-velocity for sensor timestep
-    Fv0 = WGD->v0;///< Initial v-velocity for sensor timestep
-    Fw0 = WGD->w0;///< Initial w-velocity for sensor timestep
+    //Fu0 = WGD->u0;///< Initial u-velocity for sensor timestep
+    //Fv0 = WGD->v0;///< Initial v-velocity for sensor timestep
+    //Fw0 = WGD->w0;///< Initial w-velocity for sensor timestep
 
 
     simTimeCurr = WGD->timestamp[index];///< Simulation time for current sensor time

@@ -1,4 +1,4 @@
-/** QUICFire spread rate using Balbi (2020) model
+/** QES-Fire spread rate using Balbi (2020) model
 *This class stores fuel properties of Anderson 13 / Scott and Burgan 40 fuels
 **/
 class FuelProperties

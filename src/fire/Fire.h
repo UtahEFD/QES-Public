@@ -58,6 +58,7 @@ public:
 
   Fire(WINDSInputData *, WINDSGeneralData *);
 
+
   struct FireProperties
   {
     float w, h, d, r, T, tau, K, H0, U_c, L_c;
@@ -77,6 +78,7 @@ public:
     FireState state;
   };
 
+  float PI = 3.14159265359;
   double time = 0;
   float r_max = 0;
   float dt = 0;
@@ -137,6 +139,7 @@ public:
   void run(Solver *, WINDSGeneralData *);
   void move(Solver *, WINDSGeneralData *);
   void potential(WINDSGeneralData *);
+  void FuelMap(WINDSInputData *, WINDSGeneralData *);
   float computeTimeStep();
 
 private:
@@ -154,7 +157,7 @@ private:
   float rothermel(FuelProperties *, float, float, float);
 
   FireProperties balbi(FuelProperties *, float, float, float, float, float, float, float);
-
+  
 
   FireProperties runFire(float, float, int);
 };

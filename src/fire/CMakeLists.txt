@@ -3,21 +3,24 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 
 SET( qesFireCoreSources
+  Balbi.cpp
   Fire.cpp
   Fire.h
   FIREOutput.cpp
   FIREOutput.h
   Fires.hpp
+  FuelMap.cpp
   FuelProperties.hpp
   FuelRead.cpp
   FuelRead.h
   ignition.h
   OldFuelProperties.hpp
   Potential.cpp  
-  SourceFire.h
+  Rothermel.cpp 
   SourceFire.cpp
-  Smoke.h
+  SourceFire.h
   Smoke.cpp
+  Smoke.h
   )
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
