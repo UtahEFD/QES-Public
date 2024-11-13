@@ -25,26 +25,36 @@
  * You should have received a copy of the GNU General Public License
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
-/** 
- * @file FuelProperties.hpp
- * @brief Parses ignition points from XML
-**/
-#include "util/ParseInterface.h"
+/**
+ * @file ComputeTimeStep.cpp
+ * @brief This function computes the dynamic timestep for fire grid based on Courant number
+ */
+#include "Fire.h"
 
-class ignition : public ParseInterface
+float Fire ::computeTimeStep()
 {
-private:
-public:
-  float xStart, yStart, length, width, baseHeight, height;
+  // spread rates
+  float r = 0;
+  float r_max = 0;
 
-  virtual void parseValues()
-  {
-
-    parsePrimitive<float>(true, height, "height");
-    parsePrimitive<float>(true, baseHeight, "baseHeight");
-    parsePrimitive<float>(true, xStart, "xStart");
-    parsePrimitive<float>(true, yStart, "yStart");
-    parsePrimitive<float>(true, length, "length");
-    parsePrimitive<float>(true, width, "width");
+  // get max spread rate
+  for (int j = 0; j < ny - 1; j++) {
+    for (int i = 0; i < nx - 1; i++) {
+      int idx = i + j * (nx - 1);
+      r = fire_cells[idx].properties.r;
+      r_max = r > r_max ? r : r_max;
+    }
   }
-};
+  std::cout << "max ROS = " << r_max << std::endl;
+  if (r_max < 0.3) {
+    r_max = 0.3;
+  }
+  else if (isnan(r_max)){
+    r_max = 0.3;
+    std::cout<<"r_max is NaN, setting to 0.3"<<std::endl;
+  }
+  float dt = courant * dx / r_max;
+ 
+  std::cout << "dt = " << dt << " s" << std::endl;
+  return courant * dx / r_max;
+}

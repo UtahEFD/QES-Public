@@ -1,11 +1,13 @@
 /****************************************************************************
  * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
  * Copyright (c) 2024 Matthew Moody
  * Copyright (c) 2024 Jeremy Gibbs
  * Copyright (c) 2024 Rob Stoll
  * Copyright (c) 2024 Fabien Margairaz
  * Copyright (c) 2024 Brian Bailey
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Fire
  *
@@ -23,14 +25,12 @@
  * You should have received a copy of the GNU General Public License
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
-
-#include "Fire.h"
 /**
  * @file Potential.cpp
- *
  * @brief This function calculates the fire induced winds based on heat release and plume merging
- *  
  */
+#include "Fire.h"
+
 void Fire ::potential(WINDSGeneralData *WGD)
 {
     // dr and dz, assume linear spacing between
@@ -57,7 +57,6 @@ void Fire ::potential(WINDSGeneralData *WGD)
     // loop through burning cells to get heat release
 
     float H0 = 0;///< heat release
-    float fa = 0;///< fire area
     int cent = 0;
     int icent = 0;
     int jcent = 0;
@@ -74,9 +73,6 @@ void Fire ::potential(WINDSGeneralData *WGD)
                 icent += ii;
                 jcent += jj;
                 H0 += fire_cells[id].properties.H0;
-                // Hard code heat release
-                //H0 += 1.80357e6*dx*dy/25/25;
-                fa += dx * dy;
             }
         }
     }
@@ -85,7 +81,6 @@ void Fire ::potential(WINDSGeneralData *WGD)
         float g = 9.81;
         float rhoAir = 1.125;
         float C_pa = 1150;
-        //float C_p = 2000;
         float T_a = 293.15;
         float U_c = pow(g * g * H0 / rhoAir / T_a / C_pa, 1.0 / 5.0);
         float L_c = pow(H0 / rhoAir / C_pa / T_a / pow(g, 1.0 / 2.0), 2.0 / 5.0);
@@ -107,7 +102,6 @@ void Fire ::potential(WINDSGeneralData *WGD)
 
         while (filt < nx - 1) {
             filt = pow(2.0, ZIDX);
-            //std::cout<<"Filter = "<<filt<<std::endl;
             ZIDX += 1;
             z_mix_old = z_mix;
             XIDX = 0;
@@ -129,8 +123,6 @@ void Fire ::potential(WINDSGeneralData *WGD)
                                 icent += ii;
                                 jcent += jj;
                                 H += fp.H0;
-                                // Hard code heat flux for WRF simulation burn
-                                //H += 1.80357e6*dx*dy/25/25;
                                 k_fire += WGD->terrain[id];
                                 k_fire_old += z_mix_old[id];
                             }
@@ -176,7 +168,6 @@ void Fire ::potential(WINDSGeneralData *WGD)
                                         float zMinIdx = floor(z_k / dzStar);
                                         float zMaxIdx = ceil(z_k / dzStar);
                                         ur = 0.0;
-                                        //uz = 0.5*(u_z[zMinIdx*pot_r]+u_z[zMaxIdx*pot_r]);
                                         uz = u_z[zMinIdx * pot_r];
                                         u_p = U_c * ur;
                                         v_p = U_c * ur;
@@ -189,11 +180,7 @@ void Fire ::potential(WINDSGeneralData *WGD)
                                         float rMaxIdx = ceil(h_k / drStar);
                                         float zMinIdx = floor(z_k / dzStar);
                                         float zMaxIdx = ceil(z_k / dzStar);
-                                        //ur = 0.25*(u_r[rMinIdx+zMinIdx*pot_r]+u_r[rMinIdx+zMaxIdx*pot_r]+u_r[rMaxIdx+zMinIdx*pot_r]+u_r[rMaxIdx+zMaxIdx*pot_r]); //lookup from u_r, linear interpolate between values
-                                        //ur = 0.5*(u_r[rMinIdx + zMinIdx*pot_r]+u_r[rMaxIdx + zMinIdx*pot_r]);
                                         ur = u_r[rMinIdx + zMinIdx * pot_r];
-                                        //uz = 0.25*(u_z[rMinIdx+zMinIdx*pot_r]+u_z[rMinIdx+zMaxIdx*pot_r]+u_z[rMaxIdx+zMinIdx*pot_r]+u_z[rMaxIdx+zMaxIdx*pot_r]); //lookup from u_z, linear interpolate between values
-                                        //uz = 0.5*(u_z[rMinIdx + zMinIdx*pot_r]+u_z[rMinIdx + zMaxIdx*pot_r]);
                                         uz = u_z[rMinIdx + zMinIdx * pot_r];
                                         u_p = U_c * ur * deltaX / h_k;
                                         v_p = U_c * ur * deltaY / h_k;
@@ -209,6 +196,7 @@ void Fire ::potential(WINDSGeneralData *WGD)
                                         }
                                         // lookup indices for G(x) and G'(x) - spans 0.5 to 1.0
                                         int gMinIdx = floor(pot_G * (x1 - .5) / .5);
+                                        /* MM 11/13/24
                                         if (gMinIdx < 0) {
                                             std::cout << "gMin error" << std::endl;
                                         } else if (gMinIdx > pot_G) {
@@ -216,7 +204,9 @@ void Fire ::potential(WINDSGeneralData *WGD)
                                         } else if (isnan(gMinIdx)) {
                                             std::cout << "gMin NaN" << std::endl;
                                         }
+                                        */
                                         int gMaxIdx = ceil(pot_G * (x1 - .5) / .5);
+                                        /* MM 11/13/24
                                         if (gMaxIdx > pot_G) {
                                             std::cout << "gMax error" << std::endl;
                                         } else if (gMaxIdx < 0) {
@@ -224,6 +214,7 @@ void Fire ::potential(WINDSGeneralData *WGD)
                                         } else if (isnan(gMaxIdx)) {
                                             std::cout << "gMax NaN" << std::endl;
                                         }
+                                        */
                                         // values for G and G'
                                         float g_x = 0.5 * (G[gMinIdx] + G[gMaxIdx]);
                                         float gprime_x = 0.5 * (Gprime[gMinIdx] + Gprime[gMaxIdx]);

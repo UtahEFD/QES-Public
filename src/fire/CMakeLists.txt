@@ -4,6 +4,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 SET( qesFireCoreSources
   Balbi.cpp
+  ComputeTimeStep.cpp
   Fire.cpp
   Fire.h
   FIREOutput.cpp
@@ -14,6 +15,8 @@ SET( qesFireCoreSources
   FuelRead.cpp
   FuelRead.h
   ignition.h
+  LevelSet.cpp
+  Move.cpp
   OldFuelProperties.hpp
   Potential.cpp  
   Rothermel.cpp 

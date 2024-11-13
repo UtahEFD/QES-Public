@@ -1,18 +1,23 @@
 /****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2021 Matthew Moody
+ * Copyright (c) 2024 Matthew Moody
+ * Copyright (c) 2024 Jeremy Gibbs
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Brian Bailey
+ * Copyright (c) 2024 Pete Willemsen
  *
- * This file is part of QES-Winds
+ * This file is part of QES-Fire
  *
  * GPL-3.0 License
  *
- * QES-Winds is free software: you can redistribute it and/or modify
+ * QES-Fire is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3 of the License.
  *
- * QES-Winds is distributed in the hope that it will be useful,
+ * QES-Fire is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
@@ -20,11 +25,9 @@
  * You should have received a copy of the GNU General Public License
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
-
 /**
  * @file FuelRead.cpp
- * @brief Loads fuel data.
- *
+ * @brief This function reads fuel data from provided GEOTIF.
  */
 
 #include "util/Geotiff.h"

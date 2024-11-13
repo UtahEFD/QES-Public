@@ -1,26 +1,23 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
- * Copyright (c) 2022 Matthew Moody
+ * Copyright (c) 2024 Matthew Moody
+ * Copyright (c) 2024 Jeremy Gibbs
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Brian Bailey
+ * Copyright (c) 2024 Pete Willemsen
  *
- * This file is part of QES
+ * This file is part of QES-Fire
  *
  * GPL-3.0 License
  *
- * QES is free software: you can redistribute it and/or modify
+ * QES-Fire is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3 of the License.
  *
- * QES is distributed in the hope that it will be useful,
+ * QES-Fire is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
@@ -321,7 +318,7 @@ int main(int argc, char *argv[])
        * Run ROS model to get initial spread rate and fire properties
        **/
 
-      fire->run(solver, WGD);
+      fire->LevelSet(WGD);
     
       /**
        * Calculate fire-induced winds from burning cells
@@ -338,22 +335,22 @@ int main(int argc, char *argv[])
        **/
       solver->solve(WID, WGD, !arguments.solveWind);
       if (TGD != nullptr) {
-	TGD->run();
+	      TGD->run();
       }
 
       /**
        * Run ROS model to calculate spread rates with updated winds
        **/
-      fire->run(solver, WGD);
+      fire->LevelSet(WGD);
 
       /**
        * Advance fire front through level set method
        **/
-      fire->move(solver, WGD);
+      fire->move(WGD);
 
       /**
-	* Advance fire time from variable fire timestep
-	**/
+	     * Advance fire time from variable fire timestep
+	     **/
       simTimeCurr += fire->dt;
       
       std::cout << "time = " << simTimeCurr << endl;

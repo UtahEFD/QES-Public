@@ -1,11 +1,13 @@
 /****************************************************************************
  * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
  * Copyright (c) 2024 Matthew Moody
  * Copyright (c) 2024 Jeremy Gibbs
  * Copyright (c) 2024 Rob Stoll
  * Copyright (c) 2024 Fabien Margairaz
  * Copyright (c) 2024 Brian Bailey
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Fire
  *
@@ -23,7 +25,10 @@
  * You should have received a copy of the GNU General Public License
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
-
+/**
+ * @file Fire.h
+ * @brief This class models fire propagation in the QES framework
+ */
 #ifndef FIRE_H
 #define FIRE_H
 
@@ -136,8 +141,8 @@ public:
   std::vector<float> FT_y3;
 
 
-  void run(Solver *, WINDSGeneralData *);
-  void move(Solver *, WINDSGeneralData *);
+  void LevelSet(WINDSGeneralData *);
+  void move(WINDSGeneralData *);
   void potential(WINDSGeneralData *);
   void FuelMap(WINDSInputData *, WINDSGeneralData *);
   float computeTimeStep();

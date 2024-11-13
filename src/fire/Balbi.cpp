@@ -1,11 +1,13 @@
 /****************************************************************************
  * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
  * Copyright (c) 2024 Matthew Moody
  * Copyright (c) 2024 Jeremy Gibbs
  * Copyright (c) 2024 Rob Stoll
  * Copyright (c) 2024 Fabien Margairaz
  * Copyright (c) 2024 Brian Bailey
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Fire
  *
@@ -23,26 +25,16 @@
  * You should have received a copy of the GNU General Public License
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
-
-#include "Fire.h"
 /**
  * @file Balbi.cpp
- *
  * @brief This function calculates the ROS and fire properties according to the Balbi model
- *  
  */
+#include "Fire.h"
+
 struct Fire::FireProperties Fire ::balbi(FuelProperties *fuel, float u_mid, float v_mid, float x_norm, float y_norm, float x_slope, float y_slope, float fmc_g)
 {
     // struct to hold computed fire properties
     struct FireProperties fp;
-
-    // fuel properties
-    /*
-        float fgi        = fuel->fgi;              ///< initial total mass of surface fuel [kg/m**2]
-        float fueldepthm = fuel->fueldepthm;       ///< fuel depth [m]
-        float savr          = fuel->savr;             ///< fuel particle surface-area-to-volume ratio, [1/ft]
-        float cmbcnst       = fuel->cmbcnst;          ///< joules per kg of dry fuel [J/kg]
-    */
     // Fuel Properties
     float oneHour = fuel->oneHour;///< one hour fuel load [t/ac]
     float tenHour = fuel->tenHour;///< ten hour fuel load [t/ac]
@@ -58,8 +50,9 @@ struct Fire::FireProperties Fire ::balbi(FuelProperties *fuel, float u_mid, floa
     float savHundredHour = 30;///< surface area to volume ratio of hundred hour fuel load
     float rhoFuel = fuel->fuelDensity * 16.0185;///< ovendry fuel particle density [kg/m^3]
     float fgi = (oneHour + liveHerb + liveWoody) * 0.2471;///< Initial fine fuel load [kg/m^2]
-    float savr = (savOneHour * oneHour + savTenHour * tenHour + savHundredHour * hundredHour + savHerb * liveHerb + savWoody * liveWoody)
-               / (oneHour + tenHour + hundredHour + liveHerb + liveWoody);///< Characteristic fine fuel load surface area to volume ratio
+    float savr = (savOneHour*oneHour + savHerb*liveHerb + savWoody*liveWoody)/(oneHour + liveHerb + liveWoody); ///< Characteristic fine fuel load surface area to volume ratio
+    float savrT = (savOneHour * oneHour + savTenHour * tenHour + savHundredHour * hundredHour + savHerb * liveHerb + savWoody * liveWoody)
+               / (oneHour + tenHour + hundredHour + liveHerb + liveWoody);///<Characteristic SAV of total fuel class for residence time
 
     if (fgi < 0.00001) {
         // set fire properties
@@ -82,7 +75,7 @@ struct Fire::FireProperties Fire ::balbi(FuelProperties *fuel, float u_mid, floa
         float C_p = 2e3;///< calorific capacity [J/kg] - Balbi 2009
         float C_pa = 1150;///< specific heat of air [J/Kg/K]
         float tau_0 = 75591;///< residence time coefficient - Anderson 196?
-        float tau = tau_0 / (savr / 0.3048)+120;///MM-11-2-22
+        float tau = tau_0 / (savrT / 0.3048)+120;///MM-11-2-22
         // fuel constants
         float m = fmc_g;///< fuel particle moisture content [0-1]
         float sigma = oneHour * 0.2471;///< dead fine fuel load [kg/m^2]
@@ -93,7 +86,7 @@ struct Fire::FireProperties Fire ::balbi(FuelProperties *fuel, float u_mid, floa
         // model parameters
         float beta = sigma / (fueldepthm * rhoFuel);///< packing ratio of dead fuel [eq.1]
         float betaT = sigmaT / (fueldepthm * rhoFuel);///< total packing ratio [eq.2]
-        float SAV = savr / 0.3048;///< surface area to volume ratio [m^2/m^3]
+        float SAV = savr / 0.3048;///< fine fuel surface area to volume ratio [m^2/m^3]
         float lai = (SAV * fueldepthm * beta) / 2;///< leaf Area Index for dead fuel [eq.3]
         float nu = fmin(2 * lai, 2 * pi * beta / betaT);///< absorption coefficient [eq.5]
         float lv = fueldepthm;///< fuel length [m] ?? need better parameterization here
