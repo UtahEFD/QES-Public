@@ -25,37 +25,33 @@ __global__ void testCUDA_vectormath()
 
 __global__ void testCUDA_multiply(int length, mat3 *d_A, vec3 *d_b, vec3 *d_x)
 {
-  int index = blockIdx.x * blockDim.x + threadIdx.x;
-  int stride = blockDim.x * gridDim.x;
-  for (int it = index; it < length; it += stride) {
-    multiply(d_A[it], d_b[it], d_x[it]);
+  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+  if (idx < length) {
+    multiply(d_A[idx], d_b[idx], d_x[idx]);
   }
 }
 
 __global__ void testCUDA_invert(int length, mat3 *d_A)
 {
-  int index = blockIdx.x * blockDim.x + threadIdx.x;
-  int stride = blockDim.x * gridDim.x;
-  for (int it = index; it < length; it += stride) {
-    bool out = invert(d_A[it]);
+  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+  if (idx < length) {
+    bool out = invert(d_A[idx]);
   }
 }
 
 __global__ void testCUDA_invariant(int length, mat3sym *d_tau, vec3 *d_invar)
 {
-  int index = blockIdx.x * blockDim.x + threadIdx.x;
-  int stride = blockDim.x * gridDim.x;
-  for (int it = index; it < length; it += stride) {
-    calcInvariants(d_tau[it], d_invar[it]);
+  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+  if (idx < length) {
+    calcInvariants(d_tau[idx], d_invar[idx]);
   }
 }
 
 __global__ void testCUDA_realizable(int length, mat3sym *d_tau, vec3 *d_invar)
 {
-  int index = blockIdx.x * blockDim.x + threadIdx.x;
-  int stride = blockDim.x * gridDim.x;
-  for (int it = index; it < length; it += stride) {
-    makeRealizable(10e-4, d_tau[it]);
+  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+  if (idx < length) {
+    makeRealizable(10e-4, d_tau[idx]);
   }
 }
 
@@ -65,20 +61,9 @@ void test_matrix_multiplication_gpu(const int &length, std::vector<mat3> &A, std
   int gpuID = 0;
   cudaError_t errorCheck = cudaGetDevice(&gpuID);
 
-  int blockCount = 1;
-  cudaDeviceGetAttribute(&blockCount, cudaDevAttrMultiProcessorCount, gpuID);
-  // std::cout << blockCount << std::endl;
-
-  int threadsPerBlock = 32;
-  cudaDeviceGetAttribute(&threadsPerBlock, cudaDevAttrMaxThreadsPerBlock, gpuID);
-  // std::cout << threadsPerBlock << std::endl;
-
-  int blockSize = 1024;
-  dim3 numberOfThreadsPerBlock(blockSize, 1, 1);
-  dim3 numberOfBlocks(ceil(length / (float)(blockSize)), 1, 1);
-
   if (errorCheck == cudaSuccess) {
-    // temp
+    int blockSize = 256;
+    int numBlocks = (length + blockSize - 1) / blockSize;
 
     mat3 *d_A;
     cudaMalloc((void **)&d_A, length * sizeof(mat3));
@@ -95,7 +80,7 @@ void test_matrix_multiplication_gpu(const int &length, std::vector<mat3> &A, std
 
     // call kernel
     auto kernelStartTime = std::chrono::high_resolution_clock::now();
-    testCUDA_multiply<<<numberOfBlocks, numberOfThreadsPerBlock>>>(length, d_A, d_b, d_x);
+    testCUDA_multiply<<<numBlocks, blockSize>>>(length, d_A, d_b, d_x);
     cudaDeviceSynchronize();
     auto kernelEndTime = std::chrono::high_resolution_clock::now();
 
@@ -127,20 +112,9 @@ void test_matrix_inversion_gpu(const int &length, std::vector<mat3> &A)
   int gpuID = 0;
   cudaError_t errorCheck = cudaGetDevice(&gpuID);
 
-  int blockCount = 1;
-  cudaDeviceGetAttribute(&blockCount, cudaDevAttrMultiProcessorCount, gpuID);
-  // std::cout << blockCount << std::endl;
-
-  int threadsPerBlock = 32;
-  cudaDeviceGetAttribute(&threadsPerBlock, cudaDevAttrMaxThreadsPerBlock, gpuID);
-  // std::cout << threadsPerBlock << std::endl;
-
-  int blockSize = 1024;
-  dim3 numberOfThreadsPerBlock(blockSize, 1, 1);
-  dim3 numberOfBlocks(ceil(length / (float)(blockSize)), 1, 1);
-
   if (errorCheck == cudaSuccess) {
-    // temp
+    int blockSize = 256;
+    int numBlocks = (length + blockSize - 1) / blockSize;
 
     mat3 *d_A;
     cudaMalloc((void **)&d_A, length * sizeof(mat3));
@@ -152,7 +126,7 @@ void test_matrix_inversion_gpu(const int &length, std::vector<mat3> &A)
 
     // call kernel
     auto kernelStartTime = std::chrono::high_resolution_clock::now();
-    testCUDA_invert<<<numberOfBlocks, numberOfThreadsPerBlock>>>(length, d_A);
+    testCUDA_invert<<<numBlocks, blockSize>>>(length, d_A);
     cudaDeviceSynchronize();
     auto kernelEndTime = std::chrono::high_resolution_clock::now();
 
@@ -179,21 +153,9 @@ void test_matrix_invariants_gpu(const int &length, std::vector<mat3sym> &A, std:
 
   int gpuID = 0;
   cudaError_t errorCheck = cudaGetDevice(&gpuID);
-
-  int blockCount = 1;
-  cudaDeviceGetAttribute(&blockCount, cudaDevAttrMultiProcessorCount, gpuID);
-  // std::cout << blockCount << std::endl;
-
-  int threadsPerBlock = 32;
-  cudaDeviceGetAttribute(&threadsPerBlock, cudaDevAttrMaxThreadsPerBlock, gpuID);
-  // std::cout << threadsPerBlock << std::endl;
-
-  int blockSize = 1024;
-  dim3 numberOfThreadsPerBlock(blockSize, 1, 1);
-  dim3 numberOfBlocks(ceil(length / (float)(blockSize)), 1, 1);
-
   if (errorCheck == cudaSuccess) {
-    // temp
+    int blockSize = 256;
+    int numBlocks = (length + blockSize - 1) / blockSize;
 
     mat3sym *d_A;
     cudaMalloc((void **)&d_A, length * sizeof(mat3sym));
@@ -207,7 +169,7 @@ void test_matrix_invariants_gpu(const int &length, std::vector<mat3sym> &A, std:
 
     // call kernel
     auto kernelStartTime = std::chrono::high_resolution_clock::now();
-    testCUDA_invariant<<<numberOfBlocks, numberOfThreadsPerBlock>>>(length, d_A, d_x);
+    testCUDA_invariant<<<numBlocks, blockSize>>>(length, d_A, d_x);
     cudaDeviceSynchronize();
     auto kernelEndTime = std::chrono::high_resolution_clock::now();
 
