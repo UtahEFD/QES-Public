@@ -29,12 +29,12 @@
  ****************************************************************************/
 
 /** @file DoaminBoundaryConditions.cpp
- * @brief 
+ * @brief
  */
 
 #include "DomainBoundaryConditions.h"
 
-bool DomainBC_exiting::enforce(double &pos, double &velFluct)
+bool DomainBC_exiting::enforce(float &pos, float &velFluct)
 {
   // if it goes out of the domain, set isActive to false
   if (pos <= domainStart || pos >= domainEnd) {
@@ -44,10 +44,10 @@ bool DomainBC_exiting::enforce(double &pos, double &velFluct)
   }
 }
 
-bool DomainBC_periodic::enforce(double &pos, double &velFluct)
+bool DomainBC_periodic::enforce(float &pos, float &velFluct)
 {
 
-  double domainSize = domainEnd - domainStart;
+  float domainSize = domainEnd - domainStart;
 
   if (domainSize != 0) {
     // before beginning of the domain => add domain length
@@ -63,7 +63,7 @@ bool DomainBC_periodic::enforce(double &pos, double &velFluct)
   return true;
 }
 
-bool DomainBC_reflection::enforce(double &pos, double &velFluct)
+bool DomainBC_reflection::enforce(float &pos, float &velFluct)
 {
 
   int reflectCount = 0;
@@ -72,11 +72,11 @@ bool DomainBC_reflection::enforce(double &pos, double &velFluct)
     if (pos > domainEnd) {
       pos = domainEnd - (pos - domainEnd);
       velFluct = -velFluct;
-      //velFluct_old = -velFluct_old;
+      // velFluct_old = -velFluct_old;
     } else if (pos < domainStart) {
       pos = domainStart - (pos - domainStart);
       velFluct = -velFluct;
-      //velFluct_old = -velFluct_old;
+      // velFluct_old = -velFluct_old;
     }
     reflectCount = reflectCount + 1;
   }// while outside of domain

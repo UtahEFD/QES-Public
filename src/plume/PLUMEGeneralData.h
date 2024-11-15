@@ -277,7 +277,7 @@ public:
  */
 
   // void GLE_solver_func(Particle *p, double &par_dt, TURBGeneralData *TGD);
-
+  /*
   void depositParticle(const double &xPos,
                        const double &yPos,
                        const double &zPos,
@@ -312,19 +312,19 @@ public:
                        const double &boxSizeZ,
                        WINDSGeneralData *WGD,
                        TURBGeneralData *TGD);
-
+  */
   // function for calculating the individual particle timestep from the courant number, the current velocity fluctuations,
   // and the grid size. Forces particles to always move only at one timestep at at time.
   // Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
-  double calcCourantTimestep(const double &u,
-                             const double &v,
-                             const double &w,
-                             const double &timeRemainder);
-  double calcCourantTimestep(const double &d,
-                             const double &u,
-                             const double &v,
-                             const double &w,
-                             const double &timeRemainder);
+  float calcCourantTimestep(const float &u,
+                            const float &v,
+                            const float &w,
+                            const float &timeRemainder);
+  float calcCourantTimestep(const float &d,
+                            const float &u,
+                            const float &v,
+                            const float &w,
+                            const float &timeRemainder);
 
   // a function used at constructor time to set the pointer function to the desired BC type
   void setBCfunctions(const std::string &,

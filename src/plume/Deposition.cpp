@@ -92,10 +92,10 @@ void Deposition::deposit(Particle *p,
   if (p->isActive) {
 
     // Particle position and attributes
-    vec3 pos_old = { p->pos._1 - dist._1, p->pos._2 - dist._2, p->pos._3 - dist._3 };
+    vec3 pos_old = VectorMath::subtract(p->pos, dist);
 
     long cellId_old = interp->getCellId(pos_old);
-    long cellId = interp->getCellId(p->xPos, p->yPos, p->zPos);
+    long cellId = interp->getCellId(p->pos);
     auto [i, j, k] = interp->getCellIndex(cellId);
 
     // distance travelled through veg
@@ -172,7 +172,7 @@ void Deposition::deposit(Particle *p,
     } else if (WGD->isTerrain(WGD->domain.cellAdd(cellId, 0, 0, -1))) {
       // Ground deposition
       float dt = partDist / MTot;
-      float ustarDep = pow(pow(p->txz, 2.0) + pow(p->tyz, 2.0), 0.25);
+      float ustarDep = pow(pow(p->tau._13, 2.0) + pow(p->tau._23, 2.0), 0.25);
       float Sc = nuAir / p->nuT;
       float ra = 1.0 / (0.4 * ustarDep)
                  * log(((10000.0 * ustarDep * boxSizeZ) / (2.0 * nuAir) + 1.0 / Sc)

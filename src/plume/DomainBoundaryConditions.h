@@ -44,45 +44,45 @@ private:
   {}
 
 protected:
-  double domainStart;
-  double domainEnd;
+  float domainStart;
+  float domainEnd;
 
 public:
-  DomainBC(double dS, double dE)
+  DomainBC(float dS, float dE)
   {
     domainStart = dS;
     domainEnd = dE;
   }
   virtual ~DomainBC() = default;
-  virtual bool enforce(double &, double &) = 0;
+  virtual bool enforce(float &, float &) = 0;
 };
 
 class DomainBC_exiting : public DomainBC
 {
 public:
-  DomainBC_exiting(double dS, double dE)
+  DomainBC_exiting(float dS, float dE)
     : DomainBC(dS, dE)
   {}
 
-  bool enforce(double &, double &);
+  bool enforce(float &, float &);
 };
 
 class DomainBC_periodic : public DomainBC
 {
 public:
-  DomainBC_periodic(double dS, double dE)
+  DomainBC_periodic(float dS, float dE)
     : DomainBC(dS, dE)
   {}
 
-  bool enforce(double &, double &);
+  bool enforce(float &, float &);
 };
 
 class DomainBC_reflection : public DomainBC
 {
 public:
-  DomainBC_reflection(double dS, double dE)
+  DomainBC_reflection(float dS, float dE)
     : DomainBC(dS, dE)
   {}
 
-  bool enforce(double &, double &);
+  bool enforce(float &, float &);
 };

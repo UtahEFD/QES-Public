@@ -325,25 +325,25 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd,
 void PLUMEGeneralData::applyBC(Particle *p)
 {
   // now apply boundary conditions
-  if (p->isActive) p->isActive = domainBC_x->enforce(p->xPos, p->uFluct);
-  if (p->isActive) p->isActive = domainBC_y->enforce(p->yPos, p->vFluct);
-  if (p->isActive) p->isActive = domainBC_z->enforce(p->zPos, p->wFluct);
+  if (p->isActive) p->isActive = domainBC_x->enforce(p->pos._1, p->velFluct._1);
+  if (p->isActive) p->isActive = domainBC_y->enforce(p->pos._2, p->velFluct._2);
+  if (p->isActive) p->isActive = domainBC_z->enforce(p->pos._3, p->velFluct._3);
 }
 
 
-double PLUMEGeneralData::calcCourantTimestep(const double &u,
-                                             const double &v,
-                                             const double &w,
-                                             const double &timeRemainder)
+float PLUMEGeneralData::calcCourantTimestep(const float &u,
+                                            const float &v,
+                                            const float &w,
+                                            const float &timeRemainder)
 {
   // set the output dt_par val to the timeRemainder
   // then if any of the Courant number values end up smaller, use that value instead
-  double dt_par = timeRemainder;
+  float dt_par = timeRemainder;
 
   // if a velocity fluctuation is zero, it returns dt_par
-  double dt_x = CourantNum * dx / std::abs(u);
-  double dt_y = CourantNum * dy / std::abs(v);
-  double dt_z = CourantNum * dz / std::abs(w);
+  float dt_x = CourantNum * dx / std::abs(u);
+  float dt_y = CourantNum * dy / std::abs(v);
+  float dt_z = CourantNum * dz / std::abs(w);
 
   // now find which dt is the smallest one of the Courant Number ones, or the
   // timeRemainder if any dt is smaller than the already chosen output value set
@@ -361,11 +361,11 @@ double PLUMEGeneralData::calcCourantTimestep(const double &u,
   return dt_par;
 }
 
-double PLUMEGeneralData::calcCourantTimestep(const double &d,
-                                             const double &u,
-                                             const double &v,
-                                             const double &w,
-                                             const double &timeRemainder)
+float PLUMEGeneralData::calcCourantTimestep(const float &d,
+                                            const float &u,
+                                            const float &v,
+                                            const float &w,
+                                            const float &timeRemainder)
 {
   // if the Courant Number is set to 0.0, we want to exit using the
   // timeRemainder (first time through that is the simTime)
@@ -373,10 +373,10 @@ double PLUMEGeneralData::calcCourantTimestep(const double &d,
     return timeRemainder;
   }
 
-  double min_ds = std::min(dxy, dz);
+  float min_ds = std::min(dxy, dz);
   // double max_u = std::max({ u, v, w });
-  double max_u = sqrt(u * u + v * v + w * w);
-  double CN = 0.0;
+  float max_u = sqrt(u * u + v * v + w * w);
+  float CN = 0.0;
 
   /*
     if (d > 6.0 * min_ds) {
@@ -587,7 +587,7 @@ void PLUMEGeneralData::initializeParticleValues(Particle *par_ptr,
   par_ptr->isRogue = false;
   par_ptr->isActive = true;
 
-  int cellIdNew = interp->getCellId(par_ptr->xPos, par_ptr->yPos, par_ptr->zPos);
+  long cellIdNew = interp->getCellId(par_ptr->pos);
   if ((WGD->icellflag[cellIdNew] == 0) || (WGD->icellflag[cellIdNew] == 2)) {
     // std::cerr << "WARNING invalid initial position" << std::endl;
     par_ptr->isActive = false;

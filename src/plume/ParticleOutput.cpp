@@ -97,18 +97,18 @@ void ExportParticleData::visit(TracerParticle_Model *pm)
            << p->d << ", "
            << p->m << ", "
            << p->wdecay << ", "
-           << p->xPos_init << ", "
-           << p->yPos_init << ", "
-           << p->zPos_init << ", "
-           << p->xPos << ", "
-           << p->yPos << ", "
-           << p->zPos << ", "
-           << p->uFluct << ", "
-           << p->vFluct << ", "
-           << p->wFluct << ", "
-           << p->delta_uFluct << ", "
-           << p->delta_vFluct << ", "
-           << p->delta_wFluct << "\n";
+           << p->pos_init._1 << ", "
+           << p->pos_init._2 << ", "
+           << p->pos_init._3 << ", "
+           << p->pos._1 << ", "
+           << p->pos._2 << ", "
+           << p->pos._3 << ", "
+           << p->velFluct._1 << ", "
+           << p->velFluct._2 << ", "
+           << p->velFluct._3 << ", "
+           << p->delta_velFluct._1 << ", "
+           << p->delta_velFluct._2 << ", "
+           << p->delta_velFluct._3 << "\n";
     }
   }
 
