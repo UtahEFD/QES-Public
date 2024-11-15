@@ -276,7 +276,7 @@ public:
                   double &par_dt);
  */
 
-  void GLE_solver_func(Particle *p, double &par_dt, TURBGeneralData *TGD);
+  // void GLE_solver_func(Particle *p, double &par_dt, TURBGeneralData *TGD);
 
   void depositParticle(const double &xPos,
                        const double &yPos,
@@ -325,52 +325,6 @@ public:
                              const double &v,
                              const double &w,
                              const double &timeRemainder);
-
-  // private:
-  //  utility functions for the plume solver
-  static void calcInvariants(const double &txx,
-                             const double &txy,
-                             const double &txz,
-                             const double &tyy,
-                             const double &tyz,
-                             const double &tzz,
-                             double &invar_xx,
-                             double &invar_yy,
-                             double &invar_zz);
-
-  static void makeRealizable(double &txx,
-                             double &txy,
-                             double &txz,
-                             double &tyy,
-                             double &tyz,
-                             double &tzz,
-                             const double &tol);
-
-  static bool invert3(double &A_11,
-                      double &A_12,
-                      double &A_13,
-                      double &A_21,
-                      double &A_22,
-                      double &A_23,
-                      double &A_31,
-                      double &A_32,
-                      double &A_33);
-
-  static void matmult(const double &A_11,
-                      const double &A_12,
-                      const double &A_13,
-                      const double &A_21,
-                      const double &A_22,
-                      const double &A_23,
-                      const double &A_31,
-                      const double &A_32,
-                      const double &A_33,
-                      const double &b_11,
-                      const double &b_21,
-                      const double &b_31,
-                      double &x_11,
-                      double &x_21,
-                      double &x_31);
 
   // a function used at constructor time to set the pointer function to the desired BC type
   void setBCfunctions(const std::string &,

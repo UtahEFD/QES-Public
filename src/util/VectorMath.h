@@ -104,6 +104,9 @@ private:
   VectorMath() = default;
 
 public:
+  static vec3 add(const vec3 &x, const vec3 &y);
+  static vec3 subtract(const vec3 &x, const vec3 &y);
+  static vec3 multiply(const float &a, const vec3 &x);
   static float length(const vec3 &);
   static float dot(const vec3 &, const vec3 &);
   static void reflect(const vec3 &, vec3 &);
@@ -114,6 +117,21 @@ public:
   static bool invert(mat3 &);
   static void multiply(const mat3 &, const vec3 &, vec3 &);
 };
+
+inline vec3 VectorMath::add(const vec3 &x, const vec3 &y)
+{
+  return { x._1 + y._1, x._2 + y._2, x._3 + y._3 };
+}
+
+inline vec3 VectorMath::subtract(const vec3 &x, const vec3 &y)
+{
+  return { x._1 - y._1, x._2 - y._2, x._3 - y._3 };
+}
+
+inline vec3 VectorMath::multiply(const float &a, const vec3 &x)
+{
+  return { a * x._1, a * x._2, a * x._3 };
+}
 
 inline float VectorMath::length(const vec3 &x)
 {

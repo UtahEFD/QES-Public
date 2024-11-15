@@ -124,13 +124,13 @@ void TracerParticle_Model::advect(const double &total_time_interval,
 #pragma omp parallel for default(none) shared(WGD, TGD, PGD, total_time_interval)
   for (auto k = 0u; k < particles->size(); ++k) {
     Particle *p = particles->get(k);
-    double rhoAir = 1.225;// in kg m^-3
-    double nuAir = 1.506E-5;// in m^2 s^-1
+    float rhoAir = 1.225;// in kg m^-3
+    float nuAir = 1.506E-5;// in m^2 s^-1
 
     // settling velocity
-    double vs = 0;
+    float vs = 0;
 
-    double timeRemainder = total_time_interval;
+    float timeRemainder = total_time_interval;
     while (p->isActive && timeRemainder > 0.0) {
 
       /*
@@ -138,39 +138,28 @@ void TracerParticle_Model::advect(const double &total_time_interval,
         will need to use the interp3D function
       */
 
-      PGD->interp->interpValues(WGD, p->xPos, p->yPos, p->zPos, p->uMean, p->vMean, p->wMean);
-      PGD->interp->interpValues(WGD, p->pos._1, p->pos._2, p->pos._3, p->uMean, p->vMean, p->wMean);
-
-      p->velMean = { static_cast<float>(p->uMean),
-                     static_cast<float>(p->vMean),
-                     static_cast<float>(p->wMean) };
+      PGD->interp->interpWindsValues(WGD, p->pos, p->velMean);
 
       // adjusting mean vertical velocity for settling velocity
-      p->wMean -= vs;
-
       p->velMean._3 -= vs;
 
       // now calculate the particle timestep using the courant number, the velocity fluctuation from the last time,
       // and the grid sizes. Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
       // int cellId = PGD->interp->getCellId(p->xPos, p->yPos, p->zPos);
-      int cellId = PGD->interp->getCellId(p->pos._1, p->pos._2, p->pos._3);
+      long cellId = PGD->interp->getCellId(p->pos);
 
-      double dWall = WGD->mixingLengths[cellId];
-      double par_dt = PGD->calcCourantTimestep(dWall,
-                                               std::abs(p->uMean) + std::abs(p->uFluct),
-                                               std::abs(p->vMean) + std::abs(p->vFluct),
-                                               std::abs(p->wMean) + std::abs(p->wFluct),
-                                               timeRemainder);
+      float dWall = WGD->mixingLengths[cellId];
+      float par_dt = PGD->calcCourantTimestep(dWall,
+                                              std::abs(p->velMean._1) + std::abs(p->velFluct._1),
+                                              std::abs(p->velMean._2) + std::abs(p->velFluct._2),
+                                              std::abs(p->velMean._3) + std::abs(p->velFluct._3),
+                                              timeRemainder);
 
       // std::cout << "par_dt = " << par_dt << std::endl;
       //  update the par_time, useful for debugging
       // par_time = par_time + par_dt;
 
       PGD->GLE_solver->solve(p, par_dt, TGD, PGD);
-
-      p->uFluct = p->velFluct._1;
-      p->vFluct = p->velFluct._2;
-      p->wFluct = p->velFluct._3;
 
       if (p->isRogue) {
         p->isActive = false;
@@ -182,38 +171,32 @@ void TracerParticle_Model::advect(const double &total_time_interval,
       //    assert( isRogue == false );
 
       // now update the particle position for this iteration
-      double disX = (p->uMean + p->uFluct) * par_dt;
-      double disY = (p->vMean + p->vFluct) * par_dt;
-      double disZ = (p->wMean + p->wFluct) * par_dt;
+      /*vec3 dist{ (p->velMean._1 + p->velFluct._1) * par_dt,
+                 (p->velMean._2 + p->velFluct._2) * par_dt,
+                 (p->velMean._3 + p->velFluct._3) * par_dt };*/
 
-      vec3 dist{ static_cast<float>((p->velMean._1 + p->velFluct._1) * par_dt),
-                 static_cast<float>((p->velMean._2 + p->velFluct._2) * par_dt),
-                 static_cast<float>((p->velMean._3 + p->velFluct._3) * par_dt) };
+      vec3 dist = VectorMath::multiply(par_dt, VectorMath::add(p->velMean, p->velFluct));
+      p->pos = VectorMath::add(p->pos, dist);
 
-      p->xPos = p->xPos + disX;
-      p->yPos = p->yPos + disY;
-      p->zPos = p->zPos + disZ;
-
-      p->pos._1 = p->pos._1 + dist._1;
-      p->pos._2 = p->pos._2 + dist._2;
-      p->pos._3 = p->pos._3 + dist._3;
-
-      double uTot = p->uMean + p->uFluct;
-      double vTot = p->vMean + p->vFluct;
-      double wTot = p->wMean + p->wFluct;
-
-      vec3 velTot{ p->velMean._1 + p->velFluct._1,
-                   p->velMean._2 + p->velFluct._2,
-                   p->velMean._3 + p->velFluct._3 };
+      vec3 velTot = VectorMath::add(p->velMean, p->velFluct);
 
       // Deposit mass (vegetation only right now)
       if (p->depFlag && p->isActive) {
-        deposition->deposit(p, disX, disY, disZ, uTot, vTot, wTot, vs, WGD, TGD, PGD->interp);
+        deposition->deposit(p, dist, velTot, vs, WGD, TGD, PGD->interp);
       }
 
       // check and do wall (building and terrain) reflection (based in the method)
       if (p->isActive) {
-        p->isActive = PGD->wallReflect->reflect(WGD, p->xPos, p->yPos, p->zPos, disX, disY, disZ, p->uFluct, p->vFluct, p->wFluct);
+        /*p->isActive = PGD->wallReflect->reflect(WGD,
+                                                p->pos._1,
+                                                p->pos._2,
+                                                p->pos._3,
+                                                dist._1,
+                                                dist._2,
+                                                dist._3,
+                                                p->velFluct._1,
+                                                p->velFluct._2,
+                                                p->velFluct._3);*/
       }
 
       // now apply boundary conditions
@@ -222,23 +205,9 @@ void TracerParticle_Model::advect(const double &total_time_interval,
       // now update the old values to be ready for the next particle time iteration
       // the current values are already set for the next iteration by the above calculations
       // !!! this is extremely important for the next iteration to work accurately
-      p->delta_uFluct = p->uFluct - p->uFluct_old;
-      p->delta_vFluct = p->vFluct - p->vFluct_old;
-      p->delta_wFluct = p->wFluct - p->wFluct_old;
-
-      p->delta_velFluct._1 = p->velFluct._1 - p->velFluct_old._1;
-      p->delta_velFluct._2 = p->velFluct._2 - p->velFluct_old._2;
-      p->delta_velFluct._3 = p->velFluct._3 - p->velFluct_old._3;
-
-      p->uFluct_old = p->uFluct;
-      p->vFluct_old = p->vFluct;
-      p->wFluct_old = p->wFluct;
+      p->delta_velFluct = VectorMath::subtract(p->velFluct, p->velFluct_old);
 
       p->velFluct_old = p->velFluct;
-
-      p->pos = { static_cast<float>(p->xPos),
-                 static_cast<float>(p->yPos),
-                 static_cast<float>(p->zPos) };
 
       // now set the time remainder for the next loop
       // if the par_dt calculated from the Courant Number is greater than the timeRemainder,
