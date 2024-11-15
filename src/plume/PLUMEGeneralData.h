@@ -177,12 +177,12 @@ private:
 
   // these values are calculated from the urb and turb grids by dispersion
   // they are used for applying boundary conditions at the walls of the domain
-  double domainXstart = 0.0;// the domain starting x value, a copy of the value found by dispersion
-  double domainXend = 0.0;// the domain ending x value, a copy of the value found by dispersion
-  double domainYstart = 0.0;// the domain starting y value, a copy of the value found by dispersion
-  double domainYend = 0.0;// the domain ending y value, a copy of the value found by dispersion
-  double domainZstart = 0.0;// the domain starting z value, a copy of the value found by dispersion
-  double domainZend = 0.0;// the domain ending z value, a copy of the value found by dispersion
+  float domainXstart = 0.0;// the domain starting x value, a copy of the value found by dispersion
+  float domainXend = 0.0;// the domain ending x value, a copy of the value found by dispersion
+  float domainYstart = 0.0;// the domain starting y value, a copy of the value found by dispersion
+  float domainYend = 0.0;// the domain ending y value, a copy of the value found by dispersion
+  float domainZstart = 0.0;// the domain starting z value, a copy of the value found by dispersion
+  float domainZend = 0.0;// the domain ending z value, a copy of the value found by dispersion
 
   // protected:
   //  QES grid information

@@ -68,7 +68,7 @@ bool WallReflection_TriMesh::reflect(const WINDSGeneralData *WGD,
     cellFlag = WGD->icellflag.at(cellIdNew);
   } catch (const std::out_of_range &oor) {
     // cell ID out of bound (assuming particle outside of domain)
-    if (zPos < m_interp->zStart) {
+    if (zPos < m_interp->getZstart()) {
       // assume in terrain icellflag
       cellFlag = 2;
     } else {

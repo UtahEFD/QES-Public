@@ -61,11 +61,8 @@ public:
   Interp(WINDSGeneralData *);
   virtual ~Interp() = default;
 
-  // The Plume domain bounds.
-  double xStart, xEnd;
-  double yStart, yEnd;
-  double zStart, zEnd;
-
+  void getDomainBounds(float &, float &, float &, float &, float &, float &);
+  float getZstart() { return zStart; }
 
   virtual void interpValues(const WINDSGeneralData *WGD,
                             const double &xPos,
@@ -112,6 +109,11 @@ public:
   Vector3Int getCellIndex(const double &, const double &, const double &);
 
 protected:
+  // The Plume domain bounds.
+  float xStart, xEnd;
+  float yStart, yEnd;
+  float zStart, zEnd;
+
   // the QES data held in this class is on the WINDS grid,
   // a copy of the WINDS grid information.
   int nx;

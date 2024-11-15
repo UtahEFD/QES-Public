@@ -128,7 +128,8 @@ private:
   {
   }
 
-protected:
+
+public:
   // initializer
   Particle(const bool &flag, const ParticleType &type)
     : particleType(type),

@@ -63,3 +63,18 @@ Interp::Interp(WINDSGeneralData *WGD)
   zStart = WGD->domain.z_face[kStart];
   zEnd = WGD->domain.z_face[kEnd];
 }
+
+void Interp::getDomainBounds(float &domainXstart,
+                             float &domainXend,
+                             float &domainYstart,
+                             float &domainYend,
+                             float &domainZstart,
+                             float &domainZend)
+{
+  domainXstart = xStart;
+  domainXend = xEnd;
+  domainYstart = yStart;
+  domainYend = yEnd;
+  domainZstart = zStart;
+  domainZend = zEnd;
+}

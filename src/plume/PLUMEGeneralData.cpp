@@ -82,12 +82,13 @@ PLUMEGeneralData::PLUMEGeneralData(const PlumeParameters &PP,
 
   // get the domain start and end values, needed for wall boundary condition
   // application
-  domainXstart = interp->xStart;
+  interp->getDomainBounds(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
+  /*domainXstart = interp->xStart;
   domainXend = interp->xEnd;
   domainYstart = interp->yStart;
   domainYend = interp->yEnd;
   domainZstart = interp->zStart;
-  domainZend = interp->zEnd;
+  domainZend = interp->zEnd;*/
 
   // now set the wall reflection function
   std::cout << "[QES-Plume]\t Wall Reflection Method set to: "
