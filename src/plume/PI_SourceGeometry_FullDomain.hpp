@@ -84,5 +84,5 @@ public:
                     const double &domainZstart,
                     const double &domainZend) override;
 
-  void setInitialPosition(double &, double &, double &) override;
+  void setInitialPosition(vec3 &) override;
 };

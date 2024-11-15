@@ -69,10 +69,10 @@ void PI_SourceGeometry_FullDomain::checkPosInfo(const double &domainXstart, cons
   //  cause there is no easy checking method to be implemented here
 }
 
-void PI_SourceGeometry_FullDomain::setInitialPosition(double &x, double &y, double &z)
+void PI_SourceGeometry_FullDomain::setInitialPosition(vec3 &p)
 {
   // generate uniform dist in domain
-  x = uniformDistribution(prng) * (xDomainEnd - xDomainStart) + xDomainStart;
-  y = uniformDistribution(prng) * (yDomainEnd - yDomainStart) + yDomainStart;
-  z = uniformDistribution(prng) * (zDomainEnd - zDomainStart) + zDomainStart;
+  p._1 = uniformDistribution(prng) * (xDomainEnd - xDomainStart) + xDomainStart;
+  p._2 = uniformDistribution(prng) * (yDomainEnd - yDomainStart) + yDomainStart;
+  p._3 = uniformDistribution(prng) * (zDomainEnd - zDomainStart) + zDomainStart;
 }

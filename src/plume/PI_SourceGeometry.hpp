@@ -43,6 +43,7 @@
 // #include "Interp.h"
 
 #include "util/ParseInterface.h"
+#include "util/VectorMath.h"
 // #include "winds/WINDSGeneralData.h"
 
 enum SourceShape {
@@ -88,5 +89,5 @@ public:
   virtual void checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend) = 0;
 
   // this function set the initial position of each particle
-  virtual void setInitialPosition(double &, double &, double &) = 0;
+  virtual void setInitialPosition(vec3 &) = 0;
 };

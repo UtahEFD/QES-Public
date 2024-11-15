@@ -61,14 +61,14 @@ void PI_SourceGeometry_SphereShell::checkPosInfo(const double &domainXstart, con
   }
 }
 
-void PI_SourceGeometry_SphereShell::setInitialPosition(double &x, double &y, double &z)
+void PI_SourceGeometry_SphereShell::setInitialPosition(vec3 &p)
 {
   // uniform distribution over surface of sphere
-  double nx = normalDistribution(prng);
-  double ny = normalDistribution(prng);
-  double nz = normalDistribution(prng);
-  double overn = 1 / sqrt(nx * nx + ny * ny + nz * nz);
-  x = posX + radius * nx * overn;
-  y = posY + radius * ny * overn;
-  z = posZ + radius * nz * overn;
+  float nx = normalDistribution(prng);
+  float ny = normalDistribution(prng);
+  float nz = normalDistribution(prng);
+  float overn = 1 / sqrt(nx * nx + ny * ny + nz * nz);
+  p._1 = posX + radius * nx * overn;
+  p._2 = posY + radius * ny * overn;
+  p._3 = posZ + radius * nz * overn;
 }
