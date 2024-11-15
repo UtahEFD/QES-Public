@@ -82,7 +82,7 @@
 #include "Source.h"
 
 #include "ParticleModel.h"
-#include "HeavyParticle_Model.h"
+// #include "HeavyParticle_Model.h"
 #include "TracerParticle_Model.h"
 
 #include "AddSource.h"
