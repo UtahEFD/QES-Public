@@ -52,9 +52,9 @@ struct interpWeight
   int ii;// nearest cell index to the left in the x direction
   int jj;// nearest cell index to the left in the y direction
   int kk;// nearest cell index to the left in the z direction
-  double iw;// normalized distance to the nearest cell index to the left in the x direction
-  double jw;// normalized distance to the nearest cell index to the left in the y direction
-  double kw;// normalized distance to the nearest cell index to the left in the z direction
+  float iw;// normalized distance to the nearest cell index to the left in the x direction
+  float jw;// normalized distance to the nearest cell index to the left in the y direction
+  float kw;// normalized distance to the nearest cell index to the left in the z direction
 };
 
 class InterpTriLinear : public Interp
@@ -64,64 +64,37 @@ public:
   // constructor
   // copies the turb grid values for nx, ny, nz, nt, dx, dy, and dz to the InterpTriLinear grid values,
   // then calculates the tau gradients which are then used to calculate the flux_div grid values.
-  InterpTriLinear(WINDSGeneralData *, TURBGeneralData *, const bool &);
+  InterpTriLinear(qes::Domain, bool);
 
   // double vel_threshold;
 
-  void interpValues(const WINDSGeneralData *WGD,
-                    const double &xPos,
-                    const double &yPos,
-                    const double &zPos,
-                    double &uMain_out,
-                    double &vMean_out,
-                    double &wMean_out) override;
+  void interpWindsValues(const WINDSGeneralData *WGD,
+                         const vec3 &pos,
+                         vec3 &vel_out) override;
 
-  void interpValues(const TURBGeneralData *TGD,
-                    const double &xPos,
-                    const double &yPos,
-                    const double &zPos,
-                    double &txx_out,
-                    double &txy_out,
-                    double &txz_out,
-                    double &tyy_out,
-                    double &tyz_out,
-                    double &tzz_out,
-                    double &flux_div_x_out,
-                    double &flux_div_y_out,
-                    double &flux_div_z_out,
-                    double &nuT_out,
-                    double &CoEps_out) override;
+  void interpTurbValues(const TURBGeneralData *TGD,
+                        const vec3 &pos,
+                        mat3sym &tau_out,
+                        vec3 &flux_div_out,
+                        float &nuT_out,
+                        float &CoEps_out) override;
 
-
-  void interpInitialValues(const double &xPos,
-                           const double &yPos,
-                           const double &zPos,
-                           const TURBGeneralData *TGD,
-                           double &sig_x_out,
-                           double &sig_y_out,
-                           double &sig_z_out,
-                           double &txx_out,
-                           double &txy_out,
-                           double &txz_out,
-                           double &tyy_out,
-                           double &tyz_out,
-                           double &tzz_out) override;
+  void interpTurbInitialValues(const TURBGeneralData *TGD,
+                               const vec3 &pos,
+                               mat3sym &tau_out,
+                               vec3 &sig_out) override;
 
 private:
-  InterpTriLinear() = default;
-
-  void setInterp3Dindex_uFace(const double &, const double &, const double &, interpWeight &);
-  void setInterp3Dindex_vFace(const double &, const double &, const double &, interpWeight &);
-  void setInterp3Dindex_wFace(const double &, const double &, const double &, interpWeight &);
-  void interp3D_faceVar(const std::vector<float> &, const interpWeight &, double &);
+  void setInterp3Dindex_uFace(const vec3 &, interpWeight &);
+  void setInterp3Dindex_vFace(const vec3 &, interpWeight &);
+  void setInterp3Dindex_wFace(const vec3 &, interpWeight &);
+  void interp3D_faceVar(const std::vector<float> &, const interpWeight &, float &);
   void interp3D_faceVar(const std::vector<double> &, const interpWeight &, double &);
 
-  void setInterp3Dindex_cellVar(const double &, const double &, const double &, interpWeight &);
-  void interp3D_cellVar(const std::vector<float> &, const interpWeight &, double &);
+  void setInterp3Dindex_cellVar(const vec3 &, interpWeight &);
+  void interp3D_cellVar(const std::vector<float> &, const interpWeight &, float &);
   void interp3D_cellVar(const std::vector<double> &, const interpWeight &, double &);
 
   // copies of debug related information from the input arguments
   bool debug{};
-
-  WINDSGeneralData *m_WGD;
 };

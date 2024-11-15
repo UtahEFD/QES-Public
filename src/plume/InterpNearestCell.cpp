@@ -33,8 +33,8 @@
 #include "InterpNearestCell.h"
 
 
-InterpNearestCell::InterpNearestCell(WINDSGeneralData *WGD, TURBGeneralData *TGD, const bool &debug_val)
-  : Interp(WGD)
+InterpNearestCell::InterpNearestCell(qes::Domain domain_in, bool debug_val = false)
+  : Interp(domain)
 {
   // std::cout << "[InterpNearestCell] \t Setting InterpNearestCell fields " << std::endl;
 
@@ -49,104 +49,76 @@ InterpNearestCell::InterpNearestCell(WINDSGeneralData *WGD, TURBGeneralData *TGD
   }
 }
 
-void InterpNearestCell::interpInitialValues(const double &xPos,
-                                            const double &yPos,
-                                            const double &zPos,
-                                            const TURBGeneralData *TGD,
-                                            double &sig_x_out,
-                                            double &sig_y_out,
-                                            double &sig_z_out,
-                                            double &txx_out,
-                                            double &txy_out,
-                                            double &txz_out,
-                                            double &tyy_out,
-                                            double &tyz_out,
-                                            double &tzz_out)
+void InterpNearestCell::interpWindsValues(const WINDSGeneralData *WGD,
+                                          const vec3 &pos,
+                                          vec3 &vel_out)
 {
-  // this replaces the old indexing trick, set the indexing variables for the
-  // interp3D for each particle, then get interpolated values from the
-  // InterpTriLinear grid to the particle Lagrangian values for multiple datatypes
+  auto [i, j, k] = getCellIndex(pos);
+  long faceId = domain.face(i, j, k);
 
-
-  Vector3Int cellIndex = getCellIndex(xPos, yPos, zPos);
-  int cellId = cellIndex[0]
-               + cellIndex[1] * (nx - 1)
-               + cellIndex[2] * (nx - 1) * (ny - 1);
-
-  // this is the current reynolds stress tensor
-  txx_out = TGD->txx[cellId];
-  txy_out = TGD->txy[cellId];
-  txz_out = TGD->txz[cellId];
-  tyy_out = TGD->tyy[cellId];
-  tyz_out = TGD->tyz[cellId];
-  tzz_out = TGD->tzz[cellId];
-
-  sig_x_out = std::sqrt(std::abs(txx_out));
-  if (sig_x_out == 0.0)
-    sig_x_out = 1e-8;
-  sig_y_out = std::sqrt(std::abs(tyy_out));
-  if (sig_y_out == 0.0)
-    sig_y_out = 1e-8;
-  sig_z_out = std::sqrt(std::abs(tzz_out));
-  if (sig_z_out == 0.0)
-    sig_z_out = 1e-8;
-
-  return;
+  vel_out._1 = 0.5 * (WGD->u[faceId] + WGD->u[WGD->domain.faceAdd(faceId, 1, 0, 0)]);
+  vel_out._2 = 0.5 * (WGD->v[faceId] + WGD->v[WGD->domain.faceAdd(faceId, 0, 1, 0)]);
+  vel_out._3 = 0.5 * (WGD->w[faceId] + WGD->w[WGD->domain.faceAdd(faceId, 0, 0, 1)]);
 }
 
-void InterpNearestCell::interpValues(const WINDSGeneralData *WGD,
-                                     const double &xPos,
-                                     const double &yPos,
-                                     const double &zPos,
-                                     double &uMean_out,
-                                     double &vMean_out,
-                                     double &wMean_out)
+void InterpNearestCell::interpTurbValues(const TURBGeneralData *TGD,
+                                         const vec3 &pos,
+                                         mat3sym &tau_out,
+                                         vec3 &flux_div_out,
+                                         float &nuT_out,
+                                         float &CoEps_out)
 {
-
-  Vector3Int cellIndex = getCellIndex(xPos, yPos, zPos);
-  long faceId = WGD->domain.face(cellIndex[0], cellIndex[1], cellIndex[2]);
-
-  uMean_out = 0.5 * (WGD->u[faceId] + WGD->u[WGD->domain.faceAdd(faceId, 1, 0, 0)]);
-  vMean_out = 0.5 * (WGD->v[faceId] + WGD->v[WGD->domain.faceAdd(faceId, 0, 1, 0)]);
-  vMean_out = 0.5 * (WGD->w[faceId] + WGD->w[WGD->domain.faceAdd(faceId, 0, 0, 1)]);
-}
-
-void InterpNearestCell::interpValues(const TURBGeneralData *TGD,
-                                     const double &xPos,
-                                     const double &yPos,
-                                     const double &zPos,
-                                     double &txx_out,
-                                     double &txy_out,
-                                     double &txz_out,
-                                     double &tyy_out,
-                                     double &tyz_out,
-                                     double &tzz_out,
-                                     double &flux_div_x_out,
-                                     double &flux_div_y_out,
-                                     double &flux_div_z_out,
-                                     double &nuT_out,
-                                     double &CoEps_out)
-{
-
-  Vector3Int cellIndex = getCellIndex(xPos, yPos, zPos);
-  long cellId = TGD->domain.cell(cellIndex[0], cellIndex[1], cellIndex[2]);
+  auto [i, j, k] = getCellIndex(pos);
+  long cellId = domain.cell(i, j, k);
 
   CoEps_out = TGD->CoEps[cellId];
   // make sure CoEps is always bigger than zero
   if (CoEps_out <= 1e-6) {
     CoEps_out = 1e-6;
   }
+  nuT_out = TGD->nuT[cellId];
 
   // this is the current reynolds stress tensor
-  txx_out = TGD->txx[cellId];
-  txy_out = TGD->txy[cellId];
-  txz_out = TGD->txz[cellId];
-  tyy_out = TGD->tyy[cellId];
-  tyz_out = TGD->tyz[cellId];
-  tzz_out = TGD->tzz[cellId];
+  tau_out._11 = TGD->txx[cellId];
+  tau_out._12 = TGD->txy[cellId];
+  tau_out._13 = TGD->txz[cellId];
+  tau_out._22 = TGD->tyy[cellId];
+  tau_out._23 = TGD->tyz[cellId];
+  tau_out._33 = TGD->tzz[cellId];
 
 
-  flux_div_x_out = TGD->div_tau_x[cellId];
-  flux_div_y_out = TGD->div_tau_y[cellId];
-  flux_div_z_out = TGD->div_tau_z[cellId];
+  flux_div_out._1 = TGD->div_tau_x[cellId];
+  flux_div_out._2 = TGD->div_tau_y[cellId];
+  flux_div_out._3 = TGD->div_tau_z[cellId];
+}
+
+
+void InterpNearestCell::interpTurbInitialValues(const TURBGeneralData *TGD,
+                                                const vec3 &pos,
+                                                mat3sym &tau_out,
+                                                vec3 &sig_out)
+{
+  // this replaces the old indexing trick, set the indexing variables for the
+  // interp3D for each particle, then get interpolated values from the
+  // InterpTriLinear grid to the particle Lagrangian values for multiple datatypes
+  auto [i, j, k] = getCellIndex(pos);
+  long cellId = domain.cell(i, j, k);
+
+  // this is the current reynolds stress tensor
+  tau_out._11 = TGD->txx[cellId];
+  tau_out._12 = TGD->txy[cellId];
+  tau_out._13 = TGD->txz[cellId];
+  tau_out._22 = TGD->tyy[cellId];
+  tau_out._23 = TGD->tyz[cellId];
+  tau_out._33 = TGD->tzz[cellId];
+
+  sig_out._1 = std::sqrt(std::abs(tau_out._11));
+  if (sig_out._1 == 0.0)
+    sig_out._1 = 1e-8;
+  sig_out._2 = std::sqrt(std::abs(tau_out._22));
+  if (sig_out._2 == 0.0)
+    sig_out._2 = 1e-8;
+  sig_out._3 = std::sqrt(std::abs(tau_out._33));
+  if (sig_out._3 == 0.0)
+    sig_out._3 = 1e-8;
 }

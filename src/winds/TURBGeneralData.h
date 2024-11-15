@@ -70,7 +70,7 @@ public:
   void divergenceStress();
   void derivativeVelocity();
 
-  // General QUIC Domain Data
+  // General QES Domain Data
   qes::Domain domain;
 
   ///@{
