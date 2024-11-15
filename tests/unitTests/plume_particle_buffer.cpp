@@ -30,7 +30,7 @@ void scrubParticleList(std::list<Particle *> &particleList)
 
 void advect(Particle *p)
 {
-  p->uMean = 10;
+  p->velMean = { 10, 0, 0 };
 }
 
 TEST_CASE("buffer", "[in progress]")
