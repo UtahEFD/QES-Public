@@ -44,7 +44,6 @@
 #include "util/QEStime.h"
 #include "util/calcTime.h"
 #include "util/Vector3Float.h"
-// #include "Matrix3.h"
 #include "Random.h"
 
 #include "winds/WINDSGeneralData.h"
@@ -67,16 +66,7 @@ public:
   ~WallReflection_StairStep()
   {}
 
-  virtual bool reflect(const WINDSGeneralData *WGD,
-                       double &xPos,
-                       double &yPos,
-                       double &zPos,
-                       double &disX,
-                       double &disY,
-                       double &disZ,
-                       double &uFluct,
-                       double &vFluct,
-                       double &wFluct);
+  virtual bool reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct) override;
 
 private:
   void trajectorySplit_recursive(const WINDSGeneralData *,

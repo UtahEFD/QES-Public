@@ -34,20 +34,11 @@
 
 #include "WallReflection.h"
 
-bool WallReflection_SetToInactive::reflect(const WINDSGeneralData *WGD,
-                                           double &xPos,
-                                           double &yPos,
-                                           double &zPos,
-                                           double &disX,
-                                           double &disY,
-                                           double &disZ,
-                                           double &uFluct,
-                                           double &vFluct,
-                                           double &wFluct)
+bool WallReflection_SetToInactive::reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct)
 
 {
   try {
-    int cellIdx = m_interp->getCellId(xPos, yPos, zPos);
+    long cellIdx = m_interp->getCellId(pos);
     int cellFlag(0);
     cellFlag = WGD->icellflag.at(cellIdx);
 

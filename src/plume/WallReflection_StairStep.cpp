@@ -36,16 +36,7 @@
 
 #include "WallReflection_StairStep.h"
 
-bool WallReflection_StairStep::reflect(const WINDSGeneralData *WGD,
-                                       double &xPos,
-                                       double &yPos,
-                                       double &zPos,
-                                       double &disX,
-                                       double &disY,
-                                       double &disZ,
-                                       double &uFluct,
-                                       double &vFluct,
-                                       double &wFluct)
+bool WallReflection_StairStep::reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct)
 {
   /*
    * This function will return true if:
@@ -63,13 +54,13 @@ bool WallReflection_StairStep::reflect(const WINDSGeneralData *WGD,
    */
 
   // linearized cell ID for end of the trajectory of the particle
-  int cellIdNew = m_interp->getCellId(xPos, yPos, zPos);
+  long cellIdNew = m_interp->getCellId(pos);
   int cellFlag(0);
   try {
     cellFlag = WGD->icellflag.at(cellIdNew);
   } catch (const std::out_of_range &oor) {
     // cell ID out of bound (assuming particle outside of domain)
-    if (zPos < m_interp->getZstart()) {
+    if (pos._3 < m_interp->getZstart()) {
       // assume in terrain icellflag
       cellFlag = 2;
     } else {
@@ -86,13 +77,13 @@ bool WallReflection_StairStep::reflect(const WINDSGeneralData *WGD,
     // particle end trajectory inside solide -> need for reflection
 
     // position of the particle start of trajectory
-    Vector3Double X = { xPos - disX, yPos - disY, zPos - disZ };
+    Vector3Double X = { pos._1 - dist._1, pos._2 - dist._2, pos._3 - dist._3 };
     // vector of the trajectory
-    Vector3Double U = { disX, disY, disZ };
+    Vector3Double U = { dist._1, dist._2, dist._3 };
     // postion of the particle end of trajectory
     Vector3Double Xnew = X + U;
     // vector of fluctuations
-    Vector3Double vecFluct = { uFluct, vFluct, wFluct };
+    Vector3Double vecFluct = { fluct._1, fluct._2, fluct._3 };
 
     double d = U.length();
     double d1 = 0.0;
@@ -105,13 +96,13 @@ bool WallReflection_StairStep::reflect(const WINDSGeneralData *WGD,
 
     if (isActive) {
       // update output variable: particle position
-      xPos = X[0];
-      yPos = X[1];
-      zPos = X[2];
+      pos._1 = X[0];
+      pos._2 = X[1];
+      pos._3 = X[2];
       // update output variable: fluctuations
-      uFluct = vecFluct[0];
-      vFluct = vecFluct[1];
-      wFluct = vecFluct[2];
+      fluct._1 = vecFluct[0];
+      fluct._2 = vecFluct[1];
+      fluct._3 = vecFluct[2];
       return true;
     } else {
       return false;
@@ -149,19 +140,17 @@ void WallReflection_StairStep::trajectorySplit_recursive(const WINDSGeneralData 
     Vector3Double Xnew = X + d2 * u;
 
     // linearized cell ID for origine of the trajectory of the particle
-    int cellIdOld = m_interp->getCellId(Xold);
+    long cellIdOld = m_interp->getCellId(Xold);
     // i,j,k of cell index
-    Vector3Int cellIdxOld = m_interp->getCellIndex(cellIdOld);
+    auto [i_old, j_old, k_old] = m_interp->getCellIndex(cellIdOld);
 
     // linearized cell ID for origine of the trajectory of the particle
-    int cellIdNew = m_interp->getCellId(Xnew);
+    long cellIdNew = m_interp->getCellId(Xnew);
     // i,j,k of cell index
-    Vector3Int cellIdxNew = m_interp->getCellIndex(cellIdNew);
+    auto [i_new, j_new, k_new] = m_interp->getCellIndex(cellIdNew);
 
 
-    if ((abs(cellIdxOld[0] - cellIdxNew[0]) > 1)
-        || (abs(cellIdxOld[1] - cellIdxNew[1]) > 1)
-        || (abs(cellIdxOld[2] - cellIdxNew[2]) > 1)) {
+    if ((abs(i_old - i_new) > 1) || (abs(j_old - j_new) > 1) || (abs(k_old - k_new) > 1)) {
       d2 = 0.5 * d2;
       if (d2 < 0.125 * d) {
         std::cerr << "END OF REGRESSION dist \t" << d2 / d << std::endl;
@@ -221,11 +210,8 @@ void WallReflection_StairStep::oneReflection(const WINDSGeneralData *WGD,
   Xnew = Xold + U;
 
   // i,j,k of cell index
-  int cellIdOld = m_interp->getCellId(Xold);
-  Vector3Int cellIdxOld = m_interp->getCellIndex(cellIdOld);
-
-  int cellIdNew = m_interp->getCellId(Xnew);
-  Vector3Int cellIdxNew = m_interp->getCellIndex(cellIdNew);
+  long cellIdOld = m_interp->getCellId(Xold);
+  long cellIdNew = m_interp->getCellId(Xnew);
 
   // icellFlag of the cell at the end of the trajectory of the particle
   int cellFlagNew = WGD->icellflag.at(cellIdNew);
@@ -250,8 +236,7 @@ void WallReflection_StairStep::oneReflection(const WINDSGeneralData *WGD,
   while ((cellFlagNew == 0 || cellFlagNew == 2) && (count < maxCount)) {
 
     cellIdOld = m_interp->getCellId(Xold);
-    cellIdxOld = m_interp->getCellIndex(cellIdOld);
-    int i = cellIdxOld[0], j = cellIdxOld[1], k = cellIdxOld[2];
+    auto [i, j, k] = m_interp->getCellIndex(cellIdOld);
 
     // set direction
     f1 = (e1 * U);

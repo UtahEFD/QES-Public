@@ -34,16 +34,7 @@
 
 #include "WallReflection_TriMesh.h"
 
-bool WallReflection_TriMesh::reflect(const WINDSGeneralData *WGD,
-                                     double &xPos,
-                                     double &yPos,
-                                     double &zPos,
-                                     double &disX,
-                                     double &disY,
-                                     double &disZ,
-                                     double &uFluct,
-                                     double &vFluct,
-                                     double &wFluct)
+bool WallReflection_TriMesh::reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct)
 {
   /*
    * This function will return true if:
@@ -62,13 +53,13 @@ bool WallReflection_TriMesh::reflect(const WINDSGeneralData *WGD,
 
 
   // linearized cell ID for end of the trajectory of the particle
-  int cellIdNew = m_interp->getCellId(xPos, yPos, zPos);
+  long cellIdNew = m_interp->getCellId(pos);
   int cellFlag(0);
   try {
     cellFlag = WGD->icellflag.at(cellIdNew);
   } catch (const std::out_of_range &oor) {
     // cell ID out of bound (assuming particle outside of domain)
-    if (zPos < m_interp->getZstart()) {
+    if (pos._3 < m_interp->getZstart()) {
       // assume in terrain icellflag
       cellFlag = 2;
     } else {
@@ -82,23 +73,24 @@ bool WallReflection_TriMesh::reflect(const WINDSGeneralData *WGD,
     // particle end trajectory outside solide -> no need for reflection
   } else {
 
-    Vector3Float X = { static_cast<float>(xPos - disX), static_cast<float>(yPos - disY), static_cast<float>(zPos - disZ) };
+    Vector3Float X = { pos._1 - dist._1, pos._2 - dist._2, pos._3 - dist._3 };
+
     // vector of the trajectory
-    Vector3Float U = { static_cast<float>(disX), static_cast<float>(disY), static_cast<float>(disZ) };
+    Vector3Float U = { dist._1, dist._2, dist._3 };
     // postion of the particle end of trajectory
     Vector3Float Xnew = X + U;
-
-    Vector3Float vecFluct = { static_cast<float>(uFluct), static_cast<float>(vFluct), static_cast<float>(wFluct) };
+    // vector of fluctuations
+    Vector3Float vecFluct = { fluct._1, fluct._2, fluct._3 };
 
     rayTraceReflect(WGD->mesh, X, Xnew, U, vecFluct);
 
-    xPos = Xnew[0];
-    yPos = Xnew[1];
-    zPos = Xnew[2];
+    pos._1 = Xnew[0];
+    pos._2 = Xnew[1];
+    pos._3 = Xnew[2];
     // update output variable: fluctuations
-    uFluct = vecFluct[0];
-    vFluct = vecFluct[1];
-    wFluct = vecFluct[2];
+    fluct._1 = vecFluct[0];
+    fluct._2 = vecFluct[1];
+    fluct._3 = vecFluct[2];
   }
   return true;
 }

@@ -71,17 +71,7 @@ public:
   {}
   ~WallReflection_TriMesh()
   {}
-
-  virtual bool reflect(const WINDSGeneralData *WGD,
-                       double &xPos,
-                       double &yPos,
-                       double &zPos,
-                       double &disX,
-                       double &disY,
-                       double &disZ,
-                       double &uFluct,
-                       double &vFluct,
-                       double &wFluct);
+  virtual bool reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct) override;
 
 private:
   void rayTraceReflect(Mesh *, Vector3Float &, Vector3Float &, Vector3Float &, Vector3Float &);

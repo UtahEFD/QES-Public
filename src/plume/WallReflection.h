@@ -44,7 +44,7 @@
 #include "util/QEStime.h"
 #include "util/calcTime.h"
 #include "util/Vector3Float.h"
-// #include "Matrix3.h"
+#include "util/VectorMath.h"
 #include "Random.h"
 
 #include "winds/WINDSGeneralData.h"
@@ -66,16 +66,7 @@ public:
   }
 
   virtual ~WallReflection() = default;
-  virtual bool reflect(const WINDSGeneralData *,
-                       double &,
-                       double &,
-                       double &,
-                       double &,
-                       double &,
-                       double &,
-                       double &,
-                       double &,
-                       double &) = 0;
+  virtual bool reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct) = 0;
 
 private:
   WallReflection()
@@ -94,16 +85,7 @@ public:
   ~WallReflection_DoNothing()
   {}
 
-  virtual bool reflect(const WINDSGeneralData *WGD,
-                       double &xPos,
-                       double &yPos,
-                       double &zPos,
-                       double &disX,
-                       double &disY,
-                       double &disZ,
-                       double &uFluct,
-                       double &vFluct,
-                       double &wFluct)
+  virtual bool reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct)
   {
     return true;
   }
@@ -118,14 +100,5 @@ public:
   ~WallReflection_SetToInactive()
   {}
 
-  virtual bool reflect(const WINDSGeneralData *WGD,
-                       double &xPos,
-                       double &yPos,
-                       double &zPos,
-                       double &disX,
-                       double &disY,
-                       double &disZ,
-                       double &uFluct,
-                       double &vFluct,
-                       double &wFluct);
+  virtual bool reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct) override;
 };
