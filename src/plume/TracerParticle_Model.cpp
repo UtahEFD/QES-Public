@@ -187,16 +187,7 @@ void TracerParticle_Model::advect(const double &total_time_interval,
 
       // check and do wall (building and terrain) reflection (based in the method)
       if (p->isActive) {
-        /*p->isActive = PGD->wallReflect->reflect(WGD,
-                                                p->pos._1,
-                                                p->pos._2,
-                                                p->pos._3,
-                                                dist._1,
-                                                dist._2,
-                                                dist._3,
-                                                p->velFluct._1,
-                                                p->velFluct._2,
-                                                p->velFluct._3);*/
+        p->isActive = PGD->wallReflect->reflect(WGD, p->pos, dist, p->velFluct);
       }
 
       // now apply boundary conditions

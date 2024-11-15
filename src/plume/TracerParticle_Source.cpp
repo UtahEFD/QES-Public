@@ -57,9 +57,7 @@ void TracerParticle_Source::emitParticles(const float &dt,
       // Particle *cPar = m_particleTypeFactory->Create(m_protoParticle);
       // m_protoParticle->setParticleParameters(cPar);
       particles->insert();
-      m_sourceGeometry->setInitialPosition(particles->last_added()->xPos_init,
-                                           particles->last_added()->yPos_init,
-                                           particles->last_added()->zPos_init);
+      m_sourceGeometry->setInitialPosition(particles->last_added()->pos_init);
       // m_protoParticle->setParticleParameters(particles->last_added());
       particles->last_added()->tStrt = currTime;
       particles->last_added()->sourceIdx = sourceIdx;

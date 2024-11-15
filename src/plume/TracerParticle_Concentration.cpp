@@ -93,11 +93,11 @@ void TracerParticle_Concentration::collect(QEStime &timeIn, const float &timeSte
     if (par.isActive) {
       // Calculate which collection box this particle is currently in.
       // x-direction
-      int idx = get_x_index(par.xPos);
+      int idx = get_x_index(par.pos._1);
       // y-direction
-      int idy = get_y_index(par.yPos);
+      int idy = get_y_index(par.pos._2);
       // z-direction
-      int idz = get_z_index(par.zPos);
+      int idz = get_z_index(par.pos._3);
 
       // now, does the particle land in one of the boxes?
       // if so, add one particle to that box count
