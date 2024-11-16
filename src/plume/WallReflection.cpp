@@ -34,7 +34,11 @@
 
 #include "WallReflection.h"
 
-void WallReflection_SetToInactive::reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct, uint8_t &state)
+void WallReflection_SetToInactive::reflect(const WINDSGeneralData *WGD,
+                                           vec3 &pos,
+                                           vec3 &dist,
+                                           vec3 &fluct,
+                                           ParticleState &state)
 
 {
   try {

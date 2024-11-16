@@ -36,7 +36,11 @@
 
 #include "WallReflection_StairStep.h"
 
-void WallReflection_StairStep::reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct, uint8_t &state)
+void WallReflection_StairStep::reflect(const WINDSGeneralData *WGD,
+                                       vec3 &pos,
+                                       vec3 &dist,
+                                       vec3 &fluct,
+                                       ParticleState &state)
 {
   /*
    * This function will return true if:

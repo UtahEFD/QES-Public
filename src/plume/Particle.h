@@ -45,15 +45,17 @@ enum ParticleType {
   heavy
 };
 
-enum ParticleStates : uint8_t { ACTIVE,
-                                INACTIVE,
-                                ROGUE };
+enum ParticleState {
+  ACTIVE,
+  INACTIVE,
+  ROGUE
+};
 
 typedef struct
 {
   int length;
 
-  uint8_t *state;
+  ParticleState *state;
   uint32_t *ID;
 
   float *CoEps;
@@ -121,7 +123,7 @@ class Particle
 {
 private:
   Particle()
-    : particleType(ParticleType::tracer), state(INACTIVE),
+    : type(ParticleType::tracer), state(INACTIVE),
       d(0.0), m(0.0), m_o(0.0), rho(0.0),
       c1(2.049), c2(1.19), depFlag(false), decayConst(0.0), wdecay(1.0)
   {
@@ -130,13 +132,13 @@ private:
 
 public:
   // initializer
-  Particle(const bool &flag, const ParticleType &type)
-    : particleType(type), state(INACTIVE),
+  Particle(const bool &flag, const ParticleType &type_in)
+    : type(type_in), state(INACTIVE),
       d(0.0), m(0.0), m_o(0.0), rho(0.0),
       c1(2.049), c2(1.19), depFlag(flag), decayConst(0.0), wdecay(1.0)
   {}
-  explicit Particle(const ParticleType &type)
-    : particleType(type), state(INACTIVE),
+  explicit Particle(const ParticleType &type_in)
+    : type(type_in), state(INACTIVE),
       d(0.0), m(0.0), m_o(0.0), rho(0.0),
       c1(2.049), c2(1.19), depFlag(false), decayConst(0.0), wdecay(1.0)
   {}
@@ -150,7 +152,10 @@ public:
     }
   */
 
-  ParticleType particleType;// particle type
+  // particle type
+  ParticleType type;
+  // state of the particle
+  ParticleState state;
 
 public:
   // destructor
@@ -171,8 +176,6 @@ public:
   // the index of the source the particle came from
   int sourceIdx{};
 
-  // state of the particle
-  uint8_t state{};
 
   // once initial positions are known, can set these values using urb and turb info
   // Initially, the initial x component of position for the particle.

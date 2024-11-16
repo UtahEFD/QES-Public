@@ -71,7 +71,7 @@ public:
   {}
   ~WallReflection_TriMesh()
   {}
-  virtual void reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct, uint8_t &state) override;
+  virtual void reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct, ParticleState &state) override;
 
 private:
   void rayTraceReflect(Mesh *, Vector3Float &, Vector3Float &, Vector3Float &, Vector3Float &);

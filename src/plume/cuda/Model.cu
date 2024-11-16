@@ -254,7 +254,7 @@ void Model::getNewParticle(const int &num_new_particle,
   particle_array d_new_particle;
   partition->allocate_device_particle_list(d_new_particle, num_new_particle);
 
-  cudaMemset(d_new_particle.state, ACTIVE, num_new_particle * sizeof(int));
+  cudaMemset(d_new_particle.state, ACTIVE, num_new_particle * sizeof(ParticleState));
   std::vector<uint32_t> new_ID(num_new_particle);
   id_gen->get(new_ID);
   cudaMemcpy(d_new_particle.ID, new_ID.data(), num_new_particle * sizeof(uint32_t), cudaMemcpyHostToDevice);

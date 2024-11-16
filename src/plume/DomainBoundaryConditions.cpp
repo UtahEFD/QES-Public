@@ -34,7 +34,7 @@
 
 #include "DomainBoundaryConditions.h"
 
-void DomainBC_exiting::enforce(float &pos, float &velFluct, uint8_t &state)
+void DomainBC_exiting::enforce(float &pos, float &velFluct, ParticleState &state)
 {
   // if it goes out of the domain, set isActive to false
   if (pos <= domainStart || pos >= domainEnd) {
@@ -44,7 +44,7 @@ void DomainBC_exiting::enforce(float &pos, float &velFluct, uint8_t &state)
   }
 }
 
-void DomainBC_periodic::enforce(float &pos, float &velFluct, uint8_t &state)
+void DomainBC_periodic::enforce(float &pos, float &velFluct, ParticleState &state)
 {
 
   float domainSize = domainEnd - domainStart;
@@ -62,7 +62,7 @@ void DomainBC_periodic::enforce(float &pos, float &velFluct, uint8_t &state)
   state = ACTIVE;
 }
 
-void DomainBC_reflection::enforce(float &pos, float &velFluct, uint8_t &state)
+void DomainBC_reflection::enforce(float &pos, float &velFluct, ParticleState &state)
 {
 
   int reflectCount = 0;

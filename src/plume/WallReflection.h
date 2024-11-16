@@ -67,7 +67,7 @@ public:
   }
 
   virtual ~WallReflection() = default;
-  virtual void reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct, uint8_t &state) = 0;
+  virtual void reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct, ParticleState &state) = 0;
 
 private:
   WallReflection()
@@ -86,7 +86,7 @@ public:
   ~WallReflection_DoNothing()
   {}
 
-  virtual void reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct, uint8_t &state)
+  virtual void reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct, ParticleState &state)
   {}
 };
 
@@ -99,5 +99,5 @@ public:
   ~WallReflection_SetToInactive()
   {}
 
-  virtual void reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct, uint8_t &state) override;
+  virtual void reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct, ParticleState &state) override;
 };

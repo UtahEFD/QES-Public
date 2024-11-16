@@ -56,7 +56,7 @@ public:
     domainEnd = dE;
   }
   virtual ~DomainBC() = default;
-  virtual void enforce(float &, float &, uint8_t &) = 0;
+  virtual void enforce(float &, float &, ParticleState &) = 0;
 };
 
 class DomainBC_exiting : public DomainBC
@@ -66,7 +66,7 @@ public:
     : DomainBC(dS, dE)
   {}
 
-  void enforce(float &, float &, uint8_t &) override;
+  void enforce(float &, float &, ParticleState &) override;
 };
 
 class DomainBC_periodic : public DomainBC
@@ -76,7 +76,7 @@ public:
     : DomainBC(dS, dE)
   {}
 
-  void enforce(float &, float &, uint8_t &) override;
+  void enforce(float &, float &, ParticleState &) override;
 };
 
 class DomainBC_reflection : public DomainBC
@@ -86,5 +86,5 @@ public:
     : DomainBC(dS, dE)
   {}
 
-  void enforce(float &, float &, uint8_t &) override;
+  void enforce(float &, float &, ParticleState &) override;
 };
