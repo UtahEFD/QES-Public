@@ -36,7 +36,7 @@
 
 #include "WallReflection_StairStep.h"
 
-bool WallReflection_StairStep::reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct)
+void WallReflection_StairStep::reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct, uint8_t &state)
 {
   /*
    * This function will return true if:
@@ -66,13 +66,13 @@ bool WallReflection_StairStep::reflect(const WINDSGeneralData *WGD, vec3 &pos, v
     } else {
       // otherwise, outside domain -> set to false
       // std::cerr << "Reflection problem: particle out of range before reflection" << std::endl;
-      return false;
+      state = INACTIVE;
     }
   }
 
   if ((cellFlag != 0) && (cellFlag != 2)) {
     // particle end trajectory outside solide -> no need for reflection
-    return true;
+    state = ACTIVE;
   } else {
     // particle end trajectory inside solide -> need for reflection
 
@@ -103,14 +103,13 @@ bool WallReflection_StairStep::reflect(const WINDSGeneralData *WGD, vec3 &pos, v
       fluct._1 = vecFluct[0];
       fluct._2 = vecFluct[1];
       fluct._3 = vecFluct[2];
-      return true;
+
+      state = ACTIVE;
     } else {
-      return false;
+      state = INACTIVE;
     }
   }
-
   // should never be there
-  return false;
 }
 
 void WallReflection_StairStep::trajectorySplit_recursive(const WINDSGeneralData *WGD,

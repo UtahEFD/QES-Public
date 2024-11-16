@@ -45,16 +45,15 @@ enum ParticleType {
   heavy
 };
 
-enum ParticleStates : int { ACTIVE,
-                            INACTIVE,
-                            ROGUE };
-
+enum ParticleStates : uint8_t { ACTIVE,
+                                INACTIVE,
+                                ROGUE };
 
 typedef struct
 {
   int length;
 
-  int *state;
+  uint8_t *state;
   uint32_t *ID;
 
   float *CoEps;
@@ -122,7 +121,7 @@ class Particle
 {
 private:
   Particle()
-    : particleType(ParticleType::tracer),
+    : particleType(ParticleType::tracer), state(INACTIVE),
       d(0.0), m(0.0), m_o(0.0), rho(0.0),
       c1(2.049), c2(1.19), depFlag(false), decayConst(0.0), wdecay(1.0)
   {
@@ -132,12 +131,12 @@ private:
 public:
   // initializer
   Particle(const bool &flag, const ParticleType &type)
-    : particleType(type),
+    : particleType(type), state(INACTIVE),
       d(0.0), m(0.0), m_o(0.0), rho(0.0),
       c1(2.049), c2(1.19), depFlag(flag), decayConst(0.0), wdecay(1.0)
   {}
   explicit Particle(const ParticleType &type)
-    : particleType(type),
+    : particleType(type), state(INACTIVE),
       d(0.0), m(0.0), m_o(0.0), rho(0.0),
       c1(2.049), c2(1.19), depFlag(false), decayConst(0.0), wdecay(1.0)
   {}
@@ -161,71 +160,52 @@ public:
   //  std::string tag;// particle type tag
 
   // the initial position for the particle, to not be changed after the simulation starts
-  // double xPos_init{};// the initial x component of position for the particle
-  // double yPos_init{};// the initial y component of position for the particle
-  // double zPos_init{};// the initial z component of position for the particle
   vec3 pos_init;
 
-  double tStrt{};// the time of release for the particle
-  unsigned long int particleID{};// id of particle (for tracking purposes)
-  int sourceIdx{};// the index of the source the particle came from
+  // the time of release for the particle
+  double tStrt{};
+
+  // id of particle (for tracking purposes)
+  uint32_t ID{};
+
+  // the index of the source the particle came from
+  int sourceIdx{};
+
+  // state of the particle
+  uint8_t state{};
 
   // once initial positions are known, can set these values using urb and turb info
   // Initially, the initial x component of position for the particle.
   // After the solver starts to run, the current x component of position for the particle.
-  // double xPos{};// x component of position for the particle.
-  // double yPos{};// y component of position for the particle.
-  // double zPos{};// z component of position for the particle.
   vec3 pos;
 
   // The velocit for a particle for a given iteration.
-  // double uMean{};// u component
-  // double vMean{};// v component
-  // double wMean{};// w component
   vec3 velMean;
 
   // The velocity fluctuation for a particle for a given iteration.
   // Starts out as the initial value until a particle is "released" into the domain
-  // double uFluct{};// u component
-  // double vFluct{};// v component
-  // double wFluct{};// w component
   vec3 velFluct;
 
   // Particle displacements for each time step (not used)
-  // double disX{};
-  // double disY{};
-  // double disZ{};
+  // vec3 dist;
 
   // Total velocities (mean and fluctuation) for each time step (not used)
-  // double uTot{};
-  // double vTot{};
-  // double wTot{};
+  // vec3 velTot;
 
   float CoEps{};
   float nuT{};
 
   // The velocity fluctuation for a particle from the last iteration
-  // double uFluct_old{};// u component
-  // double vFluct_old{};// v component
-  // double wFluct_old{};// w component
   vec3 velFluct_old;
 
   // stress tensor from the last iteration (6 component because stress tensor is symmetric)
-  // double txx{};// this is the stress in the x direction on the x face from the last iteration
-  // double txy{};// this is the stress in the y direction on the x face from the last iteration
-  // double txz{};// this is the stress in the z direction on the x face from the last iteration
-  // double tyy{};// this is the stress in the y direction on the y face from the last iteration
-  // double tyz{};// this is the stress in the z direction on the y face from the last iteration
-  // double tzz{};// this is the stress in the z direction on the z face from the last iteration
   mat3sym tau;
 
-  // double delta_uFluct{};// this is the difference between the current and last iteration of the uFluct variable
-  // double delta_vFluct{};// this is the difference between the current and last iteration of the vFluct variable
-  // double delta_wFluct{};// this is the difference between the current and last iteration of the wFluct variable
+  // difference between the current and last iteration of the uFluct variable
   vec3 delta_velFluct;
 
-  bool isRogue = false;// this is false until it becomes true. Should not go true.
-  bool isActive = false;// this is true until it becomes false.
+  // bool isRogue = false;// this is false until it becomes true. Should not go true.
+  // bool isActive = false;// this is true until it becomes false.
 
   // particle physical property
   double d;// particle diameter diameter [microns]
@@ -246,8 +226,6 @@ public:
 
   // deposition container
   bool dep_buffer_flag{};
-  // std::vector<int> dep_buffer_cell;
-  // std::vector<float> dep_buffer_val;
   double decayConst;// mass decay constant
 
   // settling variables (only use as local variables)

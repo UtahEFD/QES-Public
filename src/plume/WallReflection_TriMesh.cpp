@@ -34,7 +34,7 @@
 
 #include "WallReflection_TriMesh.h"
 
-bool WallReflection_TriMesh::reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct)
+void WallReflection_TriMesh::reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct, uint8_t &state)
 {
   /*
    * This function will return true if:
@@ -65,7 +65,7 @@ bool WallReflection_TriMesh::reflect(const WINDSGeneralData *WGD, vec3 &pos, vec
     } else {
       // otherwise, outside domain -> set to false
       // std::cerr << "Reflection problem: particle out of range before reflection" << std::endl;
-      return false;
+      state = INACTIVE;
     }
   }
 
@@ -92,7 +92,7 @@ bool WallReflection_TriMesh::reflect(const WINDSGeneralData *WGD, vec3 &pos, vec
     fluct._2 = vecFluct[1];
     fluct._3 = vecFluct[2];
   }
-  return true;
+  state = ACTIVE;
 }
 
 void WallReflection_TriMesh::rayTraceReflect(Mesh *mesh, Vector3Float &X, Vector3Float &Xnew, Vector3Float &U, Vector3Float &vecFluct)

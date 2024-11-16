@@ -82,7 +82,8 @@ void ExportParticleData::visit(TracerParticle_Model *pm)
   fout << "# Particle Data File\n";
   fout << "# Model particle tag: " << pm->tag << "\n";
   fout << file_prologue;
-  fout << "#particleID,tStrt,sourceIdx,d,m,wdecay,"
+  fout << "#particleID,tStrt,sourceIdx,"
+       << "d,m,wdecay,"
        << "xPos_init,yPos_init,"
           "zPos_init,xPos,yPos,zPos,"
           "uFluct,vFluct,wFluct,"
@@ -90,8 +91,8 @@ void ExportParticleData::visit(TracerParticle_Model *pm)
 
   for (auto k = 0u; k < pm->get_particles()->size(); ++k) {// Insert the data to file
     TracerParticle *p = pm->get_particles()->get(k);
-    if (p->isActive && !p->isRogue) {
-      fout << p->particleID << ", "
+    if (p->state == ACTIVE) {
+      fout << p->ID << ", "
            << p->tStrt << ", "
            << p->sourceIdx << ", "
            << p->d << ", "

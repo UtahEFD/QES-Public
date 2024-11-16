@@ -34,7 +34,7 @@
 
 #include "WallReflection.h"
 
-bool WallReflection_SetToInactive::reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct)
+void WallReflection_SetToInactive::reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct, uint8_t &state)
 
 {
   try {
@@ -44,10 +44,10 @@ bool WallReflection_SetToInactive::reflect(const WINDSGeneralData *WGD, vec3 &po
 
     if ((cellFlag == 0) || (cellFlag == 2)) {
       // particle end trajectory inside solide -> set inactive
-      return false;
+      state = INACTIVE;
     } else {
       // particle end trajectory outside solide -> keep active
-      return true;
+      state = ACTIVE;
     }
 
   } catch (const std::out_of_range &oor) {
@@ -57,6 +57,6 @@ bool WallReflection_SetToInactive::reflect(const WINDSGeneralData *WGD, vec3 &po
     //  std::cerr << xPos << "," << yPos << "," << zPos << std::endl;
     //}
     // -> set to false
-    return false;
+    state = INACTIVE;
   }
 }

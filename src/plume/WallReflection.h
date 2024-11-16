@@ -50,6 +50,7 @@
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
 
+#include "Particle.h"
 #include "Interp.h"
 #include "InterpNearestCell.h"
 #include "InterpPowerLaw.h"
@@ -66,7 +67,7 @@ public:
   }
 
   virtual ~WallReflection() = default;
-  virtual bool reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct) = 0;
+  virtual void reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct, uint8_t &state) = 0;
 
 private:
   WallReflection()
@@ -85,10 +86,8 @@ public:
   ~WallReflection_DoNothing()
   {}
 
-  virtual bool reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct)
-  {
-    return true;
-  }
+  virtual void reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct, uint8_t &state)
+  {}
 };
 
 class WallReflection_SetToInactive : public WallReflection
@@ -100,5 +99,5 @@ public:
   ~WallReflection_SetToInactive()
   {}
 
-  virtual bool reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct) override;
+  virtual void reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct, uint8_t &state) override;
 };

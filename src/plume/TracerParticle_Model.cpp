@@ -131,7 +131,7 @@ void TracerParticle_Model::advect(const double &total_time_interval,
     float vs = 0;
 
     float timeRemainder = total_time_interval;
-    while (p->isActive && timeRemainder > 0.0) {
+    while (p->state == ACTIVE && timeRemainder > 0.0) {
 
       /*
         now get the Lagrangian values for the current iteration from the wind/turbulence grid
@@ -144,7 +144,8 @@ void TracerParticle_Model::advect(const double &total_time_interval,
       p->velMean._3 -= vs;
 
       // now calculate the particle timestep using the courant number, the velocity fluctuation from the last time,
-      // and the grid sizes. Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
+      // and the grid sizes.
+      // Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
       // int cellId = PGD->interp->getCellId(p->xPos, p->yPos, p->zPos);
       long cellId = PGD->interp->getCellId(p->pos);
 
@@ -161,8 +162,7 @@ void TracerParticle_Model::advect(const double &total_time_interval,
 
       PGD->GLE_solver->solve(p, par_dt, TGD, PGD);
 
-      if (p->isRogue) {
-        p->isActive = false;
+      if (p->state == ROGUE) {
         nbr_rogue++;
         break;
       }
@@ -171,23 +171,19 @@ void TracerParticle_Model::advect(const double &total_time_interval,
       //    assert( isRogue == false );
 
       // now update the particle position for this iteration
-      /*vec3 dist{ (p->velMean._1 + p->velFluct._1) * par_dt,
-                 (p->velMean._2 + p->velFluct._2) * par_dt,
-                 (p->velMean._3 + p->velFluct._3) * par_dt };*/
-
       vec3 dist = VectorMath::multiply(par_dt, VectorMath::add(p->velMean, p->velFluct));
       p->pos = VectorMath::add(p->pos, dist);
 
       vec3 velTot = VectorMath::add(p->velMean, p->velFluct);
 
       // Deposit mass (vegetation only right now)
-      if (p->depFlag && p->isActive) {
+      if (p->depFlag && p->state == ACTIVE) {
         deposition->deposit(p, dist, velTot, vs, WGD, TGD, PGD->interp);
       }
 
       // check and do wall (building and terrain) reflection (based in the method)
-      if (p->isActive) {
-        p->isActive = PGD->wallReflect->reflect(WGD, p->pos, dist, p->velFluct);
+      if (p->state == ACTIVE) {
+        PGD->wallReflect->reflect(WGD, p->pos, dist, p->velFluct, p->state);
       }
 
       // now apply boundary conditions

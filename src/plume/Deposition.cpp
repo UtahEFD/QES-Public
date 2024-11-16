@@ -89,7 +89,7 @@ void Deposition::deposit(Particle *p,
   float rhoAir = 1.225;// in kg m^-3
   float nuAir = 1.506E-5;// in m^2 s^-1
 
-  if (p->isActive) {
+  if (p->state == ACTIVE) {
 
     // Particle position and attributes
     vec3 pos_old = VectorMath::subtract(p->pos, dist);
@@ -205,7 +205,7 @@ void Deposition::deposit(Particle *p,
     if (p->m / 1000.0 < oneParMass) {
       // p->m_kg = 0.0;
       p->m = 0.0;
-      p->isActive = false;
+      p->state = INACTIVE;
     }
 
   }// if ( isActive == true )

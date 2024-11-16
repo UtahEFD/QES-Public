@@ -37,6 +37,9 @@
 #include <vector>
 #include <queue>
 
+#include "Particle.h"
+#include "IDGenerator.h"
+
 template<class T>
 class ManagedContainer
 {
@@ -57,7 +60,7 @@ private:
     std::swap(available, empty);
 
     for (size_t it = 0; it < elements.size(); ++it) {
-      if (elements[it].isActive)
+      if (elements[it].state == ACTIVE)
         nbr_used++;
       else
         available.push(it);
@@ -65,10 +68,16 @@ private:
     return nbr_used;
   }
 
+  IDGenerator *id_gen;
+
 public:
-  ManagedContainer() = default;
+  ManagedContainer()
+  {
+    id_gen = IDGenerator::getInstance();
+  };
   explicit ManagedContainer(size_t n) : elements(n)
   {
+    id_gen = IDGenerator::getInstance();
     for (size_t k = 0; k < n; ++k)
       available.push(k);
   }
@@ -81,7 +90,7 @@ public:
   {
     size_t nbr_used = 0;
     for (auto &p : elements) {
-      if (p.isActive)
+      if (p.state == ACTIVE)
         nbr_used++;
     }
     return nbr_used;
@@ -113,10 +122,10 @@ public:
     // this requires an extra copy: elements[available.front()] = T(nbr_inserted);
     // rest the particle:
     // - changing the particle ID
-    elements[available.front()].particleID = nbr_inserted;
+    elements[available.front()].ID = id_gen->get();
     nbr_inserted++;
     // - turning the particle active:
-    elements[available.front()].isActive = true;
+    elements[available.front()].state = ACTIVE;
     // adding index to added and remove from available:
     added.emplace_back(available.front());
     available.pop();

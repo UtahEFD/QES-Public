@@ -10,7 +10,7 @@
 #include <list>
 #include <chrono>
 
-#include "util/ManagedContainer.h"
+#include "plume/ManagedContainer.h"
 // #include "plume/ParticleManager.h"
 
 #include "plume/Particle.h"
@@ -19,7 +19,7 @@
 void scrubParticleList(std::list<Particle *> &particleList)
 {
   for (auto parItr = particleList.begin(); parItr != particleList.end();) {
-    if (!(*parItr)->isActive) {
+    if ((*parItr)->state != ACTIVE) {
       delete *parItr;
       parItr = particleList.erase(parItr);
     } else {
@@ -45,7 +45,7 @@ TEST_CASE("buffer", "[in progress]")
     for (int pidx = 0; pidx < 1000; ++pidx) {
 
       Particle *cPar = new TracerParticle();
-      cPar->isActive = true;
+      cPar->state = ACTIVE;
       nextSetOfParticles.push_front(cPar);
     }
     particleList.insert(particleList.end(), nextSetOfParticles.begin(), nextSetOfParticles.end());
@@ -54,7 +54,7 @@ TEST_CASE("buffer", "[in progress]")
       float t = drand48();
       advect(p);
       if (t > 0.8)
-        p->isActive = false;
+        p->state = INACTIVE;
     }
     scrubParticleList(particleList);
   }
@@ -110,7 +110,7 @@ TEST_CASE("buffer", "[in progress]")
       float t = drand48();
       advect(&tracer);
       if (t > 0.8)
-        tracer.isActive = false;
+        tracer.state = INACTIVE;
     }
   }
 
@@ -120,7 +120,7 @@ TEST_CASE("buffer", "[in progress]")
   elapsed = finish - start;
   std::cout << "elapsed time: " << elapsed.count() << " s\n";
 
-  REQUIRE(tracers.last_added()->particleID == 10000 * new_tracers - 1);
+  REQUIRE(tracers.last_added()->ID == 10000 * new_tracers - 1);
   REQUIRE(tracers.size() == 6000);
 }
 
@@ -139,7 +139,7 @@ TEST_CASE("buffer large", "[in progress]")
       float t = drand48();
       advect(&tracer);
       if (t > 0.8)
-        tracer.isActive = false;
+        tracer.state = INACTIVE;
     }
   }
 

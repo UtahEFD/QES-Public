@@ -325,9 +325,9 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd,
 void PLUMEGeneralData::applyBC(Particle *p)
 {
   // now apply boundary conditions
-  if (p->isActive) p->isActive = domainBC_x->enforce(p->pos._1, p->velFluct._1);
-  if (p->isActive) p->isActive = domainBC_y->enforce(p->pos._2, p->velFluct._2);
-  if (p->isActive) p->isActive = domainBC_z->enforce(p->pos._3, p->velFluct._3);
+  if (p->state == ACTIVE) domainBC_x->enforce(p->pos._1, p->velFluct._1, p->state);
+  if (p->state == ACTIVE) domainBC_y->enforce(p->pos._2, p->velFluct._2, p->state);
+  if (p->state == ACTIVE) domainBC_z->enforce(p->pos._3, p->velFluct._3, p->state);
 }
 
 
@@ -584,13 +584,14 @@ void PLUMEGeneralData::initializeParticleValues(Particle *par_ptr,
 
   // set isRogue to false and isActive to true for each particle
   // isActive = true as particle relased is active immediately
-  par_ptr->isRogue = false;
-  par_ptr->isActive = true;
+  par_ptr->state = ACTIVE;
+  // par_ptr->isRogue = false;
+  // par_ptr->isActive = true;
 
   long cellIdNew = interp->getCellId(par_ptr->pos);
   if ((WGD->icellflag[cellIdNew] == 0) || (WGD->icellflag[cellIdNew] == 2)) {
     // std::cerr << "WARNING invalid initial position" << std::endl;
-    par_ptr->isActive = false;
+    par_ptr->state = INACTIVE;
   }
 
   /*

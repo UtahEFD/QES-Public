@@ -37,6 +37,7 @@
 
 void GLE_Solver_CPU::solve(Particle *p, float &dt, TURBGeneralData *TGD, PLUMEGeneralData *PGD)
 {
+  bool isRogue = false;
 
   double txx = 0.0, txy = 0.0, txz = 0.0, tyy = 0.0, tyz = 0.0, tzz = 0.0;
   double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
@@ -79,11 +80,11 @@ void GLE_Solver_CPU::solve(Particle *p, float &dt, TURBGeneralData *TGD, PLUMEGe
   // directly modifies the values of tau
   mat3 L = { tau._11, tau._12, tau._13, tau._12, tau._22, tau._23, tau._13, tau._23, tau._33 };
 
-  p->isRogue = !VectorMath::invert(L);
-  if (p->isRogue) {
+  isRogue = !VectorMath::invert(L);
+  if (isRogue) {
     // int cellIdNew = interp->getCellId(xPos,yPos,zPos);
     std::cerr << "ERROR in Matrix inversion of stress tensor" << std::endl;
-    p->isActive = false;
+    // isActive = false;
   }
 
   // these are the random numbers for each direction
@@ -123,10 +124,10 @@ void GLE_Solver_CPU::solve(Particle *p, float &dt, TURBGeneralData *TGD, PLUMEGe
              -p->velFluct_old._3 - 0.5f * flux_div._3 * dt - sqrtf(p->CoEps * dt) * vRandn._3 };
 
   // now prepare for the Ax=b calculation by calculating the inverted A matrix
-  p->isRogue = !VectorMath::invert(A);
-  if (p->isRogue) {
+  isRogue = !VectorMath::invert(A);
+  if (isRogue) {
     std::cerr << "ERROR in matrix inversion in Langevin equation" << std::endl;
-    p->isActive = false;
+    // isActive = false;
   }
 
   // now do the Ax=b calculation using the inverted matrix (vecFluct = A*b)
@@ -134,28 +135,30 @@ void GLE_Solver_CPU::solve(Particle *p, float &dt, TURBGeneralData *TGD, PLUMEGe
 
   // now check to see if the value is rogue or not
   if (std::abs(p->velFluct._1) >= PGD->vel_threshold || isnan(p->velFluct._1)) {
-    std::cerr << "Particle # " << p->particleID << " is rogue, ";
+    std::cerr << "Particle # " << p->ID << " is rogue, ";
     std::cerr << "uFluct = " << p->velFluct._1 << ", CoEps = " << p->CoEps << std::endl;
     p->velFluct._1 = 0.0;
-    p->isActive = false;
-    p->isRogue = true;
+    // isActive = false;
+    isRogue = true;
   }
   if (std::abs(p->velFluct._2) >= PGD->vel_threshold || isnan(p->velFluct._2)) {
-    std::cerr << "Particle # " << p->particleID << " is rogue, ";
+    std::cerr << "Particle # " << p->ID << " is rogue, ";
     std::cerr << "vFluct = " << p->velFluct._2 << ", CoEps = " << p->CoEps << std::endl;
     p->velFluct._2 = 0.0;
-    p->isActive = false;
-    p->isRogue = true;
+    // isActive = false;
+    isRogue = true;
   }
   if (std::abs(p->velFluct._3) >= PGD->vel_threshold || isnan(p->velFluct._3)) {
-    std::cerr << "Particle # " << p->particleID << " is rogue, ";
+    std::cerr << "Particle # " << p->ID << " is rogue, ";
     std::cerr << "wFluct = " << p->velFluct._3 << ", CoEps = " << p->CoEps << std::endl;
     p->velFluct._3 = 0.0;
-    p->isActive = false;
-    p->isRogue = true;
+    // isActive = false;
+    isRogue = true;
   }
 
   // now update the old values to be ready for the next particle time iteration
   // the current values are already set for the next iteration by the above calculations
   p->tau = tau;
+
+  if (isRogue) p->state = ROGUE;
 }

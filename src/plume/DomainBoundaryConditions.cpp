@@ -34,17 +34,17 @@
 
 #include "DomainBoundaryConditions.h"
 
-bool DomainBC_exiting::enforce(float &pos, float &velFluct)
+void DomainBC_exiting::enforce(float &pos, float &velFluct, uint8_t &state)
 {
   // if it goes out of the domain, set isActive to false
   if (pos <= domainStart || pos >= domainEnd) {
-    return false;
+    state = INACTIVE;
   } else {
-    return true;
+    state = ACTIVE;
   }
 }
 
-bool DomainBC_periodic::enforce(float &pos, float &velFluct)
+void DomainBC_periodic::enforce(float &pos, float &velFluct, uint8_t &state)
 {
 
   float domainSize = domainEnd - domainStart;
@@ -59,11 +59,10 @@ bool DomainBC_periodic::enforce(float &pos, float &velFluct)
       pos = pos - domainSize;
     }
   }
-
-  return true;
+  state = ACTIVE;
 }
 
-bool DomainBC_reflection::enforce(float &pos, float &velFluct)
+void DomainBC_reflection::enforce(float &pos, float &velFluct, uint8_t &state)
 {
 
   int reflectCount = 0;
@@ -89,15 +88,14 @@ bool DomainBC_reflection::enforce(float &pos, float &velFluct)
                 << "upper boundary condition failed! Setting isActive to "
                    "false. pos = \""
                 << pos << "\"" << std::endl;
-      return false;
+      state == INACTIVE;
     } else if (pos < domainStart) {
       std::cout << "warning (Plume::enforceWallBCs_reflection): "
                 << "lower boundary condition failed! Setting isActive to "
                    "false. xPos = \""
                 << pos << "\"" << std::endl;
-      return false;
+      state = INACTIVE;
     }
   }
-
-  return true;
+  state = ACTIVE;
 }

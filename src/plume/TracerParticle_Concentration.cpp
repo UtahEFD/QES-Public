@@ -90,7 +90,7 @@ void TracerParticle_Concentration::collect(QEStime &timeIn, const float &timeSte
   // for all particles see where they are relative to the concentration collection boxes
   for (auto &par : *m_particles) {
     // because particles all start out as active now, need to also check the release time
-    if (par.isActive) {
+    if (par.state == ACTIVE) {
       // Calculate which collection box this particle is currently in.
       // x-direction
       int idx = get_x_index(par.pos._1);

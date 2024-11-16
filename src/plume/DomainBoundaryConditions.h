@@ -37,6 +37,8 @@
 #include <string>
 #include <iostream>
 
+#include "Particle.h"
+
 class DomainBC
 {
 private:
@@ -54,7 +56,7 @@ public:
     domainEnd = dE;
   }
   virtual ~DomainBC() = default;
-  virtual bool enforce(float &, float &) = 0;
+  virtual void enforce(float &, float &, uint8_t &) = 0;
 };
 
 class DomainBC_exiting : public DomainBC
@@ -64,7 +66,7 @@ public:
     : DomainBC(dS, dE)
   {}
 
-  bool enforce(float &, float &);
+  void enforce(float &, float &, uint8_t &) override;
 };
 
 class DomainBC_periodic : public DomainBC
@@ -74,7 +76,7 @@ public:
     : DomainBC(dS, dE)
   {}
 
-  bool enforce(float &, float &);
+  void enforce(float &, float &, uint8_t &) override;
 };
 
 class DomainBC_reflection : public DomainBC
@@ -84,5 +86,5 @@ public:
     : DomainBC(dS, dE)
   {}
 
-  bool enforce(float &, float &);
+  void enforce(float &, float &, uint8_t &) override;
 };
