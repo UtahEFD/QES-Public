@@ -1,9 +1,1 @@
-
-Inactive Modules:
-  1) boost/1.77.0     3) intel-oneapi-mpi/2021.4.0     5) netcdf-cxx/4.2
-  2) gdal/3.3.3       4) netcdf-c/4.8.1
-
-The following have been reloaded with a version change:
-  1) gcc/8.5.0 => gcc/8.1.0
-
-/uufs/notchpeak.peaks/sys/var/slurm/slurmd.spool/notch055//job7177405/slurm_script: line 13: ..: command not found
+slurmstepd: error: *** JOB 2291199 ON notch329 CANCELLED AT 2024-11-15T16:26:11 ***

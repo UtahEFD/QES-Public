@@ -75,7 +75,7 @@ struct Fire::FireProperties Fire ::balbi(FuelProperties *fuel, float u_mid, floa
         float C_p = 2e3;///< calorific capacity [J/kg] - Balbi 2009
         float C_pa = 1150;///< specific heat of air [J/Kg/K]
         float tau_0 = 75591;///< residence time coefficient - Anderson 196?
-        float tau = tau_0 / (savrT / 0.3048)+120;///MM-11-2-22
+        float tau = tau_0 / (savrT / 0.3048)+300;///MM-11-2-22
         // fuel constants
         float m = fmc_g;///< fuel particle moisture content [0-1]
         float sigma = oneHour * 0.2471;///< dead fine fuel load [kg/m^2]
@@ -116,11 +116,20 @@ struct Fire::FireProperties Fire ::balbi(FuelProperties *fuel, float u_mid, floa
             phi = 0;
         } else {
             phi = acos((x_slope * x_norm + y_slope * y_norm) / (sqrt(x_slope * x_slope + y_slope * y_slope) * sqrt(x_norm * x_norm + y_norm * y_norm)));
+	    if (isnan(phi)){
+	      std::cout<<"ROS error, phi isnan"<<std::endl;
+	      phi = 0;
+	    }
         }
         if (v_c == 1 or n_c == 1) {
             psi = 0;
         } else {
             psi = acos((u_mid * x_norm + v_mid * y_norm) / (sqrt(u_mid * u_mid + v_mid * v_mid) * sqrt(x_norm * x_norm + y_norm * y_norm)));
+	    if (isnan(psi)){
+	      std::cout<<"ROS error, psi isnan"<<std::endl;
+	      psi = 0;
+	    }
+        
         }
         if (phi > 0.785) {
             alpha = -alpha;
@@ -172,6 +181,14 @@ struct Fire::FireProperties Fire ::balbi(FuelProperties *fuel, float u_mid, floa
         iter++;
         R_old = R;
     }
+	if (isnan(R)){
+	  std::cout<<"R isnan"<<std::endl;
+	  std::cout<<"psi = "<<psi<<", phi = "<<phi<<", alpha = "<<alpha<<std::endl;
+	  std::cout<<"gamma = "<<gamma<<std::endl;
+	  std::cout<<"xNorm = "<<x_norm<<", yNorm = "<<y_norm<<std::endl;
+	  std::cout<<"u = "<<u_mid<<", v = "<<v_mid<<std::endl;
+	  
+	}
     // calculate flame depth
     float L = R * tau;
     if (isnan(L)) {

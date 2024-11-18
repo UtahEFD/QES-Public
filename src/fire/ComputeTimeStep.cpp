@@ -36,7 +36,44 @@ float Fire ::computeTimeStep()
   // spread rates
   float r = 0;
   float r_max = 0;
+  
+  // indices for burning cells
+  std::vector<int> cells_burning;
+  // search predicate for burn state
+  struct find_burn : std::unary_function<FireCell, bool>
+  {
+    float burn;
+    find_burn(int burn) : burn(burn) {}
+    bool operator()(FireCell const &f) const
+    {
+      return f.state.burn_flag == burn;
+    }
+  };
 
+  // get indices of burning cells
+  std::vector<FireCell>::iterator it = std::find_if(fire_cells.begin(), fire_cells.end(), find_burn(1));
+  while (it != fire_cells.end()) {
+    if (it != fire_cells.end()) {
+      cells_burning.push_back(std::distance(fire_cells.begin(), it));
+    }
+    it = std::find_if(++it, fire_cells.end(), find_burn(1));
+  }
+
+  
+  // loop through burning cells
+  for (int i = 0; i < cells_burning.size(); i++) {
+    // get index burning cell
+    int id = cells_burning[i];
+    // convert flat index to i, j at cell center
+    int ii = id % (nx - 1);
+    int jj = (id / (nx - 1)) % (ny - 1);
+    int idx = ii + jj * (nx-1);
+    
+    r = fire_cells[idx].properties.r;
+    r_max = r > r_max ? r : r_max;
+  }
+
+  /**  
   // get max spread rate
   for (int j = 0; j < ny - 1; j++) {
     for (int i = 0; i < nx - 1; i++) {
@@ -45,7 +82,10 @@ float Fire ::computeTimeStep()
       r_max = r > r_max ? r : r_max;
     }
   }
+  */
+  
   std::cout << "max ROS = " << r_max << std::endl;
+  
   if (r_max < 0.3) {
     r_max = 0.3;
   }
@@ -53,6 +93,7 @@ float Fire ::computeTimeStep()
     r_max = 0.3;
     std::cout<<"r_max is NaN, setting to 0.3"<<std::endl;
   }
+  
   float dt = courant * dx / r_max;
  
   std::cout << "dt = " << dt << " s" << std::endl;

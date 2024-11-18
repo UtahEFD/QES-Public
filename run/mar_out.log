@@ -1,0 +1,7030 @@
+stack size              (kbytes, -s) unlimited
+###################################################################
+#                                                                 #
+#                        Welcome to QES                           #
+#                                                                 #
+###################################################################
+Version: v2.1.0
+	* CUDA support available!
+	* OptiX is available!
+###################################################################
+qesWindsParamFile set to ../data/InputFiles/fireMarshallTime.xml
+Solving with: Global memory solver (GPU)
+Visualization NetCDF output file set to /uufs/chpc.utah.edu/common/home/u0004440/../stoll-groupbig/moody/Marshall/initial_windsOut.nc
+Fire NetCDF output file set to /uufs/chpc.utah.edu/common/home/u0004440/../stoll-groupbig/moody/Marshall/initial_fireOutput.nc
+-------------------------------------------------------------------
+[QES-WINDS]	 Initialization of wind model...
+[QES-WINDS]	 Sensors have been loaded (total sensors = 2).
+[QES-WINDS]	 Allocation Memory...[QES-WINDS]	 Allocation Memory... [DONE]
+[QES-WINDS]	 Defining solid walls...[QES-WINDS]	 Defining solid walls... [DONE]
+		 elapsed time: 0.110449 s
+[NetCDFOutput] 	 Writing to /uufs/chpc.utah.edu/common/home/u0004440/../stoll-groupbig/moody/Marshall/initial_windsOut.nc
+[Output] 	 Getting output fields for Vizualization file
+Run Global Memory Solver (GPU) ...
+-------------------------------------------------------------------
+[Solver]	 Initializing Global Memory Solver (GPU) ...
+Field flag [0]
+ignition [0]
+ignition [1]
+burn initialized
+level set initialized
+slope calculated
+Extracting fuel data from /uufs/chpc.utah.edu/common/home/u0004440/QES-Winds/data/FireFiles/MarshallFuel_edit.tif
+PROJCS["NAD83 / New Hampshire",GEOGCS["NAD83",DATUM["North_American_Datum_1983",SPHEROID["GRS 1980",6378137,298.257222101,AUTHORITY["EPSG","7019"]],AUTHORITY["EPSG","6269"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4269"]],PROJECTION["Transverse_Mercator"],PARAMETER["latitude_of_origin",42.5],PARAMETER["central_meridian",-71.6666666666667],PARAMETER["scale_factor",0.999966667],PARAMETER["false_easting",300000],PARAMETER["false_northing",0],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",NORTH],AUTHORITY["EPSG","32110"]]
+Fuel Domain Origin = (480225,4.42614e+06)
+Fuel Pixel Size = (30,-30)
+Fuel file size is 298x267
+xStride = 1, yStride = 1
+Fuel set
+[NetCDFOutput] 	 Writing to /uufs/chpc.utah.edu/common/home/u0004440/../stoll-groupbig/moody/Marshall/initial_fireOutput.nc
+[FireOutput] set up NetCDF file /uufs/chpc.utah.edu/common/home/u0004440/../stoll-groupbig/moody/Marshall/initial_fireOutput.nc
+dimensions added
+burn added
+----------------------------------------
+New Sensor Data
+index = 0
+----------------------------------------
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.483971 s
+		 elapsed time: 0.485988 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00233811 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.000044990
+		 Elapsed time: 1.00896 s
+Solver done!
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0201732 s
+		 elapsed time: 0.020577 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48312
+dt = 12.1365 s
+		 Elapsed time: 8.44257 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216747 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.024061203
+		 Elapsed time: 1.00908 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50038
+dt = 11.9969 s
+time = 2021-12-31T11:47:11.997000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0253392 s
+		 elapsed time: 0.0257524 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50038
+dt = 11.9969 s
+		 Elapsed time: 8.43457 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.0021838 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.024028778
+		 Elapsed time: 1.01351 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50623
+dt = 11.9504 s
+time = 2021-12-31T11:47:23.947000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0214411 s
+		 elapsed time: 0.021854 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50623
+dt = 11.9504 s
+		 Elapsed time: 8.78036 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216195 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.023988724
+		 Elapsed time: 1.01429 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.51154
+dt = 11.9084 s
+time = 2021-12-31T11:47:35.855000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0236494 s
+		 elapsed time: 0.0240625 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.51154
+dt = 11.9084 s
+		 Elapsed time: 8.73074 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216777 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.023992538
+		 Elapsed time: 1.01152 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50786
+dt = 11.9375 s
+time = 2021-12-31T11:47:47.792000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0218754 s
+		 elapsed time: 0.0222861 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50786
+dt = 11.9375 s
+		 Elapsed time: 8.72877 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215716 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.023990631
+		 Elapsed time: 1.01196 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50786
+dt = 11.9375 s
+time = 2021-12-31T11:47:59.729000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0223957 s
+		 elapsed time: 0.0228304 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50786
+dt = 11.9375 s
+		 Elapsed time: 8.73237 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.0021588 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.023990631
+		 Elapsed time: 1.01159 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50786
+dt = 11.9375 s
+time = 2021-12-31T11:48:11.666000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0210068 s
+		 elapsed time: 0.0214157 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50786
+dt = 11.9375 s
+		 Elapsed time: 9.50719 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216386 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.024084091
+		 Elapsed time: 1.01044 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50921
+dt = 11.9268 s
+time = 2021-12-31T11:48:23.593000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0215331 s
+		 elapsed time: 0.0219494 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50921
+dt = 11.9268 s
+		 Elapsed time: 9.50254 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215717 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.024085999
+		 Elapsed time: 1.01283 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50921
+dt = 11.9268 s
+time = 2021-12-31T11:48:35.520000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0212763 s
+		 elapsed time: 0.0216926 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50921
+dt = 11.9268 s
+		 Elapsed time: 9.5196 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216121 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.024810791
+		 Elapsed time: 1.0149 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.51917
+dt = 11.8485 s
+time = 2021-12-31T11:48:47.369000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0213299 s
+		 elapsed time: 0.0217435 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.51917
+dt = 11.8485 s
+		 Elapsed time: 9.51991 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215854 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.024810791
+		 Elapsed time: 1.01287 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.51917
+dt = 11.8486 s
+time = 2021-12-31T11:48:59.218000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0235307 s
+		 elapsed time: 0.0239471 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.51917
+dt = 11.8486 s
+		 Elapsed time: 9.9083 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216187 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.025140762
+		 Elapsed time: 1.01333 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.53116
+dt = 11.7558 s
+time = 2021-12-31T11:49:10.974000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0241722 s
+		 elapsed time: 0.0245877 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.53116
+dt = 11.7558 s
+		 Elapsed time: 9.90822 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215423 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.025136948
+		 Elapsed time: 1.01118 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.53116
+dt = 11.7558 s
+time = 2021-12-31T11:49:22.730000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0212509 s
+		 elapsed time: 0.021735 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.53116
+dt = 11.7558 s
+		 Elapsed time: 9.90901 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215544 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.025136948
+		 Elapsed time: 1.01436 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.53116
+dt = 11.7558 s
+time = 2021-12-31T11:49:34.486000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0203756 s
+		 elapsed time: 0.0210149 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.53116
+dt = 11.7558 s
+		 Elapsed time: 10.3181 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216123 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.025661469
+		 Elapsed time: 1.01454 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.54168
+dt = 11.6756 s
+time = 2021-12-31T11:49:46.162000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0212126 s
+		 elapsed time: 0.0216278 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.54168
+dt = 11.6756 s
+		 Elapsed time: 10.3123 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216185 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.025661469
+		 Elapsed time: 1.01082 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.54167
+dt = 11.6756 s
+time = 2021-12-31T11:49:57.838000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0212468 s
+		 elapsed time: 0.0216839 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.54167
+dt = 11.6756 s
+		 Elapsed time: 11.7158 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.0021826 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.026088715
+		 Elapsed time: 1.01095 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.55042
+dt = 11.6097 s
+time = 2021-12-31T11:50:09.448000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0215966 s
+		 elapsed time: 0.0220227 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.55042
+dt = 11.6097 s
+		 Elapsed time: 11.7151 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216093 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.026088715
+		 Elapsed time: 1.0154 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.55042
+dt = 11.6098 s
+time = 2021-12-31T11:50:21.058000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0210984 s
+		 elapsed time: 0.0215134 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.55042
+dt = 11.6098 s
+		 Elapsed time: 12.0543 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216838 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.028209686
+		 Elapsed time: 1.01022 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.56304
+dt = 11.516 s
+time = 2021-12-31T11:50:32.574000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0205724 s
+		 elapsed time: 0.0210559 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.56304
+dt = 11.516 s
+		 Elapsed time: 12.5363 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215978 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.027130127
+		 Elapsed time: 1.01136 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.56791
+dt = 11.4803 s
+time = 2021-12-31T11:50:44.054000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0216983 s
+		 elapsed time: 0.0221157 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.56791
+dt = 11.4803 s
+		 Elapsed time: 13.488 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215655 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.026693344
+		 Elapsed time: 1.01256 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.57272
+dt = 11.4452 s
+time = 2021-12-31T11:50:55.499000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.024254 s
+		 elapsed time: 0.0246702 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.57272
+dt = 11.4452 s
+		 Elapsed time: 13.8538 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00218719 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.025960922
+		 Elapsed time: 1.01062 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.57998
+dt = 11.3926 s
+time = 2021-12-31T11:51:06.892000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0211843 s
+		 elapsed time: 0.0216098 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.57998
+dt = 11.3926 s
+		 Elapsed time: 13.8671 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215998 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.025959015
+		 Elapsed time: 1.0116 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.57998
+dt = 11.3926 s
+time = 2021-12-31T11:51:18.285000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0207065 s
+		 elapsed time: 0.0211197 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.57998
+dt = 11.3926 s
+		 Elapsed time: 14.1508 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00218952 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.024894714
+		 Elapsed time: 1.0108 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.58711
+dt = 11.3414 s
+time = 2021-12-31T11:51:29.626000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0235484 s
+		 elapsed time: 0.0239671 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.58711
+dt = 11.3414 s
+		 Elapsed time: 14.1551 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00218205 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.024894714
+		 Elapsed time: 1.01107 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.5871
+dt = 11.3414 s
+time = 2021-12-31T11:51:40.967000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0247768 s
+		 elapsed time: 0.0251925 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.5871
+dt = 11.3414 s
+		 Elapsed time: 15.004 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00218174 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.024887085
+		 Elapsed time: 1.01107 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.59407
+dt = 11.2918 s
+time = 2021-12-31T11:51:52.259000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0208102 s
+		 elapsed time: 0.021262 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.59407
+dt = 11.2918 s
+		 Elapsed time: 14.999 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.0021607 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.024887085
+		 Elapsed time: 1.01265 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.59407
+dt = 11.2918 s
+time = 2021-12-31T11:52:03.551000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0214764 s
+		 elapsed time: 0.0218904 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.59407
+dt = 11.2918 s
+		 Elapsed time: 15.0079 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216357 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.024887085
+		 Elapsed time: 1.01213 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.59407
+dt = 11.2918 s
+time = 2021-12-31T11:52:14.843000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0213317 s
+		 elapsed time: 0.0217645 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.59407
+dt = 11.2918 s
+		 Elapsed time: 11.4267 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215869 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.027639389
+		 Elapsed time: 1.01151 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.60894
+dt = 11.1875 s
+time = 2021-12-31T11:52:26.030000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0248285 s
+		 elapsed time: 0.025243 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.60894
+dt = 11.1875 s
+		 Elapsed time: 11.4243 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215773 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.027637482
+		 Elapsed time: 1.01357 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.60893
+dt = 11.1875 s
+time = 2021-12-31T11:52:37.218000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0212449 s
+		 elapsed time: 0.0216611 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.60893
+dt = 11.1875 s
+		 Elapsed time: 11.9413 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216659 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.027147293
+		 Elapsed time: 1.01005 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.61542
+dt = 11.1426 s
+time = 2021-12-31T11:52:48.361000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0222619 s
+		 elapsed time: 0.022675 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.61542
+dt = 11.1426 s
+		 Elapsed time: 11.9377 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216435 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.027147293
+		 Elapsed time: 1.01105 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.61542
+dt = 11.1426 s
+time = 2021-12-31T11:52:59.504000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0208109 s
+		 elapsed time: 0.0212579 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.55649
+dt = 11.5645 s
+		 Elapsed time: 11.2749 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216535 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041027069
+		 Elapsed time: 1.01048 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.61631
+dt = 11.1365 s
+time = 2021-12-31T11:53:10.640000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0210372 s
+		 elapsed time: 0.0214663 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.61631
+dt = 11.1365 s
+		 Elapsed time: 11.6692 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215792 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041019440
+		 Elapsed time: 1.01418 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.62278
+dt = 11.0921 s
+time = 2021-12-31T11:53:21.732000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0223242 s
+		 elapsed time: 0.0227393 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.62278
+dt = 11.0921 s
+		 Elapsed time: 12.1683 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216976 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041591644
+		 Elapsed time: 1.01198 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.62762
+dt = 11.0591 s
+time = 2021-12-31T11:53:32.791000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0211412 s
+		 elapsed time: 0.0215571 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.56791
+dt = 11.4803 s
+		 Elapsed time: 13.7894 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216065 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041599274
+		 Elapsed time: 1.0113 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.62513
+dt = 11.0761 s
+time = 2021-12-31T11:53:43.867000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.022079 s
+		 elapsed time: 0.0224938 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.62513
+dt = 11.0761 s
+		 Elapsed time: 14.7413 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216309 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041584015
+		 Elapsed time: 1.0112 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.62765
+dt = 11.0589 s
+time = 2021-12-31T11:53:54.926000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0213212 s
+		 elapsed time: 0.0217382 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.5663
+dt = 11.492 s
+		 Elapsed time: 13.7314 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215637 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041587830
+		 Elapsed time: 1.01237 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.61613
+dt = 11.1378 s
+time = 2021-12-31T11:54:06.064000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0210316 s
+		 elapsed time: 0.0214438 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.61613
+dt = 11.1378 s
+		 Elapsed time: 13.8223 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215844 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041584015
+		 Elapsed time: 1.01087 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.62812
+dt = 11.0557 s
+time = 2021-12-31T11:54:17.120000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0223574 s
+		 elapsed time: 0.0227772 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.56678
+dt = 11.4885 s
+		 Elapsed time: 13.7692 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216461 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041584015
+		 Elapsed time: 1.01101 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.61754
+dt = 11.128 s
+time = 2021-12-31T11:54:28.248000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0221347 s
+		 elapsed time: 0.0225832 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.61754
+dt = 11.128 s
+		 Elapsed time: 14.1194 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215211 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041580200
+		 Elapsed time: 1.01233 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.62401
+dt = 11.0837 s
+time = 2021-12-31T11:54:39.332000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0229153 s
+		 elapsed time: 0.0233331 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.62401
+dt = 11.0837 s
+		 Elapsed time: 14.114 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215864 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041580200
+		 Elapsed time: 1.01334 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.62401
+dt = 11.0837 s
+time = 2021-12-31T11:54:50.416000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0234701 s
+		 elapsed time: 0.0238795 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.56164
+dt = 11.5263 s
+		 Elapsed time: 12.711 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215218 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041584015
+		 Elapsed time: 1.01078 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.61248
+dt = 11.1629 s
+time = 2021-12-31T11:55:01.579000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0223735 s
+		 elapsed time: 0.0227863 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.61248
+dt = 11.1629 s
+		 Elapsed time: 13.3403 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215563 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041427612
+		 Elapsed time: 1.01508 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.62701
+dt = 11.0633 s
+time = 2021-12-31T11:55:12.642000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0230753 s
+		 elapsed time: 0.0234902 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.56334
+dt = 11.5138 s
+		 Elapsed time: 13.3249 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00217436 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041355133
+		 Elapsed time: 1.01052 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.61571
+dt = 11.1406 s
+time = 2021-12-31T11:55:23.783000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0222711 s
+		 elapsed time: 0.0227177 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.61571
+dt = 11.1406 s
+		 Elapsed time: 14.4615 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215831 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041336060
+		 Elapsed time: 1.0132 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.6222
+dt = 11.0961 s
+time = 2021-12-31T11:55:34.879000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0226648 s
+		 elapsed time: 0.0230766 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.55623
+dt = 11.5664 s
+		 Elapsed time: 13.739 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216027 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041328430
+		 Elapsed time: 1.01101 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.60713
+dt = 11.2001 s
+time = 2021-12-31T11:55:46.079000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0241193 s
+		 elapsed time: 0.0245259 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.60713
+dt = 11.2001 s
+		 Elapsed time: 12.7722 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216241 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041324615
+		 Elapsed time: 1.01335 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.60828
+dt = 11.1921 s
+time = 2021-12-31T11:55:57.271000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0211257 s
+		 elapsed time: 0.0215419 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.60828
+dt = 11.1921 s
+		 Elapsed time: 12.4862 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215243 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.040958405
+		 Elapsed time: 1.01474 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.61378
+dt = 11.154 s
+time = 2021-12-31T11:56:08.425000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.021942 s
+		 elapsed time: 0.0223542 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.55079
+dt = 11.607 s
+		 Elapsed time: 12.316 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216679 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.040966034
+		 Elapsed time: 1.01117 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.60175
+dt = 11.2377 s
+time = 2021-12-31T11:56:19.663000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0210659 s
+		 elapsed time: 0.0214779 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.60175
+dt = 11.2377 s
+		 Elapsed time: 12.7691 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00217858 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.040958405
+		 Elapsed time: 1.01078 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.60825
+dt = 11.1923 s
+time = 2021-12-31T11:56:30.855000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0222256 s
+		 elapsed time: 0.0226554 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.60825
+dt = 11.1923 s
+		 Elapsed time: 14.1091 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.0021547 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.042366028
+		 Elapsed time: 1.01111 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.61461
+dt = 11.1482 s
+time = 2021-12-31T11:56:42.003000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0211915 s
+		 elapsed time: 0.0216024 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.5492
+dt = 11.6189 s
+		 Elapsed time: 13.1526 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216553 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.042385101
+		 Elapsed time: 1.01067 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.6002
+dt = 11.2486 s
+time = 2021-12-31T11:56:53.252000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0208539 s
+		 elapsed time: 0.0212683 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.6002
+dt = 11.2486 s
+		 Elapsed time: 13.5142 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215808 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.042377472
+		 Elapsed time: 1.0097 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.60671
+dt = 11.203 s
+time = 2021-12-31T11:57:04.455000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0206504 s
+		 elapsed time: 0.0211063 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.53765
+dt = 11.7062 s
+		 Elapsed time: 13.2048 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215685 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.042385101
+		 Elapsed time: 1.01475 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.5888
+dt = 11.3293 s
+time = 2021-12-31T11:57:15.784000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0202148 s
+		 elapsed time: 0.0206429 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.5888
+dt = 11.3293 s
+		 Elapsed time: 14.5658 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215682 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.048645020
+		 Elapsed time: 1.00997 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.59533
+dt = 11.283 s
+time = 2021-12-31T11:57:27.067000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0242976 s
+		 elapsed time: 0.0247102 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.59533
+dt = 11.283 s
+		 Elapsed time: 14.5599 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216063 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.048645020
+		 Elapsed time: 1.01156 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.59532
+dt = 11.283 s
+time = 2021-12-31T11:57:38.350000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0207529 s
+		 elapsed time: 0.0212029 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.5224
+dt = 11.8235 s
+		 Elapsed time: 14.1095 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215407 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.048591614
+		 Elapsed time: 1.01144 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.57377
+dt = 11.4375 s
+time = 2021-12-31T11:57:49.788000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.021371 s
+		 elapsed time: 0.0218224 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.57377
+dt = 11.4375 s
+		 Elapsed time: 14.1662 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00218772 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.042385101
+		 Elapsed time: 1.01293 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.58031
+dt = 11.3901 s
+time = 2021-12-31T11:58:01.178000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0203211 s
+		 elapsed time: 0.020769 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50676
+dt = 11.9462 s
+		 Elapsed time: 14.9201 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215204 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.042972565
+		 Elapsed time: 1.01401 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.5546
+dt = 11.5785 s
+time = 2021-12-31T11:58:12.757000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0206968 s
+		 elapsed time: 0.0211074 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.55461
+dt = 11.5785 s
+		 Elapsed time: 14.9126 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00217679 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.042976379
+		 Elapsed time: 1.01297 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.55462
+dt = 11.5784 s
+time = 2021-12-31T11:58:24.335000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.021102 s
+		 elapsed time: 0.0215489 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48267
+dt = 12.1403 s
+		 Elapsed time: 14.8698 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216152 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.042980194
+		 Elapsed time: 1.01055 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.53579
+dt = 11.7204 s
+time = 2021-12-31T11:58:36.055000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0206702 s
+		 elapsed time: 0.021085 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.53579
+dt = 11.7204 s
+		 Elapsed time: 15.0308 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215539 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.042957306
+		 Elapsed time: 1.01147 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.54711
+dt = 11.6346 s
+time = 2021-12-31T11:58:47.690000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0240554 s
+		 elapsed time: 0.0244676 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48127
+dt = 12.1518 s
+		 Elapsed time: 14.2955 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.0021624 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.042999268
+		 Elapsed time: 1.01015 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.54068
+dt = 11.6832 s
+time = 2021-12-31T11:58:59.373000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0207963 s
+		 elapsed time: 0.0212083 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.54068
+dt = 11.6832 s
+		 Elapsed time: 13.9719 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216717 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.043003082
+		 Elapsed time: 1.01161 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.5455
+dt = 11.6467 s
+time = 2021-12-31T11:59:11.020000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.020634 s
+		 elapsed time: 0.02104 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.5455
+dt = 11.6467 s
+		 Elapsed time: 13.9845 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215267 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.043006897
+		 Elapsed time: 1.01418 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.54546
+dt = 11.647 s
+time = 2021-12-31T11:59:22.667000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0207106 s
+		 elapsed time: 0.0211569 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48197
+dt = 12.146 s
+		 Elapsed time: 12.159 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216798 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.045566559
+		 Elapsed time: 1.01387 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.54224
+dt = 11.6713 s
+time = 2021-12-31T11:59:34.338000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0206507 s
+		 elapsed time: 0.0210626 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.54224
+dt = 11.6713 s
+		 Elapsed time: 12.4089 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.0021552 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.043453217
+		 Elapsed time: 1.01135 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.55103
+dt = 11.6052 s
+time = 2021-12-31T11:59:45.943000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.020754 s
+		 elapsed time: 0.0211677 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48746
+dt = 12.1011 s
+		 Elapsed time: 12.2619 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215208 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.045768738
+		 Elapsed time: 1.01273 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.5394
+dt = 11.6928 s
+time = 2021-12-31T11:59:57.636000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0206259 s
+		 elapsed time: 0.0210352 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.5394
+dt = 11.6928 s
+		 Elapsed time: 12.6339 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215525 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.043083191
+		 Elapsed time: 1.01641 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.53575
+dt = 11.7207 s
+time = 2021-12-31T12:00:09.357000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0219096 s
+		 elapsed time: 0.0223271 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.53575
+dt = 11.7207 s
+		 Elapsed time: 12.6278 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215372 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.043098450
+		 Elapsed time: 1.01017 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.53577
+dt = 11.7205 s
+time = 2021-12-31T12:00:21.077000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.020675 s
+		 elapsed time: 0.0211347 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.47132
+dt = 12.2339 s
+		 Elapsed time: 12.6328 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215688 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.043106079
+		 Elapsed time: 1.01169 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.53248
+dt = 11.7457 s
+time = 2021-12-31T12:00:32.823000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0207064 s
+		 elapsed time: 0.0211193 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.53248
+dt = 11.7457 s
+		 Elapsed time: 12.6305 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216121 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.043106079
+		 Elapsed time: 1.01392 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.53247
+dt = 11.7457 s
+time = 2021-12-31T12:00:44.569000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0200975 s
+		 elapsed time: 0.0205151 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46949
+dt = 12.2492 s
+		 Elapsed time: 11.7795 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216444 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.044422150
+		 Elapsed time: 1.01038 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.54385
+dt = 11.6592 s
+time = 2021-12-31T12:00:56.228000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0228744 s
+		 elapsed time: 0.0232821 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.54385
+dt = 11.6592 s
+		 Elapsed time: 11.7817 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00218885 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.044731140
+		 Elapsed time: 1.01085 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.55117
+dt = 11.6042 s
+time = 2021-12-31T12:01:07.832000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0220497 s
+		 elapsed time: 0.0224622 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.55117
+dt = 11.6042 s
+		 Elapsed time: 12.2724 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216154 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.043785095
+		 Elapsed time: 1.01206 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.56562
+dt = 11.4971 s
+time = 2021-12-31T12:01:19.329000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0206551 s
+		 elapsed time: 0.021066 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50605
+dt = 11.9518 s
+		 Elapsed time: 11.8946 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215123 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.042953491
+		 Elapsed time: 1.01197 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.55775
+dt = 11.5551 s
+time = 2021-12-31T12:01:30.884000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0238067 s
+		 elapsed time: 0.0242235 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.55775
+dt = 11.5551 s
+		 Elapsed time: 12.1644 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215799 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.044990540
+		 Elapsed time: 1.01339 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.55133
+dt = 11.6029 s
+time = 2021-12-31T12:01:42.487000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0238787 s
+		 elapsed time: 0.0242948 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.49323
+dt = 12.0544 s
+		 Elapsed time: 12.1258 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215938 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.043163300
+		 Elapsed time: 1.01201 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.54363
+dt = 11.6608 s
+time = 2021-12-31T12:01:54.148000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0262654 s
+		 elapsed time: 0.0266762 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.54363
+dt = 11.6608 s
+		 Elapsed time: 12.1229 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215807 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.043151855
+		 Elapsed time: 1.01062 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.54369
+dt = 11.6604 s
+time = 2021-12-31T12:02:05.808000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0258409 s
+		 elapsed time: 0.0262618 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.54369
+dt = 11.6604 s
+		 Elapsed time: 11.7697 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216484 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.043682098
+		 Elapsed time: 1.01403 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.5551
+dt = 11.5749 s
+time = 2021-12-31T12:02:17.383000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0240156 s
+		 elapsed time: 0.024427 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50018
+dt = 11.9986 s
+		 Elapsed time: 10.0789 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216456 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.044384003
+		 Elapsed time: 1.01154 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.55546
+dt = 11.5721 s
+time = 2021-12-31T12:02:28.955000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0235156 s
+		 elapsed time: 0.0239319 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50566
+dt = 11.9549 s
+		 Elapsed time: 10.4524 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00218235 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.046562195
+		 Elapsed time: 1.01317 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.54822
+dt = 11.6263 s
+time = 2021-12-31T12:02:40.581000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0260327 s
+		 elapsed time: 0.0264442 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.54822
+dt = 11.6263 s
+		 Elapsed time: 10.4493 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215358 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.046497345
+		 Elapsed time: 1.01378 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.54836
+dt = 11.6252 s
+time = 2021-12-31T12:02:52.206000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0232749 s
+		 elapsed time: 0.0237077 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.54836
+dt = 11.6252 s
+		 Elapsed time: 10.4454 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215688 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.046421051
+		 Elapsed time: 1.01468 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.54846
+dt = 11.6244 s
+time = 2021-12-31T12:03:03.830000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.024017 s
+		 elapsed time: 0.0244344 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50691
+dt = 11.945 s
+		 Elapsed time: 12.4743 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.0021591 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.048171997
+		 Elapsed time: 1.013 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.51365
+dt = 11.8918 s
+time = 2021-12-31T12:03:15.722000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0270127 s
+		 elapsed time: 0.0274668 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.51366
+dt = 11.8917 s
+		 Elapsed time: 12.4766 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215598 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.048099518
+		 Elapsed time: 1.01116 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.51369
+dt = 11.8915 s
+time = 2021-12-31T12:03:27.613000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0264407 s
+		 elapsed time: 0.0268577 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.5137
+dt = 11.8914 s
+		 Elapsed time: 13.804 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215614 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.057003021
+		 Elapsed time: 1.01515 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.51741
+dt = 11.8623 s
+time = 2021-12-31T12:03:39.475000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0248537 s
+		 elapsed time: 0.025268 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.51742
+dt = 11.8623 s
+		 Elapsed time: 12.7116 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00220342 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.050834656
+		 Elapsed time: 1.01206 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.5233
+dt = 11.8165 s
+time = 2021-12-31T12:03:51.291000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0235851 s
+		 elapsed time: 0.024016 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.5233
+dt = 11.8164 s
+		 Elapsed time: 12.9319 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215532 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.058280945
+		 Elapsed time: 1.01036 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.53312
+dt = 11.7407 s
+time = 2021-12-31T12:04:03.032000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0245494 s
+		 elapsed time: 0.0249595 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.53313
+dt = 11.7407 s
+		 Elapsed time: 12.927 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.0021575 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.057304382
+		 Elapsed time: 1.01342 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.53093
+dt = 11.7576 s
+time = 2021-12-31T12:04:14.790000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0255626 s
+		 elapsed time: 0.0259731 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.53093
+dt = 11.7575 s
+		 Elapsed time: 13.146 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215562 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.056106567
+		 Elapsed time: 1.01532 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.53657
+dt = 11.7144 s
+time = 2021-12-31T12:04:26.504000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0250862 s
+		 elapsed time: 0.0254978 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.51772
+dt = 11.8599 s
+		 Elapsed time: 13.1511 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215693 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.056102753
+		 Elapsed time: 1.01134 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.51774
+dt = 11.8598 s
+time = 2021-12-31T12:04:38.364000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0258757 s
+		 elapsed time: 0.0262911 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.51775
+dt = 11.8596 s
+		 Elapsed time: 13.9191 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216723 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.062290192
+		 Elapsed time: 1.01096 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.52302
+dt = 11.8187 s
+time = 2021-12-31T12:04:50.183000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0238701 s
+		 elapsed time: 0.0242887 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48217
+dt = 12.1444 s
+		 Elapsed time: 13.9201 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215896 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.063575745
+		 Elapsed time: 1.01118 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48105
+dt = 12.1536 s
+time = 2021-12-31T12:05:02.337000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0251072 s
+		 elapsed time: 0.025519 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48109
+dt = 12.1532 s
+		 Elapsed time: 13.9173 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215706 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.063568115
+		 Elapsed time: 1.01252 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48111
+dt = 12.153 s
+time = 2021-12-31T12:05:14.490000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.023896 s
+		 elapsed time: 0.0243093 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48114
+dt = 12.1528 s
+		 Elapsed time: 14.0109 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216073 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.061668396
+		 Elapsed time: 1.01256 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.4856
+dt = 12.1163 s
+time = 2021-12-31T12:05:26.606000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0279171 s
+		 elapsed time: 0.0283343 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48562
+dt = 12.1161 s
+		 Elapsed time: 14.5282 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216803 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.063354492
+		 Elapsed time: 1.01194 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48132
+dt = 12.1513 s
+time = 2021-12-31T12:05:38.757000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.024141 s
+		 elapsed time: 0.0245547 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48133
+dt = 12.1512 s
+		 Elapsed time: 14.5409 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215931 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.077758789
+		 Elapsed time: 1.01397 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.49262
+dt = 12.0594 s
+time = 2021-12-31T12:05:50.816000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0238897 s
+		 elapsed time: 0.0243004 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.49262
+dt = 12.0594 s
+		 Elapsed time: 14.5383 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00218564 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.078193665
+		 Elapsed time: 1.01273 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.49205
+dt = 12.064 s
+time = 2021-12-31T12:06:02.880000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0235382 s
+		 elapsed time: 0.023993 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.49205
+dt = 12.064 s
+		 Elapsed time: 14.9781 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215393 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.077739716
+		 Elapsed time: 1.01424 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.49533
+dt = 12.0375 s
+time = 2021-12-31T12:06:14.918000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0247352 s
+		 elapsed time: 0.0251679 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.49533
+dt = 12.0375 s
+		 Elapsed time: 15.202 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216119 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.067420959
+		 Elapsed time: 1.01256 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.49015
+dt = 12.0793 s
+time = 2021-12-31T12:06:26.997000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0236656 s
+		 elapsed time: 0.0240811 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48698
+dt = 12.105 s
+		 Elapsed time: 14.8585 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216741 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.067287445
+		 Elapsed time: 1.01211 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.49172
+dt = 12.0666 s
+time = 2021-12-31T12:06:39.064000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.024297 s
+		 elapsed time: 0.0247091 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.49173
+dt = 12.0665 s
+		 Elapsed time: 14.8587 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00218365 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.067146301
+		 Elapsed time: 1.01185 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.49201
+dt = 12.0642 s
+time = 2021-12-31T12:06:51.128000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0244097 s
+		 elapsed time: 0.0248402 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.49202
+dt = 12.0642 s
+		 Elapsed time: 14.8699 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215572 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.066078186
+		 Elapsed time: 1.01321 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.497
+dt = 12.0241 s
+time = 2021-12-31T12:07:03.152000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0242264 s
+		 elapsed time: 0.0246362 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.497
+dt = 12.024 s
+		 Elapsed time: 15.1877 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00219921 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.065410614
+		 Elapsed time: 1.01161 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50141
+dt = 11.9888 s
+time = 2021-12-31T12:07:15.141000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0264872 s
+		 elapsed time: 0.0269019 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50141
+dt = 11.9888 s
+		 Elapsed time: 13.8587 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215787 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.064105988
+		 Elapsed time: 1.01276 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50439
+dt = 11.965 s
+time = 2021-12-31T12:07:27.106000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0238424 s
+		 elapsed time: 0.0242669 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50439
+dt = 11.965 s
+		 Elapsed time: 14.4269 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215645 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.063289642
+		 Elapsed time: 1.01083 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.51058
+dt = 11.916 s
+time = 2021-12-31T12:07:39.022000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0236084 s
+		 elapsed time: 0.0240203 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.51058
+dt = 11.916 s
+		 Elapsed time: 14.4336 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00219278 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.063282013
+		 Elapsed time: 1.01256 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.5106
+dt = 11.9158 s
+time = 2021-12-31T12:07:50.938000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0239801 s
+		 elapsed time: 0.0243957 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.4944
+dt = 12.0449 s
+		 Elapsed time: 14.2336 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216176 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.061450958
+		 Elapsed time: 1.01067 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.49546
+dt = 12.0365 s
+time = 2021-12-31T12:08:02.974000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0233148 s
+		 elapsed time: 0.0237549 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.49545
+dt = 12.0365 s
+		 Elapsed time: 14.3517 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215265 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.062332153
+		 Elapsed time: 1.00994 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.49482
+dt = 12.0416 s
+time = 2021-12-31T12:08:15.016000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0234272 s
+		 elapsed time: 0.0238388 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.44534
+dt = 12.4539 s
+		 Elapsed time: 14.3576 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00220398 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.062320709
+		 Elapsed time: 1.01282 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.44537
+dt = 12.4536 s
+time = 2021-12-31T12:08:27.470000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0240269 s
+		 elapsed time: 0.0244426 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.44537
+dt = 12.4536 s
+		 Elapsed time: 14.3522 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216336 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.059860229
+		 Elapsed time: 1.01068 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.45573
+dt = 12.3649 s
+time = 2021-12-31T12:08:39.835000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0240879 s
+		 elapsed time: 0.0244967 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.45573
+dt = 12.3649 s
+		 Elapsed time: 14.3476 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215628 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.057621002
+		 Elapsed time: 1.01047 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.45662
+dt = 12.3574 s
+time = 2021-12-31T12:08:52.192000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.023435 s
+		 elapsed time: 0.0238483 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46905
+dt = 12.2529 s
+		 Elapsed time: 14.8849 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215805 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.057891846
+		 Elapsed time: 1.01378 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.47189
+dt = 12.2292 s
+time = 2021-12-31T12:09:04.421000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.02382 s
+		 elapsed time: 0.0242331 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.47189
+dt = 12.2292 s
+		 Elapsed time: 14.8891 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216233 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.057769775
+		 Elapsed time: 1.01135 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.47208
+dt = 12.2276 s
+time = 2021-12-31T12:09:16.649000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0253191 s
+		 elapsed time: 0.0257344 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.47209
+dt = 12.2275 s
+		 Elapsed time: 15.2347 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.0021606 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.062252045
+		 Elapsed time: 1.01291 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48518
+dt = 12.1198 s
+time = 2021-12-31T12:09:28.769000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0263056 s
+		 elapsed time: 0.0267268 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48526
+dt = 12.1191 s
+		 Elapsed time: 16.5763 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216289 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.062919617
+		 Elapsed time: 1.01174 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48393
+dt = 12.1299 s
+time = 2021-12-31T12:09:40.899000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0235158 s
+		 elapsed time: 0.0239474 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48396
+dt = 12.1297 s
+		 Elapsed time: 16.7304 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.0021604 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.058574677
+		 Elapsed time: 1.01438 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48756
+dt = 12.1003 s
+time = 2021-12-31T12:09:52.999000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0250127 s
+		 elapsed time: 0.0254262 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48758
+dt = 12.1002 s
+		 Elapsed time: 15.8824 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215622 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.057830811
+		 Elapsed time: 1.01236 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.49202
+dt = 12.0642 s
+time = 2021-12-31T12:10:05.063000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0237353 s
+		 elapsed time: 0.0241844 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.49203
+dt = 12.0641 s
+		 Elapsed time: 16.2446 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215579 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.057266235
+		 Elapsed time: 1.01356 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48993
+dt = 12.0811 s
+time = 2021-12-31T12:10:17.144000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.023898 s
+		 elapsed time: 0.0243215 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48993
+dt = 12.0811 s
+		 Elapsed time: 17.2605 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216666 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.054851532
+		 Elapsed time: 1.01144 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.52492
+dt = 11.8039 s
+time = 2021-12-31T12:10:28.948000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0241202 s
+		 elapsed time: 0.0245335 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.49611
+dt = 12.0312 s
+		 Elapsed time: 16.8132 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216029 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.055061340
+		 Elapsed time: 1.0123 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.49832
+dt = 12.0135 s
+time = 2021-12-31T12:10:40.961000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0265403 s
+		 elapsed time: 0.0269859 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.49832
+dt = 12.0135 s
+		 Elapsed time: 17.1713 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215015 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.054557800
+		 Elapsed time: 1.00946 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50183
+dt = 11.9854 s
+time = 2021-12-31T12:10:52.946000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0241848 s
+		 elapsed time: 0.0245998 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50183
+dt = 11.9854 s
+		 Elapsed time: 16.7192 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.0021559 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.057788849
+		 Elapsed time: 1.01038 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50019
+dt = 11.9985 s
+time = 2021-12-31T12:11:04.945000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0240479 s
+		 elapsed time: 0.0244539 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50019
+dt = 11.9985 s
+		 Elapsed time: 14.8101 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00214915 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.057479858
+		 Elapsed time: 1.01534 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50253
+dt = 11.9798 s
+time = 2021-12-31T12:11:16.925000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0238818 s
+		 elapsed time: 0.0242943 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50253
+dt = 11.9798 s
+		 Elapsed time: 16.7378 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216295 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.056877136
+		 Elapsed time: 1.0137 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50522
+dt = 11.9584 s
+time = 2021-12-31T12:11:28.883000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0243865 s
+		 elapsed time: 0.0248002 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50522
+dt = 11.9584 s
+		 Elapsed time: 16.7212 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00218214 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.055625916
+		 Elapsed time: 1.01472 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50765
+dt = 11.9391 s
+time = 2021-12-31T12:11:40.822000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0245034 s
+		 elapsed time: 0.0249183 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50765
+dt = 11.9391 s
+		 Elapsed time: 16.723 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216791 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.056526184
+		 Elapsed time: 1.01428 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.51051
+dt = 11.9165 s
+time = 2021-12-31T12:11:52.738000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0238281 s
+		 elapsed time: 0.0242418 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.51051
+dt = 11.9165 s
+		 Elapsed time: 17.4914 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216278 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.064373016
+		 Elapsed time: 1.01455 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50694
+dt = 11.9447 s
+time = 2021-12-31T12:12:04.683000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0239556 s
+		 elapsed time: 0.0243746 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50694
+dt = 11.9447 s
+		 Elapsed time: 17.2454 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215015 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.063781738
+		 Elapsed time: 1.01397 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.51007
+dt = 11.92 s
+time = 2021-12-31T12:12:16.603000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0237596 s
+		 elapsed time: 0.0241739 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.51007
+dt = 11.92 s
+		 Elapsed time: 20.2888 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216212 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.069686890
+		 Elapsed time: 1.01401 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50684
+dt = 11.9455 s
+time = 2021-12-31T12:12:28.549000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0239216 s
+		 elapsed time: 0.0243329 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48736
+dt = 12.1019 s
+		 Elapsed time: 19.4543 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.0021542 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.054328918
+		 Elapsed time: 1.01161 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50048
+dt = 11.9961 s
+time = 2021-12-31T12:12:40.545000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0232619 s
+		 elapsed time: 0.0236771 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.49085
+dt = 12.0736 s
+		 Elapsed time: 20.1341 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00218099 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.054542542
+		 Elapsed time: 1.01413 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.4946
+dt = 12.0433 s
+time = 2021-12-31T12:12:52.588000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0231561 s
+		 elapsed time: 0.0235721 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48926
+dt = 12.0866 s
+		 Elapsed time: 20.9388 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216113 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.063426971
+		 Elapsed time: 1.01316 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.4691
+dt = 12.2524 s
+time = 2021-12-31T12:13:04.840000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0245602 s
+		 elapsed time: 0.024974 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46911
+dt = 12.2523 s
+		 Elapsed time: 20.9407 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215825 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.061408997
+		 Elapsed time: 1.00976 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.47008
+dt = 12.2442 s
+time = 2021-12-31T12:13:17.084000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0237178 s
+		 elapsed time: 0.0241331 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.44417
+dt = 12.4639 s
+		 Elapsed time: 21.2342 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215181 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.059318542
+		 Elapsed time: 1.0127 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50055
+dt = 11.9956 s
+time = 2021-12-31T12:13:29.080000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0237173 s
+		 elapsed time: 0.0241298 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50055
+dt = 11.9956 s
+		 Elapsed time: 21.2284 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215604 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.056850433
+		 Elapsed time: 1.01241 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.50212
+dt = 11.983 s
+time = 2021-12-31T12:13:41.063000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0236759 s
+		 elapsed time: 0.0240881 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.45094
+dt = 12.4058 s
+		 Elapsed time: 22.0788 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.0021606 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.102088928
+		 Elapsed time: 1.01356 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46458
+dt = 12.2903 s
+time = 2021-12-31T12:13:53.353000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.023282 s
+		 elapsed time: 0.0236952 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46458
+dt = 12.2902 s
+		 Elapsed time: 21.7654 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00218576 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.094032288
+		 Elapsed time: 1.01337 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46834
+dt = 12.2588 s
+time = 2021-12-31T12:14:05.612000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0249554 s
+		 elapsed time: 0.0253803 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46834
+dt = 12.2588 s
+		 Elapsed time: 22.3434 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216997 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.068466187
+		 Elapsed time: 1.01295 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46374
+dt = 12.2972 s
+time = 2021-12-31T12:14:17.909000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0249606 s
+		 elapsed time: 0.0253771 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46374
+dt = 12.2972 s
+		 Elapsed time: 23.7573 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215332 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.072101593
+		 Elapsed time: 1.01163 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46863
+dt = 12.2563 s
+time = 2021-12-31T12:14:30.165000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0236383 s
+		 elapsed time: 0.0240506 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46863
+dt = 12.2563 s
+		 Elapsed time: 24.2948 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215875 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.072036743
+		 Elapsed time: 1.01116 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46621
+dt = 12.2765 s
+time = 2021-12-31T12:14:42.442000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0236324 s
+		 elapsed time: 0.0240423 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.43057
+dt = 12.5824 s
+		 Elapsed time: 22.3712 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215288 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.046062469
+		 Elapsed time: 1.01214 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.4565
+dt = 12.3584 s
+time = 2021-12-31T12:14:54.800000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0236698 s
+		 elapsed time: 0.0240818 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.37646
+dt = 13.077 s
+		 Elapsed time: 22.4631 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215851 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.039066315
+		 Elapsed time: 1.01183 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.42027
+dt = 12.6736 s
+time = 2021-12-31T12:15:07.474000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0231615 s
+		 elapsed time: 0.0235821 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.42027
+dt = 12.6736 s
+		 Elapsed time: 22.4674 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215171 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.038705826
+		 Elapsed time: 1.01269 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.42344
+dt = 12.6454 s
+time = 2021-12-31T12:15:20.119000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0256733 s
+		 elapsed time: 0.0260866 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.42344
+dt = 12.6454 s
+		 Elapsed time: 24.3007 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216269 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.035112381
+		 Elapsed time: 1.01355 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.44245
+dt = 12.4788 s
+time = 2021-12-31T12:15:32.598000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0235408 s
+		 elapsed time: 0.0239502 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.38809
+dt = 12.9674 s
+		 Elapsed time: 24.7582 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00217403 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.046169281
+		 Elapsed time: 1.01261 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.43941
+dt = 12.5051 s
+time = 2021-12-31T12:15:45.103000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0238151 s
+		 elapsed time: 0.0242271 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.43941
+dt = 12.5051 s
+		 Elapsed time: 24.8499 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216142 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.045703888
+		 Elapsed time: 1.01022 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.44452
+dt = 12.4609 s
+time = 2021-12-31T12:15:57.564000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0243059 s
+		 elapsed time: 0.0247187 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.38952
+dt = 12.9541 s
+		 Elapsed time: 25.3537 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216108 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.037614822
+		 Elapsed time: 1.01213 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.44384
+dt = 12.4667 s
+time = 2021-12-31T12:16:10.031000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0237557 s
+		 elapsed time: 0.0241682 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.44384
+dt = 12.4667 s
+		 Elapsed time: 26.0666 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00218322 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.031841278
+		 Elapsed time: 1.01446 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.45967
+dt = 12.3315 s
+time = 2021-12-31T12:16:22.363000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.02388 s
+		 elapsed time: 0.0242936 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.45967
+dt = 12.3315 s
+		 Elapsed time: 25.8665 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.0021693 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.032291412
+		 Elapsed time: 1.01257 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46066
+dt = 12.3232 s
+time = 2021-12-31T12:16:34.686000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0239031 s
+		 elapsed time: 0.0243514 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.40545
+dt = 12.8073 s
+		 Elapsed time: 27.3716 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215661 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.037620544
+		 Elapsed time: 1.01048 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.44756
+dt = 12.4347 s
+time = 2021-12-31T12:16:47.121000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0255157 s
+		 elapsed time: 0.0259267 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.44756
+dt = 12.4347 s
+		 Elapsed time: 27.1994 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215361 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.035787582
+		 Elapsed time: 1.0106 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46774
+dt = 12.2638 s
+time = 2021-12-31T12:16:59.385000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0251328 s
+		 elapsed time: 0.0255451 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.41473
+dt = 12.7233 s
+		 Elapsed time: 27.0064 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216236 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.034240723
+		 Elapsed time: 1.01083 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46874
+dt = 12.2554 s
+time = 2021-12-31T12:17:11.640000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0271654 s
+		 elapsed time: 0.0275753 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46874
+dt = 12.2554 s
+		 Elapsed time: 28.4899 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216529 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041271210
+		 Elapsed time: 1.0137 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.47181
+dt = 12.2298 s
+time = 2021-12-31T12:17:23.870000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0257071 s
+		 elapsed time: 0.026123 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.47181
+dt = 12.2298 s
+		 Elapsed time: 28.4855 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215475 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041584015
+		 Elapsed time: 1.0145 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.47876
+dt = 12.1723 s
+time = 2021-12-31T12:17:36.042000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0241465 s
+		 elapsed time: 0.0245576 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.42347
+dt = 12.6451 s
+		 Elapsed time: 30.6612 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.0021644 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.050769806
+		 Elapsed time: 1.01406 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.45903
+dt = 12.3369 s
+time = 2021-12-31T12:17:48.379000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0240772 s
+		 elapsed time: 0.024489 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.45903
+dt = 12.3369 s
+		 Elapsed time: 31.3963 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.0021519 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.050449371
+		 Elapsed time: 1.01534 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.45348
+dt = 12.3841 s
+time = 2021-12-31T12:18:00.763000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0250344 s
+		 elapsed time: 0.0254497 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.3968
+dt = 12.8866 s
+		 Elapsed time: 30.2014 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215959 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041721344
+		 Elapsed time: 1.012 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46168
+dt = 12.3146 s
+time = 2021-12-31T12:18:13.078000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0258604 s
+		 elapsed time: 0.0263316 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46168
+dt = 12.3146 s
+		 Elapsed time: 30.2027 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00217526 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041790009
+		 Elapsed time: 1.01444 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46465
+dt = 12.2896 s
+time = 2021-12-31T12:18:25.368000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0241014 s
+		 elapsed time: 0.0245285 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46465
+dt = 12.2896 s
+		 Elapsed time: 29.0186 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216301 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041824341
+		 Elapsed time: 1.01329 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.47363
+dt = 12.2147 s
+time = 2021-12-31T12:18:37.583000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0240882 s
+		 elapsed time: 0.0245006 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.41372
+dt = 12.7324 s
+		 Elapsed time: 27.9492 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.0021557 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041973114
+		 Elapsed time: 1.01181 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48043
+dt = 12.1586 s
+time = 2021-12-31T12:18:49.742000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0238127 s
+		 elapsed time: 0.0242594 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48043
+dt = 12.1586 s
+		 Elapsed time: 29.4631 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215999 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.042064667
+		 Elapsed time: 1.01357 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.47034
+dt = 12.2421 s
+time = 2021-12-31T12:19:01.984000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.025574 s
+		 elapsed time: 0.0259858 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.40414
+dt = 12.8192 s
+		 Elapsed time: 32.6134 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215375 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041687012
+		 Elapsed time: 1.01096 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.47615
+dt = 12.1939 s
+time = 2021-12-31T12:19:14.178000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0270351 s
+		 elapsed time: 0.0274478 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.47615
+dt = 12.1939 s
+		 Elapsed time: 32.6201 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215684 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041706085
+		 Elapsed time: 1.01337 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.47507
+dt = 12.2028 s
+time = 2021-12-31T12:19:26.381000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0279873 s
+		 elapsed time: 0.0283978 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.47507
+dt = 12.2028 s
+		 Elapsed time: 32.5378 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00218809 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.039932251
+		 Elapsed time: 1.015 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.48463
+dt = 12.1243 s
+time = 2021-12-31T12:19:38.505000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0239494 s
+		 elapsed time: 0.024362 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.41454
+dt = 12.725 s
+		 Elapsed time: 33.5317 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216277 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.050632477
+		 Elapsed time: 1.01286 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46203
+dt = 12.3116 s
+time = 2021-12-31T12:19:50.817000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0236479 s
+		 elapsed time: 0.0240943 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46203
+dt = 12.3116 s
+		 Elapsed time: 34.1892 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216908 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.051139832
+		 Elapsed time: 1.01217 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46498
+dt = 12.2869 s
+time = 2021-12-31T12:20:03.104000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0234963 s
+		 elapsed time: 0.0239388 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.3955
+dt = 12.8986 s
+		 Elapsed time: 33.6792 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216324 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.040084839
+		 Elapsed time: 1.01179 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.44531
+dt = 12.454 s
+time = 2021-12-31T12:20:15.558000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0239666 s
+		 elapsed time: 0.0243796 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.44534
+dt = 12.4538 s
+		 Elapsed time: 32.662 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215778 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.042015076
+		 Elapsed time: 1.01181 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46248
+dt = 12.3079 s
+time = 2021-12-31T12:20:27.866000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.023917 s
+		 elapsed time: 0.0243296 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46251
+dt = 12.3076 s
+		 Elapsed time: 33.506 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216047 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041458130
+		 Elapsed time: 1.01442 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.4518
+dt = 12.3984 s
+time = 2021-12-31T12:20:40.264000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0253075 s
+		 elapsed time: 0.0257277 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.38713
+dt = 12.9764 s
+		 Elapsed time: 32.4139 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215697 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041660309
+		 Elapsed time: 1.0127 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.44738
+dt = 12.4362 s
+time = 2021-12-31T12:20:52.700000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0239611 s
+		 elapsed time: 0.0243775 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.44737
+dt = 12.4363 s
+		 Elapsed time: 32.2301 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215569 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041501999
+		 Elapsed time: 1.01249 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46553
+dt = 12.2822 s
+time = 2021-12-31T12:21:04.982000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0240648 s
+		 elapsed time: 0.0244816 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.40439
+dt = 12.817 s
+		 Elapsed time: 31.6906 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00218687 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.041574478
+		 Elapsed time: 1.01249 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46245
+dt = 12.3081 s
+time = 2021-12-31T12:21:17.290000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0236237 s
+		 elapsed time: 0.0240741 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46245
+dt = 12.3081 s
+		 Elapsed time: 32.2415 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215769 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.039894104
+		 Elapsed time: 1.01201 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46808
+dt = 12.2609 s
+time = 2021-12-31T12:21:29.551000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0248232 s
+		 elapsed time: 0.0254627 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.40338
+dt = 12.8262 s
+		 Elapsed time: 31.2377 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215498 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.039871216
+		 Elapsed time: 1.0122 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46704
+dt = 12.2696 s
+time = 2021-12-31T12:21:41.821000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0258079 s
+		 elapsed time: 0.0262201 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46704
+dt = 12.2696 s
+		 Elapsed time: 31.4847 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215983 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.039508820
+		 Elapsed time: 1.01209 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.4616
+dt = 12.3153 s
+time = 2021-12-31T12:21:54.136000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0243529 s
+		 elapsed time: 0.0247788 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.4616
+dt = 12.3153 s
+		 Elapsed time: 29.5248 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216496 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.039470673
+		 Elapsed time: 1.01364 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.4636
+dt = 12.2984 s
+time = 2021-12-31T12:22:06.434000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0263582 s
+		 elapsed time: 0.026769 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.39794
+dt = 12.8761 s
+		 Elapsed time: 28.0229 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216128 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.039428711
+		 Elapsed time: 1.01299 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46516
+dt = 12.2853 s
+time = 2021-12-31T12:22:18.719000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0241019 s
+		 elapsed time: 0.0245105 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46516
+dt = 12.2853 s
+		 Elapsed time: 28.4982 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216562 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.039098740
+		 Elapsed time: 1.00992 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.46984
+dt = 12.2462 s
+time = 2021-12-31T12:22:30.965000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0241561 s
+		 elapsed time: 0.0245742 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.40342
+dt = 12.8258 s
+		 Elapsed time: 27.4566 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216066 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.043121338
+		 Elapsed time: 1.01452 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.45993
+dt = 12.3294 s
+time = 2021-12-31T12:22:43.294000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0239617 s
+		 elapsed time: 0.0243694 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.45993
+dt = 12.3294 s
+		 Elapsed time: 28.0932 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00216243 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.042751312
+		 Elapsed time: 1.00987 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.45747
+dt = 12.3501 s
+time = 2021-12-31T12:22:55.644000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0254299 s
+		 elapsed time: 0.0258465 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.38609
+dt = 12.9862 s
+		 Elapsed time: 26.677 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215418 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.049953461
+		 Elapsed time: 1.01214 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.45889
+dt = 12.3382 s
+time = 2021-12-31T12:23:07.982000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.024476 s
+		 elapsed time: 0.0248888 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.45889
+dt = 12.3382 s
+		 Elapsed time: 28.7019 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.0021564 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.057266235
+		 Elapsed time: 1.01262 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.43635
+dt = 12.5317 s
+time = 2021-12-31T12:23:20.514000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0239803 s
+		 elapsed time: 0.0243934 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.36439
+dt = 13.1927 s
+		 Elapsed time: 28.1816 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00214965 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.057197571
+		 Elapsed time: 1.0109 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.41842
+dt = 12.6902 s
+time = 2021-12-31T12:23:33.204000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0258988 s
+		 elapsed time: 0.0263263 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.41842
+dt = 12.6902 s
+		 Elapsed time: 28.6325 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00217266 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.057117462
+		 Elapsed time: 1.01221 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.43028
+dt = 12.5849 s
+time = 2021-12-31T12:23:45.789000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0238701 s
+		 elapsed time: 0.0242988 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.43028
+dt = 12.5849 s
+		 Elapsed time: 27.9125 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215542 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.056869507
+		 Elapsed time: 1.01006 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.44264
+dt = 12.4772 s
+time = 2021-12-31T12:23:58.266000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0239906 s
+		 elapsed time: 0.024404 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.36975
+dt = 13.1411 s
+		 Elapsed time: 28.8293 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00214975 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.047977448
+		 Elapsed time: 1.01118 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.41124
+dt = 12.7548 s
+time = 2021-12-31T12:24:11.021000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0239347 s
+		 elapsed time: 0.0243445 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.41124
+dt = 12.7548 s
+		 Elapsed time: 28.8372 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215269 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.053436279
+		 Elapsed time: 1.01004 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.42618
+dt = 12.6212 s
+time = 2021-12-31T12:24:23.642000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0235826 s
+		 elapsed time: 0.0239932 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.34665
+dt = 13.3665 s
+		 Elapsed time: 28.2492 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00215347 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.048137665
+		 Elapsed time: 1.0129 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.40896
+dt = 12.7754 s
+time = 2021-12-31T12:24:36.417000
+[QES-WINDS]	 Applying Wind Profile...
+Elapsed time for Barnes interpolation on GPU: 0.0237149 s
+		 elapsed time: 0.0241283 s
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+ROS error, psi isnan
+max ROS = 1.40896
+dt = 12.7754 s

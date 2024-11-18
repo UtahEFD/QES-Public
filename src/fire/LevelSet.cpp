@@ -51,8 +51,16 @@ void Fire ::LevelSet(WINDSGeneralData *WGD)
       del_min[idx] = sqrt(fmax(dpx, 0) * fmax(dpx, 0) + fmin(dmx, 0) * fmin(dmx, 0) + fmax(dpy, 0) * fmax(dpy, 0) + fmin(dmy, 0) * fmin(dmy, 0));
       n_star_x = dpx / sqrt(dpx * dpx + dpy * dpy) + dmx / sqrt(dmx * dmx + dpy * dpy) + dpx / sqrt(dpx * dpx + dmy * dmy) + dmx / sqrt(dmx * dmx + dmy * dmy);
       n_star_y = dpy / sqrt(dpx * dpx + dpy * dpy) + dpy / sqrt(dmx * dmx + dpy * dpy) + dmy / sqrt(dpx * dpx + dmy * dmy) + dmy / sqrt(dmx * dmx + dmy * dmy);
-      xNorm[idx] = n_star_x / sqrt(n_star_x * n_star_x + n_star_y * n_star_y);
-      yNorm[idx] = n_star_y / sqrt(n_star_x * n_star_x + n_star_y * n_star_y);
+      if (n_star_x == 0){
+	xNorm[idx] = 0;
+      } else {
+	xNorm[idx] = n_star_x / sqrt(n_star_x * n_star_x + n_star_y * n_star_y);
+      }
+      if (n_star_y == 0){
+	yNorm[idx] = 0;
+      } else {
+	yNorm[idx] = n_star_y / sqrt(n_star_x * n_star_x + n_star_y * n_star_y);
+      }
     }
   }
 
@@ -61,9 +69,8 @@ void Fire ::LevelSet(WINDSGeneralData *WGD)
 	*/
   std::fill(Force.begin(), Force.end(), 0);
   /**
-	* Calculate Forcing Function (Balbi model at mid-flame height or first grid cell if no fire)
+	* Calculate Forcing Function (Balbi model at mid-flame height or first vertical grid cell if no fire)
 	*/
-
   for (int j = 1; j < ny - 2; j++) {
     for (int i = 1; i < nx - 2; i++) {
       int idx = i + j * (nx - 1);
@@ -91,6 +98,8 @@ void Fire ::LevelSet(WINDSGeneralData *WGD)
       Force[idx] = fp.r;
     }
   }
+
+
   // indices for burning cells
   std::vector<int> cells_burning;
   // search predicate for burn state
@@ -156,13 +165,16 @@ void Fire ::LevelSet(WINDSGeneralData *WGD)
     struct FireProperties fp = balbi(fuel, u, v, xNorm[id], yNorm[id], slope_x[id], slope_y[id], fmc);
     fire_cells[id].properties = fp;
     Force[id] = fp.r;
+
     // update icell value for flame
     for (int k = TID; k <= maxkh; k++) {
       int icell_cent = ii + jj * (nx - 1) + (k) * (nx - 1) * (ny - 1);
       WGD->icellflag[icell_cent] = 12;
     }
   }
+
   // compute time step
   dt = computeTimeStep();
+
   std::vector<int>().swap(cells_burning);
 }

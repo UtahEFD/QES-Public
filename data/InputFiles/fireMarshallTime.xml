@@ -1,0 +1,135 @@
+<QESWindsParameters>
+  <simulationParameters>
+    <!--DEM>../GISFiles/MarshallDEM_edit.tif</DEM-->
+  	<halo_x> 0.0 </halo_x >						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
+  	<halo_y> 0.0 </halo_y >						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
+    <domain> 298 267 45 </domain> <!-- nx,ny,nz-->
+	<cellSize> 30 30 0.25 </cellSize> <!-- dx, dy,dz [Meters]-->	
+	<verticalStretching> 0 </verticalStretching>
+	<totalTimeIncrements> 1 </totalTimeIncrements>
+	<maxIterations> 500 </maxIterations>
+	<tolerance> 1E-9 </tolerance>
+	<meshTypeFlag> 1 </meshTypeFlag>
+</simulationParameters>
+<metParams>
+	<z0_domain_flag> 0 </z0_domain_flag>
+	<sensor>
+    	    <site_coord_flag> 1 </site_coord_flag> 			<!-- Sensor site coordinate system (1=QUIC (default), 2=UTM, 3=Lat/Lon) -->
+            <site_xcoord> 4470.0  </site_xcoord> 				<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
+            <site_ycoord> 120.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->
+
+    	    <timeSeries>						<!-- Start of timestep informastion for a sensor -->
+		<timeStamp>2021-12-31T11:47:00</timeStamp>
+       		<boundaryLayerFlag> 1 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
+       		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
+       		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
+       		<height> 1.0 </height> 				<!-- Height of the sensor -->
+       		<speed> 24.0 </speed> 					<!-- Measured speed at the sensor height -->
+       		<direction> 280 </direction> 				<!-- Wind direction of sensor -->
+    	    </timeSeries>
+	    <timeSeries>						<!-- Start of timestep informastion for a sensor -->
+		<timeStamp>2021-12-31T12:00:00</timeStamp>
+       		<boundaryLayerFlag> 1 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
+       		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
+       		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
+       		<height> 1.0 </height> 				<!-- Height of the sensor -->
+       		<speed> 31.0 </speed> 					<!-- Measured speed at the sensor height -->
+       		<direction> 274 </direction> 				<!-- Wind direction of sensor -->
+    	    </timeSeries>
+	    <timeSeries>						<!-- Start of timestep informastion for a sensor -->
+		<timeStamp>2021-12-31T13:00:00</timeStamp>
+       		<boundaryLayerFlag> 1 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
+       		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
+       		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
+       		<height> 1.0 </height> 				<!-- Height of the sensor -->
+       		<speed> 31.0 </speed> 					<!-- Measured speed at the sensor height -->
+       		<direction> 279 </direction> 				<!-- Wind direction of sensor -->
+    	    </timeSeries>
+	    <timeSeries>						<!-- Start of timestep informastion for a sensor -->
+		<timeStamp>2021-12-31T14:00:00</timeStamp>
+       		<boundaryLayerFlag> 1 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
+       		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
+       		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
+       		<height> 1.0 </height> 				<!-- Height of the sensor -->
+       		<speed> 30.0 </speed> 					<!-- Measured speed at the sensor height -->
+       		<direction> 271 </direction> 				<!-- Wind direction of sensor -->
+    	    </timeSeries>
+	  </sensor>                                                     <!-- End of sensor section -->
+	  <sensor>
+    	    <site_coord_flag> 1 </site_coord_flag> 			<!-- Sensor site coordinate system (1=QUIC (default), 2=UTM, 3=Lat/Lon) -->
+            <site_xcoord> 8000.0  </site_xcoord> 				<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
+            <site_ycoord> 7000.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->
+
+    	    <timeSeries>						<!-- Start of timestep informastion for a sensor -->
+		<timeStamp>2021-12-31T11:47:00</timeStamp>
+       		<boundaryLayerFlag> 1 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
+       		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
+       		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
+       		<height> 10.0 </height> 				<!-- Height of the sensor -->
+       		<speed> 36.0 </speed> 					<!-- Measured speed at the sensor height -->
+       		<direction> 250 </direction> 				<!-- Wind direction of sensor -->
+    	    </timeSeries>
+	    <timeSeries>						<!-- Start of timestep informastion for a sensor -->
+		<timeStamp>2021-12-31T12:00:00</timeStamp>
+       		<boundaryLayerFlag> 1 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
+       		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
+       		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
+       		<height> 1.0 </height> 				<!-- Height of the sensor -->
+       		<speed> 38.0 </speed> 					<!-- Measured speed at the sensor height -->
+       		<direction> 250 </direction> 				<!-- Wind direction of sensor -->
+    	    </timeSeries>
+	    <timeSeries>						<!-- Start of timestep informastion for a sensor -->
+		<timeStamp>2021-12-31T13:00:00</timeStamp>
+       		<boundaryLayerFlag> 1 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
+       		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
+       		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
+       		<height> 1.0 </height> 				<!-- Height of the sensor -->
+       		<speed> 30.0 </speed> 					<!-- Measured speed at the sensor height -->
+       		<direction> 250 </direction> 				<!-- Wind direction of sensor -->
+    	    </timeSeries>
+	    <timeSeries>						<!-- Start of timestep informastion for a sensor -->
+		<timeStamp>2021-12-31T14:00:00</timeStamp>
+       		<boundaryLayerFlag> 1 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
+       		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
+       		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
+       		<height> 1.0 </height> 				<!-- Height of the sensor -->
+       		<speed> 41.0 </speed> 					<!-- Measured speed at the sensor height -->
+       		<direction> 249 </direction> 				<!-- Wind direction of sensor -->
+    	    </timeSeries>
+	</sensor> 
+</metParams>
+<turbParams>
+  <method>0</method>   <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
+  <samples>2000</samples>
+</turbParams>
+
+<fires>
+	<fireDur> 25200 </fireDur>
+	<fuelType> 203 </fuelType>
+	<fuelMap>../FireFiles/MarshallFuel_edit.tif</fuelMap>
+	<fmc> 0.02 </fmc>
+
+    <courant> 0.6 </courant>
+    <fieldFlag> 0 </fieldFlag> <!-- flag for if multiple timesteps for fire -->
+    <ignition>
+    	<height> 2 </height>
+    	<baseHeight> 0 </baseHeight> <!--meters-->
+    	<xStart> 210.0 </xStart> <!--meters-->
+    	<yStart> 4650.0 </yStart> <!--meters-->
+    	<length> 60.0 </length> <!--meters-->
+    	<width>  60.0 </width> <!--meters-->
+    </ignition>
+    <ignition>
+      <height> 2 </height>
+      <baseHeight> 0 </baseHeight>
+      <xStart> 60.0 </xStart>
+      <yStart> 4440 </yStart>
+      <length> 30 </length>
+      <width> 30 </width>
+    </ignition> 
+</fires>
+<fileOptions>
+	<outputFlag>1</outputFlag>
+	<outputFields>all</outputFields> 
+</fileOptions>
+</QESWindsParameters>
