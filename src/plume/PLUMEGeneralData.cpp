@@ -362,9 +362,7 @@ float PLUMEGeneralData::calcCourantTimestep(const float &u,
 }
 
 float PLUMEGeneralData::calcCourantTimestep(const float &d,
-                                            const float &u,
-                                            const float &v,
-                                            const float &w,
+                                            const vec3 &vel,
                                             const float &timeRemainder)
 {
   // if the Courant Number is set to 0.0, we want to exit using the
@@ -375,7 +373,7 @@ float PLUMEGeneralData::calcCourantTimestep(const float &d,
 
   float min_ds = std::min(dxy, dz);
   // double max_u = std::max({ u, v, w });
-  float max_u = sqrt(u * u + v * v + w * w);
+  float max_u = VectorMath::length(vel);
   float CN = 0.0;
 
   /*

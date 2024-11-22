@@ -271,9 +271,7 @@ public:
                             const float &w,
                             const float &timeRemainder);
   float calcCourantTimestep(const float &d,
-                            const float &u,
-                            const float &v,
-                            const float &w,
+                            const vec3 &vel,
                             const float &timeRemainder);
 
   // a function used at constructor time to set the pointer function to the desired BC type
