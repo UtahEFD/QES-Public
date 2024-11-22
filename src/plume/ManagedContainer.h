@@ -38,7 +38,6 @@
 #include <queue>
 
 #include "Particle.h"
-#include "IDGenerator.h"
 
 template<class T>
 class ManagedContainer
@@ -52,7 +51,7 @@ protected:
   std::queue<size_t> available;
 
 private:
-  size_t scrub_elements()
+  size_t screen_elements()
   {
     size_t nbr_used = 0;
     added.clear();
@@ -68,16 +67,10 @@ private:
     return nbr_used;
   }
 
-  IDGenerator *id_gen;
-
 public:
-  ManagedContainer()
-  {
-    id_gen = IDGenerator::getInstance();
-  };
+  ManagedContainer() = default;
   explicit ManagedContainer(size_t n) : elements(n)
   {
-    id_gen = IDGenerator::getInstance();
     for (size_t k = 0; k < n; ++k)
       available.push(k);
   }
@@ -107,7 +100,7 @@ public:
 
   void sweep(const int &new_part)
   {
-    size_t nbr_used = scrub_elements();
+    size_t nbr_used = screen_elements();
     size_t elements_size = elements.size();
     if (elements_size < nbr_used + new_part) {
       elements.resize(elements_size + new_part);
@@ -120,14 +113,13 @@ public:
   void insert()
   {
     // this requires an extra copy: elements[available.front()] = T(nbr_inserted);
-    // rest the particle:
-    // - changing the particle ID
-    elements[available.front()].ID = id_gen->get();
-    nbr_inserted++;
+    // reset the particle:
     // - turning the particle active:
     elements[available.front()].state = ACTIVE;
     // adding index to added and remove from available:
     added.emplace_back(available.front());
     available.pop();
+    // increment the counter
+    nbr_inserted++;
   }
 };
