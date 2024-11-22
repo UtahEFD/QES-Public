@@ -76,6 +76,11 @@ typedef struct
 
 } particle_array;
 
+struct particle_physcal
+{
+  float *d;
+};
+
 class Particle;
 
 class ParseParticle : public ParseInterface
@@ -116,6 +121,56 @@ public:
   virtual void parseValues() = 0;
 
   virtual void setParticleParameters(Particle *) = 0;
+};
+
+
+class Metadata
+{
+public:
+  Metadata() = default;
+
+  // the initial position for the particle
+  vec3 pos_init{};
+  // the time of release for the particle (need to change to QEStime)
+  double tStrt{};
+  // the index of the source the particle came from
+  int sourceIdx{};
+};
+
+class Core
+{
+public:
+  Core() = default;
+
+  // once initial positions are known, can set these values using urb and turb info
+  // Initially, the initial x component of position for the particle.
+  // After the solver starts to run, the current x component of position for the particle.
+  vec3 pos{};
+
+  // The velocit for a particle for a given iteration.
+  vec3 velMean{};
+
+  // The velocity fluctuation for a particle for a given iteration.
+  // Starts out as the initial value until a particle is "released" into the domain
+  vec3 velFluct{};
+
+  // Particle displacements for each time step (not used)
+  // vec3 dist;
+
+  // Total velocities (mean and fluctuation) for each time step (not used)
+  // vec3 velTot;
+
+  float CoEps{};
+  float nuT{};
+
+  // The velocity fluctuation for a particle from the last iteration
+  vec3 velFluct_old;
+
+  // stress tensor from the last iteration (6 component because stress tensor is symmetric)
+  mat3sym tau;
+
+  // difference between the current and last iteration of the uFluct variable
+  vec3 delta_velFluct;
 };
 
 
@@ -193,6 +248,7 @@ public:
   // vec3 dist;
 
   // Total velocities (mean and fluctuation) for each time step (not used)
+
   // vec3 velTot;
 
   float CoEps{};

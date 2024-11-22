@@ -54,6 +54,43 @@ public:
   {
   }
 
-
 private:
+};
+
+
+class BasePhysicalProperties
+{
+public:
+  double d;// particle diameter diameter [microns]
+  // double d_m;// particle diameter diameter [m]
+  double m;// particle mass [g]
+  // double m_kg;// particle mass [kg]
+  double m_o;// initial particle mass [g]
+  // double m_kg_o;// initial particle mass [kg]
+  double rho;// density of particle
+
+  // mass decay constant
+  double decayConst;
+
+  // decay variables
+  double wdecay;// (1 - fraction) particle decayed [0,1]
+};
+
+class BaseParticle
+{
+public:
+  BaseParticle()
+    : state(INACTIVE)
+  {}
+
+  // particle type
+  const ParticleType type = tracer;
+  // state of the particle
+  ParticleState state;
+  // id of particle
+  uint32_t ID{};
+
+  Metadata metadata;
+  Core core;
+  BasePhysicalProperties physical;
 };

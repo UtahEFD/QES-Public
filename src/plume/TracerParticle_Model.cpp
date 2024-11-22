@@ -123,7 +123,7 @@ void TracerParticle_Model::advect(const double &total_time_interval,
 {
 #pragma omp parallel for default(none) shared(WGD, TGD, PGD, total_time_interval)
   for (auto k = 0u; k < particles->size(); ++k) {
-    Particle *p = particles->get(k);
+    TracerParticle *p = particles->get(k);
     float rhoAir = 1.225;// in kg m^-3
     float nuAir = 1.506E-5;// in m^2 s^-1
 
@@ -141,6 +141,7 @@ void TracerParticle_Model::advect(const double &total_time_interval,
       PGD->interp->interpWindsValues(WGD, p->pos, p->velMean);
 
       // adjusting mean vertical velocity for settling velocity
+
       p->velMean._3 -= vs;
 
       // now calculate the particle timestep using the courant number, the velocity fluctuation from the last time,
@@ -151,9 +152,7 @@ void TracerParticle_Model::advect(const double &total_time_interval,
 
       float dWall = WGD->mixingLengths[cellId];
       float par_dt = PGD->calcCourantTimestep(dWall,
-                                              std::abs(p->velMean._1) + std::abs(p->velFluct._1),
-                                              std::abs(p->velMean._2) + std::abs(p->velFluct._2),
-                                              std::abs(p->velMean._3) + std::abs(p->velFluct._3),
+                                              VectorMath::add(VectorMath::abs(p->velMean), VectorMath::abs(p->velFluct)),
                                               timeRemainder);
 
       // std::cout << "par_dt = " << par_dt << std::endl;
