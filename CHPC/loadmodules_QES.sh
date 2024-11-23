@@ -2,7 +2,7 @@
 
 echo '--------------------------------------------------------------------------------'
 echo 'Load module for QES on UTAH CHPC cluster'
-module --force purge
+#module --force purge
 module load cuda/11.4
 module load cmake/3.21.4
 module load gcc/8.5.0

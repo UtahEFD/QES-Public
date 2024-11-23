@@ -3,8 +3,8 @@
     <DEM>../GISFiles/elevation_30m.tif</DEM>
   	<halo_x> 0.0 </halo_x >						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 0.0 </halo_y >						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
-    <domain> 14 14 36 </domain> <!-- nx,ny,nz-->
-	<cellSize> 30 30 5 </cellSize> <!-- dx, dy,dz [Meters]-->	
+    <domain> 450 375 36 </domain> <!-- nx,ny,nz-->
+	<cellSize> 2 2 5 </cellSize> <!-- dx, dy,dz [Meters]-->	
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 1 </totalTimeIncrements>
 	<maxIterations> 500 </maxIterations>
@@ -47,7 +47,7 @@
 </buildingsParams>
 
 <fires>
-	<fireDur> 12000 </fireDur>
+	<fireDur> 3600 </fireDur>
 	<fuelType> 203 </fuelType>
 	<fuelMap>../FireFiles/fbfm40_30m_nearest.tif</fuelMap>
 	<fmc> 0.02 </fmc>
@@ -57,10 +57,10 @@
     <ignition>
     	<height> 2 </height>
     	<baseHeight> 0 </baseHeight> <!--meters-->
-    	<xStart> 270.0 </xStart> <!--meters-->
-    	<yStart> 270.0 </yStart> <!--meters-->
+    	<xStart> 570.0 </xStart> <!--meters-->
+    	<yStart> 570.0 </yStart> <!--meters-->
     	<length> 30.0 </length> <!--meters-->
-    	<width>  30.0 </width> <!--meters-->
+    	<width>  6.0 </width> <!--meters-->
     </ignition>
 
 </fires>

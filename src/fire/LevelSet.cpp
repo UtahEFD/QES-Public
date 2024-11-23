@@ -36,6 +36,7 @@ void Fire ::LevelSet(WINDSGeneralData *WGD)
   /**
     * Calculate level set gradient and norm (Chapter 6, Sethian 2008)
     */
+  auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
   float dmx, dpx, dmy, dpy, n_star_x, n_star_y;
   float sdmx, sdpx, sdmy, sdpy, sn_star_x, sn_star_y;
   for (int j = 1; j < ny - 2; j++) {
@@ -99,7 +100,7 @@ void Fire ::LevelSet(WINDSGeneralData *WGD)
     }
   }
 
-
+  
   // indices for burning cells
   std::vector<int> cells_burning;
   // search predicate for burn state
@@ -155,7 +156,7 @@ void Fire ::LevelSet(WINDSGeneralData *WGD)
     } else {
       maxkh = std::round(MFD / dz);
     }
-
+    /**
     // get horizontal wind at flame height
     int cell_face = ii + jj * nx + (kh) * ny * nx;
     float u = 0.5 * (WGD->u[cell_face] + WGD->u[cell_face + 1]);
@@ -165,14 +166,17 @@ void Fire ::LevelSet(WINDSGeneralData *WGD)
     struct FireProperties fp = balbi(fuel, u, v, xNorm[id], yNorm[id], slope_x[id], slope_y[id], fmc);
     fire_cells[id].properties = fp;
     Force[id] = fp.r;
-
+    */
     // update icell value for flame
     for (int k = TID; k <= maxkh; k++) {
       int icell_cent = ii + jj * (nx - 1) + (k) * (nx - 1) * (ny - 1);
       WGD->icellflag[icell_cent] = 12;
     }
   }
+auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
 
+    std::chrono::duration<float> elapsed = finish - start;
+    std::cout << "[QES-Fire] LS\t Elapsed time: " << elapsed.count() << " s\n";// Print out elapsed execution time
   // compute time step
   dt = computeTimeStep();
 

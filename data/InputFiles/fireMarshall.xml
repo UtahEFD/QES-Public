@@ -35,7 +35,7 @@
 </turbParams>
 
 <fires>
-	<fireDur> 3600 </fireDur>
+	<fireDur> 20 </fireDur>
 	<fuelType> 203 </fuelType>
 	<fuelMap>../FireFiles/MarshallFuel_edit.tif</fuelMap>
 	<fmc> 0.02 </fmc>

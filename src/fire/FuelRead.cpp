@@ -99,7 +99,7 @@ FuelRead::FuelRead(const std::string &filename,
       rasterData = 0;
 
 
-      if (xStride > 1) {
+      if (xStride < 1) {
         std::fill(rasterCount.begin(), rasterCount.end(), 0);
         for (int jj = 0; jj < yStride; jj++) {
           for (int ii = 0; ii < xStride; ii++) {

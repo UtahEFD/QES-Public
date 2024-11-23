@@ -238,5 +238,5 @@ void Fire ::potential(WINDSGeneralData *WGD)
     auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
 
     std::chrono::duration<float> elapsed = finish - start;
-    std::cout << "\t\t Elapsed time: " << elapsed.count() << " s\n";// Print out elapsed execution time
+    std::cout << "[QES-Fire] Pot\t Elapsed time: " << elapsed.count() << " s\n";// Print out elapsed execution time
 }
