@@ -33,7 +33,6 @@
 
 void Fire ::move(WINDSGeneralData *WGD)
 {
-  auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
   if (FFII_flag == 1) {
     int FT_idx1 = 0;
     int FT_idx2 = 0;
@@ -45,32 +44,27 @@ void Fire ::move(WINDSGeneralData *WGD)
         break;
       }
     }
-    
     int nx1 = round(FT_x1[it] / dx);
-    int ny1 = round((FT_y1[it]) / dy);
+    int ny1 = round((750 - FT_y1[it]) / dy);
     FT_idx1 = nx1 + ny1 * (nx - 1);
     int nx2 = round(FT_x2[it] / dx);
-    int ny2 = round((FT_y2[it]) / dy);
+    int ny2 = round((750 - FT_y2[it]) / dy);
     FT_idx2 = nx2 + ny2 * (nx - 1);
-    if (burn_flag[FT_idx1] < 1) {
+    if (burn_flag[FT_idx1] < 2) {
       front_map[FT_idx1] = 0;
       fire_cells[FT_idx1].state.burn_flag = 1;
     }
-    if (burn_flag[FT_idx2] < 1) {
+    if (burn_flag[FT_idx2] < 2) {
       front_map[FT_idx2] = 0;
       fire_cells[FT_idx2].state.burn_flag = 1;
     }
-    
-    
-    
-    
   }
   if (FFII_flag == 2) {
     int FT_idx1 = 0;
     int FT_idx2 = 0;
     int FT_idx3 = 0;
-    float FT = time + FT_time[0];
-    float FTplus = time + FT_time[0] + dt;
+    float FT = ceil(time) + FT_time[0];
+    float FTplus = FT + dt;
     int it = -1;
     for (int IDX = 0; IDX < FT_time.size(); IDX++) {
       if (FT < FT_time[IDX] && FT_time[IDX] < FTplus) {
@@ -88,15 +82,15 @@ void Fire ::move(WINDSGeneralData *WGD)
       int nx3 = round(FT_x3[it] / dx);
       int ny3 = round((FT_y3[it]) / dy);
       FT_idx3 = nx3 + ny3 * (nx - 1);
-      if (burn_flag[FT_idx1] < 1) {
+      if (burn_flag[FT_idx1] < 2) {
         front_map[FT_idx1] = 0;
         fire_cells[FT_idx1].state.burn_flag = 1;
       }
-      if (burn_flag[FT_idx2] < 1) {
+      if (burn_flag[FT_idx2] < 2) {
         front_map[FT_idx2] = 0;
         fire_cells[FT_idx2].state.burn_flag = 1;
       }
-      if (burn_flag[FT_idx3] < 1) {
+      if (burn_flag[FT_idx3] < 2) {
         front_map[FT_idx3] = 0;
         fire_cells[FT_idx3].state.burn_flag = 1;
       }
@@ -155,10 +149,6 @@ void Fire ::move(WINDSGeneralData *WGD)
       burn_out[idx] = burn_flag[idx];
     }
   }
-  auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
-
-    std::chrono::duration<float> elapsed = finish - start;
-    std::cout << "[QES-Fire] Advance\t Elapsed time: " << elapsed.count() << " s\n";// Print out elapsed execution time
   // advance time
   time += dt;
 }

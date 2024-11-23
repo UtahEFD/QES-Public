@@ -106,8 +106,7 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
   if (FFII_flag == 1) {
     // Open netCDF for fire times
     //std::cout<<"nc file open"<<std::endl;
-    //NcFile FireTime("../data/FireFiles/FFII.nc", NcFile::read);
-    NcFile FireTime("../data/FireFiles/Marshall.nc", NcFile::read);
+    NcFile FireTime("../data/FireFiles/FFII.nc", NcFile::read);
     //std::cout<<"nc file read"<<std::endl;
     // Get size of netCDF data
     SFT_time = FireTime.getVar("time").getDim(0).getSize();
@@ -130,7 +129,6 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
   if (FFII_flag == 2) {
     // Open netCDF for fire times
     //std::cout<<"nc file open"<<std::endl;
-    //NcFile FireTime("../data/FireFiles/RxCadreL2F.nc", NcFile::read);
     NcFile FireTime("../data/FireFiles/Marshall.nc", NcFile::read);
     //std::cout<<"nc file read"<<std::endl;
     // Get size of netCDF data
@@ -153,7 +151,7 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
     FireTime.getVar("y2").getVar({ 0 }, { SFT_time }, FT_y2.data());
     FireTime.getVar("x3").getVar({ 0 }, { SFT_time }, FT_x3.data());
     FireTime.getVar("y3").getVar({ 0 }, { SFT_time }, FT_y3.data());
-    std::cout << "L2F burn times read" << std::endl;
+    std::cout << "Marshall burn times read" << std::endl;
   }
 
   
@@ -201,7 +199,6 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
   /**
 	* Set up initial level set. Use signed distance function: swap to fast marching method in future.
 	*/
-  auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
   float sdf, sdf_min;
   for (int j = 0; j < ny - 1; j++) {
     for (int i = 0; i < nx - 1; i++) {
@@ -226,11 +223,6 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
     }
   }
   std::cout << "level set initialized" << std::endl;
-  auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
-
-    std::chrono::duration<float> elapsed = finish - start;
-    std::cout << "[QES-Fire] LS\t Elapsed time: " << elapsed.count() << " s\n";// Print out elapsed execution time
-
   /**
 	* Calculate slope at each terrain cell
 	*/

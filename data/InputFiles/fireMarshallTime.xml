@@ -109,7 +109,7 @@
 	<fuelMap>../FireFiles/MarshallFuel_edit.tif</fuelMap>
 	<fmc> 0.02 </fmc>
 
-    <courant> 0.9 </courant>
+    <courant> 0.6 </courant>
     <fieldFlag> 2 </fieldFlag> <!-- flag for if multiple timesteps for fire -->
     <ignition>
     	<height> 2 </height>
