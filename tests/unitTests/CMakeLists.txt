@@ -40,7 +40,7 @@ add_executable(plume_particle_buffer plume_particle_buffer.cpp)
 list(APPEND UNITTESTS plume_particle_buffer)
   
 add_executable(test_qesDataTransporter
-  test_qesDataTransport.cpp QESDataContainer.h)
+  test_qesDataTransporter.cpp QESDataTransport.h)
 list(APPEND UNITTESTS test_qesDataTransporter)
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
