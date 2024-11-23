@@ -34,14 +34,14 @@
 
 
 InterpNearestCell::InterpNearestCell(qes::Domain domain_in, bool debug_val = false)
-  : Interp(domain)
+  : Interp(domain_in)
 {
   // std::cout << "[InterpNearestCell] \t Setting InterpNearestCell fields " << std::endl;
 
   // copy debug information
   debug = debug_val;
 
-  if (debug == true) {
+  if (debug) {
     std::cout << "[InterpNearestCell] \t DEBUG - Domain boundary" << std::endl;
     std::cout << "\t\t xStart=" << xStart << " xEnd=" << xEnd << std::endl;
     std::cout << "\t\t yStart=" << yStart << " yEnd=" << yEnd << std::endl;
@@ -56,9 +56,9 @@ void InterpNearestCell::interpWindsValues(const WINDSGeneralData *WGD,
   auto [i, j, k] = getCellIndex(pos);
   long faceId = domain.face(i, j, k);
 
-  vel_out._1 = 0.5 * (WGD->u[faceId] + WGD->u[WGD->domain.faceAdd(faceId, 1, 0, 0)]);
-  vel_out._2 = 0.5 * (WGD->v[faceId] + WGD->v[WGD->domain.faceAdd(faceId, 0, 1, 0)]);
-  vel_out._3 = 0.5 * (WGD->w[faceId] + WGD->w[WGD->domain.faceAdd(faceId, 0, 0, 1)]);
+  vel_out._1 = 0.5f * (WGD->u[faceId] + WGD->u[WGD->domain.faceAdd(faceId, 1, 0, 0)]);
+  vel_out._2 = 0.5f * (WGD->v[faceId] + WGD->v[WGD->domain.faceAdd(faceId, 0, 1, 0)]);
+  vel_out._3 = 0.5f * (WGD->w[faceId] + WGD->w[WGD->domain.faceAdd(faceId, 0, 0, 1)]);
 }
 
 void InterpNearestCell::interpTurbValues(const TURBGeneralData *TGD,

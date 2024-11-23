@@ -73,7 +73,7 @@ protected:
   PI_SourceGeometry *m_sourceGeometry{};
   PI_ReleaseType *m_releaseType{};
 
-  IDGenerator *id_gen;
+  IDGenerator *id_gen = nullptr;
 
 public:
   // this is the index of the source in the dispersion class overall list of sources

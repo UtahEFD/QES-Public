@@ -11,6 +11,7 @@
 #include <chrono>
 
 #include "plume/ManagedContainer.h"
+#include "plume/IDGenerator.h"
 // #include "plume/ParticleManager.h"
 
 #include "plume/Particle.h"
@@ -99,12 +100,14 @@ TEST_CASE("buffer", "[in progress]")
 
   start = std::chrono::high_resolution_clock::now();
   ManagedContainer<TracerParticle> tracers;
+  IDGenerator *id_gen = IDGenerator::getInstance();
   int new_tracers = 1E3;
   for (int k = 0; k < 10000; ++k) {
     tracers.sweep(new_tracers);
 
     for (int pidx = 0; pidx < new_tracers; ++pidx) {
       tracers.insert();
+      tracers.last_added()->ID = id_gen->get();
     }
     for (auto &tracer : tracers) {
       float t = drand48();

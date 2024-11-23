@@ -88,7 +88,7 @@ void DomainBC_reflection::enforce(float &pos, float &velFluct, ParticleState &st
                 << "upper boundary condition failed! Setting isActive to "
                    "false. pos = \""
                 << pos << "\"" << std::endl;
-      state == INACTIVE;
+      state = INACTIVE;
     } else if (pos < domainStart) {
       std::cout << "warning (Plume::enforceWallBCs_reflection): "
                 << "lower boundary condition failed! Setting isActive to "

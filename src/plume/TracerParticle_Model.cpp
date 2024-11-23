@@ -102,10 +102,13 @@ void TracerParticle_Model::generateParticleList(QEStime &timeCurrent,
   particles->sweep(nbr_new_particle);
   for (auto source : sources) {
     source->emitParticles(dt, time, particles);
+    // source->getInitializationData()
+    //
   }
 
 #pragma omp parallel for default(none) shared(WGD, TGD, PGD)
   for (auto k = 0u; k < particles->get_nbr_added(); ++k) {
+    // -> call particle->reuse(data[k])
     // set particle ID (use global particle counter)
     PGD->initializeParticleValues(particles->get_added(k), WGD, TGD);
   }

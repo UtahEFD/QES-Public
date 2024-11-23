@@ -49,7 +49,8 @@ public:
     : Particle(ParticleType::tracer)
   {}
 
-  // destructor
+  // void reuse(data container of particle state); -> reinitialize the particle
+  //  destructor
   ~TracerParticle()
   {
   }
