@@ -16,7 +16,7 @@ private:
   // Name value pair storage that uses std::any to safely store
   // generic data, rather than using void* casting mechanisms.
   // - See https://en.cppreference.com/w/cpp/utility/any
-  std::unordered_map<std::string, std::any> dataStore;
+  std::unordered_map<std::string, std::any> dataStorageContainer;
 
 public:
   /**
@@ -31,7 +31,7 @@ public:
   template<typename T>
   void put(const std::string &key, T value)
   {
-    dataStore[key] = value;
+    dataStorageContainer[key] = value;
   }
 
   /**
@@ -53,12 +53,12 @@ public:
   template<typename T>
   T get(const std::string &key) const
   {
-    if (dataStore.find(key) == dataStore.end()) {
+    if (dataStorageContainer.find(key) == dataStorageContainer.end()) {
       throw std::runtime_error("Key not found: " + key);
     }
 
     try {
-      return std::any_cast<T>(dataStore.at(key));
+      return std::any_cast<T>(dataStorageContainer.at(key));
     } catch (const std::bad_any_cast &e) {
       throw std::runtime_error("Type mismatch for key: " + key);
     }
@@ -78,7 +78,7 @@ public:
    */
   bool contains(const std::string &key) const
   {
-    return dataStore.find(key) != dataStore.end();
+    return dataStorageContainer.find(key) != dataStorageContainer.end();
   }
 
 };
