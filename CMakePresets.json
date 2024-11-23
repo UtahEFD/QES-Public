@@ -23,6 +23,19 @@
 	    }
 	},
 	{
+	    "name": "macOSDev",
+	    "binaryDir": "${sourceDir}/buildMacOSDev",
+	    "cacheVariables": {
+		"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+		"DCMAKE_PREFIX_PATH": "/opt/homebrew/Cellar/libomp/19.1.4",
+		"NETCDF_LIBRARIES_CXX": "/opt/homebrew/lib/libnetcdf-cxx4.dylib",
+		"ENABLE_OPENMP": "ON",
+		"ENABLE_DEV_MODE": "ON",
+		"ENABLE_TESTS": "ON",
+		"TESTS_ENABLE_UNIT_TESTS": "ON"
+	    }
+	},
+	{
 	    "name": "unixDev",
 	    "binaryDir": "${sourceDir}/buildUnixDev",
 	    "cacheVariables": {
