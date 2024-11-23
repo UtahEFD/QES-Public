@@ -39,6 +39,10 @@ list(APPEND UNITTESTS plume_input)
 add_executable(plume_particle_buffer plume_particle_buffer.cpp)
 list(APPEND UNITTESTS plume_particle_buffer)
   
+add_executable(test_qesDataTransporter
+  test_qesDataTransporter.cpp QESDataTransport.h)
+list(APPEND UNITTESTS test_qesDataTransporter)
+
 IF ($CACHE{HAS_CUDA_SUPPORT})
   
   add_executable(test_GPU test_GPU.cpp)
