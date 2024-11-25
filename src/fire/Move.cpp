@@ -127,7 +127,7 @@ void Fire ::move(WINDSGeneralData *WGD)
         fire_cells[idx].state.burn_time += dt;
       }
       // set burn flag to 2 (burned) if residence time exceeded, set Forcing function to 0, and update z0 to bare soil
-      if (fire_cells[idx].state.burn_time >= fp.tau) {
+      if (fire_cells[idx].state.burn_time >= fp.tau && fire_cells[idx].state.burn_flag == 1) {
         fire_cells[idx].state.burn_flag = 2;
         Force[idx] = 0;
         // Need to fix where z0 is reset MM

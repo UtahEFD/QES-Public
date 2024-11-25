@@ -144,6 +144,7 @@ public:
 
 
   void LevelSet(WINDSGeneralData *);
+  void LevelSetNB(WINDSGeneralData *);
   void move(WINDSGeneralData *);
   void potential(WINDSGeneralData *);
   void FuelMap(WINDSInputData *, WINDSGeneralData *);

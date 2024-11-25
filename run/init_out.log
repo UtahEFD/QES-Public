@@ -17,7 +17,7 @@ Fire NetCDF output file set to test_fireOutput.nc
 [QES-WINDS]	 Sensors have been loaded (total sensors = 1).
 [QES-WINDS]	 Allocation Memory...[QES-WINDS]	 Allocation Memory... [DONE]
 [QES-WINDS]	 Defining solid walls...[QES-WINDS]	 Defining solid walls... [DONE]
-		 elapsed time: 0.0106607 s
+		 elapsed time: 0.00966865 s
 [NetCDFOutput] 	 Writing to test_windsOut.nc
 [Output] 	 Getting output fields for Vizualization file
 Run Global Memory Solver (GPU) ...
@@ -26,9 +26,8 @@ Run Global Memory Solver (GPU) ...
 Field flag [0]
 ignition [0]
 burn initialized
-level set initialized
-[QES-Fire] LS	 Elapsed time: 0.0970294 s
-slope calculated
+Level Set Initialized: Signed Distance
+Slope Calculated
 fuel set constant = 203
 [NetCDFOutput] 	 Writing to test_fireOutput.nc
 [FireOutput] set up NetCDF file test_fireOutput.nc
@@ -39,1435 +38,1142 @@ New Sensor Data
 index = 0
 ----------------------------------------
 [QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.0013193 s
+		 elapsed time: 0.00191297 s
 [QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022116 s
+		 elapsed time: 0.00022056 s
 [Solver] Running Global Memory Solver (GPU) ...
 [Solver] Residual after 1 itertations: 0.000000000
-		 Elapsed time: 0.403493 s
+		 Elapsed time: 0.455768 s
 Solver done!
 [QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111785 s
-[QES-Fire] LS	 Elapsed time: 0.00433687 s
-max ROS = 0.0182845
+		 elapsed time: 0.00111363 s
+max ROS = 0.274634
 dt = 6 s
-[QES-Fire] Pot	 Elapsed time: 0.524329 s
+[QES-Fire] Pot	 Elapsed time: 0.523335 s
 [QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022085 s
+		 elapsed time: 0.00022424 s
 [Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002130985
-		 Elapsed time: 0.135895 s
-[QES-Fire] LS	 Elapsed time: 0.0109186 s
-max ROS = 0.272105
+[Solver] Residual after 500 itertations: 0.002207279
+		 Elapsed time: 0.129661 s
+max ROS = 0.272721
 dt = 6 s
-[QES-Fire] Advance	 Elapsed time: 7.355e-05 s
 time = 2020-01-01T00:00:06
 [QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00112595 s
-[QES-Fire] LS	 Elapsed time: 0.0108258 s
-max ROS = 0.272105
+		 elapsed time: 0.00112292 s
+max ROS = 0.272721
 dt = 6 s
-[QES-Fire] Pot	 Elapsed time: 0.523242 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022083 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002205849
-		 Elapsed time: 0.134378 s
-[QES-Fire] LS	 Elapsed time: 0.0108024 s
-max ROS = 0.27274
-dt = 6 s
-[QES-Fire] Advance	 Elapsed time: 7.303e-05 s
-time = 2020-01-01T00:00:12
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111355 s
-[QES-Fire] LS	 Elapsed time: 0.0107556 s
-max ROS = 0.27274
-dt = 6 s
-[QES-Fire] Pot	 Elapsed time: 0.523549 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.000221 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002205372
-		 Elapsed time: 0.134002 s
-[QES-Fire] LS	 Elapsed time: 0.0107807 s
-max ROS = 0.272744
-dt = 6 s
-[QES-Fire] Advance	 Elapsed time: 7.21e-05 s
-time = 2020-01-01T00:00:18
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00112418 s
-[QES-Fire] LS	 Elapsed time: 0.0107121 s
-max ROS = 0.272744
-dt = 6 s
-[QES-Fire] Pot	 Elapsed time: 0.523433 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022135 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002205372
-		 Elapsed time: 0.136448 s
-[QES-Fire] LS	 Elapsed time: 0.010801 s
-max ROS = 0.272745
-dt = 6 s
-[QES-Fire] Advance	 Elapsed time: 7.374e-05 s
-time = 2020-01-01T00:00:24
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111126 s
-[QES-Fire] LS	 Elapsed time: 0.0106735 s
-max ROS = 0.272745
-dt = 6 s
-[QES-Fire] Pot	 Elapsed time: 0.544849 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.000220009 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002360344
-		 Elapsed time: 0.133542 s
-[QES-Fire] LS	 Elapsed time: 0.0106914 s
-max ROS = 0.363101
-dt = 4.9573 s
-[QES-Fire] Advance	 Elapsed time: 7.318e-05 s
-time = 2020-01-01T00:00:28.957000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111673 s
-[QES-Fire] LS	 Elapsed time: 0.0106332 s
-max ROS = 0.363101
-dt = 4.9573 s
-[QES-Fire] Pot	 Elapsed time: 0.545034 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.000220919 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002355576
-		 Elapsed time: 0.135694 s
-[QES-Fire] LS	 Elapsed time: 0.010659 s
-max ROS = 0.362705
-dt = 4.96271 s
-[QES-Fire] Advance	 Elapsed time: 7.312e-05 s
-time = 2020-01-01T00:00:33.920000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111439 s
-[QES-Fire] LS	 Elapsed time: 0.0106412 s
-max ROS = 0.362705
-dt = 4.96271 s
-[QES-Fire] Pot	 Elapsed time: 0.546332 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022093 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002349854
-		 Elapsed time: 0.137686 s
-[QES-Fire] LS	 Elapsed time: 0.0106182 s
-max ROS = 0.362536
-dt = 4.96502 s
-[QES-Fire] Advance	 Elapsed time: 7.374e-05 s
-time = 2020-01-01T00:00:38.885000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111907 s
-[QES-Fire] LS	 Elapsed time: 0.0106303 s
-max ROS = 0.362536
-dt = 4.96502 s
-[QES-Fire] Pot	 Elapsed time: 0.591574 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022109 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002328396
-		 Elapsed time: 0.135293 s
-[QES-Fire] LS	 Elapsed time: 0.0106419 s
-max ROS = 0.389322
-dt = 4.62343 s
-[QES-Fire] Advance	 Elapsed time: 7.327e-05 s
-time = 2020-01-01T00:00:43.508000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.0011208 s
-[QES-Fire] LS	 Elapsed time: 0.0105423 s
-max ROS = 0.389322
-dt = 4.62343 s
-[QES-Fire] Pot	 Elapsed time: 0.639154 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.000220859 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002460480
-		 Elapsed time: 0.133533 s
-[QES-Fire] LS	 Elapsed time: 0.0105322 s
-max ROS = 0.399429
-dt = 4.50644 s
-[QES-Fire] Advance	 Elapsed time: 7.325e-05 s
-time = 2020-01-01T00:00:48.014000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111413 s
-[QES-Fire] LS	 Elapsed time: 0.0104883 s
-max ROS = 0.399429
-dt = 4.50644 s
-[QES-Fire] Pot	 Elapsed time: 0.637998 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022338 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002460480
-		 Elapsed time: 0.135268 s
-[QES-Fire] LS	 Elapsed time: 0.0105241 s
-max ROS = 0.399963
-dt = 4.50042 s
-[QES-Fire] Advance	 Elapsed time: 7.233e-05 s
-time = 2020-01-01T00:00:52.514000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111441 s
-[QES-Fire] LS	 Elapsed time: 0.0104547 s
-max ROS = 0.399963
-dt = 4.50042 s
-[QES-Fire] Pot	 Elapsed time: 0.646178 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022102 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002461433
-		 Elapsed time: 0.135779 s
-[QES-Fire] LS	 Elapsed time: 0.0105045 s
-max ROS = 0.399877
-dt = 4.50139 s
-[QES-Fire] Advance	 Elapsed time: 7.696e-05 s
-time = 2020-01-01T00:00:57.015000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.0011199 s
-[QES-Fire] LS	 Elapsed time: 0.0104408 s
-max ROS = 0.399877
-dt = 4.50139 s
-[QES-Fire] Pot	 Elapsed time: 0.64866 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.0002217 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002434731
-		 Elapsed time: 0.135508 s
-[QES-Fire] LS	 Elapsed time: 0.0104622 s
-max ROS = 0.419113
-dt = 4.29478 s
-[QES-Fire] Advance	 Elapsed time: 7.327e-05 s
-time = 2020-01-01T00:01:01.310000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00112119 s
-[QES-Fire] LS	 Elapsed time: 0.0104393 s
-max ROS = 0.419113
-dt = 4.29478 s
-[QES-Fire] Pot	 Elapsed time: 0.648617 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022089 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002439976
-		 Elapsed time: 0.135255 s
-[QES-Fire] LS	 Elapsed time: 0.0104254 s
-max ROS = 0.419827
-dt = 4.28748 s
-[QES-Fire] Advance	 Elapsed time: 7.343e-05 s
-time = 2020-01-01T00:01:05.597000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00112253 s
-[QES-Fire] LS	 Elapsed time: 0.0103633 s
-max ROS = 0.419827
-dt = 4.28748 s
-[QES-Fire] Pot	 Elapsed time: 0.648267 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022092 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002434254
-		 Elapsed time: 0.134403 s
-[QES-Fire] LS	 Elapsed time: 0.0104525 s
-max ROS = 0.419796
-dt = 4.28779 s
-[QES-Fire] Advance	 Elapsed time: 7.392e-05 s
-time = 2020-01-01T00:01:09.885000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111865 s
-[QES-Fire] LS	 Elapsed time: 0.0103911 s
-max ROS = 0.419796
-dt = 4.28779 s
-[QES-Fire] Pot	 Elapsed time: 0.647748 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.0002209 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002435684
-		 Elapsed time: 0.136372 s
-[QES-Fire] LS	 Elapsed time: 0.0104211 s
-max ROS = 0.419703
-dt = 4.28874 s
-[QES-Fire] Advance	 Elapsed time: 7.355e-05 s
-time = 2020-01-01T00:01:14.174000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00113368 s
-[QES-Fire] LS	 Elapsed time: 0.0103383 s
-max ROS = 0.419703
-dt = 4.28874 s
-[QES-Fire] Pot	 Elapsed time: 0.647826 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.000222449 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002437115
-		 Elapsed time: 0.13335 s
-[QES-Fire] LS	 Elapsed time: 0.0103895 s
-max ROS = 0.419639
-dt = 4.2894 s
-[QES-Fire] Advance	 Elapsed time: 7.288e-05 s
-time = 2020-01-01T00:01:18.463000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111454 s
-[QES-Fire] LS	 Elapsed time: 0.0103181 s
-max ROS = 0.419639
-dt = 4.2894 s
-[QES-Fire] Pot	 Elapsed time: 0.691312 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022197 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002347946
-		 Elapsed time: 0.133293 s
-[QES-Fire] LS	 Elapsed time: 0.0103643 s
-max ROS = 0.423769
-dt = 4.24759 s
-[QES-Fire] Advance	 Elapsed time: 7.353e-05 s
-time = 2020-01-01T00:01:22.711000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111963 s
-[QES-Fire] LS	 Elapsed time: 0.010275 s
-max ROS = 0.423769
-dt = 4.24759 s
-[QES-Fire] Pot	 Elapsed time: 0.78543 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022074 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002326965
-		 Elapsed time: 0.134265 s
-[QES-Fire] LS	 Elapsed time: 0.0102787 s
-max ROS = 0.427031
-dt = 4.21515 s
-[QES-Fire] Advance	 Elapsed time: 7.313e-05 s
-time = 2020-01-01T00:01:26.926000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111613 s
-[QES-Fire] LS	 Elapsed time: 0.0102548 s
-max ROS = 0.427031
-dt = 4.21515 s
-[QES-Fire] Pot	 Elapsed time: 0.788209 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022354 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002174377
-		 Elapsed time: 0.135061 s
-[QES-Fire] LS	 Elapsed time: 0.0102547 s
-max ROS = 0.431684
-dt = 4.16972 s
-[QES-Fire] Advance	 Elapsed time: 7.399e-05 s
-time = 2020-01-01T00:01:31.096000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00112033 s
-[QES-Fire] LS	 Elapsed time: 0.0102176 s
-max ROS = 0.431684
-dt = 4.16972 s
-[QES-Fire] Pot	 Elapsed time: 0.788373 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022071 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002179146
-		 Elapsed time: 0.134966 s
-[QES-Fire] LS	 Elapsed time: 0.0102249 s
-max ROS = 0.431732
-dt = 4.16926 s
-[QES-Fire] Advance	 Elapsed time: 7.246e-05 s
-time = 2020-01-01T00:01:35.265000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111124 s
-[QES-Fire] LS	 Elapsed time: 0.0101678 s
-max ROS = 0.431732
-dt = 4.16926 s
-[QES-Fire] Pot	 Elapsed time: 0.788361 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022126 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002180099
-		 Elapsed time: 0.135108 s
-[QES-Fire] LS	 Elapsed time: 0.0101914 s
-max ROS = 0.431533
-dt = 4.17117 s
-[QES-Fire] Advance	 Elapsed time: 7.268e-05 s
-time = 2020-01-01T00:01:39.436000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111547 s
-[QES-Fire] LS	 Elapsed time: 0.0101696 s
-max ROS = 0.431533
-dt = 4.17117 s
-[QES-Fire] Pot	 Elapsed time: 0.795027 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022107 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002118111
-		 Elapsed time: 0.133523 s
-[QES-Fire] LS	 Elapsed time: 0.0101591 s
-max ROS = 0.434899
-dt = 4.13889 s
-[QES-Fire] Advance	 Elapsed time: 7.246e-05 s
-time = 2020-01-01T00:01:43.575000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111339 s
-[QES-Fire] LS	 Elapsed time: 0.0101207 s
-max ROS = 0.434899
-dt = 4.13889 s
-[QES-Fire] Pot	 Elapsed time: 0.7951 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022637 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002124786
-		 Elapsed time: 0.136249 s
-[QES-Fire] LS	 Elapsed time: 0.010233 s
-max ROS = 0.43503
-dt = 4.13764 s
-[QES-Fire] Advance	 Elapsed time: 7.318e-05 s
-time = 2020-01-01T00:01:47.713000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00112287 s
-[QES-Fire] LS	 Elapsed time: 0.0101266 s
-max ROS = 0.43503
-dt = 4.13764 s
-[QES-Fire] Pot	 Elapsed time: 0.799261 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022189 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002017975
-		 Elapsed time: 0.137526 s
-[QES-Fire] LS	 Elapsed time: 0.0101543 s
-max ROS = 0.43993
-dt = 4.09156 s
-[QES-Fire] Advance	 Elapsed time: 7.39e-05 s
-time = 2020-01-01T00:01:51.805000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00112226 s
-[QES-Fire] LS	 Elapsed time: 0.0100759 s
-max ROS = 0.43993
-dt = 4.09156 s
-[QES-Fire] Pot	 Elapsed time: 0.798888 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022255 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002018929
-		 Elapsed time: 0.13344 s
-[QES-Fire] LS	 Elapsed time: 0.0101205 s
-max ROS = 0.440152
-dt = 4.08949 s
-[QES-Fire] Advance	 Elapsed time: 7.7529e-05 s
-time = 2020-01-01T00:01:55.894000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111073 s
-[QES-Fire] LS	 Elapsed time: 0.0100878 s
-max ROS = 0.440152
-dt = 4.08949 s
-[QES-Fire] Pot	 Elapsed time: 0.839633 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.0002253 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.001973152
-		 Elapsed time: 0.133692 s
-[QES-Fire] LS	 Elapsed time: 0.010043 s
-max ROS = 0.442656
-dt = 4.06636 s
-[QES-Fire] Advance	 Elapsed time: 7.2589e-05 s
-time = 2020-01-01T00:01:59.960000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111832 s
-[QES-Fire] LS	 Elapsed time: 0.0100528 s
-max ROS = 0.442656
-dt = 4.06636 s
-[QES-Fire] Pot	 Elapsed time: 0.839637 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022079 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.001980782
-		 Elapsed time: 0.13732 s
-[QES-Fire] LS	 Elapsed time: 0.0100163 s
-max ROS = 0.442706
-dt = 4.0659 s
-[QES-Fire] Advance	 Elapsed time: 7.397e-05 s
-time = 2020-01-01T00:02:04.026000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111427 s
-[QES-Fire] LS	 Elapsed time: 0.00996754 s
-max ROS = 0.442706
-dt = 4.0659 s
-[QES-Fire] Pot	 Elapsed time: 0.839355 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022342 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.001980782
-		 Elapsed time: 0.134965 s
-[QES-Fire] LS	 Elapsed time: 0.0100031 s
-max ROS = 0.442487
-dt = 4.06792 s
-[QES-Fire] Advance	 Elapsed time: 7.274e-05 s
-time = 2020-01-01T00:02:08.094000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111528 s
-[QES-Fire] LS	 Elapsed time: 0.00994244 s
-max ROS = 0.442487
-dt = 4.06792 s
-[QES-Fire] Pot	 Elapsed time: 0.839448 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00030248 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.001980782
-		 Elapsed time: 0.133653 s
-[QES-Fire] LS	 Elapsed time: 0.0100584 s
-max ROS = 0.442454
-dt = 4.06822 s
-[QES-Fire] Advance	 Elapsed time: 7.38e-05 s
-time = 2020-01-01T00:02:12.162000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111424 s
-[QES-Fire] LS	 Elapsed time: 0.00994599 s
-max ROS = 0.442454
-dt = 4.06822 s
-[QES-Fire] Pot	 Elapsed time: 0.84449 s
+[QES-Fire] Pot	 Elapsed time: 0.52342 s
 [QES-WINDS]	 Applying parameterizations...
 		 elapsed time: 0.00022248 s
 [Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.001951218
-		 Elapsed time: 0.133873 s
-[QES-Fire] LS	 Elapsed time: 0.00997112 s
-max ROS = 0.444936
-dt = 4.04552 s
-[QES-Fire] Advance	 Elapsed time: 7.37e-05 s
-time = 2020-01-01T00:02:16.208000
+[Solver] Residual after 500 itertations: 0.002205849
+		 Elapsed time: 0.130754 s
+max ROS = 0.272741
+dt = 6 s
+time = 2020-01-01T00:00:12
 [QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111559 s
-[QES-Fire] LS	 Elapsed time: 0.00986993 s
-max ROS = 0.444936
-dt = 4.04552 s
-[QES-Fire] Pot	 Elapsed time: 0.857566 s
+		 elapsed time: 0.00112049 s
+max ROS = 0.272741
+dt = 6 s
+[QES-Fire] Pot	 Elapsed time: 0.523407 s
 [QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.0002219 s
+		 elapsed time: 0.00022142 s
 [Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.001899719
-		 Elapsed time: 0.135185 s
-[QES-Fire] LS	 Elapsed time: 0.00991365 s
-max ROS = 0.453244
-dt = 3.97137 s
-[QES-Fire] Advance	 Elapsed time: 7.264e-05 s
-time = 2020-01-01T00:02:20.179000
+[Solver] Residual after 500 itertations: 0.002205372
+		 Elapsed time: 0.130195 s
+max ROS = 0.272744
+dt = 6 s
+time = 2020-01-01T00:00:18
 [QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111092 s
-[QES-Fire] LS	 Elapsed time: 0.00983326 s
-max ROS = 0.453244
-dt = 3.97137 s
-[QES-Fire] Pot	 Elapsed time: 0.856426 s
+		 elapsed time: 0.00112319 s
+max ROS = 0.272744
+dt = 6 s
+[QES-Fire] Pot	 Elapsed time: 0.524641 s
 [QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022231 s
+		 elapsed time: 0.00022238 s
 [Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.001902580
-		 Elapsed time: 0.134986 s
-[QES-Fire] LS	 Elapsed time: 0.00993283 s
-max ROS = 0.453486
-dt = 3.96925 s
-[QES-Fire] Advance	 Elapsed time: 7.546e-05 s
-time = 2020-01-01T00:02:24.148000
+[Solver] Residual after 500 itertations: 0.002204895
+		 Elapsed time: 0.131172 s
+max ROS = 0.272745
+dt = 6 s
+time = 2020-01-01T00:00:24
 [QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.0011163 s
-[QES-Fire] LS	 Elapsed time: 0.00985387 s
-max ROS = 0.453486
-dt = 3.96925 s
-[QES-Fire] Pot	 Elapsed time: 1.07427 s
+		 elapsed time: 0.0011215 s
+max ROS = 0.272745
+dt = 6 s
+[QES-Fire] Pot	 Elapsed time: 0.546774 s
 [QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022036 s
+		 elapsed time: 0.000219729 s
 [Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.001985550
-		 Elapsed time: 0.133754 s
-[QES-Fire] LS	 Elapsed time: 0.00974636 s
-max ROS = 0.458829
-dt = 3.92303 s
-[QES-Fire] Advance	 Elapsed time: 7.26e-05 s
-time = 2020-01-01T00:02:28.071000
+[Solver] Residual after 500 itertations: 0.002359390
+		 Elapsed time: 0.128459 s
+max ROS = 0.363099
+dt = 4.95732 s
+time = 2020-01-01T00:00:28.957000
 [QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111357 s
-[QES-Fire] LS	 Elapsed time: 0.00973228 s
-max ROS = 0.458829
-dt = 3.92303 s
-[QES-Fire] Pot	 Elapsed time: 1.06967 s
+		 elapsed time: 0.00112567 s
+max ROS = 0.363099
+dt = 4.95732 s
+[QES-Fire] Pot	 Elapsed time: 0.545866 s
 [QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022595 s
+		 elapsed time: 0.00022019 s
 [Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.001980782
-		 Elapsed time: 0.13941 s
-[QES-Fire] LS	 Elapsed time: 0.0098388 s
-max ROS = 0.458922
-dt = 3.92223 s
-[QES-Fire] Advance	 Elapsed time: 7.397e-05 s
-time = 2020-01-01T00:02:31.993000
+[Solver] Residual after 500 itertations: 0.002355576
+		 Elapsed time: 0.129545 s
+max ROS = 0.362687
+dt = 4.96296 s
+time = 2020-01-01T00:00:33.920000
 [QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111286 s
-[QES-Fire] LS	 Elapsed time: 0.00970275 s
-max ROS = 0.458922
-dt = 3.92223 s
-[QES-Fire] Pot	 Elapsed time: 1.07408 s
+		 elapsed time: 0.00112384 s
+max ROS = 0.362687
+dt = 4.96296 s
+[QES-Fire] Pot	 Elapsed time: 0.545944 s
 [QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022206 s
+		 elapsed time: 0.00022018 s
 [Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.001981735
-		 Elapsed time: 0.133751 s
-[QES-Fire] LS	 Elapsed time: 0.00978023 s
-max ROS = 0.458958
-dt = 3.92193 s
-[QES-Fire] Advance	 Elapsed time: 7.284e-05 s
-time = 2020-01-01T00:02:35.915000
+[Solver] Residual after 500 itertations: 0.002349377
+		 Elapsed time: 0.129529 s
+max ROS = 0.362521
+dt = 4.96523 s
+time = 2020-01-01T00:00:38.885000
 [QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111406 s
-[QES-Fire] LS	 Elapsed time: 0.00970912 s
-max ROS = 0.458958
-dt = 3.92193 s
-[QES-Fire] Pot	 Elapsed time: 1.07144 s
+		 elapsed time: 0.00112344 s
+max ROS = 0.362521
+dt = 4.96523 s
+[QES-Fire] Pot	 Elapsed time: 0.62998 s
 [QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022579 s
+		 elapsed time: 0.00022099 s
 [Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.001979828
-		 Elapsed time: 0.133803 s
-[QES-Fire] LS	 Elapsed time: 0.00976002 s
-max ROS = 0.458917
-dt = 3.92227 s
-[QES-Fire] Advance	 Elapsed time: 7.342e-05 s
-time = 2020-01-01T00:02:39.837000
+[Solver] Residual after 500 itertations: 0.002360344
+		 Elapsed time: 0.128952 s
+max ROS = 0.3963
+dt = 4.54201 s
+time = 2020-01-01T00:00:43.427000
 [QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111049 s
-[QES-Fire] LS	 Elapsed time: 0.00971615 s
-max ROS = 0.458917
-dt = 3.92227 s
-[QES-Fire] Pot	 Elapsed time: 1.0723 s
+		 elapsed time: 0.00112688 s
+max ROS = 0.3963
+dt = 4.54201 s
+[QES-Fire] Pot	 Elapsed time: 0.629985 s
 [QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.000224209 s
+		 elapsed time: 0.00022609 s
 [Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.001890182
-		 Elapsed time: 0.133655 s
-[QES-Fire] LS	 Elapsed time: 0.00975634 s
-max ROS = 0.465089
-dt = 3.87022 s
-[QES-Fire] Advance	 Elapsed time: 7.336e-05 s
-time = 2020-01-01T00:02:43.707000
+[Solver] Residual after 500 itertations: 0.002360344
+		 Elapsed time: 0.128747 s
+max ROS = 0.396691
+dt = 4.53754 s
+time = 2020-01-01T00:00:47.965000
 [QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00112407 s
-[QES-Fire] LS	 Elapsed time: 0.00971747 s
-max ROS = 0.465089
-dt = 3.87022 s
-[QES-Fire] Pot	 Elapsed time: 1.07238 s
+		 elapsed time: 0.00112436 s
+max ROS = 0.396691
+dt = 4.53754 s
+[QES-Fire] Pot	 Elapsed time: 0.674571 s
 [QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022029 s
+		 elapsed time: 0.00022067 s
 [Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.001900673
-		 Elapsed time: 0.133596 s
-[QES-Fire] LS	 Elapsed time: 0.00977116 s
-max ROS = 0.464965
-dt = 3.87126 s
-[QES-Fire] Advance	 Elapsed time: 7.359e-05 s
-time = 2020-01-01T00:02:47.578000
+[Solver] Residual after 500 itertations: 0.002395630
+		 Elapsed time: 0.12851 s
+max ROS = 0.405973
+dt = 4.43379 s
+time = 2020-01-01T00:00:52.399000
 [QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.0011182 s
-[QES-Fire] LS	 Elapsed time: 0.00966393 s
-max ROS = 0.464965
-dt = 3.87126 s
-[QES-Fire] Pot	 Elapsed time: 1.07556 s
+		 elapsed time: 0.00112051 s
+max ROS = 0.405973
+dt = 4.43379 s
+[QES-Fire] Pot	 Elapsed time: 0.675156 s
 [QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022161 s
+		 elapsed time: 0.000221799 s
 [Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.001900673
-		 Elapsed time: 0.135192 s
-[QES-Fire] LS	 Elapsed time: 0.00976693 s
-max ROS = 0.464982
-dt = 3.87112 s
-[QES-Fire] Advance	 Elapsed time: 7.362e-05 s
-time = 2020-01-01T00:02:51.449000
+[Solver] Residual after 500 itertations: 0.002395630
+		 Elapsed time: 0.131512 s
+max ROS = 0.406188
+dt = 4.43145 s
+time = 2020-01-01T00:00:56.830000
 [QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111297 s
-[QES-Fire] LS	 Elapsed time: 0.00965832 s
-max ROS = 0.464982
-dt = 3.87112 s
-[QES-Fire] Pot	 Elapsed time: 1.15296 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022158 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.001750946
-		 Elapsed time: 0.13344 s
-[QES-Fire] LS	 Elapsed time: 0.0096101 s
-max ROS = 0.469734
-dt = 3.83195 s
-[QES-Fire] Advance	 Elapsed time: 7.278e-05 s
-time = 2020-01-01T00:02:55.281000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00112396 s
-[QES-Fire] LS	 Elapsed time: 0.00959688 s
-max ROS = 0.469734
-dt = 3.83195 s
-[QES-Fire] Pot	 Elapsed time: 1.15834 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.000224599 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.001776695
-		 Elapsed time: 0.134038 s
-[QES-Fire] LS	 Elapsed time: 0.00959368 s
-max ROS = 0.47302
-dt = 3.80534 s
-[QES-Fire] Advance	 Elapsed time: 7.283e-05 s
-time = 2020-01-01T00:02:59.086000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111204 s
-[QES-Fire] LS	 Elapsed time: 0.00955711 s
-max ROS = 0.47302
-dt = 3.80534 s
-[QES-Fire] Pot	 Elapsed time: 1.15923 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.000221069 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.001781464
-		 Elapsed time: 0.133835 s
-[QES-Fire] LS	 Elapsed time: 0.00961277 s
-max ROS = 0.473199
-dt = 3.8039 s
-[QES-Fire] Advance	 Elapsed time: 7.369e-05 s
-time = 2020-01-01T00:03:02.890000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00112276 s
-[QES-Fire] LS	 Elapsed time: 0.00955723 s
-max ROS = 0.473199
-dt = 3.8039 s
-[QES-Fire] Pot	 Elapsed time: 1.16365 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022126 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.001929641
-		 Elapsed time: 0.133563 s
-[QES-Fire] LS	 Elapsed time: 0.0096022 s
-max ROS = 0.476059
-dt = 3.78104 s
-[QES-Fire] Advance	 Elapsed time: 7.498e-05 s
-time = 2020-01-01T00:03:06.671000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00112029 s
-[QES-Fire] LS	 Elapsed time: 0.00951382 s
-max ROS = 0.476059
-dt = 3.78104 s
-[QES-Fire] Pot	 Elapsed time: 1.2579 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022374 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002094507
-		 Elapsed time: 0.13367 s
-[QES-Fire] LS	 Elapsed time: 0.00951657 s
-max ROS = 0.478379
-dt = 3.76271 s
-[QES-Fire] Advance	 Elapsed time: 7.383e-05 s
-time = 2020-01-01T00:03:10.434000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111349 s
-[QES-Fire] LS	 Elapsed time: 0.00947999 s
-max ROS = 0.478379
-dt = 3.76271 s
-[QES-Fire] Pot	 Elapsed time: 1.25843 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.0002218 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002099037
-		 Elapsed time: 0.134888 s
-[QES-Fire] LS	 Elapsed time: 0.00953654 s
-max ROS = 0.478349
-dt = 3.76294 s
-[QES-Fire] Advance	 Elapsed time: 7.446e-05 s
-time = 2020-01-01T00:03:14.197000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111962 s
-[QES-Fire] LS	 Elapsed time: 0.0094526 s
-max ROS = 0.478349
-dt = 3.76294 s
-[QES-Fire] Pot	 Elapsed time: 1.2576 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022535 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002098680
-		 Elapsed time: 0.138691 s
-[QES-Fire] LS	 Elapsed time: 0.0095561 s
-max ROS = 0.478322
-dt = 3.76315 s
-[QES-Fire] Advance	 Elapsed time: 7.437e-05 s
-time = 2020-01-01T00:03:17.960000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00112131 s
-[QES-Fire] LS	 Elapsed time: 0.00947074 s
-max ROS = 0.478322
-dt = 3.76315 s
-[QES-Fire] Pot	 Elapsed time: 1.3554 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022444 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002292871
-		 Elapsed time: 0.135961 s
-[QES-Fire] LS	 Elapsed time: 0.00939879 s
-max ROS = 0.479773
-dt = 3.75177 s
-[QES-Fire] Advance	 Elapsed time: 7.404e-05 s
-time = 2020-01-01T00:03:21.712000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111513 s
-[QES-Fire] LS	 Elapsed time: 0.00939211 s
-max ROS = 0.479773
-dt = 3.75177 s
-[QES-Fire] Pot	 Elapsed time: 1.35207 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022164 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002291918
-		 Elapsed time: 0.13413 s
-[QES-Fire] LS	 Elapsed time: 0.00940256 s
-max ROS = 0.479795
-dt = 3.7516 s
-[QES-Fire] Advance	 Elapsed time: 7.379e-05 s
-time = 2020-01-01T00:03:25.464000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111992 s
-[QES-Fire] LS	 Elapsed time: 0.00943135 s
-max ROS = 0.479795
-dt = 3.7516 s
-[QES-Fire] Pot	 Elapsed time: 1.35808 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022585 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002415657
-		 Elapsed time: 0.136625 s
-[QES-Fire] LS	 Elapsed time: 0.00935219 s
-max ROS = 0.48351
-dt = 3.72278 s
-[QES-Fire] Advance	 Elapsed time: 7.287e-05 s
-time = 2020-01-01T00:03:29.187000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111433 s
-[QES-Fire] LS	 Elapsed time: 0.00934384 s
-max ROS = 0.48351
-dt = 3.72278 s
-[QES-Fire] Pot	 Elapsed time: 1.3669 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022417 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002644777
-		 Elapsed time: 0.13723 s
-[QES-Fire] LS	 Elapsed time: 0.00936144 s
-max ROS = 0.486097
-dt = 3.70296 s
-[QES-Fire] Advance	 Elapsed time: 7.339e-05 s
-time = 2020-01-01T00:03:32.890000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111534 s
-[QES-Fire] LS	 Elapsed time: 0.00928386 s
-max ROS = 0.486097
-dt = 3.70296 s
-[QES-Fire] Pot	 Elapsed time: 1.36527 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022451 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002646446
-		 Elapsed time: 0.134018 s
-[QES-Fire] LS	 Elapsed time: 0.00932197 s
-max ROS = 0.486208
-dt = 3.70212 s
-[QES-Fire] Advance	 Elapsed time: 7.3489e-05 s
-time = 2020-01-01T00:03:36.592000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.001113 s
-[QES-Fire] LS	 Elapsed time: 0.00930966 s
-max ROS = 0.486208
-dt = 3.70212 s
-[QES-Fire] Pot	 Elapsed time: 1.37325 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.000220899 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002851725
-		 Elapsed time: 0.136477 s
-[QES-Fire] LS	 Elapsed time: 0.00928763 s
-max ROS = 0.489308
-dt = 3.67866 s
-[QES-Fire] Advance	 Elapsed time: 7.415e-05 s
-time = 2020-01-01T00:03:40.271000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111971 s
-[QES-Fire] LS	 Elapsed time: 0.00921411 s
-max ROS = 0.489308
-dt = 3.67866 s
-[QES-Fire] Pot	 Elapsed time: 1.3792 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022114 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.002928138
-		 Elapsed time: 0.135502 s
-[QES-Fire] LS	 Elapsed time: 0.00925537 s
-max ROS = 0.496272
-dt = 3.62704 s
-[QES-Fire] Advance	 Elapsed time: 7.415e-05 s
-time = 2020-01-01T00:03:43.898000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111306 s
-[QES-Fire] LS	 Elapsed time: 0.00919554 s
-max ROS = 0.496272
-dt = 3.62704 s
-[QES-Fire] Pot	 Elapsed time: 1.41691 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.000224509 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.003129482
-		 Elapsed time: 0.137159 s
-[QES-Fire] LS	 Elapsed time: 0.00922558 s
-max ROS = 0.499921
-dt = 3.60057 s
-[QES-Fire] Advance	 Elapsed time: 7.4349e-05 s
-time = 2020-01-01T00:03:47.499000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111986 s
-[QES-Fire] LS	 Elapsed time: 0.0091915 s
-max ROS = 0.499921
-dt = 3.60057 s
-[QES-Fire] Pot	 Elapsed time: 1.41621 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022316 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.003134489
-		 Elapsed time: 0.136101 s
-[QES-Fire] LS	 Elapsed time: 0.00920005 s
-max ROS = 0.500226
-dt = 3.59837 s
-[QES-Fire] Advance	 Elapsed time: 7.385e-05 s
-time = 2020-01-01T00:03:51.097000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111341 s
-[QES-Fire] LS	 Elapsed time: 0.00917009 s
-max ROS = 0.500226
-dt = 3.59837 s
-[QES-Fire] Pot	 Elapsed time: 1.42362 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022105 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.003205776
-		 Elapsed time: 0.134395 s
-[QES-Fire] LS	 Elapsed time: 0.00914374 s
-max ROS = 0.503096
-dt = 3.57785 s
-[QES-Fire] Advance	 Elapsed time: 7.428e-05 s
-time = 2020-01-01T00:03:54.675000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111552 s
-[QES-Fire] LS	 Elapsed time: 0.0091395 s
-max ROS = 0.503096
-dt = 3.57785 s
-[QES-Fire] Pot	 Elapsed time: 1.43255 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022441 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.003615141
-		 Elapsed time: 0.135647 s
-[QES-Fire] LS	 Elapsed time: 0.00912431 s
-max ROS = 0.508337
-dt = 3.54096 s
-[QES-Fire] Advance	 Elapsed time: 7.275e-05 s
-time = 2020-01-01T00:03:58.216000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111474 s
-[QES-Fire] LS	 Elapsed time: 0.00904692 s
-max ROS = 0.508337
-dt = 3.54096 s
-[QES-Fire] Pot	 Elapsed time: 1.4324 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022126 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.003608704
-		 Elapsed time: 0.13575 s
-[QES-Fire] LS	 Elapsed time: 0.00992639 s
-max ROS = 0.508427
-dt = 3.54033 s
-[QES-Fire] Advance	 Elapsed time: 7.39e-05 s
-time = 2020-01-01T00:04:01.756000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00112186 s
-[QES-Fire] LS	 Elapsed time: 0.0090213 s
-max ROS = 0.508427
-dt = 3.54033 s
-[QES-Fire] Pot	 Elapsed time: 1.47225 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022665 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.003746986
-		 Elapsed time: 0.137191 s
-[QES-Fire] LS	 Elapsed time: 0.00907218 s
-max ROS = 0.511039
-dt = 3.52223 s
-[QES-Fire] Advance	 Elapsed time: 7.293e-05 s
-time = 2020-01-01T00:04:05.278000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111662 s
-[QES-Fire] LS	 Elapsed time: 0.00899142 s
-max ROS = 0.511039
-dt = 3.52223 s
-[QES-Fire] Pot	 Elapsed time: 1.47106 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022092 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.003750324
-		 Elapsed time: 0.136979 s
-[QES-Fire] LS	 Elapsed time: 0.00958143 s
-max ROS = 0.511038
-dt = 3.52224 s
-[QES-Fire] Advance	 Elapsed time: 7.294e-05 s
-time = 2020-01-01T00:04:08.800000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.0011138 s
-[QES-Fire] LS	 Elapsed time: 0.00898076 s
-max ROS = 0.511038
-dt = 3.52224 s
-[QES-Fire] Pot	 Elapsed time: 1.62054 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.000221369 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.003874660
-		 Elapsed time: 0.137212 s
-[QES-Fire] LS	 Elapsed time: 0.00902905 s
-max ROS = 0.512357
-dt = 3.51317 s
-[QES-Fire] Advance	 Elapsed time: 7.442e-05 s
-time = 2020-01-01T00:04:12.313000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111842 s
-[QES-Fire] LS	 Elapsed time: 0.00893312 s
-max ROS = 0.512357
-dt = 3.51317 s
-[QES-Fire] Pot	 Elapsed time: 1.63027 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.000241899 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.003993034
-		 Elapsed time: 0.134136 s
-[QES-Fire] LS	 Elapsed time: 0.00890285 s
-max ROS = 0.512879
-dt = 3.5096 s
-[QES-Fire] Advance	 Elapsed time: 7.301e-05 s
-time = 2020-01-01T00:04:15.823000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.0011114 s
-[QES-Fire] LS	 Elapsed time: 0.00886851 s
-max ROS = 0.512879
-dt = 3.5096 s
-[QES-Fire] Pot	 Elapsed time: 1.73122 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.000223499 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.004345536
-		 Elapsed time: 0.135172 s
-[QES-Fire] LS	 Elapsed time: 0.00889773 s
-max ROS = 0.514141
-dt = 3.50099 s
-[QES-Fire] Advance	 Elapsed time: 7.398e-05 s
-time = 2020-01-01T00:04:19.324000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111367 s
-[QES-Fire] LS	 Elapsed time: 0.00881608 s
-max ROS = 0.514141
-dt = 3.50099 s
-[QES-Fire] Pot	 Elapsed time: 1.88762 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022204 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.004392385
-		 Elapsed time: 0.135433 s
-[QES-Fire] LS	 Elapsed time: 0.00880002 s
-max ROS = 0.509619
-dt = 3.53205 s
-[QES-Fire] Advance	 Elapsed time: 7.408e-05 s
-time = 2020-01-01T00:04:22.856000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111379 s
-[QES-Fire] LS	 Elapsed time: 0.00872267 s
-max ROS = 0.509619
-dt = 3.53205 s
-[QES-Fire] Pot	 Elapsed time: 2.1066 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.000221489 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.005381823
-		 Elapsed time: 0.137356 s
-[QES-Fire] LS	 Elapsed time: 0.00866584 s
-max ROS = 0.424324
-dt = 4.24204 s
-[QES-Fire] Advance	 Elapsed time: 7.71e-05 s
-time = 2020-01-01T00:04:27.098000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111226 s
-[QES-Fire] LS	 Elapsed time: 0.00860799 s
-max ROS = 0.424324
-dt = 4.24204 s
-[QES-Fire] Pot	 Elapsed time: 2.10502 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.0002217 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.005399227
-		 Elapsed time: 0.135818 s
-[QES-Fire] LS	 Elapsed time: 0.00865868 s
-max ROS = 0.423384
-dt = 4.25146 s
-[QES-Fire] Advance	 Elapsed time: 7.4449e-05 s
-time = 2020-01-01T00:04:31.349000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00113033 s
-[QES-Fire] LS	 Elapsed time: 0.00864534 s
-max ROS = 0.423384
-dt = 4.25146 s
-[QES-Fire] Pot	 Elapsed time: 2.10121 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.000228409 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.005399942
-		 Elapsed time: 0.136716 s
-[QES-Fire] LS	 Elapsed time: 0.00865644 s
-max ROS = 0.423392
-dt = 4.25138 s
-[QES-Fire] Advance	 Elapsed time: 7.295e-05 s
-time = 2020-01-01T00:04:35.600000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111498 s
-[QES-Fire] LS	 Elapsed time: 0.00855787 s
-max ROS = 0.423392
-dt = 4.25138 s
-[QES-Fire] Pot	 Elapsed time: 2.09827 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022338 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.005400181
-		 Elapsed time: 0.136979 s
-[QES-Fire] LS	 Elapsed time: 0.00859549 s
-max ROS = 0.423399
-dt = 4.25131 s
-[QES-Fire] Advance	 Elapsed time: 7.467e-05 s
-time = 2020-01-01T00:04:39.851000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111713 s
-[QES-Fire] LS	 Elapsed time: 0.00853924 s
-max ROS = 0.423399
-dt = 4.25131 s
-[QES-Fire] Pot	 Elapsed time: 2.29624 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022106 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.005901337
-		 Elapsed time: 0.133696 s
-[QES-Fire] LS	 Elapsed time: 0.00847089 s
-max ROS = 0.428898
-dt = 4.1968 s
-[QES-Fire] Advance	 Elapsed time: 7.348e-05 s
-time = 2020-01-01T00:04:44.048000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111814 s
-[QES-Fire] LS	 Elapsed time: 0.00842698 s
-max ROS = 0.428898
-dt = 4.1968 s
-[QES-Fire] Pot	 Elapsed time: 2.31349 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022132 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.006034970
-		 Elapsed time: 0.13397 s
-[QES-Fire] LS	 Elapsed time: 0.00850167 s
-max ROS = 0.430923
-dt = 4.17708 s
-[QES-Fire] Advance	 Elapsed time: 7.314e-05 s
-time = 2020-01-01T00:04:48.225000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111734 s
-[QES-Fire] LS	 Elapsed time: 0.00840243 s
-max ROS = 0.430923
-dt = 4.17708 s
-[QES-Fire] Pot	 Elapsed time: 2.34279 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022136 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.006189585
-		 Elapsed time: 0.134541 s
-[QES-Fire] LS	 Elapsed time: 0.00837844 s
-max ROS = 0.434201
-dt = 4.14555 s
-[QES-Fire] Advance	 Elapsed time: 7.338e-05 s
-time = 2020-01-01T00:04:52.371000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111604 s
-[QES-Fire] LS	 Elapsed time: 0.00838192 s
-max ROS = 0.434201
-dt = 4.14555 s
-[QES-Fire] Pot	 Elapsed time: 2.35383 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022141 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.006476164
-		 Elapsed time: 0.135336 s
-[QES-Fire] LS	 Elapsed time: 0.00842813 s
-max ROS = 0.440965
-dt = 4.08195 s
-[QES-Fire] Advance	 Elapsed time: 7.296e-05 s
-time = 2020-01-01T00:04:56.453000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111024 s
-[QES-Fire] LS	 Elapsed time: 0.00829471 s
-max ROS = 0.440965
-dt = 4.08195 s
-[QES-Fire] Pot	 Elapsed time: 2.35986 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022125 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.006710529
-		 Elapsed time: 0.136056 s
-[QES-Fire] LS	 Elapsed time: 0.00839876 s
-max ROS = 0.443304
-dt = 4.06042 s
-[QES-Fire] Advance	 Elapsed time: 7.4259e-05 s
-time = 2020-01-01T00:05:00.513000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111214 s
-[QES-Fire] LS	 Elapsed time: 0.00828364 s
-max ROS = 0.443304
-dt = 4.06042 s
-[QES-Fire] Pot	 Elapsed time: 2.36597 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.0002234 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.006962776
-		 Elapsed time: 0.136427 s
-[QES-Fire] LS	 Elapsed time: 0.00829501 s
-max ROS = 0.445526
-dt = 4.04017 s
-[QES-Fire] Advance	 Elapsed time: 7.319e-05 s
-time = 2020-01-01T00:05:04.553000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111615 s
-[QES-Fire] LS	 Elapsed time: 0.00827277 s
-max ROS = 0.445526
-dt = 4.04017 s
-[QES-Fire] Pot	 Elapsed time: 2.37363 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022159 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.007128164
-		 Elapsed time: 0.136407 s
-[QES-Fire] LS	 Elapsed time: 0.00832836 s
-max ROS = 0.447653
-dt = 4.02097 s
-[QES-Fire] Advance	 Elapsed time: 7.388e-05 s
-time = 2020-01-01T00:05:08.574000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111472 s
-[QES-Fire] LS	 Elapsed time: 0.00822056 s
-max ROS = 0.447653
-dt = 4.02097 s
-[QES-Fire] Pot	 Elapsed time: 2.38028 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.0002211 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.007129088
-		 Elapsed time: 0.135773 s
-[QES-Fire] LS	 Elapsed time: 0.00829055 s
-max ROS = 0.44766
-dt = 4.02091 s
-[QES-Fire] Advance	 Elapsed time: 7.391e-05 s
-time = 2020-01-01T00:05:12.595000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00110951 s
-[QES-Fire] LS	 Elapsed time: 0.00820615 s
-max ROS = 0.44766
-dt = 4.02091 s
-[QES-Fire] Pot	 Elapsed time: 2.46805 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.000222259 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.007336706
-		 Elapsed time: 0.136121 s
-[QES-Fire] LS	 Elapsed time: 0.00819388 s
-max ROS = 0.449489
-dt = 4.00455 s
-[QES-Fire] Advance	 Elapsed time: 7.406e-05 s
-time = 2020-01-01T00:05:16.600000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111463 s
-[QES-Fire] LS	 Elapsed time: 0.00815431 s
-max ROS = 0.449489
-dt = 4.00455 s
-[QES-Fire] Pot	 Elapsed time: 2.51418 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.0002239 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.007573287
-		 Elapsed time: 0.135205 s
-[QES-Fire] LS	 Elapsed time: 0.00822374 s
-max ROS = 0.561677
-dt = 3.20469 s
-[QES-Fire] Advance	 Elapsed time: 7.354e-05 s
-time = 2020-01-01T00:05:19.805000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00112106 s
-[QES-Fire] LS	 Elapsed time: 0.00813807 s
-max ROS = 0.451482
-dt = 3.98687 s
-[QES-Fire] Pot	 Elapsed time: 2.51217 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.000224429 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.007573565
-		 Elapsed time: 0.133766 s
-[QES-Fire] LS	 Elapsed time: 0.00824261 s
-max ROS = 0.451463
-dt = 3.98704 s
-[QES-Fire] Advance	 Elapsed time: 7.4469e-05 s
-time = 2020-01-01T00:05:23.792000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111359 s
-[QES-Fire] LS	 Elapsed time: 0.00809707 s
-max ROS = 0.360669
-dt = 4.99072 s
-[QES-Fire] Pot	 Elapsed time: 2.4818 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022126 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.007471085
-		 Elapsed time: 0.134339 s
-[QES-Fire] LS	 Elapsed time: 0.00823584 s
-max ROS = 0.472299
-dt = 3.81115 s
-[QES-Fire] Advance	 Elapsed time: 7.374e-05 s
-time = 2020-01-01T00:05:27.603000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111119 s
-[QES-Fire] LS	 Elapsed time: 0.00814164 s
-max ROS = 0.472299
-dt = 3.81115 s
-[QES-Fire] Pot	 Elapsed time: 2.47882 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022497 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.007491231
-		 Elapsed time: 0.134128 s
-[QES-Fire] LS	 Elapsed time: 0.00822627 s
-max ROS = 0.473497
-dt = 3.8015 s
-[QES-Fire] Advance	 Elapsed time: 7.58e-05 s
-time = 2020-01-01T00:05:31.405000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111252 s
-[QES-Fire] LS	 Elapsed time: 0.00813276 s
-max ROS = 0.473497
-dt = 3.8015 s
-[QES-Fire] Pot	 Elapsed time: 2.547 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022062 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.008339882
-		 Elapsed time: 0.135701 s
-[QES-Fire] LS	 Elapsed time: 0.00814804 s
-max ROS = 0.488022
-dt = 3.68836 s
-[QES-Fire] Advance	 Elapsed time: 7.352e-05 s
-time = 2020-01-01T00:05:35.093000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00112066 s
-[QES-Fire] LS	 Elapsed time: 0.00809214 s
-max ROS = 0.488022
-dt = 3.68836 s
-[QES-Fire] Pot	 Elapsed time: 2.54852 s
-[QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.000221369 s
-[Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.008332074
-		 Elapsed time: 0.135471 s
-[QES-Fire] LS	 Elapsed time: 0.00813075 s
-max ROS = 0.488393
-dt = 3.68556 s
-[QES-Fire] Advance	 Elapsed time: 7.45e-05 s
-time = 2020-01-01T00:05:38.779000
-[QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111235 s
-[QES-Fire] LS	 Elapsed time: 0.00804109 s
-max ROS = 0.488393
-dt = 3.68556 s
-[QES-Fire] Pot	 Elapsed time: 2.54767 s
+		 elapsed time: 0.00112428 s
+max ROS = 0.406188
+dt = 4.43145 s
+[QES-Fire] Pot	 Elapsed time: 0.675782 s
 [QES-WINDS]	 Applying parameterizations...
 		 elapsed time: 0.000224959 s
 [Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.008331299
-		 Elapsed time: 0.133411 s
-[QES-Fire] LS	 Elapsed time: 0.00804028 s
-max ROS = 0.48844
-dt = 3.6852 s
-[QES-Fire] Advance	 Elapsed time: 7.301e-05 s
-time = 2020-01-01T00:05:42.464000
+[Solver] Residual after 500 itertations: 0.002394199
+		 Elapsed time: 0.129193 s
+max ROS = 0.406037
+dt = 4.43309 s
+time = 2020-01-01T00:01:01.263000
 [QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00112547 s
-[QES-Fire] LS	 Elapsed time: 0.0080678 s
-max ROS = 0.48844
-dt = 3.6852 s
-[QES-Fire] Pot	 Elapsed time: 2.54786 s
+		 elapsed time: 0.00112427 s
+max ROS = 0.406037
+dt = 4.43309 s
+[QES-Fire] Pot	 Elapsed time: 0.675769 s
 [QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022487 s
+		 elapsed time: 0.00022117 s
 [Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.008331656
-		 Elapsed time: 0.13626 s
-[QES-Fire] LS	 Elapsed time: 0.00827086 s
-max ROS = 0.488462
-dt = 3.68503 s
-[QES-Fire] Advance	 Elapsed time: 7.499e-05 s
-time = 2020-01-01T00:05:46.149000
+[Solver] Residual after 500 itertations: 0.002394676
+		 Elapsed time: 0.128868 s
+max ROS = 0.405648
+dt = 4.43735 s
+time = 2020-01-01T00:01:05.700000
 [QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111455 s
-[QES-Fire] LS	 Elapsed time: 0.00801227 s
-max ROS = 0.488462
-dt = 3.68503 s
-[QES-Fire] Pot	 Elapsed time: 2.59184 s
+		 elapsed time: 0.00111543 s
+max ROS = 0.405648
+dt = 4.43735 s
+[QES-Fire] Pot	 Elapsed time: 0.673981 s
 [QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022101 s
+		 elapsed time: 0.00022017 s
 [Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.008647621
-		 Elapsed time: 0.133966 s
-[QES-Fire] LS	 Elapsed time: 0.00798221 s
-max ROS = 0.492135
-dt = 3.65753 s
-[QES-Fire] Advance	 Elapsed time: 7.418e-05 s
-time = 2020-01-01T00:05:49.807000
+[Solver] Residual after 500 itertations: 0.002395153
+		 Elapsed time: 0.128801 s
+max ROS = 0.405579
+dt = 4.4381 s
+time = 2020-01-01T00:01:10.138000
 [QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00112097 s
-[QES-Fire] LS	 Elapsed time: 0.00795239 s
-max ROS = 0.376511
-dt = 4.78074 s
-[QES-Fire] Pot	 Elapsed time: 2.6259 s
+		 elapsed time: 0.00112406 s
+max ROS = 0.405579
+dt = 4.4381 s
+[QES-Fire] Pot	 Elapsed time: 0.687834 s
 [QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022965 s
+		 elapsed time: 0.000220419 s
 [Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.008635178
-		 Elapsed time: 0.134414 s
-[QES-Fire] LS	 Elapsed time: 0.00804798 s
-max ROS = 0.480148
-dt = 3.74884 s
-[QES-Fire] Advance	 Elapsed time: 7.394e-05 s
-time = 2020-01-01T00:05:53.556000
+[Solver] Residual after 500 itertations: 0.002350807
+		 Elapsed time: 0.128858 s
+max ROS = 0.423231
+dt = 4.253 s
+time = 2020-01-01T00:01:14.391000
 [QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111431 s
-[QES-Fire] LS	 Elapsed time: 0.00798806 s
-max ROS = 0.480148
-dt = 3.74884 s
-[QES-Fire] Pot	 Elapsed time: 2.62575 s
+		 elapsed time: 0.0011194 s
+max ROS = 0.423231
+dt = 4.253 s
+[QES-Fire] Pot	 Elapsed time: 0.694401 s
 [QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.00022127 s
+		 elapsed time: 0.000220219 s
 [Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.008665100
-		 Elapsed time: 0.133594 s
-[QES-Fire] LS	 Elapsed time: 0.00797922 s
-max ROS = 0.480495
-dt = 3.74614 s
-[QES-Fire] Advance	 Elapsed time: 7.377e-05 s
-time = 2020-01-01T00:05:57.302000
+[Solver] Residual after 500 itertations: 0.002307892
+		 Elapsed time: 0.129656 s
+max ROS = 0.428948
+dt = 4.19631 s
+time = 2020-01-01T00:01:18.587000
 [QES-WINDS]	 Applying Wind Profile...
-		 elapsed time: 0.00111412 s
-[QES-Fire] LS	 Elapsed time: 0.00797223 s
-max ROS = 0.480495
-dt = 3.74614 s
-[QES-Fire] Pot	 Elapsed time: 2.63097 s
+		 elapsed time: 0.00112471 s
+max ROS = 0.428948
+dt = 4.19631 s
+[QES-Fire] Pot	 Elapsed time: 0.694421 s
 [QES-WINDS]	 Applying parameterizations...
-		 elapsed time: 0.000222009 s
+		 elapsed time: 0.000221119 s
 [Solver] Running Global Memory Solver (GPU) ...
-[Solver] Residual after 500 itertations: 0.008778423
-		 Elapsed time: 0.136705 s
-[QES-Fire] LS	 Elapsed time: 0.0080629 s
-max ROS = 0.488376
-dt = 3.68568 s
-[QES-Fire] Advance	 Elapsed time: 7.478e-05 s
-time = 2020-01-01T00:06:00.988000
+[Solver] Residual after 500 itertations: 0.002308369
+		 Elapsed time: 0.129635 s
+max ROS = 0.428886
+dt = 4.19692 s
+time = 2020-01-01T00:01:22.784000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.0011237 s
+max ROS = 0.428886
+dt = 4.19692 s
+[QES-Fire] Pot	 Elapsed time: 0.696187 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022173 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.002305984
+		 Elapsed time: 0.130234 s
+max ROS = 0.428645
+dt = 4.19928 s
+time = 2020-01-01T00:01:26.983000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112607 s
+max ROS = 0.428645
+dt = 4.19928 s
+[QES-Fire] Pot	 Elapsed time: 0.694357 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022619 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.002307415
+		 Elapsed time: 0.129148 s
+max ROS = 0.428368
+dt = 4.20199 s
+time = 2020-01-01T00:01:31.185000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.0011132 s
+max ROS = 0.428368
+dt = 4.20199 s
+[QES-Fire] Pot	 Elapsed time: 0.694951 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000224839 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.002307415
+		 Elapsed time: 0.13204 s
+max ROS = 0.428374
+dt = 4.20193 s
+time = 2020-01-01T00:01:35.387000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00111658 s
+max ROS = 0.428374
+dt = 4.20193 s
+[QES-Fire] Pot	 Elapsed time: 0.791349 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000220329 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.002201080
+		 Elapsed time: 0.129143 s
+max ROS = 0.431506
+dt = 4.17144 s
+time = 2020-01-01T00:01:39.558000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112845 s
+max ROS = 0.431506
+dt = 4.17144 s
+[QES-Fire] Pot	 Elapsed time: 0.798855 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022543 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.002079010
+		 Elapsed time: 0.130468 s
+max ROS = 0.436249
+dt = 4.12608 s
+time = 2020-01-01T00:01:43.684000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112192 s
+max ROS = 0.436249
+dt = 4.12608 s
+[QES-Fire] Pot	 Elapsed time: 0.797081 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000221389 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.002079010
+		 Elapsed time: 0.128442 s
+max ROS = 0.436377
+dt = 4.12487 s
+time = 2020-01-01T00:01:47.809000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.0011199 s
+max ROS = 0.436377
+dt = 4.12487 s
+[QES-Fire] Pot	 Elapsed time: 0.806432 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022558 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.001928329
+		 Elapsed time: 0.128293 s
+max ROS = 0.442751
+dt = 4.06549 s
+time = 2020-01-01T00:01:51.874000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00111677 s
+max ROS = 0.442751
+dt = 4.06549 s
+[QES-Fire] Pot	 Elapsed time: 0.807017 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000226239 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.001926422
+		 Elapsed time: 0.128928 s
+max ROS = 0.442903
+dt = 4.0641 s
+time = 2020-01-01T00:01:55.938000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112329 s
+max ROS = 0.442903
+dt = 4.0641 s
+[QES-Fire] Pot	 Elapsed time: 0.846925 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022099 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.001858711
+		 Elapsed time: 0.128337 s
+max ROS = 0.4457
+dt = 4.03859 s
+time = 2020-01-01T00:01:59.977000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00111519 s
+max ROS = 0.4457
+dt = 4.03859 s
+[QES-Fire] Pot	 Elapsed time: 0.845743 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022663 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.001857758
+		 Elapsed time: 0.132766 s
+max ROS = 0.445725
+dt = 4.03837 s
+time = 2020-01-01T00:02:04.015000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112953 s
+max ROS = 0.445725
+dt = 4.03837 s
+[QES-Fire] Pot	 Elapsed time: 0.844657 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000220949 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.001858711
+		 Elapsed time: 0.128945 s
+max ROS = 0.445673
+dt = 4.03883 s
+time = 2020-01-01T00:02:08.054000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.0012629 s
+max ROS = 0.445673
+dt = 4.03883 s
+[QES-Fire] Pot	 Elapsed time: 0.848092 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022084 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.001858711
+		 Elapsed time: 0.129304 s
+max ROS = 0.445661
+dt = 4.03895 s
+time = 2020-01-01T00:02:12.093000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112628 s
+max ROS = 0.445661
+dt = 4.03895 s
+[QES-Fire] Pot	 Elapsed time: 0.852885 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022034 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.001801491
+		 Elapsed time: 0.129305 s
+max ROS = 0.44903
+dt = 4.00864 s
+time = 2020-01-01T00:02:16.102000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112046 s
+max ROS = 0.44903
+dt = 4.00864 s
+[QES-Fire] Pot	 Elapsed time: 0.950787 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022022 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.001827240
+		 Elapsed time: 0.129179 s
+max ROS = 0.457551
+dt = 3.93399 s
+time = 2020-01-01T00:02:20.036000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112607 s
+max ROS = 0.457551
+dt = 3.93399 s
+[QES-Fire] Pot	 Elapsed time: 0.950236 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022029 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.001827240
+		 Elapsed time: 0.129822 s
+max ROS = 0.457587
+dt = 3.93368 s
+time = 2020-01-01T00:02:23.970000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112864 s
+max ROS = 0.457587
+dt = 3.93368 s
+[QES-Fire] Pot	 Elapsed time: 0.952291 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000374979 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.001826286
+		 Elapsed time: 0.127965 s
+max ROS = 0.45755
+dt = 3.93399 s
+time = 2020-01-01T00:02:27.904000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00113041 s
+max ROS = 0.45755
+dt = 3.93399 s
+[QES-Fire] Pot	 Elapsed time: 0.952141 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000223619 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.001826286
+		 Elapsed time: 0.129157 s
+max ROS = 0.457576
+dt = 3.93378 s
+time = 2020-01-01T00:02:31.838000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.0011302 s
+max ROS = 0.457576
+dt = 3.93378 s
+[QES-Fire] Pot	 Elapsed time: 0.954933 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022138 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.001824379
+		 Elapsed time: 0.129016 s
+max ROS = 0.457563
+dt = 3.93388 s
+time = 2020-01-01T00:02:35.772000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00111383 s
+max ROS = 0.457563
+dt = 3.93388 s
+[QES-Fire] Pot	 Elapsed time: 0.953211 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000222229 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.001825333
+		 Elapsed time: 0.129074 s
+max ROS = 0.45754
+dt = 3.93408 s
+time = 2020-01-01T00:02:39.706000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00113422 s
+max ROS = 0.45754
+dt = 3.93408 s
+[QES-Fire] Pot	 Elapsed time: 0.95049 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022596 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.001826286
+		 Elapsed time: 0.13006 s
+max ROS = 0.457493
+dt = 3.93449 s
+time = 2020-01-01T00:02:43.640000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00111299 s
+max ROS = 0.457493
+dt = 3.93449 s
+[QES-Fire] Pot	 Elapsed time: 0.989714 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022221 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.001855850
+		 Elapsed time: 0.130033 s
+max ROS = 0.460103
+dt = 3.91217 s
+time = 2020-01-01T00:02:47.552000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112345 s
+max ROS = 0.460103
+dt = 3.91217 s
+[QES-Fire] Pot	 Elapsed time: 0.991959 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000220779 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.001857758
+		 Elapsed time: 0.128524 s
+max ROS = 0.460144
+dt = 3.91182 s
+time = 2020-01-01T00:02:51.464000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112322 s
+max ROS = 0.460144
+dt = 3.91182 s
+[QES-Fire] Pot	 Elapsed time: 1.0016 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000222799 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.001632690
+		 Elapsed time: 0.129037 s
+max ROS = 0.469463
+dt = 3.83416 s
+time = 2020-01-01T00:02:55.298000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00111675 s
+max ROS = 0.469463
+dt = 3.83416 s
+[QES-Fire] Pot	 Elapsed time: 1.01699 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000222239 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.001835227
+		 Elapsed time: 0.129893 s
+max ROS = 0.479251
+dt = 3.75586 s
+time = 2020-01-01T00:02:59.054000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00111592 s
+max ROS = 0.479251
+dt = 3.75586 s
+[QES-Fire] Pot	 Elapsed time: 1.02386 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022057 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.001838088
+		 Elapsed time: 0.12911 s
+max ROS = 0.479356
+dt = 3.75504 s
+time = 2020-01-01T00:03:02.809000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00111549 s
+max ROS = 0.479356
+dt = 3.75504 s
+[QES-Fire] Pot	 Elapsed time: 1.02395 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000220389 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.001836181
+		 Elapsed time: 0.128663 s
+max ROS = 0.479355
+dt = 3.75504 s
+time = 2020-01-01T00:03:06.564000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00115695 s
+max ROS = 0.479355
+dt = 3.75504 s
+[QES-Fire] Pot	 Elapsed time: 1.02108 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022696 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.001835346
+		 Elapsed time: 0.129033 s
+max ROS = 0.479363
+dt = 3.75498 s
+time = 2020-01-01T00:03:10.319000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112733 s
+max ROS = 0.479363
+dt = 3.75498 s
+[QES-Fire] Pot	 Elapsed time: 1.0188 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000221369 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.001833916
+		 Elapsed time: 0.128828 s
+max ROS = 0.47934
+dt = 3.75516 s
+time = 2020-01-01T00:03:14.074000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112257 s
+max ROS = 0.47934
+dt = 3.75516 s
+[QES-Fire] Pot	 Elapsed time: 1.01877 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022357 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.001833439
+		 Elapsed time: 0.127527 s
+max ROS = 0.479351
+dt = 3.75508 s
+time = 2020-01-01T00:03:17.829000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112256 s
+max ROS = 0.479351
+dt = 3.75508 s
+[QES-Fire] Pot	 Elapsed time: 1.01435 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022044 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.001833320
+		 Elapsed time: 0.129191 s
+max ROS = 0.479367
+dt = 3.75495 s
+time = 2020-01-01T00:03:21.584000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00111911 s
+max ROS = 0.479367
+dt = 3.75495 s
+[QES-Fire] Pot	 Elapsed time: 1.05529 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000221199 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.001974940
+		 Elapsed time: 0.12891 s
+max ROS = 0.481698
+dt = 3.73678 s
+time = 2020-01-01T00:03:25.321000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112328 s
+max ROS = 0.481698
+dt = 3.73678 s
+[QES-Fire] Pot	 Elapsed time: 1.06286 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000222639 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.002094507
+		 Elapsed time: 0.130245 s
+max ROS = 0.484993
+dt = 3.71139 s
+time = 2020-01-01T00:03:29.032000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112404 s
+max ROS = 0.484993
+dt = 3.71139 s
+[QES-Fire] Pot	 Elapsed time: 1.05986 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022425 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.002094746
+		 Elapsed time: 0.128907 s
+max ROS = 0.485045
+dt = 3.711 s
+time = 2020-01-01T00:03:32.743000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.0011212 s
+max ROS = 0.485045
+dt = 3.711 s
+[QES-Fire] Pot	 Elapsed time: 1.0657 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000226859 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.002094388
+		 Elapsed time: 0.129418 s
+max ROS = 0.485138
+dt = 3.71029 s
+time = 2020-01-01T00:03:36.453000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112043 s
+max ROS = 0.485138
+dt = 3.71029 s
+[QES-Fire] Pot	 Elapsed time: 1.06248 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022062 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.002094269
+		 Elapsed time: 0.12889 s
+max ROS = 0.485247
+dt = 3.70945 s
+time = 2020-01-01T00:03:40.162000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112929 s
+max ROS = 0.485247
+dt = 3.70945 s
+[QES-Fire] Pot	 Elapsed time: 1.06832 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022212 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.002162099
+		 Elapsed time: 0.129785 s
+max ROS = 0.489371
+dt = 3.67819 s
+time = 2020-01-01T00:03:43.840000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112123 s
+max ROS = 0.489371
+dt = 3.67819 s
+[QES-Fire] Pot	 Elapsed time: 1.10876 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022126 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.002280235
+		 Elapsed time: 0.129046 s
+max ROS = 0.492295
+dt = 3.65635 s
+time = 2020-01-01T00:03:47.496000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112812 s
+max ROS = 0.492295
+dt = 3.65635 s
+[QES-Fire] Pot	 Elapsed time: 1.1135 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000221829 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.002395391
+		 Elapsed time: 0.13164 s
+max ROS = 0.49512
+dt = 3.63548 s
+time = 2020-01-01T00:03:51.131000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112435 s
+max ROS = 0.49512
+dt = 3.63548 s
+[QES-Fire] Pot	 Elapsed time: 1.11004 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022157 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.002394199
+		 Elapsed time: 0.128947 s
+max ROS = 0.495315
+dt = 3.63405 s
+time = 2020-01-01T00:03:54.765000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00111539 s
+max ROS = 0.495315
+dt = 3.63405 s
+[QES-Fire] Pot	 Elapsed time: 1.11298 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000227269 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.002409220
+		 Elapsed time: 0.128799 s
+max ROS = 0.495413
+dt = 3.63334 s
+time = 2020-01-01T00:03:58.398000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00111522 s
+max ROS = 0.495413
+dt = 3.63334 s
+[QES-Fire] Pot	 Elapsed time: 1.32735 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022237 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.002595901
+		 Elapsed time: 0.129674 s
+max ROS = 0.499117
+dt = 3.60637 s
+time = 2020-01-01T00:04:02.004000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112258 s
+max ROS = 0.499117
+dt = 3.60637 s
+[QES-Fire] Pot	 Elapsed time: 1.32792 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022169 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.002589226
+		 Elapsed time: 0.129222 s
+max ROS = 0.499286
+dt = 3.60515 s
+time = 2020-01-01T00:04:05.609000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112386 s
+max ROS = 0.499286
+dt = 3.60515 s
+[QES-Fire] Pot	 Elapsed time: 1.33017 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022192 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.002585649
+		 Elapsed time: 0.13096 s
+max ROS = 0.499329
+dt = 3.60484 s
+time = 2020-01-01T00:04:09.214000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.0011198 s
+max ROS = 0.499329
+dt = 3.60484 s
+[QES-Fire] Pot	 Elapsed time: 1.3283 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000221059 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.002583504
+		 Elapsed time: 0.130241 s
+max ROS = 0.499324
+dt = 3.60487 s
+time = 2020-01-01T00:04:12.819000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112234 s
+max ROS = 0.499324
+dt = 3.60487 s
+[QES-Fire] Pot	 Elapsed time: 1.4285 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000414469 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.002857685
+		 Elapsed time: 0.129161 s
+max ROS = 0.49821
+dt = 3.61294 s
+time = 2020-01-01T00:04:16.432000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112183 s
+max ROS = 0.49821
+dt = 3.61294 s
+[QES-Fire] Pot	 Elapsed time: 1.42935 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000221089 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.002977610
+		 Elapsed time: 0.131345 s
+max ROS = 0.50055
+dt = 3.59605 s
+time = 2020-01-01T00:04:20.028000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.0011217 s
+max ROS = 0.50055
+dt = 3.59605 s
+[QES-Fire] Pot	 Elapsed time: 1.76807 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022183 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.003129721
+		 Elapsed time: 0.129333 s
+max ROS = 0.477029
+dt = 3.77336 s
+time = 2020-01-01T00:04:23.801000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00111542 s
+max ROS = 0.477029
+dt = 3.77336 s
+[QES-Fire] Pot	 Elapsed time: 1.7919 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000221299 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.003501415
+		 Elapsed time: 0.128983 s
+max ROS = 0.40731
+dt = 4.41923 s
+time = 2020-01-01T00:04:28.220000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00111988 s
+max ROS = 0.40731
+dt = 4.41923 s
+[QES-Fire] Pot	 Elapsed time: 1.80177 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022276 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.003705382
+		 Elapsed time: 0.131051 s
+max ROS = 0.40883
+dt = 4.40281 s
+time = 2020-01-01T00:04:32.623000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112455 s
+max ROS = 0.40883
+dt = 4.40281 s
+[QES-Fire] Pot	 Elapsed time: 1.9561 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000220219 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.003820300
+		 Elapsed time: 0.128206 s
+max ROS = 0.410866
+dt = 4.38099 s
+time = 2020-01-01T00:04:37.004000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00128114 s
+max ROS = 0.410866
+dt = 4.38099 s
+[QES-Fire] Pot	 Elapsed time: 1.96836 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000222269 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.003985167
+		 Elapsed time: 0.12879 s
+max ROS = 0.419332
+dt = 4.29255 s
+time = 2020-01-01T00:04:41.297000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112549 s
+max ROS = 0.419332
+dt = 4.29255 s
+[QES-Fire] Pot	 Elapsed time: 1.97844 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000223049 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.004153967
+		 Elapsed time: 0.128597 s
+max ROS = 0.426234
+dt = 4.22303 s
+time = 2020-01-01T00:04:45.520000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00111324 s
+max ROS = 0.426234
+dt = 4.22303 s
+[QES-Fire] Pot	 Elapsed time: 1.98275 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022174 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.004358053
+		 Elapsed time: 0.129919 s
+max ROS = 0.427417
+dt = 4.21135 s
+time = 2020-01-01T00:04:49.731000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112123 s
+max ROS = 0.427417
+dt = 4.21135 s
+[QES-Fire] Pot	 Elapsed time: 1.98293 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000221349 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.004360795
+		 Elapsed time: 0.12992 s
+max ROS = 0.427702
+dt = 4.20854 s
+time = 2020-01-01T00:04:53.940000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112021 s
+max ROS = 0.427702
+dt = 4.20854 s
+[QES-Fire] Pot	 Elapsed time: 1.98614 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.0002202 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.004360437
+		 Elapsed time: 0.129544 s
+max ROS = 0.427727
+dt = 4.20829 s
+time = 2020-01-01T00:04:58.148000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112402 s
+max ROS = 0.427727
+dt = 4.20829 s
+[QES-Fire] Pot	 Elapsed time: 1.98381 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000225289 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.004354119
+		 Elapsed time: 0.131199 s
+max ROS = 0.428768
+dt = 4.19807 s
+time = 2020-01-01T00:05:02.346000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.001118 s
+max ROS = 0.428768
+dt = 4.19807 s
+[QES-Fire] Pot	 Elapsed time: 1.98865 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000225459 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.004569888
+		 Elapsed time: 0.130189 s
+max ROS = 0.430823
+dt = 4.17805 s
+time = 2020-01-01T00:05:06.524000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112348 s
+max ROS = 0.430823
+dt = 4.17805 s
+[QES-Fire] Pot	 Elapsed time: 2.03745 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022086 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.004854798
+		 Elapsed time: 0.128577 s
+max ROS = 0.436611
+dt = 4.12266 s
+time = 2020-01-01T00:05:10.647000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00111812 s
+max ROS = 0.436611
+dt = 4.12266 s
+[QES-Fire] Pot	 Elapsed time: 2.03764 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000362429 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.004856229
+		 Elapsed time: 0.132237 s
+max ROS = 0.436696
+dt = 4.12186 s
+time = 2020-01-01T00:05:14.769000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00125505 s
+max ROS = 0.436696
+dt = 4.12186 s
+[QES-Fire] Pot	 Elapsed time: 2.04098 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000229719 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.004856110
+		 Elapsed time: 0.130605 s
+max ROS = 0.436739
+dt = 4.12146 s
+time = 2020-01-01T00:05:18.890000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00111407 s
+max ROS = 0.436739
+dt = 4.12146 s
+[QES-Fire] Pot	 Elapsed time: 2.03784 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022252 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.004855752
+		 Elapsed time: 0.129359 s
+max ROS = 0.436744
+dt = 4.12141 s
+time = 2020-01-01T00:05:23.011000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112642 s
+max ROS = 0.347538
+dt = 5.17929 s
+[QES-Fire] Pot	 Elapsed time: 2.01263 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000225999 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.004670382
+		 Elapsed time: 0.128328 s
+max ROS = 0.458194
+dt = 3.92847 s
+time = 2020-01-01T00:05:26.939000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00111499 s
+max ROS = 0.458214
+dt = 3.92829 s
+[QES-Fire] Pot	 Elapsed time: 2.01218 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.00022239 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.004839182
+		 Elapsed time: 0.131628 s
+max ROS = 0.461146
+dt = 3.90332 s
+time = 2020-01-01T00:05:30.842000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00111859 s
+max ROS = 0.461146
+dt = 3.90332 s
+[QES-Fire] Pot	 Elapsed time: 2.01833 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000220509 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.005063772
+		 Elapsed time: 0.131022 s
+max ROS = 0.463364
+dt = 3.88464 s
+time = 2020-01-01T00:05:34.727000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112399 s
+max ROS = 0.463364
+dt = 3.88464 s
+[QES-Fire] Pot	 Elapsed time: 2.02342 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000220909 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.005066633
+		 Elapsed time: 0.128029 s
+max ROS = 0.463325
+dt = 3.88496 s
+time = 2020-01-01T00:05:38.612000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112257 s
+max ROS = 0.463325
+dt = 3.88496 s
+[QES-Fire] Pot	 Elapsed time: 2.02276 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000418619 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.005066633
+		 Elapsed time: 0.128501 s
+max ROS = 0.463282
+dt = 3.88532 s
+time = 2020-01-01T00:05:42.497000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112934 s
+max ROS = 0.463282
+dt = 3.88532 s
+[QES-Fire] Pot	 Elapsed time: 2.06291 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000221599 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.005293965
+		 Elapsed time: 0.128805 s
+max ROS = 0.465537
+dt = 3.8665 s
+time = 2020-01-01T00:05:46.364000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00113623 s
+max ROS = 0.465537
+dt = 3.8665 s
+[QES-Fire] Pot	 Elapsed time: 2.06211 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000219799 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.005293369
+		 Elapsed time: 0.130783 s
+max ROS = 0.465607
+dt = 3.86592 s
+time = 2020-01-01T00:05:50.230000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00112063 s
+max ROS = 0.239977
+dt = 6 s
+[QES-Fire] Pot	 Elapsed time: 2.01035 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000375639 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.005342007
+		 Elapsed time: 0.1307 s
+max ROS = 0.338198
+dt = 5.32233 s
+time = 2020-01-01T00:05:55.552000
+[QES-WINDS]	 Applying Wind Profile...
+		 elapsed time: 0.00111907 s
+max ROS = 0.37768
+dt = 4.76594 s
+[QES-Fire] Pot	 Elapsed time: 2.05854 s
+[QES-WINDS]	 Applying parameterizations...
+		 elapsed time: 0.000222369 s
+[Solver] Running Global Memory Solver (GPU) ...
+[Solver] Residual after 500 itertations: 0.005533218
+		 Elapsed time: 0.128988 s
+max ROS = 0.380961
+dt = 4.7249 s
+time = 2020-01-01T00:06:00.277000
 Simulation finished

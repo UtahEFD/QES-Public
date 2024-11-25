@@ -318,7 +318,7 @@ int main(int argc, char *argv[])
        * Run ROS model to get initial spread rate and fire properties
        **/
 
-      fire->LevelSet(WGD);
+      fire->LevelSetNB(WGD);
     
       /**
        * Calculate fire-induced winds from burning cells
@@ -341,7 +341,7 @@ int main(int argc, char *argv[])
       /**
        * Run ROS model to calculate spread rates with updated winds
        **/
-      fire->LevelSet(WGD);
+      fire->LevelSetNB(WGD);
 
       /**
        * Advance fire front through level set method

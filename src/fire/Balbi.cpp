@@ -117,7 +117,7 @@ struct Fire::FireProperties Fire ::balbi(FuelProperties *fuel, float u_mid, floa
         } else {
             phi = acos((x_slope * x_norm + y_slope * y_norm) / (sqrt(x_slope * x_slope + y_slope * y_slope) * sqrt(x_norm * x_norm + y_norm * y_norm)));
 	    if (isnan(phi)){
-	      std::cout<<"ROS error, phi isnan"<<std::endl;
+	      //std::cout<<"ROS error, phi isnan"<<std::endl;
 	      phi = 0;
 	    }
         }
@@ -126,7 +126,7 @@ struct Fire::FireProperties Fire ::balbi(FuelProperties *fuel, float u_mid, floa
         } else {
             psi = acos((u_mid * x_norm + v_mid * y_norm) / (sqrt(u_mid * u_mid + v_mid * v_mid) * sqrt(x_norm * x_norm + y_norm * y_norm)));
 	    if (isnan(psi)){
-	      std::cout<<"ROS error, psi isnan"<<std::endl;
+	      //std::cout<<"ROS error, psi isnan"<<std::endl;
 	      psi = 0;
 	    }
         

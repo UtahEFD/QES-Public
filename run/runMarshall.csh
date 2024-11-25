@@ -10,4 +10,4 @@
 #SBATCH -o mar_out.log
 module load gcc/8.5.0
 ulimit -c unlimited -s
-./../build/qesFire/qesFire -q ../data/InputFiles/fireMarshallTime.xml -s 3 -o ~/../stoll-groupbig/moody/Marshall/Force -b
+./../build/qesFire/qesFire -q ../data/InputFiles/fireMarshallTime.xml -s 3 -o ~/../stoll-groupbig/moody/Marshall/NBLS -b

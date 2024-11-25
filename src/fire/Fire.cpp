@@ -196,36 +196,62 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
     }
   }
   std::cout << "burn initialized" << std::endl;
-  /**
-	* Set up initial level set. Use signed distance function: swap to fast marching method in future.
-	*/
+  int LSmethod = 0;
   float sdf, sdf_min;
-  for (int j = 0; j < ny - 1; j++) {
-    for (int i = 0; i < nx - 1; i++) {
-      int idx = i + j * (nx - 1);
-      if (fire_cells[idx].state.front_flag == 1) {
-        front_map[idx] = 0;
-      } else {
-        sdf = 1000;
-        for (int jj = 0; jj < ny - 1; jj++) {
-          for (int ii = 0; ii < nx - 1; ii++) {
-            int idx2 = ii + jj * (nx - 1);
-            if (fire_cells[idx2].state.front_flag == 1) {
-              sdf_min = sqrt((ii - i) * (ii - i) + (jj - j) * (jj - j));
-            } else {
-              sdf_min = 1000;
-            }
-            sdf = sdf_min < sdf ? sdf_min : sdf;
-          }
-        }
-        front_map[idx] = sdf;
+  if (LSmethod == 0){
+    /**
+     * Set up initial level set. Use signed distance function: swap to fast marching method in future.
+     */    
+    for (int j = 0; j < ny - 1; j++) {
+      for (int i = 0; i < nx - 1; i++) {
+	int idx = i + j * (nx - 1);
+	if (fire_cells[idx].state.front_flag == 1) {
+	  front_map[idx] = 0;
+	} else {
+	  sdf = 1000;
+	  for (int jj = 0; jj < ny - 1; jj++) {
+	    for (int ii = 0; ii < nx - 1; ii++) {
+	      int idx2 = ii + jj * (nx - 1);
+	      if (fire_cells[idx2].state.front_flag == 1) {
+		sdf_min = sqrt((ii - i) * (ii - i) + (jj - j) * (jj - j));
+	      } else {
+		sdf_min = 1000;
+	      }
+	      sdf = sdf_min < sdf ? sdf_min : sdf;
+	    }
+	  }
+	  front_map[idx] = sdf;
+	}
       }
     }
+    std::cout << "Level Set Initialized: Signed Distance" << std::endl;
+  } else {
+    for (int j = 0; j < ny - 1; j++) {
+      for (int i = 0; i < nx - 1; i++) {
+	int idx = i + j * (nx - 1);
+	front_map[idx] = 5;
+	if (fire_cells[idx].state.front_flag == 1) {
+	  front_map[idx] = 0;
+	  int xmin = i-2 > 1 ? i-2 : 1;
+	  int xmax = i+2 < nx-3 ? i+2 : nx-3;
+	  int ymin = j-2 > 1 ? j-2 : 1;
+	  int ymax = j+2 < ny-3 ? j+2 : ny-3;
+	  for (int n = ymin; n <= ymax; n++){
+	    for (int m = xmin; m <= xmax; m++){
+	      int idx2 = m + n*(nx-1);
+	      sdf_min = sqrt((m - i) * (m - i) + (n - j) * (n - j));
+	      front_map[idx2] = sdf_min < front_map[idx2] ? sdf_min : front_map[idx2];
+	    }
+	  }
+	}
+      }
+    }
+    std::cout << "Level Set Initialized: Narrow Band" << std::endl;
   }
-  std::cout << "level set initialized" << std::endl;
+ 
   /**
-	* Calculate slope at each terrain cell
-	*/
+   * Calculate slope at each terrain cell
+   */
   for (int j = 1; j < ny - 2; j++) {
     for (int i = 1; i < nx - 2; i++) {
       int id = i + j * (nx - 1);
@@ -239,5 +265,5 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
       slope_y[id] = (delzy / (2 * dy)) / sqrt(delzy * delzy + 2 * dy * 2 * dy);
     }
   }
-  std::cout << "slope calculated" << std::endl;
+  std::cout << "Slope Calculated" << std::endl;
 }

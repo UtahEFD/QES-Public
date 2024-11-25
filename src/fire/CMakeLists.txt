@@ -16,6 +16,7 @@ SET( qesFireCoreSources
   FuelRead.h
   ignition.h
   LevelSet.cpp
+  LevelSetNB.cpp
   Move.cpp
   OldFuelProperties.hpp
   Potential.cpp  
