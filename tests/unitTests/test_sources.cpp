@@ -9,6 +9,7 @@
 
 #include "util/ManagedContainer.h"
 #include "plume/Particle.h"
+#include "plume/Random.h"
 #include "plume/TracerParticle.h"
 
 
@@ -17,7 +18,7 @@ class SourceComponent
 public:
   SourceComponent(){};
   virtual ~SourceComponent(){};
-  virtual void set(QESDataTransport &data) = 0;
+  virtual void generate(const int &, QESDataTransport &) = 0;
 
 protected:
 };
@@ -27,7 +28,7 @@ class SourceGeometry : public SourceComponent
 public:
   SourceGeometry(){};
   ~SourceGeometry(){};
-  void set(QESDataTransport &data) override
+  void generate(const int &n, QESDataTransport &data) override
   {
     data.put("x", getPosition(10));
     data.put("y", getPosition(10));
@@ -42,13 +43,62 @@ private:
   }
 };
 
+class SourceGeometryLine : public SourceComponent
+{
+public:
+  SourceGeometryLine() = default;
+  SourceGeometryLine(const float &posX_0, const float &posY_0, const float &posZ_0, const float &posX_1, const float &posY_1, const float &posZ_1)
+    : m_posX_0(posX_0), m_posY_0(posY_0), m_posZ_0(posZ_0), m_posX_1(posX_1), m_posY_1(posY_1), m_posZ_1(posZ_1)
+  {
+    m_diffX = m_posX_1 - m_posX_0;
+    m_diffY = m_posY_1 - m_posY_0;
+    m_diffZ = m_posZ_1 - m_posZ_0;
+  }
+
+  ~SourceGeometryLine(){};
+  void generate(const int &n, QESDataTransport &data) override
+  {
+
+    std::vector<vec3> init(n);
+    Random prng;
+
+    for (int k = 0; k < n; ++k) {
+      float t = prng.uniRan();
+      init[k] = { m_posX_0 + t * m_diffX, m_posY_0 + t * m_diffY, m_posZ_0 + t * m_diffZ };
+      // init[k] = VectorMath::
+    }
+    data.put("init", init);
+
+    std::vector<float> x, y, z;
+    getPosition(n, x);
+    data.put("x", x);
+
+    getPosition(n, y);
+    data.put("y", y);
+
+    getPosition(n, z);
+    data.put("z", z);
+  }
+
+private:
+  void getPosition(int n, std::vector<float> &v)
+  {
+    v.resize(n, 0.0);
+  }
+
+  // vec3 m_pos_start,m_pos_end,m_diff;
+  float m_posX_0, m_posY_0, m_posZ_0;
+  float m_posX_1, m_posY_1, m_posZ_1;
+  float m_diffX, m_diffY, m_diffZ;
+};
+
 
 class MassGenerator : public SourceComponent
 {
 public:
   MassGenerator(){};
   ~MassGenerator(){};
-  void set(QESDataTransport &data) override
+  void generate(const int &n, QESDataTransport &data) override
   {
     data.put("mass", getMass());
   }
@@ -63,7 +113,7 @@ private:
 class Source
 {
 public:
-  explicit Source(const int &n) : id(n) {}
+  explicit Source(const int &id) : m_id(id) {}
   ~Source()
   {
     for (auto c : components)
@@ -72,19 +122,23 @@ public:
   void addComponent(SourceComponent *c) { components.emplace_back(c); }
   void setComponents()
   {
+    // query how many particle need to be released
+    // if (currTime >= m_releaseType->m_releaseStartTime && currTime <= m_releaseType->m_releaseEndTime) {
+    //  return m_releaseType->m_particlePerTimestep;
+    int n = 10;
     for (auto c : components)
-      c->set(data);
+      c->generate(n, data);
   }
   void print()
   {
-    std::cout << id << std::endl;
+    std::cout << m_id << std::endl;
   }
 
   QESDataTransport data;
 
 private:
-  Source() : id(-1) {}
-  int id;
+  Source() : m_id(-1) {}
+  int m_id;
   std::vector<SourceComponent *> components;
 };
 
@@ -104,6 +158,9 @@ void setParticle(Source *s, ManagedContainer<TracerParticle> &p)
   p.get(0)->m = s->data.get<float>("mass");
   // here the parameters can be dependent on the type of particles
   // data can be queried for optional components.
+
+  // if cuda is used, we can directly copy to the device here:
+  // copy(s->data.get<float>("mass").data())
 }
 
 TEST_CASE("Source generator")
@@ -114,7 +171,7 @@ TEST_CASE("Source generator")
   sources.emplace_back(new Source(0));
   sources.emplace_back(new Source(1));
   for (auto s : sources) {
-    s->addComponent(new SourceGeometry());
+    s->addComponent(new SourceGeometryLine(0, 1, 0, 1, 0, 1));
     s->addComponent(new MassGenerator());
   }
 
