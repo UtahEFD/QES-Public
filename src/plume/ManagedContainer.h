@@ -37,6 +37,8 @@
 #include <vector>
 #include <queue>
 
+#include "Particle.h"
+
 template<class T>
 class ManagedContainer
 {
@@ -49,7 +51,7 @@ protected:
   std::queue<size_t> available;
 
 private:
-  size_t scrub_elements()
+  size_t screen_elements()
   {
     size_t nbr_used = 0;
     added.clear();
@@ -57,7 +59,7 @@ private:
     std::swap(available, empty);
 
     for (size_t it = 0; it < elements.size(); ++it) {
-      if (elements[it].isActive)
+      if (elements[it].state == ACTIVE)
         nbr_used++;
       else
         available.push(it);
@@ -81,7 +83,7 @@ public:
   {
     size_t nbr_used = 0;
     for (auto &p : elements) {
-      if (p.isActive)
+      if (p.state == ACTIVE)
         nbr_used++;
     }
     return nbr_used;
@@ -98,7 +100,7 @@ public:
 
   void sweep(const int &new_part)
   {
-    size_t nbr_used = scrub_elements();
+    size_t nbr_used = screen_elements();
     size_t elements_size = elements.size();
     if (elements_size < nbr_used + new_part) {
       elements.resize(elements_size + new_part);
@@ -111,14 +113,13 @@ public:
   void insert()
   {
     // this requires an extra copy: elements[available.front()] = T(nbr_inserted);
-    // rest the particle:
-    // - changing the particle ID
-    elements[available.front()].particleID = nbr_inserted;
-    nbr_inserted++;
+    // reset the particle:
     // - turning the particle active:
-    elements[available.front()].isActive = true;
+    elements[available.front()].state = ACTIVE;
     // adding index to added and remove from available:
     added.emplace_back(available.front());
     available.pop();
+    // increment the counter
+    nbr_inserted++;
   }
 };

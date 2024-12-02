@@ -82,7 +82,8 @@ void ExportParticleData::visit(TracerParticle_Model *pm)
   fout << "# Particle Data File\n";
   fout << "# Model particle tag: " << pm->tag << "\n";
   fout << file_prologue;
-  fout << "#particleID,tStrt,sourceIdx,d,m,wdecay,"
+  fout << "#particleID,tStrt,sourceIdx,"
+       << "d,m,wdecay,"
        << "xPos_init,yPos_init,"
           "zPos_init,xPos,yPos,zPos,"
           "uFluct,vFluct,wFluct,"
@@ -90,32 +91,32 @@ void ExportParticleData::visit(TracerParticle_Model *pm)
 
   for (auto k = 0u; k < pm->get_particles()->size(); ++k) {// Insert the data to file
     TracerParticle *p = pm->get_particles()->get(k);
-    if (p->isActive && !p->isRogue) {
-      fout << p->particleID << ", "
+    if (p->state == ACTIVE) {
+      fout << p->ID << ", "
            << p->tStrt << ", "
            << p->sourceIdx << ", "
            << p->d << ", "
            << p->m << ", "
            << p->wdecay << ", "
-           << p->xPos_init << ", "
-           << p->yPos_init << ", "
-           << p->zPos_init << ", "
-           << p->xPos << ", "
-           << p->yPos << ", "
-           << p->zPos << ", "
-           << p->uFluct << ", "
-           << p->vFluct << ", "
-           << p->wFluct << ", "
-           << p->delta_uFluct << ", "
-           << p->delta_vFluct << ", "
-           << p->delta_wFluct << "\n";
+           << p->pos_init._1 << ", "
+           << p->pos_init._2 << ", "
+           << p->pos_init._3 << ", "
+           << p->pos._1 << ", "
+           << p->pos._2 << ", "
+           << p->pos._3 << ", "
+           << p->velFluct._1 << ", "
+           << p->velFluct._2 << ", "
+           << p->velFluct._3 << ", "
+           << p->delta_velFluct._1 << ", "
+           << p->delta_velFluct._2 << ", "
+           << p->delta_velFluct._3 << "\n";
     }
   }
 
   fout.close();
 }
 
-void ExportParticleData::visit(HeavyParticle_Model *pm)
+/*void ExportParticleData::visit(HeavyParticle_Model *pm)
 {
   std::string sout = fname_prefix + "_" + pm->tag + "_" + fname_suffix;
 
@@ -156,4 +157,4 @@ void ExportParticleData::visit(HeavyParticle_Model *pm)
   }
 
   fout.close();
-}
+}*/

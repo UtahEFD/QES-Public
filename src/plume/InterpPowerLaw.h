@@ -54,55 +54,23 @@ public:
   // constructor
   // copies the turb grid values for nx, ny, nz, nt, dx, dy, and dz to the QES grid values,
   // then calculates the tau gradients which are then used to calculate the flux_div grid values.
-  InterpPowerLaw(WINDSGeneralData *, TURBGeneralData *, const bool &);
+  InterpPowerLaw(qes::Domain, bool);
 
-  void interpValues(const WINDSGeneralData *WGD,
-                    const double &xPos,
-                    const double &yPos,
-                    const double &zPos,
-                    double &uMain_out,
-                    double &vMean_out,
-                    double &wMean_out) override;
+  void interpWindsValues(const WINDSGeneralData *WGD,
+                         const vec3 &pos,
+                         vec3 &vel_out) override;
 
-  void interpValues(const TURBGeneralData *TGD,
-                    const double &xPos,
-                    const double &yPos,
-                    const double &zPos,
-                    double &txx_out,
-                    double &txy_out,
-                    double &txz_out,
-                    double &tyy_out,
-                    double &tyz_out,
-                    double &tzz_out,
-                    double &flux_div_x_out,
-                    double &flux_div_y_out,
-                    double &flux_div_z_out,
-                    double &nuT_out,
-                    double &CoEps_out) override;
+  void interpTurbValues(const TURBGeneralData *TGD,
+                        const vec3 &pos,
+                        mat3sym &tau_out,
+                        vec3 &flux_div_out,
+                        float &nuT_out,
+                        float &CoEps_out) override;
 
-  void interpInitialValues(const double &xPos,
-                           const double &yPos,
-                           const double &zPos,
-                           const TURBGeneralData *TGD,
-                           double &sig_x_out,
-                           double &sig_y_out,
-                           double &sig_z_out,
-                           double &txx_out,
-                           double &txy_out,
-                           double &txz_out,
-                           double &tyy_out,
-                           double &tyz_out,
-                           double &tzz_out) override;
+  void interpTurbInitialValues(const TURBGeneralData *TGD,
+                               const vec3 &pos,
+                               mat3sym &tau_out,
+                               vec3 &sig_out) override;
 
   double getMaxFluctuation();
-
-protected:
-  InterpPowerLaw()
-  {}
-  // timer class useful for debugging and timing different operations
-  // calcTime timers;
-
-  // copies of debug related information from the input arguments
-  // bool debug;
-private:
 };

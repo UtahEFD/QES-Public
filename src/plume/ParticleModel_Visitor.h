@@ -37,11 +37,11 @@
 #include <utility>
 
 class TracerParticle_Model;
-class HeavyParticle_Model;
+// class HeavyParticle_Model;
 
 class ParticleModel_Visitor
 {
 public:
   virtual void visit(TracerParticle_Model *) = 0;
-  virtual void visit(HeavyParticle_Model *) = 0;
+  // virtual void visit(HeavyParticle_Model *) = 0;
 };

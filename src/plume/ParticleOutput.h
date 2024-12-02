@@ -41,8 +41,8 @@
 #include "TracerParticle_Model.h"
 #include "TracerParticle_Source.h"
 
-#include "HeavyParticle_Model.h"
-#include "HeavyParticle_Source.h"
+// #include "HeavyParticle_Model.h"
+// #include "HeavyParticle_Source.h"
 
 class PLUMEGeneralData;
 
@@ -71,7 +71,7 @@ public:
   ~ExportParticleData() = default;
 
   void visit(TracerParticle_Model *element) override;
-  void visit(HeavyParticle_Model *element) override;
+  // void visit(HeavyParticle_Model *element) override;
 
 private:
   std::string fname_prefix, fname_suffix;

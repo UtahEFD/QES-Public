@@ -58,10 +58,10 @@ void PI_SourceGeometry_Point::checkPosInfo(const double &domainXstart, const dou
   }
 }
 
-void PI_SourceGeometry_Point::setInitialPosition(double &x, double &y, double &z)
+void PI_SourceGeometry_Point::setInitialPosition(vec3 &p)
 {
   // set initial position
-  x = posX;
-  y = posY;
-  z = posZ;
+  p._1 = posX;
+  p._2 = posY;
+  p._3 = posZ;
 }

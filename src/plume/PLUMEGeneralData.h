@@ -82,7 +82,7 @@
 #include "Source.h"
 
 #include "ParticleModel.h"
-#include "HeavyParticle_Model.h"
+// #include "HeavyParticle_Model.h"
 #include "TracerParticle_Model.h"
 
 #include "AddSource.h"
@@ -177,12 +177,12 @@ private:
 
   // these values are calculated from the urb and turb grids by dispersion
   // they are used for applying boundary conditions at the walls of the domain
-  double domainXstart = 0.0;// the domain starting x value, a copy of the value found by dispersion
-  double domainXend = 0.0;// the domain ending x value, a copy of the value found by dispersion
-  double domainYstart = 0.0;// the domain starting y value, a copy of the value found by dispersion
-  double domainYend = 0.0;// the domain ending y value, a copy of the value found by dispersion
-  double domainZstart = 0.0;// the domain starting z value, a copy of the value found by dispersion
-  double domainZend = 0.0;// the domain ending z value, a copy of the value found by dispersion
+  float domainXstart = 0.0;// the domain starting x value, a copy of the value found by dispersion
+  float domainXend = 0.0;// the domain ending x value, a copy of the value found by dispersion
+  float domainYstart = 0.0;// the domain starting y value, a copy of the value found by dispersion
+  float domainYend = 0.0;// the domain ending y value, a copy of the value found by dispersion
+  float domainZstart = 0.0;// the domain starting z value, a copy of the value found by dispersion
+  float domainZend = 0.0;// the domain ending z value, a copy of the value found by dispersion
 
   // protected:
   //  QES grid information
@@ -263,114 +263,16 @@ public:
   // this function moves (advects) one particle
   // void advectParticle(double, Particle *, double, WINDSGeneralData *, TURBGeneralData *);
 
-  /* void GLE_solver(Particle *p,
-                  double &txx,
-                  double &txy,
-                  double &txz,
-                  double &tyy,
-                  double &tyz,
-                  double &tzz,
-                  double &flux_div_x,
-                  double &flux_div_y,
-                  double &flux_div_z,
-                  double &par_dt);
- */
-
-  void GLE_solver_func(Particle *p, double &par_dt, TURBGeneralData *TGD);
-
-  void depositParticle(const double &xPos,
-                       const double &yPos,
-                       const double &zPos,
-                       const double &disX,
-                       const double &disY,
-                       const double &disZ,
-                       const double &uTot,
-                       const double &vTot,
-                       const double &wTot,
-                       const double &txx,
-                       const double &tyy,
-                       const double &tzz,
-                       const double &txz,
-                       const double &txy,
-                       const double &tyz,
-                       const double &vs,
-                       const double &CoEps,
-                       const double &boxSizeZ,
-                       const double &nuT,
-                       Particle *par_ptr,
-                       WINDSGeneralData *WGD,
-                       TURBGeneralData *TGD);
-
-  void depositParticle(Particle *par_ptr,
-                       const double &disX,
-                       const double &disY,
-                       const double &disZ,
-                       const double &uTot,
-                       const double &vTot,
-                       const double &wTot,
-                       const double &vs,
-                       const double &boxSizeZ,
-                       WINDSGeneralData *WGD,
-                       TURBGeneralData *TGD);
-
   // function for calculating the individual particle timestep from the courant number, the current velocity fluctuations,
   // and the grid size. Forces particles to always move only at one timestep at at time.
   // Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
-  double calcCourantTimestep(const double &u,
-                             const double &v,
-                             const double &w,
-                             const double &timeRemainder);
-  double calcCourantTimestep(const double &d,
-                             const double &u,
-                             const double &v,
-                             const double &w,
-                             const double &timeRemainder);
-
-  // private:
-  //  utility functions for the plume solver
-  static void calcInvariants(const double &txx,
-                             const double &txy,
-                             const double &txz,
-                             const double &tyy,
-                             const double &tyz,
-                             const double &tzz,
-                             double &invar_xx,
-                             double &invar_yy,
-                             double &invar_zz);
-
-  static void makeRealizable(double &txx,
-                             double &txy,
-                             double &txz,
-                             double &tyy,
-                             double &tyz,
-                             double &tzz,
-                             const double &tol);
-
-  static bool invert3(double &A_11,
-                      double &A_12,
-                      double &A_13,
-                      double &A_21,
-                      double &A_22,
-                      double &A_23,
-                      double &A_31,
-                      double &A_32,
-                      double &A_33);
-
-  static void matmult(const double &A_11,
-                      const double &A_12,
-                      const double &A_13,
-                      const double &A_21,
-                      const double &A_22,
-                      const double &A_23,
-                      const double &A_31,
-                      const double &A_32,
-                      const double &A_33,
-                      const double &b_11,
-                      const double &b_21,
-                      const double &b_31,
-                      double &x_11,
-                      double &x_21,
-                      double &x_31);
+  float calcCourantTimestep(const float &u,
+                            const float &v,
+                            const float &w,
+                            const float &timeRemainder);
+  float calcCourantTimestep(const float &d,
+                            const vec3 &vel,
+                            const float &timeRemainder);
 
   // a function used at constructor time to set the pointer function to the desired BC type
   void setBCfunctions(const std::string &,

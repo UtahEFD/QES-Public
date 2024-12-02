@@ -34,8 +34,6 @@
 
 #pragma once
 
-#include "util/ManagedContainer.h"
-
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
 
@@ -44,21 +42,21 @@
 #include "TracerParticle_Model.h"
 #include "TracerParticle_Source.h"
 
-#include "HeavyParticle_Model.h"
-#include "HeavyParticle_Source.h"
+// #include "HeavyParticle_Model.h"
+// #include "HeavyParticle_Source.h"
 
 class AddSource : public ParticleModel_Visitor
 {
 public:
   AddSource(std::vector<TracerParticle_Source *> sources)
-    : m_tracerParticle_sources(sources), m_heavyParticle_sources(0)
+    : m_tracerParticle_sources(sources)//, m_heavyParticle_sources(0)
   {
   }
 
-  AddSource(std::vector<HeavyParticle_Source *> sources)
+  /*AddSource(std::vector<HeavyParticle_Source *> sources)
     : m_tracerParticle_sources(0), m_heavyParticle_sources(sources)
   {
-  }
+  }*/
 
   ~AddSource() = default;
 
@@ -66,15 +64,15 @@ public:
   {
     element->addSources(m_tracerParticle_sources);
   }
-  void visit(HeavyParticle_Model *element) override
+  /*void visit(HeavyParticle_Model *element) override
   {
     element->addSources(m_heavyParticle_sources);
-  }
+    }*/
 
 private:
   AddSource()
   {}
 
   std::vector<TracerParticle_Source *> m_tracerParticle_sources;
-  std::vector<HeavyParticle_Source *> m_heavyParticle_sources;
+  // std::vector<HeavyParticle_Source *> m_heavyParticle_sources;
 };

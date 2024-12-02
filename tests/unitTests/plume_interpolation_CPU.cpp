@@ -56,7 +56,7 @@ TEST_CASE("test tri-linear interpolation fine grid", "[Working]")
   WINDSGeneralData *WGD = new WINDSGeneralData(domain);
   TURBGeneralData *TGD = new TURBGeneralData(WGD);
 
-  auto interp = new InterpTriLinear(WGD, TGD, true);
+  auto interp = new InterpTriLinear(WGD->domain, true);
 
   auto *tf = new test_functions(WGD, TGD, "trig");
 
@@ -69,29 +69,26 @@ TEST_CASE("test tri-linear interpolation fine grid", "[Working]")
     float tol(1.0e-2);
 
     for (size_t it = 0; it < xArray.size(); ++it) {
-      double xPos = xArray[it];
-      double yPos = yArray[it];
-      double zPos = zArray[it];
+      vec3 pos = { xArray[it], yArray[it], zArray[it] };
+      vec3 vel = { 0.0, 0.0, 0.0 };
+      mat3sym tau = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+      vec3 flux_div = { 0.0, 0.0, 0.0 };
+      float CoEps = 1e-6, nuT = 0.0;
 
-      double uMean = 0.0, vMean = 0.0, wMean = 0.0;
-      double txx = 0.0, txy = 0.0, txz = 0.0, tyy = 0.0, tyz = 0.0, tzz = 0.0;
-      double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
-      double CoEps = 1e-6, nuT = 0.0;
-
-      interp->interpValues(WGD, xPos, yPos, zPos, uMean, vMean, wMean);
-      interp->interpValues(TGD, xPos, yPos, zPos, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
+      interp->interpWindsValues(WGD, pos, vel);
+      interp->interpTurbValues(TGD, pos, tau, flux_div, nuT, CoEps);
       float err = 0.0;
 
-      err = std::abs(tf->u_test_function->val(xPos, yPos, zPos) - uMean);
+      err = std::abs(tf->u_test_function->val(pos._1, pos._2, pos._3) - vel._1);
       REQUIRE(err < tol);
 
-      err = std::abs(tf->v_test_function->val(xPos, yPos, zPos) - vMean);
+      err = std::abs(tf->v_test_function->val(pos._1, pos._2, pos._3) - vel._2);
       REQUIRE(err < tol);
 
-      err = std::abs(tf->w_test_function->val(xPos, yPos, zPos) - wMean);
+      err = std::abs(tf->w_test_function->val(pos._1, pos._2, pos._3) - vel._3);
       REQUIRE(err < tol);
 
-      err = std::abs(tf->c_test_function->val(xPos, yPos, zPos) - txx);
+      err = std::abs(tf->c_test_function->val(pos._1, pos._2, pos._3) - tau._11);
       REQUIRE(err < tol);
     }
   }
@@ -120,22 +117,20 @@ TEST_CASE("test tri-linear interpolation fine grid", "[Working]")
     float errU = 0.0, errV = 0.0, errW = 0.0, errT = 0.0;
 
     for (size_t it = 0; it < xArray.size(); ++it) {
-      double xPos = xArray[it];
-      double yPos = yArray[it];
-      double zPos = zArray[it];
+      vec3 pos = { xArray[it], yArray[it], zArray[it] };
+      vec3 vel = { 0.0, 0.0, 0.0 };
+      mat3sym tau = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+      vec3 flux_div = { 0.0, 0.0, 0.0 };
+      float CoEps = 1e-6, nuT = 0.0;
 
-      double uMean = 0.0, vMean = 0.0, wMean = 0.0;
-      double txx = 0.0, txy = 0.0, txz = 0.0, tyy = 0.0, tyz = 0.0, tzz = 0.0;
-      double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
-      double CoEps = 1e-6, nuT = 0.0;
+      interp->interpWindsValues(WGD, pos, vel);
+      interp->interpTurbValues(TGD, pos, tau, flux_div, nuT, CoEps);
 
-      interp->interpValues(WGD, xPos, yPos, zPos, uMean, vMean, wMean);
-      interp->interpValues(TGD, xPos, yPos, zPos, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
 
-      errU += std::abs(tf->u_test_function->val(xPos, yPos, zPos) - uMean);
-      errV += std::abs(tf->v_test_function->val(xPos, yPos, zPos) - vMean);
-      errW += std::abs(tf->w_test_function->val(xPos, yPos, zPos) - wMean);
-      errT += std::abs(tf->c_test_function->val(xPos, yPos, zPos) - txx);
+      errU += std::abs(tf->u_test_function->val(pos._1, pos._2, pos._3) - vel._1);
+      errV += std::abs(tf->v_test_function->val(pos._1, pos._2, pos._3) - vel._2);
+      errW += std::abs(tf->w_test_function->val(pos._1, pos._2, pos._3) - vel._3);
+      errT += std::abs(tf->c_test_function->val(pos._1, pos._2, pos._3) - tau._11);
     }
 
     errU = errU / float(N);
@@ -162,7 +157,7 @@ TEST_CASE("test tri-linear interpolation coarse grid", "[Working]")
   WINDSGeneralData *WGD = new WINDSGeneralData(domain);
   TURBGeneralData *TGD = new TURBGeneralData(WGD);
 
-  auto interp = new InterpTriLinear(WGD, TGD, true);
+  auto interp = new InterpTriLinear(WGD->domain, true);
 
   test_functions *tf = new test_functions(WGD, TGD, "trig");
 
@@ -176,29 +171,27 @@ TEST_CASE("test tri-linear interpolation coarse grid", "[Working]")
     float tol(1.0e-2);
 
     for (size_t it = 0; it < xArray.size(); ++it) {
-      double xPos = xArray[it];
-      double yPos = yArray[it];
-      double zPos = zArray[it];
+      vec3 pos = { xArray[it], yArray[it], zArray[it] };
+      vec3 vel = { 0.0, 0.0, 0.0 };
+      mat3sym tau = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+      vec3 flux_div = { 0.0, 0.0, 0.0 };
+      float CoEps = 1e-6, nuT = 0.0;
 
-      double uMean = 0.0, vMean = 0.0, wMean = 0.0;
-      double txx = 0.0, txy = 0.0, txz = 0.0, tyy = 0.0, tyz = 0.0, tzz = 0.0;
-      double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
-      double CoEps = 1e-6, nuT = 0.0;
+      interp->interpWindsValues(WGD, pos, vel);
+      interp->interpTurbValues(TGD, pos, tau, flux_div, nuT, CoEps);
 
-      interp->interpValues(WGD, xPos, yPos, zPos, uMean, vMean, wMean);
-      interp->interpValues(TGD, xPos, yPos, zPos, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
       float err = 0.0;
 
-      err = std::abs(tf->u_test_function->val(xPos, yPos, zPos) - uMean);
+      err = std::abs(tf->u_test_function->val(pos._1, pos._2, pos._3) - vel._1);
       REQUIRE(err < tol);
 
-      err = std::abs(tf->v_test_function->val(xPos, yPos, zPos) - vMean);
+      err = std::abs(tf->v_test_function->val(pos._1, pos._2, pos._3) - vel._2);
       REQUIRE(err < tol);
 
-      err = std::abs(tf->w_test_function->val(xPos, yPos, zPos) - wMean);
+      err = std::abs(tf->w_test_function->val(pos._1, pos._2, pos._3) - vel._3);
       REQUIRE(err < tol);
 
-      err = std::abs(tf->c_test_function->val(xPos, yPos, zPos) - txx);
+      err = std::abs(tf->c_test_function->val(pos._1, pos._2, pos._3) - tau._11);
       REQUIRE(err < tol);
     }
   }
@@ -220,7 +213,7 @@ TEST_CASE("test tri-linear interpolation stretched grid", "[in progress]")
   WINDSGeneralData *WGD = new WINDSGeneralData(domain);
   TURBGeneralData *TGD = new TURBGeneralData(WGD);
 
-  auto interp = new InterpTriLinear(WGD, TGD, true);
+  auto interp = new InterpTriLinear(WGD->domain, true);
 
   test_functions *tf = new test_functions(WGD, TGD, "trig");
 
@@ -234,30 +227,27 @@ TEST_CASE("test tri-linear interpolation stretched grid", "[in progress]")
     float tol(1.0e-2);
 
     for (size_t it = 0; it < xArray.size(); ++it) {
-      double xPos = xArray[it];
-      double yPos = yArray[it];
-      double zPos = zArray[it];
+      vec3 pos = { xArray[it], yArray[it], zArray[it] };
+      vec3 vel = { 0.0, 0.0, 0.0 };
+      mat3sym tau = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+      vec3 flux_div = { 0.0, 0.0, 0.0 };
+      float CoEps = 1e-6, nuT = 0.0;
 
-      double uMean = 0.0, vMean = 0.0, wMean = 0.0;
-      double txx = 0.0, txy = 0.0, txz = 0.0, tyy = 0.0, tyz = 0.0, tzz = 0.0;
-      double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
-      double CoEps = 1e-6, nuT = 0.0;
-
-      interp->interpValues(WGD, xPos, yPos, zPos, uMean, vMean, wMean);
-      interp->interpValues(TGD, xPos, yPos, zPos, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
+      interp->interpWindsValues(WGD, pos, vel);
+      interp->interpTurbValues(TGD, pos, tau, flux_div, nuT, CoEps);
 
       float err = 0.0;
 
-      err = std::fabs(tf->u_test_function->val(xPos, yPos, zPos) - uMean);
+      err = std::abs(tf->u_test_function->val(pos._1, pos._2, pos._3) - vel._1);
       REQUIRE(err < tol);
 
-      err = std::fabs(tf->v_test_function->val(xPos, yPos, zPos) - vMean);
+      err = std::abs(tf->v_test_function->val(pos._1, pos._2, pos._3) - vel._2);
       REQUIRE(err < tol);
 
-      err = std::fabs(tf->w_test_function->val(xPos, yPos, zPos) - wMean);
+      err = std::abs(tf->w_test_function->val(pos._1, pos._2, pos._3) - vel._3);
       REQUIRE(err < tol);
 
-      err = std::fabs(tf->c_test_function->val(xPos, yPos, zPos) - txx);
+      err = std::abs(tf->c_test_function->val(pos._1, pos._2, pos._3) - tau._11);
       REQUIRE(err < tol);
     }
   }
@@ -286,22 +276,20 @@ TEST_CASE("test tri-linear interpolation stretched grid", "[in progress]")
     float errU = 0.0, errV = 0.0, errW = 0.0, errT = 0.0;
 
     for (size_t it = 0; it < xArray.size(); ++it) {
-      double xPos = xArray[it];
-      double yPos = yArray[it];
-      double zPos = zArray[it];
+      vec3 pos = { xArray[it], yArray[it], zArray[it] };
+      vec3 vel = { 0.0, 0.0, 0.0 };
+      mat3sym tau = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+      vec3 flux_div = { 0.0, 0.0, 0.0 };
+      float CoEps = 1e-6, nuT = 0.0;
 
-      double uMean = 0.0, vMean = 0.0, wMean = 0.0;
-      double txx = 0.0, txy = 0.0, txz = 0.0, tyy = 0.0, tyz = 0.0, tzz = 0.0;
-      double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
-      double CoEps = 1e-6, nuT = 0.0;
+      interp->interpWindsValues(WGD, pos, vel);
+      interp->interpTurbValues(TGD, pos, tau, flux_div, nuT, CoEps);
 
-      interp->interpValues(WGD, xPos, yPos, zPos, uMean, vMean, wMean);
-      interp->interpValues(TGD, xPos, yPos, zPos, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, nuT, CoEps);
 
-      errU += std::fabs(tf->u_test_function->val(xPos, yPos, zPos) - uMean);
-      errV += std::fabs(tf->v_test_function->val(xPos, yPos, zPos) - vMean);
-      errW += std::fabs(tf->w_test_function->val(xPos, yPos, zPos) - wMean);
-      errT += std::fabs(tf->c_test_function->val(xPos, yPos, zPos) - txx);
+      errU += std::abs(tf->u_test_function->val(pos._1, pos._2, pos._3) - vel._1);
+      errV += std::abs(tf->v_test_function->val(pos._1, pos._2, pos._3) - vel._2);
+      errW += std::abs(tf->w_test_function->val(pos._1, pos._2, pos._3) - vel._3);
+      errT += std::abs(tf->c_test_function->val(pos._1, pos._2, pos._3) - tau._11);
     }
 
     errU = errU / float(N);

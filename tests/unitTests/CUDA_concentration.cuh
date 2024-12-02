@@ -10,7 +10,7 @@
 #include "util/VectorMath.h"
 #include "plume/IDGenerator.h"
 
-#include "Particle.h"
+#include "plume/Particle.h"
 
 #include <cuda.h>
 #include <curand.h>

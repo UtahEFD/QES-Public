@@ -10,7 +10,8 @@
 #include <list>
 #include <chrono>
 
-#include "util/ManagedContainer.h"
+#include "plume/ManagedContainer.h"
+#include "plume/IDGenerator.h"
 // #include "plume/ParticleManager.h"
 
 #include "plume/Particle.h"
@@ -21,7 +22,7 @@
 void scrubParticleList(std::list<Particle *> &particleList)
 {
   for (auto parItr = particleList.begin(); parItr != particleList.end();) {
-    if (!(*parItr)->isActive) {
+    if ((*parItr)->state != ACTIVE) {
       delete *parItr;
       parItr = particleList.erase(parItr);
     } else {
@@ -32,7 +33,7 @@ void scrubParticleList(std::list<Particle *> &particleList)
 
 void advect(Particle *p)
 {
-  p->uMean = 10;
+  p->velMean = { 10, 0, 0 };
 }
 
 TEST_CASE("buffer", "[in progress]")
@@ -47,7 +48,7 @@ TEST_CASE("buffer", "[in progress]")
     for (int pidx = 0; pidx < 1000; ++pidx) {
 
       Particle *cPar = new TracerParticle();
-      cPar->isActive = true;
+      cPar->state = ACTIVE;
       nextSetOfParticles.push_front(cPar);
     }
     particleList.insert(particleList.end(), nextSetOfParticles.begin(), nextSetOfParticles.end());
@@ -57,7 +58,7 @@ TEST_CASE("buffer", "[in progress]")
       float t = prng.uniRan();
       advect(p);
       if (t > 0.8)
-        p->isActive = false;
+        p->state = INACTIVE;
     }
     scrubParticleList(particleList);
   }
@@ -102,19 +103,21 @@ TEST_CASE("buffer", "[in progress]")
 
   start = std::chrono::high_resolution_clock::now();
   ManagedContainer<TracerParticle> tracers;
+  IDGenerator *id_gen = IDGenerator::getInstance();
   int new_tracers = 1E3;
   for (int k = 0; k < 10000; ++k) {
     tracers.sweep(new_tracers);
 
     for (int pidx = 0; pidx < new_tracers; ++pidx) {
       tracers.insert();
+      tracers.last_added()->ID = id_gen->get();
     }
     Random prng;
     for (auto &tracer : tracers) {
       float t = prng.uniRan();
       advect(&tracer);
       if (t > 0.8)
-        tracer.isActive = false;
+        tracer.state = INACTIVE;
     }
   }
 
@@ -124,7 +127,7 @@ TEST_CASE("buffer", "[in progress]")
   elapsed = finish - start;
   std::cout << "elapsed time: " << elapsed.count() << " s\n";
 
-  REQUIRE(tracers.last_added()->particleID == 10000 * new_tracers - 1);
+  REQUIRE(tracers.last_added()->ID == 10000 * new_tracers - 1);
   REQUIRE(tracers.size() == 6000);
 }
 
@@ -144,7 +147,7 @@ TEST_CASE("buffer large", "[in progress]")
       float t = prng.uniRan();
       advect(&tracer);
       if (t > 0.8)
-        tracer.isActive = false;
+        tracer.state = INACTIVE;
     }
   }
 

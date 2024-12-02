@@ -28,10 +28,10 @@ SET( qesPlumeCoreSources
     TracerParticle_Model.cpp
     TracerParticle_Source.cpp
     TracerParticle_Concentration.cpp
-
-    HeavyParticle_Model.cpp
-    HeavyParticle_Source.cpp
-    HeavyParticle_Concentration.cpp
+    
+    #HeavyParticle_Model.cpp
+    #HeavyParticle_Source.cpp
+    #HeavyParticle_Concentration.cpp
 
     PI_Source.cpp
 
@@ -60,6 +60,15 @@ SET( qesPlumeCoreSources
       ${qesPlumeCoreSources}
    )
 #ENDIF ($CACHE{HAS_CUDA_SUPPORT})
+
+IF ($CACHE{HAS_CUDA_SUPPORT})
+  CUDA_ADD_LIBRARY(qesplumegpu
+    cuda/Partition.cu
+    cuda/RandomGenerator.cpp
+    cuda/Interpolation.cu
+    cuda/Model.cu
+    cuda/Concentration.cu)
+ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 #target_link_libraries (qesplumecore quicloader) 
 #target_link_libraries (qesplumecore util)

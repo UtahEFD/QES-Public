@@ -67,7 +67,8 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
   ADD_LIBRARY(qeswindsgpu
     Solver_GPU_DynamicParallelism.cu
     Solver_GPU_GlobalMemory.cu 
-    Solver_GPU_SharedMemory.cu 
+    Solver_GPU_SharedMemory.cu
+    WINDSGeneralData.cu
     TURBGeneralData.cu
     WindProfilerBarnGPU.cu)
     TARGET_INCLUDE_DIRECTORIES(qeswindsgpu PRIVATE {CUDAToolkit_INCLUDE_DIRS})

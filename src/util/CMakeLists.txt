@@ -22,10 +22,6 @@ SET( qesUtilSources
   Ray.cpp Ray.h
   SphereDirections.cpp SphereDirections.h
 
-  Matrix3.h
-
-  ManagedContainer.h
-
   NetCDFInput.cpp
   NetCDFOutput.cpp
   QESNetCDFOutput.cpp 

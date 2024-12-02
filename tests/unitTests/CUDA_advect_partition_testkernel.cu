@@ -169,14 +169,22 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
 
       curandGenerateNormal(gen, d_RNG_vals, 3 * length, 0.0, 1.0);
 
-      partition_particle<<<numBlocks_buffer, blockSize>>>(d_particle_list[idx], d_particle_list[alt_idx], d_lower_count, d_upper_count, length);
+      partition_particle<<<numBlocks_buffer, blockSize>>>(d_particle_list[idx],
+                                                          d_particle_list[alt_idx],
+                                                          d_lower_count,
+                                                          d_upper_count,
+                                                          length);
       cudaDeviceSynchronize();
 
-      insert_particle<<<numBlocks_new_particle, blockSize>>>(length, new_particle, d_lower_count, d_new_particle_list, d_particle_list[idx]);
+      insert_particle<<<numBlocks_new_particle, blockSize>>>(new_particle,
+                                                             d_lower_count,
+                                                             d_new_particle_list,
+                                                             d_particle_list[idx],
+                                                             length);
       cudaDeviceSynchronize();
 
       interpolate_particle<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx]);
-      advect_particle<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx], d_RNG_vals, bc_param);
+      advect_particle<<<numBlocks_all_particle, blockSize>>>(d_particle_list[idx], d_RNG_vals, bc_param, num_particle);
 
       // this is slower that calling devive function bc in the kernel
       // boundary_conditions<<<numBlocks_all_particle, blockSize>>>(num_particle, d_particle_list[idx]);

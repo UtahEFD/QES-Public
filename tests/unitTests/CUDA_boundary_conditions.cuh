@@ -11,7 +11,7 @@
 #include "util/VectorMath.h"
 // #include "util/VectorMath_CUDA.cuh"
 
-#include "Particle.h"
+#include "plume/Particle.h"
 
 #include <cuda.h>
 #include <curand.h>

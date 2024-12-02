@@ -73,17 +73,17 @@ void PI_SourceGeometry_Line::checkPosInfo(const double &domainXstart, const doub
   }
 }
 
-void PI_SourceGeometry_Line::setInitialPosition(double &x, double &y, double &z)
+void PI_SourceGeometry_Line::setInitialPosition(vec3 &p)
 {
   // generate random point on line between m_pt0 and m_pt1
-  double diffX = posX_1 - posX_0;
-  double diffY = posY_1 - posY_0;
-  double diffZ = posZ_1 - posZ_0;
+  float diffX = posX_1 - posX_0;
+  float diffY = posY_1 - posY_0;
+  float diffZ = posZ_1 - posZ_0;
 
   Random prng;
   float t = prng.uniRan();
-  
-  x = posX_0 + t * diffX;
-  y = posY_0 + t * diffY;
-  z = posZ_0 + t * diffZ;
+
+  p._1 = posX_0 + t * diffX;
+  p._2 = posY_0 + t * diffY;
+  p._3 = posZ_0 + t * diffZ;
 }

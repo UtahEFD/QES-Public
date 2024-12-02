@@ -88,10 +88,10 @@ void PI_SourceGeometry_Cube ::checkPosInfo(const double &domainXstart, const dou
   }
 }
 
-void PI_SourceGeometry_Cube ::setInitialPosition(double &x, double &y, double &z)
+void PI_SourceGeometry_Cube ::setInitialPosition(vec3 &p)
 {
   // generate uniform dist in domain
-  x = uniformDistribution(prng) * (m_maxX - m_minX) + m_minX;
-  y = uniformDistribution(prng) * (m_maxY - m_minY) + m_minY;
-  z = uniformDistribution(prng) * (m_maxZ - m_minZ) + m_minZ;
+  p._1 = uniformDistribution(prng) * (m_maxX - m_minX) + m_minX;
+  p._2 = uniformDistribution(prng) * (m_maxY - m_minY) + m_minY;
+  p._3 = uniformDistribution(prng) * (m_maxZ - m_minZ) + m_minZ;
 }

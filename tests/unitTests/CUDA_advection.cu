@@ -98,7 +98,10 @@ __device__ void solve(particle_array p, int tid, float par_dt, float invarianceT
   p.tau_old[tid] = p.tau[tid];
 }
 
-__device__ void advect(particle_array p, int tid, float par_dt, const BC_Params &bc_param)
+__device__ void advect(particle_array p,
+                       int tid,
+                       float par_dt,
+                       const BC_Params &bc_param)
 {
   vec3 dist{ (p.velMean[tid]._1 + p.velFluct[tid]._1) * par_dt,
              (p.velMean[tid]._2 + p.velFluct[tid]._2) * par_dt,
@@ -117,13 +120,18 @@ __device__ void advect(particle_array p, int tid, float par_dt, const BC_Params 
   p.velFluct_old[tid] = p.velFluct[tid];
 }
 
-__global__ void advect_particle(int length, particle_array d_particle_list, float *d_RNG_vals, const BC_Params &bc_param)
+__global__ void advect_particle(particle_array d_particle_list,
+                                float *d_RNG_vals,
+                                const BC_Params &bc_param,
+                                int length)
 {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
   if (idx < length) {
     if (d_particle_list.state[idx] == ACTIVE) {
 
-      solve(d_particle_list, idx, 1.0f, 0.0000001f, 10.0f, { d_RNG_vals[idx], d_RNG_vals[idx + length], d_RNG_vals[idx + 2 * length] });
+      vec3 rng = { d_RNG_vals[idx], d_RNG_vals[idx + length], d_RNG_vals[idx + 2 * length] };
+      solve(d_particle_list, idx, 1.0f, 0.0000001f, 10.0f, rng);
+
       advect(d_particle_list, idx, 1.0f, bc_param);
     }
   }

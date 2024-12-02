@@ -81,13 +81,9 @@ public:
   ~Deposition() = default;
 
   void deposit(Particle *p,
-               const double &disX,
-               const double &disY,
-               const double &disZ,
-               const double &uTot,
-               const double &vTot,
-               const double &wTot,
-               const double &vs,
+               const vec3 &dist,
+               const vec3 &vel,
+               const float &vs,
                WINDSGeneralData *,
                TURBGeneralData *,
                Interp *);

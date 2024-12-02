@@ -104,6 +104,10 @@ private:
   VectorMath() = default;
 
 public:
+  static vec3 add(const vec3 &x, const vec3 &y);
+  static vec3 abs(const vec3 &x);
+  static vec3 subtract(const vec3 &x, const vec3 &y);
+  static vec3 multiply(const float &a, const vec3 &x);
   static float length(const vec3 &);
   static float dot(const vec3 &, const vec3 &);
   static void reflect(const vec3 &, vec3 &);
@@ -111,9 +115,31 @@ public:
 
   static void calcInvariants(const mat3sym &, vec3 &);
   static void makeRealizable(const float &, mat3sym &);
+  static float determinant(const mat3 &);
   static bool invert(mat3 &);
   static void multiply(const mat3 &, const vec3 &, vec3 &);
+  static vec3 multiply(const mat3 &, const vec3 &);
 };
+
+inline vec3 VectorMath::add(const vec3 &x, const vec3 &y)
+{
+  return { x._1 + y._1, x._2 + y._2, x._3 + y._3 };
+}
+
+inline vec3 VectorMath::abs(const vec3 &x)
+{
+  return { std::abs(x._1), std::abs(x._2), std::abs(x._3) };
+}
+
+inline vec3 VectorMath::subtract(const vec3 &x, const vec3 &y)
+{
+  return { x._1 - y._1, x._2 - y._2, x._3 - y._3 };
+}
+
+inline vec3 VectorMath::multiply(const float &a, const vec3 &x)
+{
+  return { a * x._1, a * x._2, a * x._3 };
+}
 
 inline float VectorMath::length(const vec3 &x)
 {
@@ -227,14 +253,19 @@ inline void VectorMath::makeRealizable(const float &invarianceTol, mat3sym &tau)
   tau = tau_new;
 }
 
+inline float VectorMath::determinant(const mat3 &A)
+{
+  // calculate the determinant
+  return A._11 * (A._22 * A._33 - A._23 * A._32)
+         - A._12 * (A._21 * A._33 - A._23 * A._31)
+         + A._13 * (A._21 * A._32 - A._22 * A._31);
+}
 
 inline bool VectorMath::invert(mat3 &A)
 {
 
   // calculate the determinant
-  float det = A._11 * (A._22 * A._33 - A._23 * A._32)
-              - A._12 * (A._21 * A._33 - A._23 * A._31)
-              + A._13 * (A._21 * A._32 - A._22 * A._31);
+  float det = determinant(A);
 
   // check for near zero value determinants
   if (std::abs(det) < 1e-6) {
@@ -278,4 +309,12 @@ inline void VectorMath::multiply(const mat3 &A, const vec3 &b, vec3 &x)
   x._1 = b._1 * A._11 + b._2 * A._12 + b._3 * A._13;
   x._2 = b._1 * A._21 + b._2 * A._22 + b._3 * A._23;
   x._3 = b._1 * A._31 + b._2 * A._32 + b._3 * A._33;
+}
+
+inline vec3 VectorMath::multiply(const mat3 &A, const vec3 &b)
+{
+  // now calculate the x=Ab
+  return { b._1 * A._11 + b._2 * A._12 + b._3 * A._13,
+           b._1 * A._21 + b._2 * A._22 + b._3 * A._23,
+           b._1 * A._31 + b._2 * A._32 + b._3 * A._33 };
 }

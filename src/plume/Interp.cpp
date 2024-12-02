@@ -33,13 +33,15 @@
 #include "Interp.h"
 
 
-Interp::Interp(WINDSGeneralData *WGD)
+Interp::Interp(qes::Domain domain_in)
+  : domain(std::move(domain_in))
 {
+
   // std::cout << "[Interp] \t Setting Interp fields " << std::endl;
 
   // copy WGD grid information
-  std::tie(nx, ny, nz) = WGD->domain.getDomainCellNum();
-  std::tie(dx, dy, dz) = WGD->domain.getDomainSize();
+  std::tie(nx, ny, nz) = domain.getDomainCellNum();
+  std::tie(dx, dy, dz) = domain.getDomainSize();
 
   // domain beginning for interpolation in each direction
   // in x-direction (halo cell to account for TURB variables)
@@ -54,12 +56,27 @@ Interp::Interp(WINDSGeneralData *WGD)
 
   // get the TGD domain start and end values, other WGD grid information
   // in x-direction (face)
-  xStart = WGD->domain.x[iStart] - 0.5 * dx;
-  xEnd = WGD->domain.x[iEnd] + 0.5 * dx;
+  xStart = domain.x[iStart] - 0.5 * dx;
+  xEnd = domain.x[iEnd] + 0.5 * dx;
   // in y-direction (face)
-  yStart = WGD->domain.y[jStart] - 0.5 * dy;
-  yEnd = WGD->domain.y[jEnd] + 0.5 * dy;
+  yStart = domain.y[jStart] - 0.5 * dy;
+  yEnd = domain.y[jEnd] + 0.5 * dy;
   // in z-direction (face)
-  zStart = WGD->domain.z_face[kStart];
-  zEnd = WGD->domain.z_face[kEnd];
+  zStart = domain.z_face[kStart];
+  zEnd = domain.z_face[kEnd];
+}
+
+void Interp::getDomainBounds(float &domainXstart,
+                             float &domainXend,
+                             float &domainYstart,
+                             float &domainYend,
+                             float &domainZstart,
+                             float &domainZend)
+{
+  domainXstart = xStart;
+  domainXend = xEnd;
+  domainYstart = yStart;
+  domainYend = yEnd;
+  domainZstart = zStart;
+  domainZend = zEnd;
 }
