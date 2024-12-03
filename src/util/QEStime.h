@@ -85,15 +85,15 @@ public:
 
   double operator-(const QEStime &);
 
-  bool operator==(const std::string &);
-  bool operator==(const QEStime &);
-  bool operator!=(const QEStime &);
+  bool operator==(const std::string &) const;
+  bool operator==(const QEStime &) const;
+  bool operator!=(const QEStime &) const;
 
-  bool operator<=(const QEStime &);
-  bool operator<(const QEStime &);
+  bool operator<=(const QEStime &) const;
+  bool operator<(const QEStime &) const;
 
-  bool operator>=(const QEStime &);
-  bool operator>(const QEStime &);
+  bool operator>=(const QEStime &) const;
+  bool operator>(const QEStime &) const;
 
   double operator%(const double &);
 

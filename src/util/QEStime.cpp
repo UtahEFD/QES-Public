@@ -115,38 +115,38 @@ double QEStime::operator-(const QEStime &t2)
   return x;
 }
 
-bool QEStime::operator==(const std::string &t)
+bool QEStime::operator==(const std::string &t) const
 {
   btime::ptime testtime = btime::from_iso_extended_string(t);
   return m_ptime == testtime;
 }
 
-bool QEStime::operator==(const QEStime &t)
+bool QEStime::operator==(const QEStime &t) const
 {
   return m_ptime == t.m_ptime;
 }
 
-bool QEStime::operator!=(const QEStime &t)
+bool QEStime::operator!=(const QEStime &t) const
 {
   return m_ptime != t.m_ptime;
 }
 
-bool QEStime::operator<=(const QEStime &t)
+bool QEStime::operator<=(const QEStime &t) const
 {
   return m_ptime <= t.m_ptime;
 }
 
-bool QEStime::operator<(const QEStime &t)
+bool QEStime::operator<(const QEStime &t) const
 {
   return m_ptime < t.m_ptime;
 }
 
-bool QEStime::operator>=(const QEStime &t)
+bool QEStime::operator>=(const QEStime &t) const
 {
   return m_ptime >= t.m_ptime;
 }
 
-bool QEStime::operator>(const QEStime &t)
+bool QEStime::operator>(const QEStime &t) const
 {
   return m_ptime > t.m_ptime;
 }
