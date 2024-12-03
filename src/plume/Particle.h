@@ -37,6 +37,7 @@
 #include <cmath>
 #include <utility>
 
+#include "util/QEStime.h"
 #include "util/VectorMath.h"
 #include "util/ParseInterface.h"
 
@@ -190,12 +191,14 @@ public:
   Particle(const bool &flag, const ParticleType &type_in)
     : type(type_in), state(INACTIVE),
       d(0.0), m(0.0), m_o(0.0), rho(0.0),
-      c1(2.049), c2(1.19), depFlag(flag), decayConst(0.0), wdecay(1.0)
+      c1(2.049), c2(1.19), depFlag(flag), decayConst(0.0), wdecay(1.0),
+      sourceIdx(-1)
   {}
   explicit Particle(const ParticleType &type_in)
     : type(type_in), state(INACTIVE),
       d(0.0), m(0.0), m_o(0.0), rho(0.0),
-      c1(2.049), c2(1.19), depFlag(false), decayConst(0.0), wdecay(1.0)
+      c1(2.049), c2(1.19), depFlag(false), decayConst(0.0), wdecay(1.0),
+      sourceIdx(-1)
   {}
   /*
     // initializer
@@ -224,12 +227,12 @@ public:
 
   // the time of release for the particle
   double tStrt{};
-
+  QEStime timeStrt{};
   // id of particle (for tracking purposes)
   uint32_t ID{};
 
   // the index of the source the particle came from
-  int sourceIdx{};
+  int sourceIdx;
 
 
   // once initial positions are known, can set these values using urb and turb info
