@@ -3,7 +3,7 @@
   	<halo_x> 0 </halo_x >						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 0 </halo_y >						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
     <domain> 100 100 35 </domain> <!-- nx,ny,nz-->
-	<cellSize> 2 2 1 </cellSize> <!-- dx, dy,dz [Meters]-->	
+	<cellSize> 5 5 1 </cellSize> <!-- dx, dy,dz [Meters]-->	
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 1 </totalTimeIncrements>
 	<maxIterations> 500 </maxIterations>
@@ -24,7 +24,7 @@
        		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
        		<height> 5.0 </height> 				<!-- Height of the sensor -->
        		<speed> 10.0 </speed> 					<!-- Measured speed at the sensor height -->
-       		<direction> 180 </direction> 				<!-- Wind direction of sensor -->
+       		<direction> 195 </direction> 				<!-- Wind direction of sensor -->
     	    </timeSeries>
 	</sensor>                      					<!-- End of sensor section -->
 </metParams>
@@ -34,20 +34,20 @@
 </turbParams>
 
 <fires>
-	<fireDur> 360 </fireDur>
-	<fuelType> 203 </fuelType>
+	<fireDur> 3600 </fireDur>
+	<fuelType> 106 </fuelType>
 	<!--fuelMap>../FireFiles/test.tif</fuelMap-->
-	<fmc> 0.02 </fmc>
-
+	<fmc> 0.05 </fmc> <!--dead fuel moisture content-->
+	<cure> 1.2 </cure>  <!--live fuel moisture content-->
     <courant> 0.9 </courant>
     <fieldFlag> 0 </fieldFlag> <!-- flag for if multiple timesteps for fire -->
     <ignition>
     	<height> 2 </height>
     	<baseHeight> 0 </baseHeight> <!--meters-->
-    	<xStart> 45.0 </xStart> <!--meters-->
+    	<xStart> 105.0 </xStart> <!--meters-->
     	<yStart> 15.0 </yStart> <!--meters-->
-    	<length> 10.0 </length> <!--meters-->
-    	<width>  2.0 </width> <!--meters-->
+    	<length> 20.0 </length> <!--meters-->
+    	<width>  5.0 </width> <!--meters-->
     </ignition>
 
 </fires>
