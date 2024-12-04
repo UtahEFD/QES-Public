@@ -96,10 +96,10 @@ public:
   {
     return m_rType;
   }
-  int getNumParticles()
+  /*int getNumParticles()
   {
     return m_releaseType->m_numPar;
-  }
+  }*/
   // this is a pointer to the release type, which is expected to be chosen by parseValues() by each source via a call to setReleaseType().
   // this data structure holds information like the total number of particles to be released by the source, the number of particles to release
   // per time for each source, and the start and end times to be releasing from the source.

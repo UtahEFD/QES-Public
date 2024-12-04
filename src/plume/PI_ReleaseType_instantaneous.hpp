@@ -42,10 +42,10 @@
 class PI_ReleaseType_instantaneous : public PI_ReleaseType
 {
 private:
-  // note that this also inherits data members ParticleReleaseType m_rType, int m_particlePerTimestep, double m_releaseStartTime,
-  //  double m_releaseEndTime, and int m_numPar from ReleaseType.
+  // note that this also inherits data members
+  // ParticleReleaseType m_rType, int m_particlePerTimestep, double m_releaseStartTime,
+  // double m_releaseEndTime, and int m_numPar from ReleaseType.
   // guidelines for how to set these variables within an inherited ReleaseType are given in ReleaseType.hpp.
-
 
 protected:
 public:

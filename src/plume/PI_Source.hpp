@@ -66,10 +66,10 @@ public:
   // destructor
   virtual ~PI_Source() = default;
 
-  int getNumParticles()
+  /*int getNumParticles()
   {
     return m_releaseType->m_numPar;
-  }
+  }*/
 
   void setReleaseType();
   void setSourceGeometry();

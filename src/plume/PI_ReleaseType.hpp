@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file ReleaseType.hpp
+/** @file PI_ReleaseType.hpp
  * @brief This class represents a generic particle release type.
  * The idea is to make other classes that inherit from this class
  * that are the specific release types, that make it easy to set the desired particle
@@ -57,6 +57,14 @@ private:
   PI_ReleaseType() = default;
 
 protected:
+  // Total number of particles expected to be released by the source over
+  // the entire simulation
+  int m_numPar = -1;
+  // Total mass to be released [g]
+  double m_totalMass = 0.0;
+  // Mass [g/s] to be released
+  double m_massPerSec = 0.0;
+
 public:
   // Description variable for source release type.
   // set by the constructor of the derived classes.
@@ -68,17 +76,11 @@ public:
   double m_releaseStartTime = -1.0;
   // Time the source ends releasing particles
   double m_releaseEndTime = -1.0;
-  // Total number of particles expected to be released by the source over
-  // the entire simulation
-  int m_numPar = -1;
-  // Total mass to be released [g]
-  double m_totalMass = 0.0;
-  // Mass [g/s] to be released
-  double m_massPerSec = 0.0;
   // Mass per particle
   double m_massPerParticle = 0.0;
 
-  explicit PI_ReleaseType(const ParticleReleaseType &type) : parReleaseType(type)
+  explicit PI_ReleaseType(const ParticleReleaseType &type)
+    : parReleaseType(type)
   {
   }
 
@@ -86,48 +88,30 @@ public:
   virtual ~PI_ReleaseType() = default;
 
 
-  // this function is used to parse all the variables for each release type in a given source from the input .xml file
-  // each release type overloads this function with their own version, allowing different combinations of input variables for each release type,
-  // all these differences handled by parseInterface().
-  // The = 0 at the end should force each inheriting class to require their own version of this function
-  // !!! in order for all the different combinations of input variables to work properly for each source, this function requires
-  //  manually setting the variable parReleaseType in each version found in release types that inherit from this class.
-  //  This is in addition to any other variables required for an individual release type that inherits from this class.
+  /**
+   * /brief This function is used to parse all the variables for each release type
+   * in a given source from the input .xml file each release type overloads this function
+   * with their own version, allowing different combinations of input variables for each release type,
+   * all these differences handled by parseInterface().
+   */
   virtual void parseValues() = 0;
 
-
-  // this function is for setting the required inherited variables int m_particlePerTimestep, double m_releaseStartTime,
-  //  double m_releaseEndTime, and m_numPar. The way this is done differs for each release type inheriting from this class.
-  // Note that this is a pure virtual function - enforces that the derived class MUST define this function
-  //  this is done by the = 0 at the end of the function.
-  // !!! Care must be taken to set all these variables in each inherited version of this function, where the calculated values
-  //  will be able to pass the call to checkReleaseInfo() by the class setting up a vector of all the sources.
-  // !!! each release type needs to have this function manually called for them by whatever class sets up a vector of this class.
-  // !!! LA note and warn: the numPar is a bit tricky to calculate correctly because the nReleaseTimes is tough to calculate correctly
-  //  if the simulation list of times has a major change, this may lead to a change in the way numPar is calculated.
-  //  For now, the method is as follows: if you have times 0 to 10 with timestep 1, the nTimes should be 11
-  //  BUT releasing 10 particles at each of the times up to nTimes would result in 110 particles. At the same time, the
-  //  simultion time loop goes from 0 to nTimes-2 NOT 0 to nTimes-1 BECAUSE each time iteration is actually calculating particles positions
-  //  for the next time, not the current time. THIS MEANS particles should be released over nTimes-1, NOT over nTimes like you would think.
-  //  For both a list of times from 0 to 10 with timesteps 1 and 4, std::ceil(releaseDur/dt) = nTimes-1 NOT nTimes, which is EXACTLy what we want.
-  //  !!! Care should be taken to use nReleaseTimes = std::ceil(releaseDur/dt) each instance to get the correct number of times particles should be released.
+  /**
+   * /brief This function is for setting the required inherited variables int m_particlePerTimestep,
+   * double m_releaseStartTime, double m_releaseEndTime, and m_numPar
+   *
+   * @param timestep   simulation time step.
+   * @param simDur     simulation duration.
+   */
   virtual void calcReleaseInfo(const double &timestep, const double &simDur) = 0;
 
-
-  // this function is for checking the set release type variables to make sure they are consistent with simulation information.
-  // !!! each release type needs to have this function manually called for them by whatever class sets up a vector of this class.
-  // LA-note: the check functions are starting to be more diverse and in different spots.
-  //  Maybe a better name for this function would be something like checkReleaseTypeInfo().
-  // LA-warn: should this be virtual? The idea is that I want it to stay as this function no matter what ReleaseType is chosen,
-  //  I don't want this function overloaded by any classes inheriting this class.
-  // !!! LA note and warn: the numPar is a bit tricky to calculate correctly because the nReleaseTimes is tough to calculate correctly
-  //  if the simulation list of times has a major change, this may lead to a change in the way numPar is calculated.
-  //  For now, the method is as follows: if you have times 0 to 10 with timestep 1, the nTimes should be 11
-  //  BUT releasing 10 particles at each of the times up to nTimes would result in 110 particles. At the same time, the
-  //  simultion time loop goes from 0 to nTimes-2 NOT 0 to nTimes-1 BECAUSE each time iteration is actually calculating particles positions
-  //  for the next time, not the current time. THIS MEANS particles should be released over nTimes-1, NOT over nTimes like you would think.
-  //  For both a list of times from 0 to 10 with timesteps 1 and 4, std::ceil(releaseDur/dt) = nTimes-1 NOT nTimes, which is EXACTLy what we want.
-  //  !!! Care should be taken to use nReleaseTimes = std::ceil(releaseDur/dt) each instance to get the correct number of times particles should be released.
+  /**
+   * /brief This function is for checking the set release type variables to make sure
+   * they are consistent with simulation information.
+   *
+   * @param timestep   simulation time step.
+   * @param simDur     simulation duration.
+   */
   virtual void checkReleaseInfo(const double &timestep, const double &simDur)
   {
     if (m_particlePerTimestep <= 0) {
