@@ -56,22 +56,20 @@ public:
   }
 
   // destructor
-  ~PI_ReleaseType_continuous() = default;
+  ~PI_ReleaseType_continuous() override = default;
 
   void parseValues() override
   {
     parsePrimitive<int>(true, m_particlePerTimestep, "particlePerTimestep");
     parsePrimitive<float>(false, m_massPerSec, "massPerSec");
+    parsePrimitive<float>(false, m_massPerTimestep, "massPerTimestep");
   }
 
-
-  void calcReleaseInfo(const float &timestep, const float &simDur) override
+  void calcReleaseInfo(const float &timestep) override
   {
     // set the overall releaseType variables from the variables found in this class
     m_releaseStartTime = 0;
-    m_releaseEndTime = simDur;
-    int nReleaseTimes = std::ceil(simDur / timestep);
-    m_numPar = m_particlePerTimestep * nReleaseTimes;
-    m_massPerParticle = m_massPerSec / (m_particlePerTimestep / timestep);
+    m_releaseEndTime = 1.0E10;
+    m_massPerTimestep = m_massPerSec * timestep;
   }
 };

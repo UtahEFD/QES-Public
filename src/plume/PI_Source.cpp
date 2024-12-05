@@ -102,7 +102,7 @@ void PI_Source::setSourceGeometry()
 
 void PI_Source::checkReleaseInfo(const float &timestep, const float &simDur)
 {
-  m_releaseType->calcReleaseInfo(timestep, simDur);
+  m_releaseType->calcReleaseInfo(timestep);
   m_releaseType->checkReleaseInfo(timestep, simDur);
 }
 

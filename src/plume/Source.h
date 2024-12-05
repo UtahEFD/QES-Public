@@ -64,9 +64,9 @@ private:
 protected:
   Source() = default;
 
-  ParticleType m_pType{};
-  SourceShape m_sGeom{};
-  ParticleReleaseType m_rType{};
+  // ParticleType m_pType{};
+  // SourceShape m_sGeom{};
+  // ParticleReleaseType m_rType{};
 
   // ParticleTypeFactory *m_particleTypeFactory{};
   ParseParticle *m_protoParticle{};
@@ -82,20 +82,20 @@ public:
   int sourceIdx = -1;
 
   // accessor to particle type
-  // ParticleType particleType()
-  //{
-  //  return m_pType;
-  //}
+  /*ParticleType particleType()
+  {
+    return m_pType;
+  }*/
   // accessor to geometry type
-  SourceShape geometryType()
+  /*SourceShape geometryType()
   {
     return m_sGeom;
-  }
+  }*/
   // accessor to release type
-  ParticleReleaseType releaseType()
+  /*ParticleReleaseType releaseType()
   {
     return m_rType;
-  }
+  }*/
   /*int getNumParticles()
   {
     return m_releaseType->m_numPar;
@@ -118,8 +118,8 @@ public:
     m_releaseType = in->m_releaseType;
 
     // set types
-    m_sGeom = m_sourceGeometry->m_sGeom;
-    m_rType = m_releaseType->parReleaseType;
+    // m_sGeom = m_sourceGeometry->m_sGeom;
+    // m_rType = m_releaseType->parReleaseType;
 
     id_gen = ParticleIDGen::getInstance();
   }

@@ -75,15 +75,15 @@ public:
   void setSourceGeometry();
 
   // accessor to geometry type
-  SourceShape geometryType()
+  /*SourceShape geometryType()
   {
     return m_sourceGeometry->m_sGeom;
-  }
+  }*/
   // accessor to release type
-  ParticleReleaseType releaseType()
+  /*ParticleReleaseType releaseType()
   {
     return m_releaseType->parReleaseType;
-  }
+  }*/
 
   void parseValues() override
   {

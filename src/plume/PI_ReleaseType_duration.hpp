@@ -54,7 +54,7 @@ public:
   }
 
   // destructor
-  ~PI_ReleaseType_duration() = default;
+  ~PI_ReleaseType_duration() override = default;
 
   void parseValues() override
   {
@@ -66,7 +66,7 @@ public:
   }
 
 
-  void calcReleaseInfo(const float &timestep, const float &simDur) override
+  void calcReleaseInfo(const float &timestep) override
   {
     // set the overall releaseType variables from the variables found in this class
     float releaseDur = m_releaseEndTime - m_releaseStartTime;
@@ -81,12 +81,12 @@ public:
       exit(1);
     } else if (m_totalMass != 0.0) {
       m_massPerSec = m_totalMass / releaseDur;
-      m_massPerParticle = m_totalMass / m_numPar;
+      m_massPerTimestep = m_totalMass / (float)m_particlePerTimestep;
     } else if (m_massPerSec != 0.0) {
       m_totalMass = m_massPerSec * releaseDur;
-      m_massPerParticle = m_massPerSec / (m_particlePerTimestep / timestep);
+      m_massPerTimestep = m_massPerSec * timestep;
     } else {
-      m_massPerParticle = 0.0;
+      m_massPerTimestep = 0.0;
     }
   }
 };

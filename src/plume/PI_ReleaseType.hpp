@@ -57,6 +57,10 @@ private:
   PI_ReleaseType() = default;
 
 protected:
+  // Description variable for source release type.
+  // set by the constructor of the derived classes.
+  ParticleReleaseType parReleaseType{};
+  
   // Total number of particles expected to be released by the source over
   // the entire simulation
   int m_numPar = -1;
@@ -66,18 +70,14 @@ protected:
   float m_massPerSec = 0.0;
 
 public:
-  // Description variable for source release type.
-  // set by the constructor of the derived classes.
-  ParticleReleaseType parReleaseType{};
-
   // Number of particles to release each timestep
   int m_particlePerTimestep = -1;
+  // Mass to release each timestep
+  float m_massPerTimestep = 0.0;
   // Time the source starts releasing particles
   float m_releaseStartTime = -1.0;
   // Time the source ends releasing particles
   float m_releaseEndTime = -1.0;
-  // Mass per particle
-  float m_massPerParticle = 0.0;
 
   explicit PI_ReleaseType(const ParticleReleaseType &type)
     : parReleaseType(type)
@@ -86,7 +86,6 @@ public:
 
   // destructor
   virtual ~PI_ReleaseType() = default;
-
 
   /**
    * /brief This function is used to parse all the variables for each release type
@@ -103,7 +102,7 @@ public:
    * @param timestep   simulation time step.
    * @param simDur     simulation duration.
    */
-  virtual void calcReleaseInfo(const float &timestep, const float &simDur) = 0;
+  virtual void calcReleaseInfo(const float &timestep) = 0;
 
   /**
    * /brief This function is for checking the set release type variables to make sure
@@ -124,11 +123,11 @@ public:
       std::cerr << " m_releaseStartTime = \"" << m_releaseStartTime << "\"" << std::endl;
       exit(1);
     }
-    if (m_releaseEndTime > simDur) {
+    /*if (m_releaseEndTime > simDur) {
       std::cerr << "ERROR (ReleaseType::checkReleaseInfo): input m_releaseEndTime is > input simDur!";
       std::cerr << " m_releaseEndTime = \"" << m_releaseEndTime << "\", simDur = \"" << simDur << "\"" << std::endl;
       exit(1);
-    }
+    }*/
     if (m_releaseEndTime < m_releaseStartTime) {
       std::cerr << "ERROR (ReleaseType::checkReleaseInfo): input m_releaseEndTime is < input m_releaseStartTime!";
       std::cerr << " m_releaseStartTime = \"" << m_releaseStartTime << "\", m_releaseEndTime = \"" << m_releaseEndTime << "\"" << std::endl;

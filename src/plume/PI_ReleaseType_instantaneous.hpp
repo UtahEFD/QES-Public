@@ -55,7 +55,7 @@ public:
   }
 
   // destructor
-  ~PI_ReleaseType_instantaneous() = default;
+  ~PI_ReleaseType_instantaneous() override = default;
 
 
   void parseValues() override
@@ -64,12 +64,12 @@ public:
     parsePrimitive<float>(false, m_totalMass, "totalMass");
   }
 
-  void calcReleaseInfo(const float &timestep, const float &simDur) override
+  void calcReleaseInfo(const float &timestep) override
   {
     // set the overall releaseType variables from the variables found in this class
     m_particlePerTimestep = m_numPar;
+    m_massPerTimestep = m_totalMass / (float)m_numPar;
     m_releaseStartTime = 0;
     m_releaseEndTime = 0;
-    m_massPerParticle = m_totalMass / m_numPar;
   }
 };
