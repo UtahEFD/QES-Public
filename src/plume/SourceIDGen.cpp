@@ -28,34 +28,28 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file IDGenerator.cpp
+/** @file ParticleIDGen.cpp
  * @brief
  */
 
-#include "IDGenerator.h"
+#include "SourceIDGen.h"
 
-IDGenerator *IDGenerator::m_the_instance = nullptr;
+SourceIDGen *SourceIDGen::m_the_instance = nullptr;
 
-IDGenerator *IDGenerator::getInstance()
+SourceIDGen::SourceIDGen() : m_id(0)
+{
+}
+
+
+SourceIDGen *SourceIDGen::getInstance()
 {
   if (m_the_instance == nullptr) {
-    m_the_instance = new IDGenerator();
+    m_the_instance = new SourceIDGen();
   }
   return m_the_instance;
 }
 
-IDGenerator::IDGenerator() : m_id(0)
-{
-}
-
-uint32_t IDGenerator::get()
+int SourceIDGen::get()
 {
   return m_id++;
-}
-
-void IDGenerator::get(std::vector<uint32_t> &inout)
-{
-  for (auto &v : inout) {
-    v = get();
-  }
 }

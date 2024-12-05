@@ -56,7 +56,7 @@
 #include "PI_ReleaseType_duration.hpp"
 
 #include "Particle.h"
-#include "IDGenerator.h"
+#include "ParticleIDGen.h"
 
 class Source
 {
@@ -73,7 +73,7 @@ protected:
   PI_SourceGeometry *m_sourceGeometry{};
   PI_ReleaseType *m_releaseType{};
 
-  IDGenerator *id_gen = nullptr;
+  ParticleIDGen *id_gen = nullptr;
 
 public:
   // this is the index of the source in the dispersion class overall list of sources
@@ -121,7 +121,7 @@ public:
     m_sGeom = m_sourceGeometry->m_sGeom;
     m_rType = m_releaseType->parReleaseType;
 
-    id_gen = IDGenerator::getInstance();
+    id_gen = ParticleIDGen::getInstance();
   }
 
   // destructor

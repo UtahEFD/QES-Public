@@ -15,7 +15,7 @@
 
 #include "winds/WINDSGeneralData.h"
 
-#include "plume/IDGenerator.h"
+#include "plume/ParticleIDGen.h"
 #include "plume/Particle.h"
 
 #include "plume/cuda/QES_data.h"

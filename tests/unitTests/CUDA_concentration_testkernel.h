@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "util/VectorMath.h"
-#include "plume/IDGenerator.h"
+#include "plume/ParticleIDGen.h"
 
 #include "Particle.h"
 

@@ -28,20 +28,13 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file IDGenerator..h
+/** @file ParticleIDGen..h
  * @brief
  */
 
 #pragma once
 
-#include <iostream>
-#include <cstdlib>
-#include <ctime>
-#include <vector>
-#include <math.h>
-
-
-class IDGenerator
+class SourceIDGen
 {
 private:
   /**
@@ -49,15 +42,14 @@ private:
    * direct construction calls with the `new` operator
    */
 
-  IDGenerator();
+  SourceIDGen();
 
-  static IDGenerator *m_the_instance;
+  static SourceIDGen *m_the_instance;
 
-  uint32_t m_id;
+  int m_id;
 
 public:
-  static IDGenerator *getInstance();
+  static SourceIDGen *getInstance();
 
-  uint32_t get();
-  void get(std::vector<uint32_t> &);
+  int get();
 };

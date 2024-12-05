@@ -1,13 +1,13 @@
 #include <catch2/catch_test_macros.hpp>
 
-#include "plume/IDGenerator.h"
+#include "plume/ParticleIDGen.h"
 
 
 TEST_CASE("Testing ID generator class")
 {
   // 1st ptr to the generator
-  IDGenerator *id_gen;
-  id_gen = IDGenerator::getInstance();
+  ParticleIDGen *id_gen;
+  id_gen = ParticleIDGen::getInstance();
 
   uint32_t test;
 
@@ -20,8 +20,8 @@ TEST_CASE("Testing ID generator class")
   REQUIRE(test == 2);
 
   // 2nd ptr to the generator
-  IDGenerator *id_gen_2;
-  id_gen_2 = IDGenerator::getInstance();
+  ParticleIDGen *id_gen_2;
+  id_gen_2 = ParticleIDGen::getInstance();
 
   // test that the same id generator provide the same ids
   test = id_gen_2->get();
