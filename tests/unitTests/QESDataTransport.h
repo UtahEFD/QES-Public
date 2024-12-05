@@ -110,4 +110,13 @@ public:
   {
     return dataStorageContainer.find(key) != dataStorageContainer.end();
   }
+
+  /**
+   * /brief Function clear the container.
+   *
+   */
+  void clear()
+  {
+    dataStorageContainer.clear();
+  }
 };

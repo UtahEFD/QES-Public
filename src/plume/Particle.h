@@ -129,20 +129,20 @@ class Metadata
 {
 public:
   Metadata() = default;
-
+  ~Metadata() = default;
   // the initial position for the particle
   vec3 pos_init{};
   // the time of release for the particle (need to change to QEStime)
-  double tStrt{};
+  double timeStrt{};
   // the index of the source the particle came from
-  int sourceIdx{};
+  int sourceID{};
 };
 
 class Core
 {
 public:
   Core() = default;
-
+  ~Core() = default;
   // once initial positions are known, can set these values using urb and turb info
   // Initially, the initial x component of position for the particle.
   // After the solver starts to run, the current x component of position for the particle.
@@ -154,24 +154,36 @@ public:
   // The velocity fluctuation for a particle for a given iteration.
   // Starts out as the initial value until a particle is "released" into the domain
   vec3 velFluct{};
-
-  // Particle displacements for each time step (not used)
-  // vec3 dist;
-
-  // Total velocities (mean and fluctuation) for each time step (not used)
-  // vec3 velTot;
-
-  float CoEps{};
-  float nuT{};
+  // difference between the current and last iteration of the uFluct variable
+  vec3 delta_velFluct{};
 
   // The velocity fluctuation for a particle from the last iteration
-  vec3 velFluct_old;
+  vec3 velFluct_old{};
 
   // stress tensor from the last iteration (6 component because stress tensor is symmetric)
-  mat3sym tau;
+  mat3sym tau{};
+  //
+  float CoEps{};
+  float nuT{};
+};
 
-  // difference between the current and last iteration of the uFluct variable
-  vec3 delta_velFluct;
+// particle physical properties
+class BasePhysical
+{
+public:
+  BasePhysical() = default;
+  ~BasePhysical() = default;
+
+  // particle diameter diameter [microns]
+  double d{};
+  // particle mass [g]
+  double m{};// particle mass [g]
+  // initial particle mass [g]
+  double m_o{};
+  // density of particle g/m3
+  double rho{};
+  // decay (1 - fraction) particle decayed [0,1]
+  double wdecay{};
 };
 
 
