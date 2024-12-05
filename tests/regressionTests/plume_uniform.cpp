@@ -47,7 +47,7 @@
 
 #include "winds/WINDSGeneralData.h"
 
-#include "plume/PlumeInputData.hpp"
+#include "plume/PLUMEInputData.h"
 #include "plume/PLUMEGeneralData.h"
 #include "plume/TracerParticle_Concentration.h"
 

@@ -58,7 +58,7 @@
 #include "util/QESNetCDFOutput.h"
 #include "ParticleOutput.h"
 
-#include "PlumeInputData.hpp"
+#include "PLUMEInputData.h"
 
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"

@@ -58,7 +58,7 @@
 #include "winds/Sensor.h"
 
 // #include "Args.hpp"
-#include "plume/PlumeInputData.hpp"
+#include "plume/PLUMEInputData.h"
 #include "plume/PLUMEGeneralData.h"
 
 

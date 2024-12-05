@@ -34,7 +34,7 @@
 
 #include "StatisticsDirector.h"
 
-#include "PlumeInputData.hpp"
+#include "PLUMEInputData.h"
 #include "PLUMEGeneralData.h"
 
 StatisticsDirector::StatisticsDirector(const PlumeInputData *PID, PLUMEGeneralData *PGD, QESFileOutput_Interface *outfile)

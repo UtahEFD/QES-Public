@@ -44,7 +44,7 @@
 
 
 #include "handlePlumeArgs.h"
-#include "plume/PlumeInputData.hpp"
+#include "plume/PLUMEInputData.h"
 #include "util/NetCDFInput.h"
 #include "util/QESout.h"
 
@@ -78,7 +78,7 @@ int main(int argc, char **argv)
   TURBGeneralData *TGD = new TURBGeneralData(arguments.inputTURBFile, WGD);
   // Create instance of QES-Plume General data class
   PLUMEGeneralData *PGD = new PLUMEGeneralData(arguments.plumeParameters, PID, WGD, TGD);
-  
+
   for (int index = 0; index < WGD->totalTimeIncrements; index++) {
     // Load data at current time index
     TGD->loadNetCDFData(index);

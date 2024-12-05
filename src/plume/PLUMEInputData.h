@@ -50,35 +50,13 @@
 
 class PlumeInputData : public ParseInterface
 {
-
 public:
-  PI_PlumeParameters *plumeParams = nullptr;
-  PI_CollectionParameters *colParams = nullptr;
-  PI_ParticleOutputParameters *partOutParams = nullptr;
-  PI_ParticleParameters *particleParams = nullptr;
-  PI_BoundaryConditions *BCs = nullptr;
-
-
-  PlumeInputData()
+  explicit PlumeInputData(const std::string &fileName)
   {
-    plumeParams = 0;
-    colParams = 0;
-    partOutParams = 0;
-    particleParams = 0;
-    BCs = 0;
-  }
-
-  PlumeInputData(const std::string fileName)
-  {
-    plumeParams = 0;
-    colParams = 0;
-    partOutParams = 0;
-    particleParams = 0;
-    BCs = 0;
-    
     // read and parse the XML
     parseXML(fileName, "QESPlumeParameters");
   }
+  ~PlumeInputData() = default;
 
   virtual void parseValues()
   {
@@ -87,5 +65,16 @@ public:
     parseElement<PI_ParticleOutputParameters>(false, partOutParams, "particleOutputParameters");
     parseElement<PI_ParticleParameters>(false, particleParams, "particleParameters");
     parseElement<PI_BoundaryConditions>(true, BCs, "boundaryConditions");
+
+    particleParams->particles[0]->sources[0]->checkReleaseInfo(plumeParams->timeStep, plumeParams->simDur);
   }
+
+  PI_PlumeParameters *plumeParams = nullptr;
+  PI_CollectionParameters *colParams = nullptr;
+  PI_ParticleOutputParameters *partOutParams = nullptr;
+  PI_ParticleParameters *particleParams = nullptr;
+  PI_BoundaryConditions *BCs = nullptr;
+
+private:
+  PlumeInputData() = default;
 };
