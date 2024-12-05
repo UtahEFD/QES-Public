@@ -91,14 +91,14 @@ public:
     setSourceGeometry();
   }
 
-  void checkPosInfo(const double &domainXstart,
-                    const double &domainXend,
-                    const double &domainYstart,
-                    const double &domainYend,
-                    const double &domainZstart,
-                    const double &domainZend);
+  void checkPosInfo(const float &domainXstart,
+                    const float &domainXend,
+                    const float &domainYstart,
+                    const float &domainYend,
+                    const float &domainZstart,
+                    const float &domainZend);
 
-  void checkReleaseInfo(const double &timestep, const double &simDur);
+  void checkReleaseInfo(const float &timestep, const float &simDur);
   friend class Source;
   friend class Source_v2;
 };

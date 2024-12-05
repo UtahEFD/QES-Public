@@ -58,14 +58,14 @@ public:
   void parseValues() override
   {
     parsePrimitive<std::string>(true, tag, "tag");
-    parsePrimitive<double>(true, rho, "particleDensity");
-    parsePrimitive<double>(true, d, "particleDiameter");
+    parsePrimitive<float>(true, rho, "particleDensity");
+    parsePrimitive<float>(true, d, "particleDiameter");
 
     parsePrimitive<bool>(true, depFlag, "depositionFlag");
-    parsePrimitive<double>(false, c1, "c1");
-    parsePrimitive<double>(false, c2, "c2");
+    parsePrimitive<float>(false, c1, "c1");
+    parsePrimitive<float>(false, c2, "c2");
 
-    parsePrimitive<double>(false, decayConst, "decayConst");
+    parsePrimitive<float>(false, decayConst, "decayConst");
 
     parseMultiElements(false, sources, "source");
   }

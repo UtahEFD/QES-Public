@@ -38,7 +38,12 @@
 #include "Random.h"
 #include "PI_SourceGeometry_Line.hpp"
 
-void PI_SourceGeometry_Line::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
+void PI_SourceGeometry_Line::checkPosInfo(const float &domainXstart,
+                                          const float &domainXend,
+                                          const float &domainYstart,
+                                          const float &domainYend,
+                                          const float &domainZstart,
+                                          const float &domainZend)
 {
   if (posX_0 < domainXstart || posX_0 > domainXend) {
     std::cerr << "[ERROR] \t PI_SourceGeometry_Line::checkPosInfo: \n\t\t input posX_0 is outside of domain! posX_0 = \"" << posX_0

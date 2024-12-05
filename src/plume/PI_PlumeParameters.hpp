@@ -52,7 +52,7 @@ public:
   float CourantNum; /**< Courant Number,
                        how to divide the timestep up for each particle to keep them
                        moving one grid cell at a time */
-  double invarianceTol; /** < tolerance used to determine whether makeRealizeable should be run
+  float invarianceTol; /** < tolerance used to determine whether makeRealizeable should be run
                            on the stress tensor for a particle */
 
   int updateFrequency_particleLoop; /**< frequency to print out information during the particle loop of the solver.
@@ -74,7 +74,7 @@ public:
     parsePrimitive<float>(true, timeStep, "timeStep");
 
     parsePrimitive<float>(true, CourantNum, "CourantNumber");
-    parsePrimitive<double>(true, invarianceTol, "invarianceTol");
+    parsePrimitive<float>(true, invarianceTol, "invarianceTol");
 
     parsePrimitive<int>(true, updateFrequency_particleLoop, "updateFrequency_particleLoop");
     parsePrimitive<float>(true, updateFrequency_timeLoop, "updateFrequency_timeLoop");

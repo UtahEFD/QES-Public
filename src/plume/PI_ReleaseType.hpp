@@ -61,9 +61,9 @@ protected:
   // the entire simulation
   int m_numPar = -1;
   // Total mass to be released [g]
-  double m_totalMass = 0.0;
+  float m_totalMass = 0.0;
   // Mass [g/s] to be released
-  double m_massPerSec = 0.0;
+  float m_massPerSec = 0.0;
 
 public:
   // Description variable for source release type.
@@ -73,11 +73,11 @@ public:
   // Number of particles to release each timestep
   int m_particlePerTimestep = -1;
   // Time the source starts releasing particles
-  double m_releaseStartTime = -1.0;
+  float m_releaseStartTime = -1.0;
   // Time the source ends releasing particles
-  double m_releaseEndTime = -1.0;
+  float m_releaseEndTime = -1.0;
   // Mass per particle
-  double m_massPerParticle = 0.0;
+  float m_massPerParticle = 0.0;
 
   explicit PI_ReleaseType(const ParticleReleaseType &type)
     : parReleaseType(type)
@@ -98,12 +98,12 @@ public:
 
   /**
    * /brief This function is for setting the required inherited variables int m_particlePerTimestep,
-   * double m_releaseStartTime, double m_releaseEndTime, and m_numPar
+   * float m_releaseStartTime, float m_releaseEndTime, and m_numPar
    *
    * @param timestep   simulation time step.
    * @param simDur     simulation duration.
    */
-  virtual void calcReleaseInfo(const double &timestep, const double &simDur) = 0;
+  virtual void calcReleaseInfo(const float &timestep, const float &simDur) = 0;
 
   /**
    * /brief This function is for checking the set release type variables to make sure
@@ -112,7 +112,7 @@ public:
    * @param timestep   simulation time step.
    * @param simDur     simulation duration.
    */
-  virtual void checkReleaseInfo(const double &timestep, const double &simDur)
+  virtual void checkReleaseInfo(const float &timestep, const float &simDur)
   {
     if (m_particlePerTimestep <= 0) {
       std::cerr << "ERROR (ReleaseType::checkReleaseInfo): input m_particlePerTimestep is <= 0!";
@@ -137,7 +137,7 @@ public:
 
     // this one is a bit trickier to check. Specifically the way the number of timesteps for a given release
     //  is calculated needs to be watched carefully to make sure it is consistent throughout the entire program
-    double releaseDur = m_releaseEndTime - m_releaseStartTime;
+    float releaseDur = m_releaseEndTime - m_releaseStartTime;
     if (parReleaseType == ParticleReleaseType::instantaneous) {
       if (releaseDur != 0) {
         std::cerr << "ERROR (ReleaseType::checkReleaseInfo): input ParticleReleaseType is instantaneous but input m_releaseStartTime does not equal m_releaseEndTime!";

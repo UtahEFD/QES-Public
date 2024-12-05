@@ -37,7 +37,12 @@
 
 #include "PI_SourceGeometry_Cube.hpp"
 
-void PI_SourceGeometry_Cube ::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
+void PI_SourceGeometry_Cube ::checkPosInfo(const float &domainXstart,
+                                           const float &domainXend,
+                                           const float &domainYstart,
+                                           const float &domainYend,
+                                           const float &domainZstart,
+                                           const float &domainZend)
 {
   if (m_minX > m_maxX) {
     std::cerr << "[ERROR] \t SourceGeometry_Cube::checkPosInfo: \n\t\t input minX is greater than input maxX! minX = \"" << m_minX

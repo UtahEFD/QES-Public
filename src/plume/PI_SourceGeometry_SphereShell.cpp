@@ -37,7 +37,12 @@
 
 #include "PI_SourceGeometry_SphereShell.hpp"
 
-void PI_SourceGeometry_SphereShell::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
+void PI_SourceGeometry_SphereShell::checkPosInfo(const float &domainXstart,
+                                                 const float &domainXend,
+                                                 const float &domainYstart,
+                                                 const float &domainYend,
+                                                 const float &domainZstart,
+                                                 const float &domainZend)
 {
   if (radius < 0) {
     std::cerr << "[ERROR] \t PI_SourceGeometry_SphereShell::checkPosInfo: \n\t\t input radius is negative! radius = \"" << radius << "\"" << std::endl;

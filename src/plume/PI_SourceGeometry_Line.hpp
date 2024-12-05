@@ -37,8 +37,9 @@
 
 #pragma once
 
-
 #include "PI_SourceGeometry.hpp"
+
+class SourceGeometryLine;
 
 class PI_SourceGeometry_Line : public PI_SourceGeometry
 {
@@ -46,12 +47,14 @@ private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
   // guidelines for how to set these variables within an inherited source are given in SourceType.
 
-  double posX_0 = -1.0;
-  double posY_0 = -1.0;
-  double posZ_0 = -1.0;
-  double posX_1 = -1.0;
-  double posY_1 = -1.0;
-  double posZ_1 = -1.0;
+  float posX_0 = -1.0;
+  float posY_0 = -1.0;
+  float posZ_0 = -1.0;
+  float posX_1 = -1.0;
+  float posY_1 = -1.0;
+  float posZ_1 = -1.0;
+
+  friend SourceGeometryLine;
 
 protected:
 public:
@@ -65,21 +68,21 @@ public:
 
   void parseValues() override
   {
-    parsePrimitive<double>(true, posX_0, "posX_0");
-    parsePrimitive<double>(true, posY_0, "posY_0");
-    parsePrimitive<double>(true, posZ_0, "posZ_0");
-    parsePrimitive<double>(true, posX_1, "posX_1");
-    parsePrimitive<double>(true, posY_1, "posY_1");
-    parsePrimitive<double>(true, posZ_1, "posZ_1");
+    parsePrimitive<float>(true, posX_0, "posX_0");
+    parsePrimitive<float>(true, posY_0, "posY_0");
+    parsePrimitive<float>(true, posZ_0, "posZ_0");
+    parsePrimitive<float>(true, posX_1, "posX_1");
+    parsePrimitive<float>(true, posY_1, "posY_1");
+    parsePrimitive<float>(true, posZ_1, "posZ_1");
   }
 
 
-  void checkPosInfo(const double &domainXstart,
-                    const double &domainXend,
-                    const double &domainYstart,
-                    const double &domainYend,
-                    const double &domainZstart,
-                    const double &domainZend) override;
+  void checkPosInfo(const float &domainXstart,
+                    const float &domainXend,
+                    const float &domainYstart,
+                    const float &domainYend,
+                    const float &domainZstart,
+                    const float &domainZend) override;
 
   void setInitialPosition(vec3 &) override;
 };

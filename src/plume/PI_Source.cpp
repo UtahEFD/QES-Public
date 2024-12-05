@@ -100,18 +100,18 @@ void PI_Source::setSourceGeometry()
   m_sourceGeometry = sGeom_tmp.at(0);
 }
 
-void PI_Source::checkReleaseInfo(const double &timestep, const double &simDur)
+void PI_Source::checkReleaseInfo(const float &timestep, const float &simDur)
 {
   m_releaseType->calcReleaseInfo(timestep, simDur);
   m_releaseType->checkReleaseInfo(timestep, simDur);
 }
 
-void PI_Source::checkPosInfo(const double &domainXstart,
-                             const double &domainXend,
-                             const double &domainYstart,
-                             const double &domainYend,
-                             const double &domainZstart,
-                             const double &domainZend)
+void PI_Source::checkPosInfo(const float &domainXstart,
+                             const float &domainXend,
+                             const float &domainYstart,
+                             const float &domainYend,
+                             const float &domainZstart,
+                             const float &domainZend)
 {
   m_sourceGeometry->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
 }

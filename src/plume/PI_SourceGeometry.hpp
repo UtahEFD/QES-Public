@@ -86,7 +86,12 @@ public:
   // this function is for checking the source metadata to make sure all particles will be released within the domain.
   // There is one source so far (SourceFullDomain) that actually uses this function to set a few metaData variables
   //  specific to that source as well as to do checks to make sure particles stay within the domain.
-  virtual void checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend) = 0;
+  virtual void checkPosInfo(const float &domainXstart,
+                            const float &domainXend,
+                            const float &domainYstart,
+                            const float &domainYend,
+                            const float &domainZstart,
+                            const float &domainZend) = 0;
 
   // this function set the initial position of each particle
   virtual void setInitialPosition(vec3 &) = 0;

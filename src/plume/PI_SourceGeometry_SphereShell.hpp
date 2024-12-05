@@ -49,10 +49,10 @@ private:
   std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
   std::normal_distribution<> normalDistribution;
 
-  double posX = -1.0;
-  double posY = -1.0;
-  double posZ = -1.0;
-  double radius = -1.0;
+  float posX = -1.0;
+  float posY = -1.0;
+  float posZ = -1.0;
+  float radius = -1.0;
 
 protected:
 public:
@@ -69,19 +69,19 @@ public:
 
   void parseValues() override
   {
-    parsePrimitive<double>(true, posX, "posX");
-    parsePrimitive<double>(true, posY, "posY");
-    parsePrimitive<double>(true, posZ, "posZ");
-    parsePrimitive<double>(true, radius, "radius");
+    parsePrimitive<float>(true, posX, "posX");
+    parsePrimitive<float>(true, posY, "posY");
+    parsePrimitive<float>(true, posZ, "posZ");
+    parsePrimitive<float>(true, radius, "radius");
   }
 
 
-  void checkPosInfo(const double &domainXstart,
-                    const double &domainXend,
-                    const double &domainYstart,
-                    const double &domainYend,
-                    const double &domainZstart,
-                    const double &domainZend) override;
+  void checkPosInfo(const float &domainXstart,
+                    const float &domainXend,
+                    const float &domainYstart,
+                    const float &domainYend,
+                    const float &domainZstart,
+                    const float &domainZend) override;
 
   void setInitialPosition(vec3 &) override;
 };

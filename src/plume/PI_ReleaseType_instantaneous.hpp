@@ -43,8 +43,8 @@ class PI_ReleaseType_instantaneous : public PI_ReleaseType
 {
 private:
   // note that this also inherits data members
-  // ParticleReleaseType m_rType, int m_particlePerTimestep, double m_releaseStartTime,
-  // double m_releaseEndTime, and int m_numPar from ReleaseType.
+  // ParticleReleaseType m_rType, int m_particlePerTimestep, float m_releaseStartTime,
+  // float m_releaseEndTime, and int m_numPar from ReleaseType.
   // guidelines for how to set these variables within an inherited ReleaseType are given in ReleaseType.hpp.
 
 protected:
@@ -61,10 +61,10 @@ public:
   void parseValues() override
   {
     parsePrimitive<int>(true, m_numPar, "numPar");
-    parsePrimitive<double>(false, m_totalMass, "totalMass");
+    parsePrimitive<float>(false, m_totalMass, "totalMass");
   }
 
-  void calcReleaseInfo(const double &timestep, const double &simDur) override
+  void calcReleaseInfo(const float &timestep, const float &simDur) override
   {
     // set the overall releaseType variables from the variables found in this class
     m_particlePerTimestep = m_numPar;

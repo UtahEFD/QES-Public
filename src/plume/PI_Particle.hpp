@@ -76,14 +76,14 @@ public:
 
   // Physical properties
   // diameter of particle (micron)
-  double d;
+  float d;
   // mass of particle (g)
-  double m;
+  float m;
   // density of particle (kg/m3)
-  double rho;
+  float rho;
 
   bool depFlag;
-  double decayConst, c1, c2;
+  float decayConst, c1, c2;
 
   // destructor
   ~PI_Particle() = default;

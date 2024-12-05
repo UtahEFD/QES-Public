@@ -49,12 +49,12 @@ private:
   // this source is a bit weird because the domain size has to be obtained after the input parser.
   //  this would mean either doing a function call unique to this source to supply the required data during the dispersion constructor
   //  or by using checkPosInfo() differently than it is normally intended to set the domain size variables
-  double xDomainStart = -1.0;
-  double yDomainStart = -1.0;
-  double zDomainStart = -1.0;
-  double xDomainEnd = -1.0;
-  double yDomainEnd = -1.0;
-  double zDomainEnd = -1.0;
+  float xDomainStart = -1.0;
+  float yDomainStart = -1.0;
+  float zDomainStart = -1.0;
+  float xDomainEnd = -1.0;
+  float yDomainEnd = -1.0;
+  float zDomainEnd = -1.0;
 
   std::random_device rd;// Will be used to obtain a seed for the random number engine
   std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
@@ -77,12 +77,12 @@ public:
     // no paramter
   }
 
-  void checkPosInfo(const double &domainXstart,
-                    const double &domainXend,
-                    const double &domainYstart,
-                    const double &domainYend,
-                    const double &domainZstart,
-                    const double &domainZend) override;
+  void checkPosInfo(const float &domainXstart,
+                    const float &domainXend,
+                    const float &domainYstart,
+                    const float &domainYend,
+                    const float &domainZstart,
+                    const float &domainZend) override;
 
   void setInitialPosition(vec3 &) override;
 };

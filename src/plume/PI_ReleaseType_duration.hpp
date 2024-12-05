@@ -42,8 +42,8 @@
 class PI_ReleaseType_duration : public PI_ReleaseType
 {
 private:
-  // note that this also inherits data members ParticleReleaseType m_rType, int m_particlePerTimestep, double m_releaseStartTime,
-  //  double m_releaseEndTime, and int m_numPar from ReleaseType.
+  // note that this also inherits data members ParticleReleaseType m_rType, int m_particlePerTimestep, float m_releaseStartTime,
+  //  float m_releaseEndTime, and int m_numPar from ReleaseType.
   // guidelines for how to set these variables within an inherited ReleaseType are given in ReleaseType.hpp.
 
 protected:
@@ -58,18 +58,18 @@ public:
 
   void parseValues() override
   {
-    parsePrimitive<double>(true, m_releaseStartTime, "releaseStartTime");
-    parsePrimitive<double>(true, m_releaseEndTime, "releaseEndTime");
+    parsePrimitive<float>(true, m_releaseStartTime, "releaseStartTime");
+    parsePrimitive<float>(true, m_releaseEndTime, "releaseEndTime");
     parsePrimitive<int>(true, m_particlePerTimestep, "particlePerTimestep");
-    parsePrimitive<double>(false, m_totalMass, "totalMass");
-    parsePrimitive<double>(false, m_massPerSec, "massPerSec");
+    parsePrimitive<float>(false, m_totalMass, "totalMass");
+    parsePrimitive<float>(false, m_massPerSec, "massPerSec");
   }
 
 
-  void calcReleaseInfo(const double &timestep, const double &simDur) override
+  void calcReleaseInfo(const float &timestep, const float &simDur) override
   {
     // set the overall releaseType variables from the variables found in this class
-    double releaseDur = m_releaseEndTime - m_releaseStartTime;
+    float releaseDur = m_releaseEndTime - m_releaseStartTime;
     if (releaseDur <= 0) {
       std::cerr << "[ERROR]" << std::endl;
       exit(1);

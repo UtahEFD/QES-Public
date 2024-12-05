@@ -40,15 +40,17 @@
 
 #include "PI_SourceGeometry.hpp"
 
+class SourceGeometryPoint;
+
 class PI_SourceGeometry_Point : public PI_SourceGeometry
 {
 private:
-  // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
-  // guidelines for how to set these variables within an inherited source are given in SourceType.
+  // position of the source
+  float posX = -1.0f;
+  float posY = -1.0f;
+  float posZ = -1.0f;
 
-  double posX = -1.0;
-  double posY = -1.0;
-  double posZ = -1.0;
+  friend SourceGeometryPoint;
 
 protected:
 public:
@@ -63,18 +65,18 @@ public:
 
   void parseValues() override
   {
-    parsePrimitive<double>(true, posX, "posX");
-    parsePrimitive<double>(true, posY, "posY");
-    parsePrimitive<double>(true, posZ, "posZ");
+    parsePrimitive<float>(true, posX, "posX");
+    parsePrimitive<float>(true, posY, "posY");
+    parsePrimitive<float>(true, posZ, "posZ");
   }
 
 
-  void checkPosInfo(const double &domainXstart,
-                    const double &domainXend,
-                    const double &domainYstart,
-                    const double &domainYend,
-                    const double &domainZstart,
-                    const double &domainZend) override;
+  void checkPosInfo(const float &domainXstart,
+                    const float &domainXend,
+                    const float &domainYstart,
+                    const float &domainYend,
+                    const float &domainZstart,
+                    const float &domainZend) override;
 
   void setInitialPosition(vec3 &) override;
 };
