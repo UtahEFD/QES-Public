@@ -34,6 +34,8 @@ SET( qesPlumeCoreSources
     #HeavyParticle_Source.cpp
     #HeavyParticle_Concentration.cpp
 
+    SourceGeometries.cpp
+
     PI_Source.cpp
 
     PI_ReleaseType.hpp

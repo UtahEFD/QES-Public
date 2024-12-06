@@ -58,6 +58,8 @@
 #include "Particle.h"
 #include "ParticleIDGen.h"
 
+#include "SourceComponent.h"
+
 class Source
 {
 private:

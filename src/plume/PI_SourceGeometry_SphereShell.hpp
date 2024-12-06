@@ -87,4 +87,8 @@ public:
                     const float &domainZend) override;
 
   void setInitialPosition(vec3 &) override;
+  SourceComponent *create() override
+  {
+    return new SourceGeometrySphereShell(this);
+  }
 };

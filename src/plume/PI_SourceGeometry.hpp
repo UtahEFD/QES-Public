@@ -46,6 +46,9 @@
 #include "util/VectorMath.h"
 // #include "winds/WINDSGeneralData.h"
 
+#include "SourceComponent.h"
+#include "SourceGeometries.h"
+
 enum SourceShape {
   point,
   line,
@@ -95,4 +98,6 @@ public:
 
   // this function set the initial position of each particle
   virtual void setInitialPosition(vec3 &) = 0;
+
+  virtual SourceComponent *create() = 0;
 };

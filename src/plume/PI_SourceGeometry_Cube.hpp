@@ -39,10 +39,8 @@
 
 #include "PI_SourceGeometry.hpp"
 
-class SourceGeometryCube;
 
-class PI_SourceGeometry_Cube
-  : public PI_SourceGeometry
+class PI_SourceGeometry_Cube : public PI_SourceGeometry
 {
 private:
   // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
@@ -92,4 +90,9 @@ public:
                     const float &domainZend) override;
 
   void setInitialPosition(vec3 &) override;
+
+  SourceComponent *create() override
+  {
+    return new SourceGeometryCube(this);
+  }
 };

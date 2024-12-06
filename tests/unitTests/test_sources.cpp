@@ -19,6 +19,8 @@
 #include "plume/TracerParticle.h"
 #include "plume/ParticleIDGen.h"
 
+#include "plume/SourceGeometries.h"
+
 #include "plume/PI_Source.hpp"
 #include "plume/PI_SourceGeometry.hpp"
 #include "plume/PI_SourceGeometry_Cube.hpp"
@@ -32,7 +34,7 @@
 #include "plume/PI_ReleaseType_continuous.hpp"
 #include "plume/PI_ReleaseType_duration.hpp"
 
-class SourceComponent
+/*class SourceComponent
 {
 public:
   SourceComponent() = default;
@@ -40,7 +42,7 @@ public:
   virtual void generate(const QEStime &, const int &, QESDataTransport &) = 0;
 
 protected:
-};
+};*/
 
 class ReleaseController
 {
@@ -123,7 +125,7 @@ private:
   ParticleIDGen *id_gen = nullptr;
 };
 
-class SourceGeometryPoint : public SourceComponent
+/*class SourceGeometryPoint : public SourceComponent
 {
 public:
   explicit SourceGeometryPoint(const vec3 &x)
@@ -186,7 +188,7 @@ public:
   SourceGeometryFullDomain(const PLUMEGeneralData *PGD)
   {
     prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
-    uniformDistribution = std::uniform_real_distribution<>(0.0, 1.0);
+    uniform = std::uniform_real_distribution<float>(0.0, 1.0);
 
     PGD->interp->getDomainBounds(xDomainStart, yDomainStart, zDomainStart, xDomainEnd, yDomainEnd, zDomainEnd);
   }
@@ -199,9 +201,9 @@ public:
 
     for (int k = 0; k < n; ++k) {
       // init[k] = { m_posX_0 + t * m_diffX, m_posY_0 + t * m_diffY, m_posZ_0 + t * m_diffZ };
-      init[k]._1 = uniformDistribution(prng) * (xDomainEnd - xDomainStart) + xDomainStart;
-      init[k]._2 = uniformDistribution(prng) * (yDomainEnd - yDomainStart) + yDomainStart;
-      init[k]._3 = uniformDistribution(prng) * (zDomainEnd - zDomainStart) + zDomainStart;
+      init[k]._1 = uniform(prng) * (xDomainEnd - xDomainStart) + xDomainStart;
+      init[k]._2 = uniform(prng) * (yDomainEnd - yDomainStart) + yDomainStart;
+      init[k]._3 = uniform(prng) * (zDomainEnd - zDomainStart) + zDomainStart;
     }
     data.put("position", init);
   }
@@ -218,7 +220,7 @@ private:
 
   std::random_device rd;// Will be used to obtain a seed for the random number engine
   std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
-  std::uniform_real_distribution<> uniformDistribution;
+  std::uniform_real_distribution<float> uniform;
 };
 
 class SourceGeometrySphereShell : public SourceComponent
@@ -228,14 +230,14 @@ public:
     : m_x(min), m_radius(radius)
   {
     prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
-    normalDistribution = std::normal_distribution<>(0.0, 1.0);
+    normal = std::normal_distribution<float>(0.0, 1.0);
   }
   explicit SourceGeometrySphereShell(const PI_SourceGeometry_SphereShell *param)
     : m_x({ param->posX, param->posY, param->posZ }),
       m_radius(param->radius)
   {
     prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
-    normalDistribution = std::normal_distribution<>(0.0, 1.0);
+    normal = std::normal_distribution<float>(0.0, 1.0);
   }
 
   ~SourceGeometrySphereShell() override = default;
@@ -246,9 +248,9 @@ public:
 
     for (int k = 0; k < n; ++k) {
       // init[k] = { m_posX_0 + t * m_diffX, m_posY_0 + t * m_diffY, m_posZ_0 + t * m_diffZ };
-      float nx = normalDistribution(prng);
-      float ny = normalDistribution(prng);
-      float nz = normalDistribution(prng);
+      float nx = normal(prng);
+      float ny = normal(prng);
+      float nz = normal(prng);
       float overn = 1 / sqrt(nx * nx + ny * ny + nz * nz);
       init[k]._1 = m_x._1 + m_radius * nx * overn;
       init[k]._2 = m_x._2 + m_radius * ny * overn;
@@ -265,7 +267,7 @@ private:
 
   std::random_device rd;// Will be used to obtain a seed for the random number engine
   std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
-  std::normal_distribution<> normalDistribution;
+  std::normal_distribution<float> normal;
 };
 
 class SourceGeometryCube : public SourceComponent
@@ -275,14 +277,14 @@ public:
     : m_min(min), m_max(max)
   {
     prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
-    uniformDistribution = std::uniform_real_distribution<>(0.0, 1.0);
+    uniform = std::uniform_real_distribution<float>(0.0, 1.0);
   }
   explicit SourceGeometryCube(const PI_SourceGeometry_Cube *param)
     : m_min({ (float)param->m_minX, (float)param->m_minY, (float)param->m_minZ }),
       m_max({ (float)param->m_maxX, (float)param->m_maxY, (float)param->m_maxZ })
   {
     prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
-    uniformDistribution = std::uniform_real_distribution<>(0.0, 1.0);
+    uniform = std::uniform_real_distribution<float>(0.0, 1.0);
   }
 
   ~SourceGeometryCube() override = default;
@@ -293,9 +295,9 @@ public:
 
     for (int k = 0; k < n; ++k) {
       // init[k] = { m_posX_0 + t * m_diffX, m_posY_0 + t * m_diffY, m_posZ_0 + t * m_diffZ };
-      init[k]._1 = uniformDistribution(prng) * (m_max._1 - m_min._1) + m_min._1;
-      init[k]._2 = uniformDistribution(prng) * (m_max._2 - m_min._2) + m_min._2;
-      init[k]._3 = uniformDistribution(prng) * (m_max._3 - m_min._3) + m_min._3;
+      init[k]._1 = uniform(prng) * (m_max._1 - m_min._1) + m_min._1;
+      init[k]._2 = uniform(prng) * (m_max._2 - m_min._2) + m_min._2;
+      init[k]._3 = uniform(prng) * (m_max._3 - m_min._3) + m_min._3;
     }
     data.put("position", init);
   }
@@ -308,8 +310,8 @@ private:
 
   std::random_device rd;// Will be used to obtain a seed for the random number engine
   std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
-  std::uniform_real_distribution<> uniformDistribution;
-};
+  std::uniform_real_distribution<float> uniform;
+};*/
 
 class SetMass : public SourceComponent
 {
@@ -466,6 +468,8 @@ TEST_CASE("Source generator")
   QEStime time("2020-01-01T00:00");
 
   PI_ReleaseType *pt_dur = new PI_ReleaseType_duration();
+
+
   sources.emplace_back(new Source_test(new ReleaseController_XML(pt_dur), {}));
   sources.back()->addComponent(new SourceGeometryLine({ 0, 0, 0 }, { 1, 1, 1 }));
   sources.back()->addComponent(new SetPhysicalProperties(0.0));
@@ -479,6 +483,11 @@ TEST_CASE("Source generator")
 
   sources.emplace_back(new Source_test(new ReleaseController_base(time, time + 10, 10, 0.1),
                                        { new SourceGeometryLine({ 0, 0, 0 }, { 1, 1, 1 }),
+                                         new SetPhysicalProperties(0.0) }));
+
+  PI_SourceGeometry *ptr_geom = new PI_SourceGeometry_Point();
+  sources.emplace_back(new Source_test(new ReleaseController_base(time, time + 10, 10, 0.1),
+                                       { ptr_geom->create(),
                                          new SetPhysicalProperties(0.0) }));
 
   int nbr_new_particle = 0;
