@@ -39,6 +39,8 @@
 
 #include "PI_SourceGeometry.hpp"
 
+class SourceGeometryCube;
+
 class PI_SourceGeometry_Cube
   : public PI_SourceGeometry
 {
@@ -56,6 +58,8 @@ private:
   std::random_device rd;// Will be used to obtain a seed for the random number engine
   std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
   std::uniform_real_distribution<> uniformDistribution;
+
+  friend SourceGeometryCube;
 
 protected:
 public:

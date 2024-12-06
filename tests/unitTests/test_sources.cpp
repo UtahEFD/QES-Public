@@ -7,13 +7,25 @@
 
 #include "QESDataTransport.h"
 
+
 #include "util/QEStime.h"
+
+#include "plume/PLUMEGeneralData.h"
+#include "plume/SourceIDGen.h"
 
 #include "plume/ManagedContainer.h"
 #include "plume/Particle.h"
 #include "plume/Random.h"
 #include "plume/TracerParticle.h"
-#include "plume/IDGenerator.h"
+#include "plume/ParticleIDGen.h"
+
+#include "plume/PI_Source.hpp"
+#include "plume/PI_SourceGeometry.hpp"
+#include "plume/PI_SourceGeometry_Cube.hpp"
+#include "plume/PI_SourceGeometry_FullDomain.hpp"
+#include "plume/PI_SourceGeometry_Line.hpp"
+#include "plume/PI_SourceGeometry_Point.hpp"
+#include "plume/PI_SourceGeometry_SphereShell.hpp"
 
 #include "plume/PI_ReleaseType.hpp"
 #include "plume/PI_ReleaseType_instantaneous.hpp"
@@ -47,35 +59,59 @@ protected:
 class ReleaseController_XML : public ReleaseController
 {
 public:
-  explicit ReleaseController_XML(PI_ReleaseType *in)
+  explicit ReleaseController_XML(const PI_ReleaseType *in)
     : m_startTime(in->m_releaseStartTime), m_endTime(in->m_releaseEndTime),
-      m_particlePerTimestep(in->m_particlePerTimestep), m_massPerParticle(in->m_massPerParticle)
+      m_particlePerTimestep(in->m_particlePerTimestep), m_massPerTimestep(in->m_massPerTimestep)
   {}
   ~ReleaseController_XML() override = default;
 
   QEStime startTime() override { return m_startTime; }
   QEStime endTime() override { return m_endTime; }
   int nbrParticle(const QEStime &currTime) override { return m_particlePerTimestep; }
-  float massParticle(const QEStime &currTime) override { return m_massPerParticle; }
+  float massParticle(const QEStime &currTime) override { return m_massPerTimestep / (float)m_particlePerTimestep; }
 
 protected:
   QEStime m_startTime;
   QEStime m_endTime;
   int m_particlePerTimestep{};
-  float m_massPerParticle{};
+  float m_massPerTimestep{};
 
 private:
   ReleaseController_XML() = default;
 };
 
-class SourceIDGen : public SourceComponent
+class ReleaseController_base : public ReleaseController
 {
 public:
-  SourceIDGen()
+  ReleaseController_base(const QEStime &s_time, const QEStime &e_time, const int &nbr_part, const float &total_mass)
+    : m_startTime(s_time), m_endTime(e_time),
+      m_particlePerTimestep(nbr_part), m_massPerTimestep(total_mass)
+  {}
+  ~ReleaseController_base() override = default;
+
+  QEStime startTime() override { return m_startTime; }
+  QEStime endTime() override { return m_endTime; }
+  int nbrParticle(const QEStime &currTime) override { return m_particlePerTimestep; }
+  float massParticle(const QEStime &currTime) override { return m_massPerTimestep / (float)m_particlePerTimestep; }
+
+protected:
+  QEStime m_startTime;
+  QEStime m_endTime;
+  int m_particlePerTimestep{};
+  float m_massPerTimestep{};
+
+private:
+  ReleaseController_base() = default;
+};
+
+class SetParticleID : public SourceComponent
+{
+public:
+  SetParticleID()
   {
-    id_gen = IDGenerator::getInstance();
+    id_gen = ParticleIDGen::getInstance();
   }
-  ~SourceIDGen() override = default;
+  ~SetParticleID() override = default;
   void generate(const QEStime &currTime, const int &n, QESDataTransport &data) override
   {
     std::vector<uint32_t> ids(n);
@@ -84,24 +120,28 @@ public:
   }
 
 private:
-  IDGenerator *id_gen = nullptr;
+  ParticleIDGen *id_gen = nullptr;
 };
 
 class SourceGeometryPoint : public SourceComponent
 {
 public:
-  SourceGeometryPoint(const vec3 &x) : pos(x)
+  explicit SourceGeometryPoint(const vec3 &x)
+    : m_pos(x)
+  {}
+  explicit SourceGeometryPoint(const PI_SourceGeometry_Point *param)
+    : m_pos({ (float)param->posX, (float)param->posY, (float)param->posZ })
   {}
   ~SourceGeometryPoint() override = default;
   void generate(const QEStime &currTime, const int &n, QESDataTransport &data) override
   {
-    data.put("position", std::vector<vec3>(n, pos));
+    data.put("position", std::vector<vec3>(n, m_pos));
   }
 
 private:
   SourceGeometryPoint() = default;
 
-  vec3 pos{};
+  vec3 m_pos{};
 };
 
 class SourceGeometryLine : public SourceComponent
@@ -112,6 +152,11 @@ public:
   {
     m_diff = VectorMath::subtract(m_pos_1, m_pos_0);
   }
+  explicit SourceGeometryLine(const PI_SourceGeometry_Line *param)
+    : m_pos_0({ (float)param->posX_0, (float)param->posY_0, (float)param->posZ_0 }),
+      m_pos_1({ (float)param->posX_1, (float)param->posY_1, (float)param->posZ_1 })
+  {}
+
   ~SourceGeometryLine() override = default;
 
   void generate(const QEStime &currTime, const int &n, QESDataTransport &data) override
@@ -135,6 +180,136 @@ private:
   vec3 m_pos_0{}, m_pos_1{}, m_diff{};
 };
 
+class SourceGeometryFullDomain : public SourceComponent
+{
+public:
+  SourceGeometryFullDomain(const PLUMEGeneralData *PGD)
+  {
+    prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
+    uniformDistribution = std::uniform_real_distribution<>(0.0, 1.0);
+
+    PGD->interp->getDomainBounds(xDomainStart, yDomainStart, zDomainStart, xDomainEnd, yDomainEnd, zDomainEnd);
+  }
+
+  ~SourceGeometryFullDomain() override = default;
+
+  void generate(const QEStime &currTime, const int &n, QESDataTransport &data) override
+  {
+    std::vector<vec3> init(n);
+
+    for (int k = 0; k < n; ++k) {
+      // init[k] = { m_posX_0 + t * m_diffX, m_posY_0 + t * m_diffY, m_posZ_0 + t * m_diffZ };
+      init[k]._1 = uniformDistribution(prng) * (xDomainEnd - xDomainStart) + xDomainStart;
+      init[k]._2 = uniformDistribution(prng) * (yDomainEnd - yDomainStart) + yDomainStart;
+      init[k]._3 = uniformDistribution(prng) * (zDomainEnd - zDomainStart) + zDomainStart;
+    }
+    data.put("position", init);
+  }
+
+private:
+  SourceGeometryFullDomain() = default;
+
+  float xDomainStart = -1.0;
+  float yDomainStart = -1.0;
+  float zDomainStart = -1.0;
+  float xDomainEnd = -1.0;
+  float yDomainEnd = -1.0;
+  float zDomainEnd = -1.0;
+
+  std::random_device rd;// Will be used to obtain a seed for the random number engine
+  std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
+  std::uniform_real_distribution<> uniformDistribution;
+};
+
+class SourceGeometrySphereShell : public SourceComponent
+{
+public:
+  SourceGeometrySphereShell(const vec3 &min, const float &radius)
+    : m_x(min), m_radius(radius)
+  {
+    prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
+    normalDistribution = std::normal_distribution<>(0.0, 1.0);
+  }
+  explicit SourceGeometrySphereShell(const PI_SourceGeometry_SphereShell *param)
+    : m_x({ param->posX, param->posY, param->posZ }),
+      m_radius(param->radius)
+  {
+    prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
+    normalDistribution = std::normal_distribution<>(0.0, 1.0);
+  }
+
+  ~SourceGeometrySphereShell() override = default;
+
+  void generate(const QEStime &currTime, const int &n, QESDataTransport &data) override
+  {
+    std::vector<vec3> init(n);
+
+    for (int k = 0; k < n; ++k) {
+      // init[k] = { m_posX_0 + t * m_diffX, m_posY_0 + t * m_diffY, m_posZ_0 + t * m_diffZ };
+      float nx = normalDistribution(prng);
+      float ny = normalDistribution(prng);
+      float nz = normalDistribution(prng);
+      float overn = 1 / sqrt(nx * nx + ny * ny + nz * nz);
+      init[k]._1 = m_x._1 + m_radius * nx * overn;
+      init[k]._2 = m_x._2 + m_radius * ny * overn;
+      init[k]._3 = m_x._3 + m_radius * nz * overn;
+    }
+    data.put("position", init);
+  }
+
+private:
+  SourceGeometrySphereShell() = default;
+
+  vec3 m_x{};
+  float m_radius = 0;
+
+  std::random_device rd;// Will be used to obtain a seed for the random number engine
+  std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
+  std::normal_distribution<> normalDistribution;
+};
+
+class SourceGeometryCube : public SourceComponent
+{
+public:
+  SourceGeometryCube(const vec3 &min, const vec3 &max)
+    : m_min(min), m_max(max)
+  {
+    prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
+    uniformDistribution = std::uniform_real_distribution<>(0.0, 1.0);
+  }
+  explicit SourceGeometryCube(const PI_SourceGeometry_Cube *param)
+    : m_min({ (float)param->m_minX, (float)param->m_minY, (float)param->m_minZ }),
+      m_max({ (float)param->m_maxX, (float)param->m_maxY, (float)param->m_maxZ })
+  {
+    prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
+    uniformDistribution = std::uniform_real_distribution<>(0.0, 1.0);
+  }
+
+  ~SourceGeometryCube() override = default;
+
+  void generate(const QEStime &currTime, const int &n, QESDataTransport &data) override
+  {
+    std::vector<vec3> init(n);
+
+    for (int k = 0; k < n; ++k) {
+      // init[k] = { m_posX_0 + t * m_diffX, m_posY_0 + t * m_diffY, m_posZ_0 + t * m_diffZ };
+      init[k]._1 = uniformDistribution(prng) * (m_max._1 - m_min._1) + m_min._1;
+      init[k]._2 = uniformDistribution(prng) * (m_max._2 - m_min._2) + m_min._2;
+      init[k]._3 = uniformDistribution(prng) * (m_max._3 - m_min._3) + m_min._3;
+    }
+    data.put("position", init);
+  }
+
+private:
+  SourceGeometryCube() = default;
+
+  vec3 m_min{};
+  vec3 m_max{};
+
+  std::random_device rd;// Will be used to obtain a seed for the random number engine
+  std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
+  std::uniform_real_distribution<> uniformDistribution;
+};
 
 class SetMass : public SourceComponent
 {
@@ -176,16 +351,20 @@ private:
   float m_particleDensity{};
 };
 
-class Source
+class Source_test
 {
 public:
-  Source(const int &id, ReleaseController *release)
-    : m_id(id), m_release(release)
+  explicit Source_test(ReleaseController *release, const std::vector<SourceComponent *> &sc)
+    : m_release(release)
   {
-    m_components.emplace_back(new SourceIDGen());
+    auto sourceID = SourceIDGen::getInstance();
+    m_id = sourceID->get();
+
+    m_components.emplace_back(new SetParticleID());
     m_components.emplace_back(new SetMass(release));
+    m_components.insert(m_components.end(), sc.begin(), sc.end());
   }
-  virtual ~Source()
+  virtual ~Source_test()
   {
     for (auto c : m_components)
       delete c;
@@ -236,10 +415,10 @@ public:
   QESDataTransport data;
 
 protected:
-  explicit Source(const int &id) : m_id(id) {}
+  explicit Source_test(const int &id) : m_id(id) {}
 
 private:
-  Source() : m_id(-1) {}
+  Source_test() : m_id(-1) {}
   int m_id;
 
   std::vector<SourceComponent *> m_components{};
@@ -252,21 +431,24 @@ private:
 
 // this function will be part of the Tracer Model, making the sources agnostics to the
 // particle type
-void setParticle(const QEStime &currTime, Source *s, ManagedContainer<TracerParticle> &p)
+void setParticle(const QEStime &currTime, Source_test *s, ManagedContainer<TracerParticle> &p)
 {
   // to do (for new source framework):
   // - query the source for the number of particle to be released
   // - format the particle container and return a list of pointer to the new particles
   // this need to be refined... is there an option to avoid copy?
-  for (size_t k = 0; k < 10; ++k) {
+  for (size_t k = 0; k < s->data.get_ref<std::vector<u_int32_t>>("ID").size(); ++k) {
     // p.get(k)->pos_init = x[k];
     p.insert();
     p.last_added()->ID = s->data.get_ref<std::vector<u_int32_t>>("ID")[k];
     p.last_added()->sourceIdx = s->getID();
     p.last_added()->timeStrt = currTime;
     p.last_added()->pos_init = s->data.get_ref<std::vector<vec3>>("position")[k];
+
     p.last_added()->m = s->data.get_ref<std::vector<float>>("mass")[k];
+
     p.last_added()->d = s->data.get_ref<std::vector<float>>("diameter")[k];
+    p.last_added()->rho = s->data.get_ref<std::vector<float>>("density")[k];
   }
 
   // here the parameters can be dependent on the type of particles
@@ -278,23 +460,26 @@ void setParticle(const QEStime &currTime, Source *s, ManagedContainer<TracerPart
 
 TEST_CASE("Source generator")
 {
-  std::vector<Source *> sources;
+  std::vector<Source_test *> sources;
   ManagedContainer<TracerParticle> particles(50);
 
   QEStime time("2020-01-01T00:00");
-  // sources.emplace_back(new Source(0, time, time + 10));
+
   PI_ReleaseType *pt_dur = new PI_ReleaseType_duration();
-  sources.emplace_back(new Source(0, new ReleaseController_XML(pt_dur)));
+  sources.emplace_back(new Source_test(new ReleaseController_XML(pt_dur), {}));
   sources.back()->addComponent(new SourceGeometryLine({ 0, 0, 0 }, { 1, 1, 1 }));
   sources.back()->addComponent(new SetPhysicalProperties(0.0));
 
   // auto *source_tmp = new Source(1, time, time + 10);
   PI_ReleaseType *pt_cont = new PI_ReleaseType_continuous();
-  auto *source_tmp = new Source(1, new ReleaseController_XML(pt_cont));
+  auto *source_tmp = new Source_test(new ReleaseController_XML(pt_cont), {});
   source_tmp->addComponent(new SourceGeometryPoint({ 1, 1, 1 }));
   source_tmp->addComponent(new SetPhysicalProperties(0.001));
   sources.push_back(source_tmp);
 
+  sources.emplace_back(new Source_test(new ReleaseController_base(time, time + 10, 10, 0.1),
+                                       { new SourceGeometryLine({ 0, 0, 0 }, { 1, 1, 1 }),
+                                         new SetPhysicalProperties(0.0) }));
 
   int nbr_new_particle = 0;
   for (auto s : sources)

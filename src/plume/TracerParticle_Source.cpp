@@ -63,7 +63,7 @@ void TracerParticle_Source::emitParticles(const float &dt,
       // m_protoParticle->setParticleParameters(particles->last_added());
       particles->last_added()->tStrt = currTime;
       particles->last_added()->sourceIdx = sourceIdx;
-      particles->last_added()->m = m_releaseType->m_massPerParticle;
+      particles->last_added()->m = m_releaseType->m_massPerTimestep / (float)m_releaseType->m_particlePerTimestep;
     }
     // int emitted = (int)particles->get_nbr_added();
   }

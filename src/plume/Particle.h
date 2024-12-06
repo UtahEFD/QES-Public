@@ -165,6 +165,17 @@ public:
   //
   float CoEps{};
   float nuT{};
+
+  // particle diameter diameter [microns]
+  double d{};
+  // particle mass [g]
+  double m{};// particle mass [g]
+  // initial particle mass [g]
+  double m_o{};
+  // density of particle g/m3
+  double rho{};
+  // decay (1 - fraction) particle decayed [0,1]
+  double wdecay{};
 };
 
 // particle physical properties

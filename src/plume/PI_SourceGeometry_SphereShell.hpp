@@ -38,6 +38,7 @@
 #pragma once
 
 #include "PI_SourceGeometry.hpp"
+class SourceGeometrySphereShell;
 
 class PI_SourceGeometry_SphereShell : public PI_SourceGeometry
 {
@@ -53,6 +54,8 @@ private:
   float posY = -1.0;
   float posZ = -1.0;
   float radius = -1.0;
+
+  friend SourceGeometrySphereShell;
 
 protected:
 public:
