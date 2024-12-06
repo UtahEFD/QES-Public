@@ -38,7 +38,7 @@
 #pragma once
 
 #include "PI_SourceGeometry.hpp"
-class SourceGeometrySphereShell;
+#include "SourceGeometrySphereShell.h"
 
 class PI_SourceGeometry_SphereShell : public PI_SourceGeometry
 {

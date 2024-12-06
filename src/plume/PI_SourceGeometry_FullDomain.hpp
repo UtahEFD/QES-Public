@@ -38,8 +38,7 @@
 #pragma once
 
 #include "PI_SourceGeometry.hpp"
-
-class SourceGeometryFullDomain;
+#include "SourceGeometryFullDomain.h"
 
 class PI_SourceGeometry_FullDomain : public PI_SourceGeometry
 {

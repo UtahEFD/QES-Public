@@ -34,7 +34,11 @@ SET( qesPlumeCoreSources
     #HeavyParticle_Source.cpp
     #HeavyParticle_Concentration.cpp
 
-    SourceGeometries.cpp
+    SourceGeometryCube.cpp
+    SourceGeometryFullDomain.cpp
+    SourceGeometryLine.cpp
+    SourceGeometryPoint.cpp
+    SourceGeometrySphereShell.cpp
 
     PI_Source.cpp
 

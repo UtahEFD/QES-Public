@@ -28,59 +28,42 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file SourcePoint.hpp
- * @brief This class represents a specific source type.
- *
- * @note Child of SourceType
- * @sa SourceType
+/** @file SourceGeometryLine.h
+ * @brief This class defines the interface for the source components.
  */
 
 #pragma once
 
+#include <random>
 
-#include "PI_SourceGeometry.hpp"
-#include "SourceGeometryPoint.h"
+#include "util/QEStime.h"
+#include "util/VectorMath.h"
 
-class PI_SourceGeometry_Point : public PI_SourceGeometry
+#include "SourceComponent.h"
+
+
+class PLUMEGeneralData;
+
+/**
+ * \brief Source Geometry: Line
+ */
+class PI_SourceGeometry_Line;
+class SourceGeometryLine : public SourceComponent
 {
-private:
-  // position of the source
-  float posX = -1.0f;
-  float posY = -1.0f;
-  float posZ = -1.0f;
-
-  friend SourceGeometryPoint;
-
-protected:
 public:
-  // Default constructor
-  PI_SourceGeometry_Point() : PI_SourceGeometry(SourceShape::point)
-  {
-  }
+  SourceGeometryLine(const vec3 &pos_0, const vec3 &pos_1);
+  explicit SourceGeometryLine(const PI_SourceGeometry_Line *param);
 
-  // destructor
-  ~PI_SourceGeometry_Point() = default;
+  ~SourceGeometryLine() override = default;
 
+  void generate(const QEStime &currTime, const int &n, QESDataTransport &data) override;
 
-  void parseValues() override
-  {
-    parsePrimitive<float>(true, posX, "posX");
-    parsePrimitive<float>(true, posY, "posY");
-    parsePrimitive<float>(true, posZ, "posZ");
-  }
+private:
+  SourceGeometryLine() = default;
+  // vec3 m_pos_start,m_pos_end,m_diff;
+  vec3 m_pos_0{}, m_pos_1{}, m_diff{};
 
-
-  void checkPosInfo(const float &domainXstart,
-                    const float &domainXend,
-                    const float &domainYstart,
-                    const float &domainYend,
-                    const float &domainZstart,
-                    const float &domainZend) override;
-
-  void setInitialPosition(vec3 &) override;
-
-  SourceComponent *create() override
-  {
-    return new SourceGeometryPoint(this);
-  }
+  std::random_device rd;// Will be used to obtain a seed for the random number engine
+  std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
+  std::uniform_real_distribution<float> uniform;
 };

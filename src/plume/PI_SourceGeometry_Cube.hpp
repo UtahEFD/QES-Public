@@ -38,7 +38,7 @@
 #pragma once
 
 #include "PI_SourceGeometry.hpp"
-
+#include "SourceGeometryCube.h"
 
 class PI_SourceGeometry_Cube : public PI_SourceGeometry
 {

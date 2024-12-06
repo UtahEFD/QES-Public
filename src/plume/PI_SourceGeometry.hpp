@@ -47,7 +47,6 @@
 // #include "winds/WINDSGeneralData.h"
 
 #include "SourceComponent.h"
-#include "SourceGeometries.h"
 
 enum SourceShape {
   point,

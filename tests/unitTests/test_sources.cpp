@@ -19,7 +19,7 @@
 #include "plume/TracerParticle.h"
 #include "plume/ParticleIDGen.h"
 
-#include "plume/SourceGeometries.h"
+#include "plume/SourceGeometryPoint.h"
 
 #include "plume/PI_Source.hpp"
 #include "plume/PI_SourceGeometry.hpp"

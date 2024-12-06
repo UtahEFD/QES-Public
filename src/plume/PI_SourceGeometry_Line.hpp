@@ -38,8 +38,7 @@
 #pragma once
 
 #include "PI_SourceGeometry.hpp"
-
-class SourceGeometryLine;
+#include "SourceGeometryLine.h"
 
 class PI_SourceGeometry_Line : public PI_SourceGeometry
 {

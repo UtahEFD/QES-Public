@@ -28,59 +28,29 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file SourcePoint.hpp
- * @brief This class represents a specific source type.
- *
- * @note Child of SourceType
- * @sa SourceType
+/** @file SourceGeometries.cpp
+ * @brief
  */
 
-#pragma once
-
-
-#include "PI_SourceGeometry.hpp"
 #include "SourceGeometryPoint.h"
 
-class PI_SourceGeometry_Point : public PI_SourceGeometry
+#include "PI_SourceGeometry.hpp"
+#include "PI_SourceGeometry_Cube.hpp"
+#include "PI_SourceGeometry_FullDomain.hpp"
+#include "PI_SourceGeometry_Line.hpp"
+#include "PI_SourceGeometry_Point.hpp"
+#include "PI_SourceGeometry_SphereShell.hpp"
+
+#include "PLUMEGeneralData.h"
+
+SourceGeometryPoint::SourceGeometryPoint(const vec3 &x)
+  : m_pos(x)
+{}
+SourceGeometryPoint::SourceGeometryPoint(const PI_SourceGeometry_Point *param)
+  : m_pos({ (float)param->posX, (float)param->posY, (float)param->posZ })
+{}
+
+void SourceGeometryPoint::generate(const QEStime &currTime, const int &n, QESDataTransport &data)
 {
-private:
-  // position of the source
-  float posX = -1.0f;
-  float posY = -1.0f;
-  float posZ = -1.0f;
-
-  friend SourceGeometryPoint;
-
-protected:
-public:
-  // Default constructor
-  PI_SourceGeometry_Point() : PI_SourceGeometry(SourceShape::point)
-  {
-  }
-
-  // destructor
-  ~PI_SourceGeometry_Point() = default;
-
-
-  void parseValues() override
-  {
-    parsePrimitive<float>(true, posX, "posX");
-    parsePrimitive<float>(true, posY, "posY");
-    parsePrimitive<float>(true, posZ, "posZ");
-  }
-
-
-  void checkPosInfo(const float &domainXstart,
-                    const float &domainXend,
-                    const float &domainYstart,
-                    const float &domainYend,
-                    const float &domainZstart,
-                    const float &domainZend) override;
-
-  void setInitialPosition(vec3 &) override;
-
-  SourceComponent *create() override
-  {
-    return new SourceGeometryPoint(this);
-  }
-};
+  data.put("position", std::vector<vec3>(n, m_pos));
+}

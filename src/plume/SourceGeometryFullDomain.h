@@ -28,59 +28,46 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file SourcePoint.hpp
- * @brief This class represents a specific source type.
- *
- * @note Child of SourceType
- * @sa SourceType
+/** @file SourceGeometryFullDomain.h
+ * @brief This class defines the interface for the source components.
  */
 
 #pragma once
 
+#include <random>
 
-#include "PI_SourceGeometry.hpp"
-#include "SourceGeometryPoint.h"
+#include "util/QEStime.h"
+#include "util/VectorMath.h"
 
-class PI_SourceGeometry_Point : public PI_SourceGeometry
+#include "SourceComponent.h"
+
+class PLUMEGeneralData;
+
+/**
+ * \brief Source Geometry: Full Domain
+ */
+class PI_SourceGeometry_FullDomain;
+class SourceGeometryFullDomain : public SourceComponent
 {
-private:
-  // position of the source
-  float posX = -1.0f;
-  float posY = -1.0f;
-  float posZ = -1.0f;
-
-  friend SourceGeometryPoint;
-
-protected:
 public:
-  // Default constructor
-  PI_SourceGeometry_Point() : PI_SourceGeometry(SourceShape::point)
-  {
-  }
+  SourceGeometryFullDomain(const PLUMEGeneralData *PGD);
+  SourceGeometryFullDomain(const PI_SourceGeometry_FullDomain *param);
 
-  // destructor
-  ~PI_SourceGeometry_Point() = default;
+  ~SourceGeometryFullDomain() override = default;
 
+  void generate(const QEStime &currTime, const int &n, QESDataTransport &data) override;
 
-  void parseValues() override
-  {
-    parsePrimitive<float>(true, posX, "posX");
-    parsePrimitive<float>(true, posY, "posY");
-    parsePrimitive<float>(true, posZ, "posZ");
-  }
+private:
+  SourceGeometryFullDomain() = default;
 
+  float xDomainStart = -1.0;
+  float yDomainStart = -1.0;
+  float zDomainStart = -1.0;
+  float xDomainEnd = -1.0;
+  float yDomainEnd = -1.0;
+  float zDomainEnd = -1.0;
 
-  void checkPosInfo(const float &domainXstart,
-                    const float &domainXend,
-                    const float &domainYstart,
-                    const float &domainYend,
-                    const float &domainZstart,
-                    const float &domainZend) override;
-
-  void setInitialPosition(vec3 &) override;
-
-  SourceComponent *create() override
-  {
-    return new SourceGeometryPoint(this);
-  }
+  std::random_device rd;// Will be used to obtain a seed for the random number engine
+  std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
+  std::uniform_real_distribution<float> uniform;
 };
