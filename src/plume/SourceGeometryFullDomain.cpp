@@ -43,18 +43,21 @@
 
 #include "PLUMEGeneralData.h"
 
+SourceGeometryFullDomain::SourceGeometryFullDomain()
+{
+  prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
+  uniform = std::uniform_real_distribution<float>(0.0, 1.0);
+}
+
 SourceGeometryFullDomain::SourceGeometryFullDomain(const PI_SourceGeometry_FullDomain *param)
 {
   prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
   uniform = std::uniform_real_distribution<float>(0.0, 1.0);
 }
 
-SourceGeometryFullDomain::SourceGeometryFullDomain(const PLUMEGeneralData *PGD)
+void SourceGeometryFullDomain::initialize(const WINDSGeneralData *WGD, const PLUMEGeneralData *PGD)
 {
-  prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
-  uniform = std::uniform_real_distribution<float>(0.0, 1.0);
-
-  PGD->interp->getDomainBounds(xDomainStart, yDomainStart, zDomainStart, xDomainEnd, yDomainEnd, zDomainEnd);
+  PGD->interp->getDomainBounds(xStart, yStart, zStart, xEnd, yEnd, zEnd);
 }
 
 void SourceGeometryFullDomain::generate(const QEStime &currTime, const int &n, QESDataTransport &data)
@@ -63,9 +66,9 @@ void SourceGeometryFullDomain::generate(const QEStime &currTime, const int &n, Q
 
   for (int k = 0; k < n; ++k) {
     // init[k] = { m_posX_0 + t * m_diffX, m_posY_0 + t * m_diffY, m_posZ_0 + t * m_diffZ };
-    init[k]._1 = uniform(prng) * (xDomainEnd - xDomainStart) + xDomainStart;
-    init[k]._2 = uniform(prng) * (yDomainEnd - yDomainStart) + yDomainStart;
-    init[k]._3 = uniform(prng) * (zDomainEnd - zDomainStart) + zDomainStart;
+    init[k]._1 = uniform(prng) * (xEnd - xStart) + xStart;
+    init[k]._2 = uniform(prng) * (yEnd - yStart) + yStart;
+    init[k]._3 = uniform(prng) * (zEnd - zStart) + zStart;
   }
   data.put("position", init);
 }

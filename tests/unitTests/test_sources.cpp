@@ -114,6 +114,8 @@ public:
     id_gen = ParticleIDGen::getInstance();
   }
   ~SetParticleID() override = default;
+  void initialize(const WINDSGeneralData *WGD, const PLUMEGeneralData *PGD) override {}
+
   void generate(const QEStime &currTime, const int &n, QESDataTransport &data) override
   {
     std::vector<uint32_t> ids(n);
@@ -320,6 +322,7 @@ public:
     : m_release(in)
   {}
   ~SetMass() override = default;
+  void initialize(const WINDSGeneralData *WGD, const PLUMEGeneralData *PGD) override {}
 
   void generate(const QEStime &currTime, const int &n, QESDataTransport &data) override
   {
@@ -339,6 +342,7 @@ public:
     : m_particleDiameter(particleDiameter)
   {}
   ~SetPhysicalProperties() override = default;
+  void initialize(const WINDSGeneralData *WGD, const PLUMEGeneralData *PGD) override {}
 
   void generate(const QEStime &currTime, const int &n, QESDataTransport &data) override
   {

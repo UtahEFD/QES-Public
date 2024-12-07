@@ -43,6 +43,7 @@
 #include "SourceGeometryPoint.h"
 
 
+class WINDSGeneralData;
 class PLUMEGeneralData;
 
 /**
@@ -55,6 +56,9 @@ public:
   explicit SourceGeometryPoint(const vec3 &x);
   explicit SourceGeometryPoint(const PI_SourceGeometry_Point *param);
   ~SourceGeometryPoint() override = default;
+
+  void initialize(const WINDSGeneralData *WGD, const PLUMEGeneralData *PGD) override {}
+  
   void generate(const QEStime &currTime, const int &n, QESDataTransport &data) override;
 
 private:

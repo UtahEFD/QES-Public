@@ -42,6 +42,7 @@
 #include "SourceComponent.h"
 
 
+class WINDSGeneralData;
 class PLUMEGeneralData;
 
 /**
@@ -53,8 +54,9 @@ class SourceGeometryLine : public SourceComponent
 public:
   SourceGeometryLine(const vec3 &pos_0, const vec3 &pos_1);
   explicit SourceGeometryLine(const PI_SourceGeometry_Line *param);
-
   ~SourceGeometryLine() override = default;
+
+  void initialize(const WINDSGeneralData *WGD, const PLUMEGeneralData *PGD) override {}
 
   void generate(const QEStime &currTime, const int &n, QESDataTransport &data) override;
 

@@ -37,11 +37,15 @@
 #include "util/QEStime.h"
 #include "../tests/unitTests/QESDataTransport.h"
 
+class WINDSGeneralData;
+class PLUMEGeneralData;
+
 class SourceComponent
 {
 public:
   SourceComponent() = default;
   virtual ~SourceComponent() = default;
+  virtual void initialize(const WINDSGeneralData *, const PLUMEGeneralData *) = 0;
   virtual void generate(const QEStime &, const int &, QESDataTransport &) = 0;
 
 protected:

@@ -41,6 +41,7 @@
 
 #include "SourceComponent.h"
 
+class WINDSGeneralData;
 class PLUMEGeneralData;
 
 /**
@@ -50,22 +51,21 @@ class PI_SourceGeometry_FullDomain;
 class SourceGeometryFullDomain : public SourceComponent
 {
 public:
-  SourceGeometryFullDomain(const PLUMEGeneralData *PGD);
-  SourceGeometryFullDomain(const PI_SourceGeometry_FullDomain *param);
-
+  SourceGeometryFullDomain();
+  explicit SourceGeometryFullDomain(const PI_SourceGeometry_FullDomain *param);
   ~SourceGeometryFullDomain() override = default;
+
+  void initialize(const WINDSGeneralData *WGD, const PLUMEGeneralData *PGD) override;
 
   void generate(const QEStime &currTime, const int &n, QESDataTransport &data) override;
 
 private:
-  SourceGeometryFullDomain() = default;
-
-  float xDomainStart = -1.0;
-  float yDomainStart = -1.0;
-  float zDomainStart = -1.0;
-  float xDomainEnd = -1.0;
-  float yDomainEnd = -1.0;
-  float zDomainEnd = -1.0;
+  float xStart = -1.0;
+  float yStart = -1.0;
+  float zStart = -1.0;
+  float xEnd = -1.0;
+  float yEnd = -1.0;
+  float zEnd = -1.0;
 
   std::random_device rd;// Will be used to obtain a seed for the random number engine
   std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
