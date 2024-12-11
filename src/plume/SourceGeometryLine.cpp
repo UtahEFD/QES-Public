@@ -33,14 +33,6 @@
  */
 
 #include "SourceGeometryLine.h"
-
-#include "PI_SourceGeometry.hpp"
-#include "PI_SourceGeometry_Cube.hpp"
-#include "PI_SourceGeometry_FullDomain.hpp"
-#include "PI_SourceGeometry_Line.hpp"
-#include "PI_SourceGeometry_Point.hpp"
-#include "PI_SourceGeometry_SphereShell.hpp"
-
 #include "PLUMEGeneralData.h"
 
 

@@ -33,23 +33,9 @@
  */
 
 #include "SourceGeometryFullDomain.h"
-
-#include "PI_SourceGeometry.hpp"
-#include "PI_SourceGeometry_Cube.hpp"
-#include "PI_SourceGeometry_FullDomain.hpp"
-#include "PI_SourceGeometry_Line.hpp"
-#include "PI_SourceGeometry_Point.hpp"
-#include "PI_SourceGeometry_SphereShell.hpp"
-
 #include "PLUMEGeneralData.h"
 
 SourceGeometryFullDomain::SourceGeometryFullDomain()
-{
-  prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
-  uniform = std::uniform_real_distribution<float>(0.0, 1.0);
-}
-
-SourceGeometryFullDomain::SourceGeometryFullDomain(const PI_SourceGeometry_FullDomain *param)
 {
   prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
   uniform = std::uniform_real_distribution<float>(0.0, 1.0);

@@ -49,12 +49,10 @@ class PLUMEGeneralData;
 /**
  * \brief Source Geometry: Cube
  */
-class PI_SourceGeometry_Cube;
 class SourceGeometryCube : public SourceComponent
 {
 public:
   SourceGeometryCube(const vec3 &min, const vec3 &max);
-  explicit SourceGeometryCube(const PI_SourceGeometry_Cube *param);
   ~SourceGeometryCube() override = default;
 
   void initialize(const WINDSGeneralData *WGD, const PLUMEGeneralData *PGD) override {}

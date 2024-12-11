@@ -47,12 +47,10 @@ class PLUMEGeneralData;
 /**
  * \brief Source Geometry: Full Domain
  */
-class PI_SourceGeometry_FullDomain;
 class SourceGeometryFullDomain : public SourceComponent
 {
 public:
   SourceGeometryFullDomain();
-  explicit SourceGeometryFullDomain(const PI_SourceGeometry_FullDomain *param);
   ~SourceGeometryFullDomain() override = default;
 
   void initialize(const WINDSGeneralData *WGD, const PLUMEGeneralData *PGD) override;

@@ -59,9 +59,7 @@ private:
   std::random_device rd;// Will be used to obtain a seed for the random number engine
   std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
   std::uniform_real_distribution<> uniformDistribution;
-
-  friend SourceGeometryFullDomain;
-
+  
 protected:
 public:
   // Default constructor
@@ -90,6 +88,6 @@ public:
 
   SourceComponent *create() override
   {
-    return new SourceGeometryFullDomain(this);
+    return new SourceGeometryFullDomain();
   }
 };

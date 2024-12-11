@@ -55,8 +55,6 @@ private:
   float posZ = -1.0;
   float radius = -1.0;
 
-  friend SourceGeometrySphereShell;
-
 protected:
 public:
   // Default constructor
@@ -89,6 +87,7 @@ public:
   void setInitialPosition(vec3 &) override;
   SourceComponent *create() override
   {
-    return new SourceGeometrySphereShell(this);
+    return new SourceGeometrySphereShell({posX,posY,posZ},
+                                         radius);
   }
 };

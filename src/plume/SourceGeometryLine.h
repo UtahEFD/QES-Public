@@ -48,7 +48,6 @@ class PLUMEGeneralData;
 /**
  * \brief Source Geometry: Line
  */
-class PI_SourceGeometry_Line;
 class SourceGeometryLine : public SourceComponent
 {
 public:

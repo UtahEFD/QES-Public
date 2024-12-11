@@ -49,8 +49,6 @@ private:
   float posY = -1.0f;
   float posZ = -1.0f;
 
-  friend SourceGeometryPoint;
-
 protected:
 public:
   // Default constructor
@@ -81,6 +79,7 @@ public:
 
   SourceComponent *create() override
   {
-    return new SourceGeometryPoint(this);
+    // return new SourceGeometryPoint(this);
+    return new SourceGeometryPoint({ posX, posY, posZ });
   }
 };

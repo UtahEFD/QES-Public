@@ -49,16 +49,14 @@ class PLUMEGeneralData;
 /**
  * \brief Source Geometry: Point
  */
-class PI_SourceGeometry_Point;
 class SourceGeometryPoint : public SourceComponent
 {
 public:
   explicit SourceGeometryPoint(const vec3 &x);
-  explicit SourceGeometryPoint(const PI_SourceGeometry_Point *param);
   ~SourceGeometryPoint() override = default;
 
   void initialize(const WINDSGeneralData *WGD, const PLUMEGeneralData *PGD) override {}
-  
+
   void generate(const QEStime &currTime, const int &n, QESDataTransport &data) override;
 
 private:

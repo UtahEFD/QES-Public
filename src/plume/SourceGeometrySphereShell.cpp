@@ -33,26 +33,10 @@
  */
 
 #include "SourceGeometrySphereShell.h"
-
-#include "PI_SourceGeometry.hpp"
-#include "PI_SourceGeometry_Cube.hpp"
-#include "PI_SourceGeometry_FullDomain.hpp"
-#include "PI_SourceGeometry_Line.hpp"
-#include "PI_SourceGeometry_Point.hpp"
-#include "PI_SourceGeometry_SphereShell.hpp"
-
 #include "PLUMEGeneralData.h"
 
 SourceGeometrySphereShell::SourceGeometrySphereShell(const vec3 &min, const float &radius)
   : m_x(min), m_radius(radius)
-{
-  prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
-  normal = std::normal_distribution<float>(0.0, 1.0);
-}
-
-SourceGeometrySphereShell::SourceGeometrySphereShell(const PI_SourceGeometry_SphereShell *param)
-  : m_x({ param->posX, param->posY, param->posZ }),
-    m_radius(param->radius)
 {
   prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
   normal = std::normal_distribution<float>(0.0, 1.0);

@@ -54,7 +54,6 @@ class SourceGeometrySphereShell : public SourceComponent
 {
 public:
   SourceGeometrySphereShell(const vec3 &min, const float &radius);
-  explicit SourceGeometrySphereShell(const PI_SourceGeometry_SphereShell *param);
   ~SourceGeometrySphereShell() override = default;
 
   void initialize(const WINDSGeneralData *WGD, const PLUMEGeneralData *PGD) override {}

@@ -33,21 +33,10 @@
  */
 
 #include "SourceGeometryPoint.h"
-
-#include "PI_SourceGeometry.hpp"
-#include "PI_SourceGeometry_Cube.hpp"
-#include "PI_SourceGeometry_FullDomain.hpp"
-#include "PI_SourceGeometry_Line.hpp"
-#include "PI_SourceGeometry_Point.hpp"
-#include "PI_SourceGeometry_SphereShell.hpp"
-
 #include "PLUMEGeneralData.h"
 
 SourceGeometryPoint::SourceGeometryPoint(const vec3 &x)
   : m_pos(x)
-{}
-SourceGeometryPoint::SourceGeometryPoint(const PI_SourceGeometry_Point *param)
-  : m_pos({ (float)param->posX, (float)param->posY, (float)param->posZ })
 {}
 
 void SourceGeometryPoint::generate(const QEStime &currTime, const int &n, QESDataTransport &data)

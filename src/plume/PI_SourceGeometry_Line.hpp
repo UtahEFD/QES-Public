@@ -52,9 +52,7 @@ private:
   float posX_1 = -1.0;
   float posY_1 = -1.0;
   float posZ_1 = -1.0;
-
-  friend SourceGeometryLine;
-
+  
 protected:
 public:
   // Default constructor
@@ -87,6 +85,7 @@ public:
 
   SourceComponent *create() override
   {
-    return new SourceGeometryLine(this);
+    return new SourceGeometryLine({ posX_0, posY_0, posZ_0 },
+                                  { posX_1, posY_1, posZ_1 });
   }
 };

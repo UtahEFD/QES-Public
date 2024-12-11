@@ -57,8 +57,6 @@ private:
   std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
   std::uniform_real_distribution<> uniformDistribution;
 
-  friend SourceGeometryCube;
-
 protected:
 public:
   // Default constructor
@@ -93,6 +91,7 @@ public:
 
   SourceComponent *create() override
   {
-    return new SourceGeometryCube(this);
+    return new SourceGeometryCube({m_minX,m_minY,m_minZ},
+                                  {m_maxX,m_maxY,m_maxZ});
   }
 };

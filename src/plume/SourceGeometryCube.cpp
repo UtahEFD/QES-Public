@@ -33,25 +33,10 @@
  */
 
 #include "SourceGeometryCube.h"
-
-#include "PI_SourceGeometry.hpp"
-#include "PI_SourceGeometry_Cube.hpp"
-#include "PI_SourceGeometry_FullDomain.hpp"
-#include "PI_SourceGeometry_Line.hpp"
-#include "PI_SourceGeometry_Point.hpp"
-#include "PI_SourceGeometry_SphereShell.hpp"
-
 #include "PLUMEGeneralData.h"
 
 SourceGeometryCube::SourceGeometryCube(const vec3 &min, const vec3 &max)
   : m_min(min), m_max(max)
-{
-  prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
-  uniform = std::uniform_real_distribution<float>(0.0, 1.0);
-}
-SourceGeometryCube::SourceGeometryCube(const PI_SourceGeometry_Cube *param)
-  : m_min({ (float)param->m_minX, (float)param->m_minY, (float)param->m_minZ }),
-    m_max({ (float)param->m_maxX, (float)param->m_maxY, (float)param->m_maxZ })
 {
   prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
   uniform = std::uniform_real_distribution<float>(0.0, 1.0);
