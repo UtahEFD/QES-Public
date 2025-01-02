@@ -44,15 +44,6 @@ SourceGeometryLine::SourceGeometryLine(const vec3 &pos_0, const vec3 &pos_1)
   prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
   uniform = std::uniform_real_distribution<float>(0.0, 1.0);
 }
-SourceGeometryLine::SourceGeometryLine(const PI_SourceGeometry_Line *param)
-  : m_pos_0({ (float)param->posX_0, (float)param->posY_0, (float)param->posZ_0 }),
-    m_pos_1({ (float)param->posX_1, (float)param->posY_1, (float)param->posZ_1 })
-{
-  m_diff = VectorMath::subtract(m_pos_1, m_pos_0);
-
-  prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
-  uniform = std::uniform_real_distribution<float>(0.0, 1.0);
-}
 
 void SourceGeometryLine::generate(const QEStime &currTime, const int &n, QESDataTransport &data)
 {
