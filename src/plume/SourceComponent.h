@@ -35,7 +35,7 @@
 #pragma once
 
 #include "util/QEStime.h"
-#include "../tests/unitTests/QESDataTransport.h"
+#include "util/QESDataTransport.h"
 
 class WINDSGeneralData;
 class PLUMEGeneralData;
