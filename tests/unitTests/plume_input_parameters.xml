@@ -30,7 +30,7 @@
             <tag>tracer1</tag>
             <source>
                 <releaseType_continuous>
-                    <particlePerTimestep> 400 </particlePerTimestep>
+                    <particlePerTimestep> 10 </particlePerTimestep>
                 </releaseType_continuous>
                 <sourceGeometry_Point>
                     <posX> 20.0 </posX>
@@ -40,7 +40,7 @@
             </source>
             <source>
                 <releaseType_continuous>
-                    <particlePerTimestep> 400 </particlePerTimestep>
+                    <particlePerTimestep> 20 </particlePerTimestep>
                 </releaseType_continuous>
                 <sourceGeometry_Point>
                     <posX> 20.0 </posX>

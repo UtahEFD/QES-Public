@@ -11,6 +11,7 @@
 #include "util/QEStime.h"
 
 #include "plume/PLUMEGeneralData.h"
+#include "plume/PLUMEInputData.h"
 #include "plume/SourceIDGen.h"
 
 #include "plume/ManagedContainer.h"
@@ -20,7 +21,7 @@
 #include "plume/ParticleIDGen.h"
 
 #include "plume/SourceGeometryPoint.h"
-
+#include "plume/SourceReleaseController.h"
 #include "plume/PI_Source.hpp"
 #include "plume/PI_SourceGeometry.hpp"
 #include "plume/PI_SourceGeometry_Cube.hpp"
@@ -43,7 +44,7 @@ public:
 
 protected:
 };*/
-
+/*
 class ReleaseController
 {
 public:
@@ -52,34 +53,10 @@ public:
 
   virtual QEStime startTime() = 0;
   virtual QEStime endTime() = 0;
-  virtual int nbrParticle(const QEStime &) = 0;
-  virtual float massParticle(const QEStime &) = 0;
+  virtual int particles(const QEStime &) = 0;
+  virtual float mass(const QEStime &) = 0;
 
 protected:
-};
-
-class ReleaseController_XML : public ReleaseController
-{
-public:
-  explicit ReleaseController_XML(const PI_ReleaseType *in)
-    : m_startTime(in->m_releaseStartTime), m_endTime(in->m_releaseEndTime),
-      m_particlePerTimestep(in->m_particlePerTimestep), m_massPerTimestep(in->m_massPerTimestep)
-  {}
-  ~ReleaseController_XML() override = default;
-
-  QEStime startTime() override { return m_startTime; }
-  QEStime endTime() override { return m_endTime; }
-  int nbrParticle(const QEStime &currTime) override { return m_particlePerTimestep; }
-  float massParticle(const QEStime &currTime) override { return m_massPerTimestep / (float)m_particlePerTimestep; }
-
-protected:
-  QEStime m_startTime;
-  QEStime m_endTime;
-  int m_particlePerTimestep{};
-  float m_massPerTimestep{};
-
-private:
-  ReleaseController_XML() = default;
 };
 
 class ReleaseController_base : public ReleaseController
@@ -93,8 +70,8 @@ public:
 
   QEStime startTime() override { return m_startTime; }
   QEStime endTime() override { return m_endTime; }
-  int nbrParticle(const QEStime &currTime) override { return m_particlePerTimestep; }
-  float massParticle(const QEStime &currTime) override { return m_massPerTimestep / (float)m_particlePerTimestep; }
+  int particles(const QEStime &currTime) override { return m_particlePerTimestep; }
+  float mass(const QEStime &currTime) override { return m_massPerTimestep; }
 
 protected:
   QEStime m_startTime;
@@ -105,6 +82,7 @@ protected:
 private:
   ReleaseController_base() = default;
 };
+*/
 
 class SetParticleID : public SourceComponent
 {
@@ -318,7 +296,7 @@ private:
 class SetMass : public SourceComponent
 {
 public:
-  explicit SetMass(ReleaseController *in)
+  explicit SetMass(SourceReleaseController *in)
     : m_release(in)
   {}
   ~SetMass() override = default;
@@ -326,13 +304,13 @@ public:
 
   void generate(const QEStime &currTime, const int &n, QESDataTransport &data) override
   {
-    data.put("mass", std::vector<float>(n, m_release->massParticle(currTime)));
+    data.put("mass", std::vector<float>(n, m_release->mass(currTime) / (float)n));
   }
 
 private:
   SetMass() = default;
 
-  ReleaseController *m_release{};
+  SourceReleaseController *m_release{};
 };
 
 class SetPhysicalProperties : public SourceComponent
@@ -360,7 +338,9 @@ private:
 class Source_test
 {
 public:
-  explicit Source_test(ReleaseController *release, const std::vector<SourceComponent *> &sc)
+  explicit Source_test(const int &id) : m_id(id) {}
+
+  Source_test(SourceReleaseController *release, const std::vector<SourceComponent *> &sc)
     : m_release(release)
   {
     auto sourceID = SourceIDGen::getInstance();
@@ -381,6 +361,11 @@ public:
     return (currTime >= m_release->startTime() && currTime <= m_release->endTime());
   }
 
+  void addRelease(SourceReleaseController *r)
+  {
+    m_release = r;
+  }
+
   void addComponent(SourceComponent *c)
   {
     m_components.emplace_back(c);
@@ -396,7 +381,7 @@ public:
     // query how many particle need to be released
     if (isActive(currTime)) {
       // m_releaseType->m_particlePerTimestep;
-      int n = m_release->nbrParticle(currTime);
+      int n = m_release->particles(currTime);
       for (auto c : m_components)
         c->generate(currTime, n, data);
 
@@ -421,19 +406,44 @@ public:
   QESDataTransport data;
 
 protected:
-  explicit Source_test(const int &id) : m_id(id) {}
-
 private:
   Source_test() : m_id(-1) {}
   int m_id;
 
   std::vector<SourceComponent *> m_components{};
 
-  ReleaseController *m_release{};
+  SourceReleaseController *m_release{};
 
   float total_mass = 0;
   int total_particle_released = 0;
 };
+
+class SourceBuilder
+{
+public:
+  SourceBuilder()
+  {
+    auto sourceID = SourceIDGen::getInstance();
+    int id = sourceID->get();
+    source = new Source_test(id);
+  }
+  Source_test *returnSource() { return source; }
+
+protected:
+  Source_test *source;
+};
+
+class SourceBuilder_XML : public SourceBuilder
+{
+public:
+  SourceBuilder_XML(PI_Source *pi_s) : SourceBuilder()
+  {
+    source->addComponent(new SetParticleID());
+    source->addRelease(pi_s->m_releaseType->create());
+    source->addComponent(pi_s->m_sourceGeometry->create());
+  }
+};
+
 
 // this function will be part of the Tracer Model, making the sources agnostics to the
 // particle type
@@ -471,33 +481,47 @@ TEST_CASE("Source generator")
 
   QEStime time("2020-01-01T00:00");
 
-  PI_ReleaseType *pt_dur = new PI_ReleaseType_duration();
+  std::string qesPlumeParamFile = QES_DIR;
+  qesPlumeParamFile.append("/tests/unitTests/plume_input_parameters.xml");
+  auto PID = new PlumeInputData(qesPlumeParamFile);
 
-
-  sources.emplace_back(new Source_test(new ReleaseController_XML(pt_dur), {}));
+  /*PI_ReleaseType *pt_dur = new PI_ReleaseType_duration();
+  sources.emplace_back(new Source_test(pt_dur->create(), {}));
   sources.back()->addComponent(new SourceGeometryLine({ 0, 0, 0 }, { 1, 1, 1 }));
   sources.back()->addComponent(new SetPhysicalProperties(0.0));
+   */
 
   // auto *source_tmp = new Source(1, time, time + 10);
-  PI_ReleaseType *pt_cont = new PI_ReleaseType_continuous();
-  auto *source_tmp = new Source_test(new ReleaseController_XML(pt_cont), {});
+  /*PI_ReleaseType *pt_cont = new PI_ReleaseType_continuous();
+  auto *source_tmp = new Source_test(pt_cont->create(), {});
   source_tmp->addComponent(new SourceGeometryPoint({ 1, 1, 1 }));
   source_tmp->addComponent(new SetPhysicalProperties(0.001));
-  sources.push_back(source_tmp);
+  sources.push_back(source_tmp);*/
 
-  sources.emplace_back(new Source_test(new ReleaseController_base(time, time + 10, 10, 0.1),
+  sources.emplace_back(new Source_test(new SourceReleaseController_base(time, time + 10, 10, 0.1),
                                        { new SourceGeometryLine({ 0, 0, 0 }, { 1, 1, 1 }),
                                          new SetPhysicalProperties(0.0) }));
 
-  PI_SourceGeometry *ptr_geom = new PI_SourceGeometry_Point();
-  sources.emplace_back(new Source_test(new ReleaseController_base(time, time + 10, 10, 0.1),
+
+  /*PI_SourceGeometry *ptr_geom = new PI_SourceGeometry_Point();
+  sources.emplace_back(new Source_test(new SourceReleaseController_base(time, time + 10, 10, 0.1),
                                        { ptr_geom->create(),
                                          new SetPhysicalProperties(0.0) }));
+  */
+
+
+  for (auto p : PID->particleParams->particles) {
+    for (auto s : p->sources) {
+      SourceBuilder_XML sourceBuilder(s);
+      sources.push_back(sourceBuilder.returnSource());
+    }
+  }
 
   int nbr_new_particle = 0;
   for (auto s : sources)
     nbr_new_particle += s->generate(time);
 
+  std::cout << "NEW PARTICLES " << nbr_new_particle << std::endl;
   // particles.sweep(nbr_new_particle);
 
   for (auto s : sources) {

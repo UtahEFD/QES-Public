@@ -40,6 +40,7 @@
 
 #include "util/ParseInterface.h"
 
+#include "PI_PlumeParameters.hpp"
 #include "PI_Source.hpp"
 #include "Particle.h"
 #include "ParticleModel.h"
@@ -89,7 +90,7 @@ public:
   ~PI_Particle() = default;
 
   virtual void parseValues() = 0;
-
+  virtual void check(const PI_PlumeParameters *) = 0;
 
   // virtual void setParticleParameters(Particle *) = 0;
 };

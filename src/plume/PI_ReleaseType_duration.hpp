@@ -89,4 +89,12 @@ public:
       m_massPerTimestep = 0.0;
     }
   }
+
+  SourceReleaseController *create() override
+  {
+    QEStime start = QEStime(0) + m_releaseStartTime;
+    QEStime end = start + m_releaseEndTime;
+
+    return new SourceReleaseController_base(start, end, m_particlePerTimestep, m_massPerTimestep);
+  }
 };

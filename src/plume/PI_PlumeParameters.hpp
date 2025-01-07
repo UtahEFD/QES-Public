@@ -38,9 +38,10 @@
 
 #pragma once
 
-#include "util/ParseInterface.h"
 #include <string>
 #include <cmath>
+
+#include "util/ParseInterface.h"
 
 class PI_PlumeParameters : public ParseInterface
 {
@@ -68,28 +69,26 @@ public:
   /**
    * Parse the input file for parameters.
    */
-  virtual void parseValues()
+  void parseValues() override
   {
     parsePrimitive<float>(true, simDur, "simDur");
     parsePrimitive<float>(true, timeStep, "timeStep");
-
     parsePrimitive<float>(true, CourantNum, "CourantNumber");
     parsePrimitive<float>(true, invarianceTol, "invarianceTol");
-
     parsePrimitive<int>(true, updateFrequency_particleLoop, "updateFrequency_particleLoop");
     parsePrimitive<float>(true, updateFrequency_timeLoop, "updateFrequency_timeLoop");
 
     interpMethod = "triLinear";
     parsePrimitive<std::string>(false, interpMethod, "interpolationMethod");
 
-    // check some of the parsed values to see if they make sense
-    checkParsedValues();
+    // check parsed values to see if they make sense
+    check();
   }
 
   /**
-   * Saves user-defined data to file.
+   * check parse information
    */
-  void checkParsedValues()
+  void check()
   {
     // make sure simDur, timeStep, and invarianceTol are not negative values
     if (simDur <= 0) {
@@ -139,8 +138,7 @@ public:
       std::cerr << " timeStep = \"" << timeStep << "\", simDur = \"" << simDur << "\"" << std::endl;
       exit(EXIT_FAILURE);
     }
-
-
+    
     // make sure the updateFrequency time loop variable is not bigger than the simulation duration
     // LA note: this is not the same way nTimes is calculated in plume, I'm assuming that zero doesn't matter
     int nTimes = std::ceil(simDur / timeStep);

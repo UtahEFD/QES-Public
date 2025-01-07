@@ -47,6 +47,8 @@ private:
   // float m_releaseEndTime, and int m_numPar from ReleaseType.
   // guidelines for how to set these variables within an inherited ReleaseType are given in ReleaseType.hpp.
 
+  float m_releaseTime = 0;
+
 protected:
 public:
   // Default constructor
@@ -60,6 +62,7 @@ public:
 
   void parseValues() override
   {
+    parsePrimitive<float>(false, m_releaseTime, "releaseTime");
     parsePrimitive<int>(true, m_numPar, "numPar");
     parsePrimitive<float>(false, m_totalMass, "totalMass");
   }
@@ -69,7 +72,15 @@ public:
     // set the overall releaseType variables from the variables found in this class
     m_particlePerTimestep = m_numPar;
     m_massPerTimestep = m_totalMass / (float)m_numPar;
-    m_releaseStartTime = 0;
-    m_releaseEndTime = 0;
+    m_releaseStartTime = m_releaseTime;
+    m_releaseEndTime = m_releaseTime;
+  }
+
+  SourceReleaseController *create() override
+  {
+    QEStime start = QEStime(0) + m_releaseStartTime;
+    QEStime end = start + m_releaseEndTime;
+
+    return new SourceReleaseController_base(start, end, m_particlePerTimestep, m_massPerTimestep);
   }
 };

@@ -56,10 +56,10 @@ class PI_Source : public ParseInterface
 {
 private:
 protected:
+public:
   PI_SourceGeometry *m_sourceGeometry{};
   PI_ReleaseType *m_releaseType{};
 
-public:
   // constructor
   PI_Source() = default;
 

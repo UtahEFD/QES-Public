@@ -28,54 +28,49 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Sources.hpp
- * @brief This class contains data and variables that set flags and
- * settngs read from the xml.
- *
- * @note Child of ParseInterface
- * @sa ParseInterface
+/** @file SourceComponent.h
+ * @brief This class defines the interface for the source components.
  */
 
 #pragma once
 
-#include "util/ParseInterface.h"
+#include "util/QEStime.h"
+#include "util/QESDataTransport.h"
 
-#include "PI_Particle.hpp"
-
-#include "ParticleModel.h"
-#include "TracerParticle_Model.h"
-
-class PI_TracerParticle : public PI_Particle
+class SourceReleaseController
 {
-protected:
 public:
-  // default constructor
-  PI_TracerParticle()
-    : PI_Particle(ParticleType::tracer, false)
+  SourceReleaseController() = default;
+  virtual ~SourceReleaseController() = default;
+
+  virtual QEStime startTime() = 0;
+  virtual QEStime endTime() = 0;
+  virtual int particles(const QEStime &) = 0;
+  virtual float mass(const QEStime &) = 0;
+
+protected:
+};
+
+class SourceReleaseController_base : public SourceReleaseController
+{
+public:
+  SourceReleaseController_base(const QEStime &s_time, const QEStime &e_time, const int &nbr_part, const float &total_mass)
+    : m_startTime(s_time), m_endTime(e_time),
+      m_particlePerTimestep(nbr_part), m_massPerTimestep(total_mass)
   {}
+  ~SourceReleaseController_base() override = default;
 
-  // destructor
-  ~PI_TracerParticle()
-  {
-  }
+  QEStime startTime() override { return m_startTime; }
+  QEStime endTime() override { return m_endTime; }
+  int particles(const QEStime &currTime) override { return m_particlePerTimestep; }
+  float mass(const QEStime &currTime) override { return m_massPerTimestep; }
 
-  void parseValues() override
-  {
-    parsePrimitive<std::string>(true, tag, "tag");
-    parseMultiElements(false, sources, "source");
-  }
+protected:
+  QEStime m_startTime;
+  QEStime m_endTime;
+  int m_particlePerTimestep{};
+  float m_massPerTimestep{};
 
-  void check(const PI_PlumeParameters *plumeParams) override
-  {
-    for (auto s : sources) {
-      s->checkReleaseInfo(plumeParams->timeStep, plumeParams->simDur);
-    }
-  }
-
-  virtual ParticleModel *create() override
-  {
-    return new TracerParticle_Model(this);
-  }
-
-  // void setParticleParameters(Particle *ptr) override {}
+private:
+  SourceReleaseController_base() = default;
 };

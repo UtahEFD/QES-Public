@@ -43,6 +43,7 @@
 #include <cmath>
 
 #include "util/ParseInterface.h"
+#include "SourceReleaseController.h"
 
 enum ParticleReleaseType {
   instantaneous,
@@ -60,7 +61,7 @@ protected:
   // Description variable for source release type.
   // set by the constructor of the derived classes.
   ParticleReleaseType parReleaseType{};
-  
+
   // Total number of particles expected to be released by the source over
   // the entire simulation
   int m_numPar = -1;
@@ -94,6 +95,8 @@ public:
    * all these differences handled by parseInterface().
    */
   virtual void parseValues() = 0;
+
+  virtual SourceReleaseController *create() = 0;
 
   /**
    * /brief This function is for setting the required inherited variables int m_particlePerTimestep,
@@ -158,12 +161,12 @@ public:
                   << "\", timestep = \"" << timestep << "\"" << std::endl;
         exit(1);
       }
-      if (m_particlePerTimestep * nReleaseTimes != m_numPar) {
+      /*if (m_particlePerTimestep * nReleaseTimes != m_numPar) {
         std::cerr << "ERROR (ReleaseType::checkReleaseInfo): calculated particles for release does not match input m_numPar!";
         std::cerr << " m_particlePerTimestep = \"" << m_particlePerTimestep << "\", nReleaseTimes = \"" << nReleaseTimes
                   << "\", m_numPar = \"" << m_numPar << "\"" << std::endl;
         exit(1);
-      }
+      }*/
     }
   }
 };

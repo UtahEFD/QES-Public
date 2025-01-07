@@ -40,6 +40,7 @@
 
 #include "util/ParseInterface.h"
 
+#include "PI_PlumeParameters.hpp"
 #include "PI_Particle.hpp"
 #include "PI_TracerParticle.hpp"
 // #include "PI_HeavyParticle.hpp"
@@ -54,5 +55,11 @@ public:
   {
     parseMultiPolymorphs(false, particles, Polymorph<PI_Particle, PI_TracerParticle>("tracerParticle"));
     // parseMultiPolymorphs(false, particles, Polymorph<PI_Particle, PI_HeavyParticle>("heavyParticle"));
+  }
+
+  void check(const PI_PlumeParameters* plumeParam)
+  {
+    for(auto p : particles)
+      p->check(plumeParam);
   }
 };

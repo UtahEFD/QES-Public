@@ -66,7 +66,10 @@ public:
     parseElement<PI_ParticleParameters>(false, particleParams, "particleParameters");
     parseElement<PI_BoundaryConditions>(true, BCs, "boundaryConditions");
 
-    particleParams->particles[0]->sources[0]->checkReleaseInfo(plumeParams->timeStep, plumeParams->simDur);
+    for (auto pp : particleParams->particles) {
+      pp->check(plumeParams);
+    }
+    // particleParams->particles[0]->sources[0]->checkReleaseInfo(plumeParams->timeStep, plumeParams->simDur);
   }
 
   PI_PlumeParameters *plumeParams = nullptr;
