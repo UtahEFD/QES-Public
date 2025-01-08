@@ -42,14 +42,14 @@
 class PI_ReleaseType_duration : public PI_ReleaseType
 {
 private:
-  // note that this also inherits data members ParticleReleaseType m_rType, int m_particlePerTimestep, float m_releaseStartTime,
-  //  float m_releaseEndTime, and int m_numPar from ReleaseType.
-  // guidelines for how to set these variables within an inherited ReleaseType are given in ReleaseType.hpp.
+  float m_totalMass = 0;
+  float m_massPerSec = 0;
+  float m_duration = 0.0;
 
 protected:
 public:
   // Default constructor
-  PI_ReleaseType_duration() : PI_ReleaseType(ParticleReleaseType::duration)
+  PI_ReleaseType_duration() : PI_ReleaseType()
   {
   }
 
@@ -59,40 +59,53 @@ public:
   void parseValues() override
   {
     parsePrimitive<float>(true, m_releaseStartTime, "releaseStartTime");
-    parsePrimitive<float>(true, m_releaseEndTime, "releaseEndTime");
+    parsePrimitive<float>(false, m_releaseEndTime, "releaseEndTime");
+    parsePrimitive<float>(false, m_duration, "releaseDuration");
     parsePrimitive<int>(true, m_particlePerTimestep, "particlePerTimestep");
     parsePrimitive<float>(false, m_totalMass, "totalMass");
     parsePrimitive<float>(false, m_massPerSec, "massPerSec");
+
+    if (m_duration != 0.0 && m_releaseEndTime != -1) {
+      throw std::runtime_error("[ReleaseType_duration] at MOST ONE must be set: releaseEndTime or releaseDuration");
+    } else if (m_duration == 0.0 && m_releaseEndTime == -1) {
+      throw std::runtime_error("[ReleaseType_duration] at LEAST ONE must be set: releaseEndTime or releaseDuration");
+    } else if (m_duration != 0.0 && m_releaseEndTime == -1) {
+      m_releaseEndTime = m_releaseStartTime + m_duration;
+    } else {
+      m_duration = m_releaseEndTime - m_releaseStartTime;
+    }
+
+    if (m_releaseEndTime < m_releaseStartTime) {
+      throw std::runtime_error("[ReleaseType_duration] invalid number of particles");
+    }
   }
 
-
-  void calcReleaseInfo(const float &timestep) override
+  void initialize(const float &timestep) override
   {
     // set the overall releaseType variables from the variables found in this class
-    float releaseDur = m_releaseEndTime - m_releaseStartTime;
-    if (releaseDur <= 0) {
+    if (m_duration <= 0) {
       std::cerr << "[ERROR]" << std::endl;
       exit(1);
     }
-    int nReleaseTimes = std::ceil(releaseDur / timestep);
-    m_numPar = m_particlePerTimestep * nReleaseTimes;
+    int nReleaseTimes = std::ceil(m_duration / timestep);
+    int numPar = m_particlePerTimestep * nReleaseTimes;
     if (m_totalMass != 0.0 && m_massPerSec != 0.0) {
       std::cerr << "[ERROR]" << std::endl;
       exit(1);
     } else if (m_totalMass != 0.0) {
-      m_massPerSec = m_totalMass / releaseDur;
+      m_massPerSec = m_totalMass / m_duration;
       m_massPerTimestep = m_totalMass / (float)m_particlePerTimestep;
     } else if (m_massPerSec != 0.0) {
-      m_totalMass = m_massPerSec * releaseDur;
+      m_totalMass = m_massPerSec * m_duration;
       m_massPerTimestep = m_massPerSec * timestep;
     } else {
       m_massPerTimestep = 0.0;
     }
   }
 
-  SourceReleaseController *create() override
+  SourceReleaseController *create(QESDataTransport &data) override
   {
-    QEStime start = QEStime(0) + m_releaseStartTime;
+    QEStime start = QEStime("2020-01-01T00:00") + m_releaseStartTime;
     QEStime end = start + m_releaseEndTime;
 
     return new SourceReleaseController_base(start, end, m_particlePerTimestep, m_massPerTimestep);

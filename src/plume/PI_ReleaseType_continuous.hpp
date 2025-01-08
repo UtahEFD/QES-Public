@@ -42,16 +42,12 @@
 class PI_ReleaseType_continuous : public PI_ReleaseType
 {
 private:
-  // note that this also inherits data members:
-  // ParticleReleaseType m_rType, int m_particlePerTimestep, float m_releaseStartTime,
-  //  float m_releaseEndTime, and int m_numPar from ReleaseType.
-  // guidelines for how to set these variables within an inherited ReleaseType are given in ReleaseType.hpp.
-
+  float m_massPerSec = 0;
 
 protected:
 public:
   // Default constructor
-  PI_ReleaseType_continuous() : PI_ReleaseType(ParticleReleaseType::continuous)
+  PI_ReleaseType_continuous() : PI_ReleaseType()
   {
   }
 
@@ -61,21 +57,25 @@ public:
   void parseValues() override
   {
     parsePrimitive<int>(true, m_particlePerTimestep, "particlePerTimestep");
+    parsePrimitive<float>(false, m_releaseStartTime, "releaseStartTime");
     parsePrimitive<float>(false, m_massPerSec, "massPerSec");
     parsePrimitive<float>(false, m_massPerTimestep, "massPerTimestep");
+
+    if(m_releaseStartTime == -1) {
+      m_releaseStartTime = 0;
+    }
+    m_releaseEndTime = 1.0E10;
   }
 
-  void calcReleaseInfo(const float &timestep) override
+  void initialize(const float &timestep) override
   {
     // set the overall releaseType variables from the variables found in this class
-    m_releaseStartTime = 0;
-    m_releaseEndTime = 1.0E10;
     m_massPerTimestep = m_massPerSec * timestep;
   }
 
-  SourceReleaseController *create() override
+  SourceReleaseController *create(QESDataTransport &data) override
   {
-    QEStime start = QEStime(0) + m_releaseStartTime;
+    QEStime start = QEStime("2020-01-01T00:00") + m_releaseStartTime;
     QEStime end = start + m_releaseEndTime;
 
     return new SourceReleaseController_base(start, end, m_particlePerTimestep, m_massPerTimestep);
