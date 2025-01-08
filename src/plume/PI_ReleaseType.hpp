@@ -57,6 +57,7 @@ class PI_ReleaseType : public ParseInterface,
 {
 private:
 protected:
+public:// [FM] to remove
   // default constructor
   PI_ReleaseType() = default;
 

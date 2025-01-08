@@ -89,9 +89,9 @@ public:
 
   void setInitialPosition(vec3 &) override;
 
-  SourceComponent *create() override
+  SourceComponent *create(QESDataTransport &data) override
   {
-    return new SourceGeometryCube({m_minX,m_minY,m_minZ},
-                                  {m_maxX,m_maxY,m_maxZ});
+    return new SourceGeometryCube({ m_minX, m_minY, m_minZ },
+                                  { m_maxX, m_maxY, m_maxZ });
   }
 };

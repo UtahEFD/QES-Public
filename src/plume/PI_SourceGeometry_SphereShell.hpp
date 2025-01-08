@@ -85,9 +85,9 @@ public:
                     const float &domainZend) override;
 
   void setInitialPosition(vec3 &) override;
-  SourceComponent *create() override
+
+  SourceComponent *create(QESDataTransport &data) override
   {
-    return new SourceGeometrySphereShell({posX,posY,posZ},
-                                         radius);
+    return new SourceGeometrySphereShell({ posX, posY, posZ }, radius);
   }
 };

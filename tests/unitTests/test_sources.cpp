@@ -84,26 +84,6 @@ private:
 };
 */
 
-class SetParticleID : public SourceComponent
-{
-public:
-  SetParticleID()
-  {
-    id_gen = ParticleIDGen::getInstance();
-  }
-  ~SetParticleID() override = default;
-  void initialize(const WINDSGeneralData *WGD, const PLUMEGeneralData *PGD) override {}
-
-  void generate(const QEStime &currTime, const int &n, QESDataTransport &data) override
-  {
-    std::vector<uint32_t> ids(n);
-    id_gen->get(ids);
-    data.put("ID", ids);
-  }
-
-private:
-  ParticleIDGen *id_gen = nullptr;
-};
 
 /*class SourceGeometryPoint : public SourceComponent
 {
@@ -338,9 +318,15 @@ private:
 class Source_test
 {
 public:
-  explicit Source_test(const int &id) : m_id(id) {}
+  Source_test()
+  {
+    auto sourceID = SourceIDGen::getInstance();
+    m_id = sourceID->get();
 
-  Source_test(SourceReleaseController *release, const std::vector<SourceComponent *> &sc)
+    m_components.emplace_back(new SetParticleID());
+  }
+
+  Source_test(SourceReleaseController *release)
     : m_release(release)
   {
     auto sourceID = SourceIDGen::getInstance();
@@ -348,10 +334,10 @@ public:
 
     m_components.emplace_back(new SetParticleID());
     m_components.emplace_back(new SetMass(release));
-    m_components.insert(m_components.end(), sc.begin(), sc.end());
   }
   virtual ~Source_test()
   {
+    delete m_release;
     for (auto c : m_components)
       delete c;
   }
@@ -361,20 +347,11 @@ public:
     return (currTime >= m_release->startTime() && currTime <= m_release->endTime());
   }
 
-  void addRelease(SourceReleaseController *r)
-  {
-    m_release = r;
-  }
+  int getID() const { return m_id; }
 
-  void addComponent(SourceComponent *c)
-  {
-    m_components.emplace_back(c);
-  }
+  void addRelease(SourceReleaseController *r) { m_release = r; }
+  void addComponent(SourceComponent *c) { m_components.emplace_back(c); }
 
-  int getID() const
-  {
-    return m_id;
-  }
 
   virtual int generate(const QEStime &currTime)
   {
@@ -407,7 +384,6 @@ public:
 
 protected:
 private:
-  Source_test() : m_id(-1) {}
   int m_id;
 
   std::vector<SourceComponent *> m_components{};
@@ -418,14 +394,27 @@ private:
   int total_particle_released = 0;
 };
 
+/*
+class MySourceBuilder : public SourceComponentBuilderInterface
+{
+private:
+  //....
+public:
+  MySourceBuilder(){};
+
+  SourceComponent *create(QESDataTransport &data) override
+  {
+    //....
+  }
+};
+
+
 class SourceBuilder
 {
 public:
   SourceBuilder()
   {
-    auto sourceID = SourceIDGen::getInstance();
-    int id = sourceID->get();
-    source = new Source_test(id);
+    source = new Source_test();
   }
   Source_test *returnSource() { return source; }
 
@@ -438,22 +427,24 @@ class SourceBuilder_XML : public SourceBuilder
 public:
   SourceBuilder_XML(PI_Source *pi_s) : SourceBuilder()
   {
+    QESDataTransport data;
     source->addComponent(new SetParticleID());
-    source->addRelease(pi_s->m_releaseType->create());
-    source->addComponent(pi_s->m_sourceGeometry->create());
+    source->addRelease(pi_s->m_releaseType->create(data));
+    source->addComponent(pi_s->m_sourceGeometry->create(data));
   }
 };
+*/
 
 
 // this function will be part of the Tracer Model, making the sources agnostics to the
 // particle type
-void setParticle(const QEStime &currTime, Source_test *s, ManagedContainer<TracerParticle> &p)
+void setParticle(const QEStime &currTime, Source *s, ManagedContainer<TracerParticle> &p)
 {
   // to do (for new source framework):
   // - query the source for the number of particle to be released
   // - format the particle container and return a list of pointer to the new particles
   // this need to be refined... is there an option to avoid copy?
-  for (size_t k = 0; k < s->data.get_ref<std::vector<u_int32_t>>("ID").size(); ++k) {
+  for (size_t k = 0; k < s->getData().get_ref<std::vector<u_int32_t>>("ID").size(); ++k) {
     // p.get(k)->pos_init = x[k];
     p.insert();
     p.last_added()->ID = s->data.get_ref<std::vector<u_int32_t>>("ID")[k];
@@ -461,10 +452,10 @@ void setParticle(const QEStime &currTime, Source_test *s, ManagedContainer<Trace
     p.last_added()->timeStrt = currTime;
     p.last_added()->pos_init = s->data.get_ref<std::vector<vec3>>("position")[k];
 
-    p.last_added()->m = s->data.get_ref<std::vector<float>>("mass")[k];
+    // p.last_added()->m = s->data.get_ref<std::vector<float>>("mass")[k];
 
-    p.last_added()->d = s->data.get_ref<std::vector<float>>("diameter")[k];
-    p.last_added()->rho = s->data.get_ref<std::vector<float>>("density")[k];
+    // p.last_added()->d = s->data.get_ref<std::vector<float>>("diameter")[k];
+    // p.last_added()->rho = s->data.get_ref<std::vector<float>>("density")[k];
   }
 
   // here the parameters can be dependent on the type of particles
@@ -476,7 +467,7 @@ void setParticle(const QEStime &currTime, Source_test *s, ManagedContainer<Trace
 
 TEST_CASE("Source generator")
 {
-  std::vector<Source_test *> sources;
+  std::vector<Source *> sources;
   ManagedContainer<TracerParticle> particles(50);
 
   QEStime time("2020-01-01T00:00");
@@ -498,9 +489,9 @@ TEST_CASE("Source generator")
   source_tmp->addComponent(new SetPhysicalProperties(0.001));
   sources.push_back(source_tmp);*/
 
-  sources.emplace_back(new Source_test(new SourceReleaseController_base(time, time + 10, 10, 0.1),
-                                       { new SourceGeometryLine({ 0, 0, 0 }, { 1, 1, 1 }),
-                                         new SetPhysicalProperties(0.0) }));
+  // sources.emplace_back(new Source(new SourceReleaseController_base(time, time + 10, 10, 0.1)));
+  // sources.back()->addComponent(new SourceGeometryLine({ 0, 0, 0 }, { 1, 1, 1 }));
+  //  sources.back()->addComponent(new SetPhysicalProperties(0.0));
 
 
   /*PI_SourceGeometry *ptr_geom = new PI_SourceGeometry_Point();
@@ -509,11 +500,12 @@ TEST_CASE("Source generator")
                                          new SetPhysicalProperties(0.0) }));
   */
 
-
+  QESDataTransport data;
   for (auto p : PID->particleParams->particles) {
     for (auto s : p->sources) {
-      SourceBuilder_XML sourceBuilder(s);
-      sources.push_back(sourceBuilder.returnSource());
+      sources.push_back(s->create(data));
+      // SourceBuilder_XML sourceBuilder(s);
+      // sources.push_back(sourceBuilder.returnSource());
     }
   }
 
@@ -540,6 +532,11 @@ TEST_CASE("Source generator")
   for (auto p = particles.begin(); p != particles.end(); p++)
     std::cout << p->m << " ";
   std::cout << std::endl;
+
+  for (auto p = particles.begin(); p != particles.end(); p++)
+    std::cout << p->pos_init._1 << " ";
+  std::cout << std::endl;
+
 
   for (auto s : sources)
     delete s;

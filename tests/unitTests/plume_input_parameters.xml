@@ -43,7 +43,7 @@
                     <particlePerTimestep> 20 </particlePerTimestep>
                 </releaseType_continuous>
                 <sourceGeometry_Point>
-                    <posX> 20.0 </posX>
+                    <posX> 30.0 </posX>
                     <posY> 50.0 </posY>
                     <posZ> 70.0 </posZ>
                 </sourceGeometry_Point>

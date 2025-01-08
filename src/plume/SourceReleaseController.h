@@ -37,6 +37,13 @@
 #include "util/QEStime.h"
 #include "util/QESDataTransport.h"
 
+class SourceReleaseController;
+class SourceReleaseControllerBuilderInterface
+{
+public:
+  virtual SourceReleaseController *create(QESDataTransport &) = 0;
+};
+
 class SourceReleaseController
 {
 public:

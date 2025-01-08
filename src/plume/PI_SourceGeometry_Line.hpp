@@ -52,7 +52,7 @@ private:
   float posX_1 = -1.0;
   float posY_1 = -1.0;
   float posZ_1 = -1.0;
-  
+
 protected:
 public:
   // Default constructor
@@ -83,7 +83,7 @@ public:
 
   void setInitialPosition(vec3 &) override;
 
-  SourceComponent *create() override
+  SourceComponent *create(QESDataTransport &data) override
   {
     return new SourceGeometryLine({ posX_0, posY_0, posZ_0 },
                                   { posX_1, posY_1, posZ_1 });

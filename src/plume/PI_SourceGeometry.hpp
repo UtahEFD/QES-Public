@@ -56,7 +56,8 @@ enum SourceShape {
   fullDomain
 };
 
-class PI_SourceGeometry : public ParseInterface
+class PI_SourceGeometry : public ParseInterface,
+                          public SourceComponentBuilderInterface
 {
 private:
   PI_SourceGeometry() = default;
@@ -97,6 +98,4 @@ public:
 
   // this function set the initial position of each particle
   virtual void setInitialPosition(vec3 &) = 0;
-
-  virtual SourceComponent *create() = 0;
 };

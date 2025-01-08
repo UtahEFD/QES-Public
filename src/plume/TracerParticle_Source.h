@@ -41,15 +41,67 @@
 #include "Source.h"
 #include "TracerParticle.h"
 
+
+#include "PI_Source.hpp"
+#include "PI_SourceGeometry.hpp"
+#include "PI_SourceGeometry_Cube.hpp"
+#include "PI_SourceGeometry_FullDomain.hpp"
+#include "PI_SourceGeometry_Line.hpp"
+#include "PI_SourceGeometry_Point.hpp"
+#include "PI_SourceGeometry_SphereShell.hpp"
+
 #include "PI_ReleaseType.hpp"
 #include "PI_ReleaseType_instantaneous.hpp"
 #include "PI_ReleaseType_continuous.hpp"
 #include "PI_ReleaseType_duration.hpp"
 
-class TracerParticle_Source : public Source
+#include "Particle.h"
+#include "ParticleIDGen.h"
+
+#include "SourceComponent.h"
+
+class Source_old
+{
+private:
+protected:
+  Source_old() = default;
+
+  PI_SourceGeometry *m_sourceGeometry{};
+  PI_ReleaseType *m_releaseType{};
+
+  ParticleIDGen *id_gen = nullptr;
+
+public:
+  int sourceIdx = -1;
+
+  // constructor
+  Source_old(const int &sidx, const PI_Source *in)
+  {
+    sourceIdx = sidx;
+
+    m_sourceGeometry = in->m_sourceGeometry;
+    m_releaseType = in->m_releaseType;
+    id_gen = ParticleIDGen::getInstance();
+  }
+
+  // destructor
+  virtual ~Source_old() = default;
+
+  virtual int getNewParticleNumber(const float &dt,
+                                   const float &currTime)
+  {
+    if (currTime >= m_releaseType->m_releaseStartTime && currTime <= m_releaseType->m_releaseEndTime) {
+      return m_releaseType->m_particlePerTimestep;
+    } else {
+      return 0;
+    }
+  }
+};
+
+class TracerParticle_Source : public Source_old
 {
 public:
-  TracerParticle_Source(const int &sidx, const PI_Source *in) : Source(sidx, in) {}
+  TracerParticle_Source(const int &sidx, const PI_Source *in) : Source_old(sidx, in) {}
   // destructor
   ~TracerParticle_Source() override = default;
 

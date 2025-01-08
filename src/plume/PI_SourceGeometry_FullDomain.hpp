@@ -86,7 +86,7 @@ public:
 
   void setInitialPosition(vec3 &) override;
 
-  SourceComponent *create() override
+  SourceComponent *create(QESDataTransport &data) override
   {
     return new SourceGeometryFullDomain();
   }

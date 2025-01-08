@@ -40,6 +40,13 @@
 class WINDSGeneralData;
 class PLUMEGeneralData;
 
+class SourceComponent;
+class SourceComponentBuilderInterface
+{
+public:
+  virtual SourceComponent *create(QESDataTransport &) = 0;
+};
+
 class SourceComponent
 {
 public:

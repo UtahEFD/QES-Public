@@ -52,7 +52,10 @@
 #include "PI_ReleaseType_continuous.hpp"
 #include "PI_ReleaseType_duration.hpp"
 
-class PI_Source : public ParseInterface
+#include "Source.h"
+
+class PI_Source : public ParseInterface,
+                  public SourceBuilderInterface
 {
 private:
 protected:
@@ -60,30 +63,15 @@ public:
   PI_SourceGeometry *m_sourceGeometry{};
   PI_ReleaseType *m_releaseType{};
 
+public:
   // constructor
   PI_Source() = default;
 
   // destructor
   virtual ~PI_Source() = default;
 
-  /*int getNumParticles()
-  {
-    return m_releaseType->m_numPar;
-  }*/
-
   void setReleaseType();
   void setSourceGeometry();
-
-  // accessor to geometry type
-  /*SourceShape geometryType()
-  {
-    return m_sourceGeometry->m_sGeom;
-  }*/
-  // accessor to release type
-  /*ParticleReleaseType releaseType()
-  {
-    return m_releaseType->parReleaseType;
-  }*/
 
   void parseValues() override
   {
@@ -99,6 +87,12 @@ public:
                     const float &domainZend);
 
   void checkReleaseInfo(const float &timestep, const float &simDur);
-  friend class Source;
-  friend class Source_v2;
+
+  Source *create(QESDataTransport &data) override
+  {
+    Source *source = new Source();
+    source->addRelease(m_releaseType->create(data));
+    source->addComponent(m_sourceGeometry->create(data));
+    return source;
+  }
 };
