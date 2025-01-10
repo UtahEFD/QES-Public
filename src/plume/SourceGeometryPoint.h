@@ -55,8 +55,6 @@ public:
   explicit SourceGeometryPoint(const vec3 &x);
   ~SourceGeometryPoint() override = default;
 
-  void initialize(const WINDSGeneralData *WGD, const PLUMEGeneralData *PGD) override {}
-
   void generate(const QEStime &currTime, const int &n, QESDataTransport &data) override;
 
 private:

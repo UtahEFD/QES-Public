@@ -37,57 +37,32 @@
 
 #pragma once
 
-#include "PI_SourceGeometry.hpp"
+#include "PI_SourceComponent.hpp"
 #include "SourceGeometrySphereShell.h"
 
-class PI_SourceGeometry_SphereShell : public PI_SourceGeometry
+class PI_SourceGeometry_SphereShell : public PI_SourceComponent
 {
 private:
-  // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
-  // guidelines for how to set these variables within an inherited source are given in SourceType.
-
-  std::random_device rd;// Will be used to obtain a seed for the random number engine
-  std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
-  std::normal_distribution<> normalDistribution;
-
-  float posX = -1.0;
-  float posY = -1.0;
-  float posZ = -1.0;
+  float m_posX = -1.0;
+  float m_posY = -1.0;
+  float m_posZ = -1.0;
   float radius = -1.0;
 
 protected:
 public:
   // Default constructor
-  PI_SourceGeometry_SphereShell() : PI_SourceGeometry(SourceShape::sphereShell)
-  {
-    prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
-    normalDistribution = std::normal_distribution<>(0.0, 1.0);
-  }
+  PI_SourceGeometry_SphereShell() : PI_SourceComponent() {}
 
   // destructor
   ~PI_SourceGeometry_SphereShell() = default;
 
-
   void parseValues() override
   {
-    parsePrimitive<float>(true, posX, "posX");
-    parsePrimitive<float>(true, posY, "posY");
-    parsePrimitive<float>(true, posZ, "posZ");
+    parsePrimitive<float>(true, m_posX, "posX");
+    parsePrimitive<float>(true, m_posY, "posY");
+    parsePrimitive<float>(true, m_posZ, "posZ");
     parsePrimitive<float>(true, radius, "radius");
   }
 
-
-  void checkPosInfo(const float &domainXstart,
-                    const float &domainXend,
-                    const float &domainYstart,
-                    const float &domainYend,
-                    const float &domainZstart,
-                    const float &domainZend) override;
-
-  void setInitialPosition(vec3 &) override;
-
-  SourceComponent *create(QESDataTransport &data) override
-  {
-    return new SourceGeometrySphereShell({ posX, posY, posZ }, radius);
-  }
+  SourceComponent *create(QESDataTransport &data) override;
 };

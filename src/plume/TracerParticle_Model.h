@@ -34,15 +34,17 @@
 
 #pragma once
 
+#include "util/DataSource.h"
+#include "util/QESDataTransport.h"
 
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
 
+#include "Source.h"
 #include "ParticleModel.h"
 #include "ParticleModel_Visitor.h"
 
 #include "TracerParticle.h"
-#include "TracerParticle_Source.h"
 
 #include "Deposition.h"
 
@@ -83,18 +85,18 @@ public:
                TURBGeneralData *TGD,
                PLUMEGeneralData *PGD) override;
 
-  int get_nbr_active() override { return (int)particles->get_nbr_active(); };
-  int get_nbr_inserted() override { return (int)particles->get_nbr_inserted(); };
-  ManagedContainer<TracerParticle> *get_particles() { return particles; }
+  int get_nbr_active() override { return (int)particles.get_nbr_active(); };
+  int get_nbr_inserted() override { return (int)particles.get_nbr_inserted(); };
+  ManagedContainer<TracerParticle> *get_particles() { return &particles; }
 
-  void addSources(std::vector<TracerParticle_Source *>);
+  void addSources(std::vector<Source *>);
 
   // friend class declaration
   friend class TracerParticle_Concentration;
 
 protected:
-  ManagedContainer<TracerParticle> *particles{};
-  std::vector<TracerParticle_Source *> sources;
+  ManagedContainer<TracerParticle> particles;
+  std::vector<Source *> sources;
 
 private:
 };

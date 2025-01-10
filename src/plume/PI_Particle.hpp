@@ -90,7 +90,7 @@ public:
   ~PI_Particle() = default;
 
   virtual void parseValues() = 0;
-  virtual void check(const PI_PlumeParameters *) = 0;
+  virtual void initialize(const PI_PlumeParameters *) = 0;
 
   // virtual void setParticleParameters(Particle *) = 0;
 };

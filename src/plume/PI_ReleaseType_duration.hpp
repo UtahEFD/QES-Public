@@ -75,6 +75,10 @@ public:
       m_duration = m_releaseEndTime - m_releaseStartTime;
     }
 
+    if (m_massPerSec != 0.0 && m_totalMass != 0.0) {
+      throw std::runtime_error("[ReleaseType_duration] at MOST ONE must be set: massPerSec or totalMass");
+    }
+
     if (m_releaseEndTime < m_releaseStartTime) {
       throw std::runtime_error("[ReleaseType_duration] invalid number of particles");
     }
@@ -84,14 +88,12 @@ public:
   {
     // set the overall releaseType variables from the variables found in this class
     if (m_duration <= 0) {
-      std::cerr << "[ERROR]" << std::endl;
-      exit(1);
+      throw std::runtime_error("[ReleaseType_duration] invalid duration");
     }
     int nReleaseTimes = std::ceil(m_duration / timestep);
     int numPar = m_particlePerTimestep * nReleaseTimes;
     if (m_totalMass != 0.0 && m_massPerSec != 0.0) {
-      std::cerr << "[ERROR]" << std::endl;
-      exit(1);
+      throw std::runtime_error("[ReleaseType_duration] invalid mass parameters");
     } else if (m_totalMass != 0.0) {
       m_massPerSec = m_totalMass / m_duration;
       m_massPerTimestep = m_totalMass / (float)m_particlePerTimestep;

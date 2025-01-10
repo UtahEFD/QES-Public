@@ -37,31 +37,32 @@
 
 #include "PLUMEInputData.h"
 #include "PLUMEGeneralData.h"
-#include "PI_TracerParticle.hpp"
-
-#include "util/DataSource.h"
+#include "PI_Source.hpp"
 
 
 TracerParticle_Model::TracerParticle_Model(const PI_TracerParticle *in)
-  : ParticleModel(ParticleType::tracer, in->tag)
+  : ParticleModel(ParticleType::tracer, in->tag),
+    particles()
 {
   std::cout << "[QES-Plume]\t Model: Tracer Particle - Tag: " << tag << std::endl;
 
-  particles = new ManagedContainer<TracerParticle>();
+  // particles = new ManagedContainer<TracerParticle>();
 
+  QESDataTransport data;
 
   for (auto s : in->sources) {
     // now determine the number of particles to release for the source and update the overall count
     // totalParsToRelease += s->getNumParticles();
 
     // add source into the vector of sources
-    sources.emplace_back(new TracerParticle_Source((int)sources.size(), s));
+    sources.push_back(s->create(data));
+    // sources.emplace_back(new TracerParticle_Source((int)sources.size(), s));
   }
 }
 
 TracerParticle_Model::~TracerParticle_Model()
 {
-  delete particles;
+  // delete particles;
   delete stats;
 }
 
@@ -95,6 +96,28 @@ void TracerParticle_Model::generateParticleList(QEStime &timeCurrent,
                                                 PLUMEGeneralData *PGD)
 {
   int nbr_new_particle = 0;
+  for (auto s : sources)
+    nbr_new_particle += s->generate(timeCurrent);
+
+  for (auto s : sources) {
+    if (s->isActive(timeCurrent))
+      for (size_t k = 0; k < s->data().get_ref<std::vector<u_int32_t>>("ID").size(); ++k) {
+        // p.get(k)->pos_init = x[k];
+        particles.insert();
+        particles.last_added()->ID = s->data().get_ref<std::vector<u_int32_t>>("ID")[k];
+        particles.last_added()->sourceIdx = s->getID();
+        particles.last_added()->timeStrt = timeCurrent;
+        particles.last_added()->pos_init = s->data().get_ref<std::vector<vec3>>("position")[k];
+
+        if (s->data().contains("mass")) {
+          particles.last_added()->m = s->data().get_ref<std::vector<float>>("mass")[k];
+        }
+        // p.last_added()->d = s->data.get_ref<std::vector<float>>("diameter")[k];
+        // p.last_added()->rho = s->data.get_ref<std::vector<float>>("density")[k];
+      }
+    // setParticle(time, s, particles);
+  }
+  /*
   double time = timeCurrent - PGD->getSimTimeStart();
   for (auto source : sources) {
     nbr_new_particle += source->getNewParticleNumber(dt, time);
@@ -105,16 +128,16 @@ void TracerParticle_Model::generateParticleList(QEStime &timeCurrent,
     // source->getInitializationData()
     //
   }
-
+  */
 #pragma omp parallel for default(none) shared(WGD, TGD, PGD)
-  for (auto k = 0u; k < particles->get_nbr_added(); ++k) {
+  for (auto k = 0u; k < particles.get_nbr_added(); ++k) {
     // -> call particle->reuse(data[k])
     // set particle ID (use global particle counter)
-    PGD->initializeParticleValues(particles->get_added(k), WGD, TGD);
+    PGD->initializeParticleValues(particles.get_added(k), WGD, TGD);
   }
 }
 
-void TracerParticle_Model::addSources(std::vector<TracerParticle_Source *> newSources)
+void TracerParticle_Model::addSources(std::vector<Source *> newSources)
 {
   sources.insert(sources.end(), newSources.begin(), newSources.end());
 }
@@ -125,8 +148,8 @@ void TracerParticle_Model::advect(const double &total_time_interval,
                                   PLUMEGeneralData *PGD)
 {
 #pragma omp parallel for default(none) shared(WGD, TGD, PGD, total_time_interval)
-  for (auto k = 0u; k < particles->size(); ++k) {
-    TracerParticle *p = particles->get(k);
+  for (auto k = 0u; k < particles.size(); ++k) {
+    TracerParticle *p = particles.get(k);
     float rhoAir = 1.225;// in kg m^-3
     float nuAir = 1.506E-5;// in m^2 s^-1
 

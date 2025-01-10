@@ -52,7 +52,6 @@ class SourceComponent
 public:
   SourceComponent() = default;
   virtual ~SourceComponent() = default;
-  virtual void initialize(const WINDSGeneralData *, const PLUMEGeneralData *) = 0;
   virtual void generate(const QEStime &, const int &, QESDataTransport &) = 0;
 
 protected:

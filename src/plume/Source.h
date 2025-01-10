@@ -56,7 +56,6 @@ public:
   virtual Source *create(QESDataTransport &) = 0;
 };
 
-
 class SetParticleID : public SourceComponent
 {
 public:
@@ -65,7 +64,6 @@ public:
     id_gen = ParticleIDGen::getInstance();
   }
   ~SetParticleID() override = default;
-  void initialize(const WINDSGeneralData *WGD, const PLUMEGeneralData *PGD) override {}
 
   void generate(const QEStime &currTime, const int &n, QESDataTransport &data) override
   {
@@ -78,12 +76,34 @@ private:
   ParticleIDGen *id_gen = nullptr;
 };
 
+class SetMass : public SourceComponent
+{
+public:
+  explicit SetMass(SourceReleaseController *in)
+    : m_release(in)
+  {}
+  ~SetMass() override = default;
+
+  void generate(const QEStime &currTime, const int &n, QESDataTransport &data) override
+  {
+    if (m_release->mass(currTime) > 0.0f) {
+      data.put("mass", std::vector<float>(n, m_release->mass(currTime) / (float)n));
+    }
+  }
+
+private:
+  SetMass() = default;
+
+  SourceReleaseController *m_release{};
+};
 
 class Source
 {
 private:
+  Source() = default;
+
 protected:
-  int m_id;
+  int m_id = -1;
 
   SourceReleaseController *m_release{};
   std::vector<SourceComponent *> m_components{};
@@ -91,17 +111,12 @@ protected:
   float total_mass = 0;
   int total_particle_released = 0;
 
+  QESDataTransport m_data;
+
 public:
-  QESDataTransport data;
-
   // constructor
-  Source()
-  {
-    auto sourceID = SourceIDGen::getInstance();
-    m_id = sourceID->get();
+  Source(SourceReleaseController *r);
 
-    m_components.emplace_back(new SetParticleID());
-  }
   // constructor
   virtual ~Source()
   {
@@ -110,41 +125,17 @@ public:
       delete c;
   }
 
+  // accessors
   int getID() const { return m_id; }
-  QESDataTransport &getData() { return data; }
+  QESDataTransport &data() { return m_data; }
 
-  void addRelease(SourceReleaseController *r) { m_release = r; }
+  // setters
+  void setRelease(SourceReleaseController *r) { m_release = r; }
   void addComponent(SourceComponent *c) { m_components.emplace_back(c); }
 
-  virtual bool isActive(const QEStime &currTime) const
-  {
-    return (currTime >= m_release->startTime() && currTime <= m_release->endTime());
-  }
+  virtual bool isActive(const QEStime &currTime) const;
 
-  virtual int generate(const QEStime &currTime)
-  {
-    // query how many particle need to be released
-    if (isActive(currTime)) {
-      // m_releaseType->m_particlePerTimestep;
-      int n = m_release->particles(currTime);
-      for (auto c : m_components)
-        c->generate(currTime, n, data);
+  virtual int generate(const QEStime &currTime);
 
-      // update source counter
-      if (data.contains("mass")) {
-        for (auto m : data.get_ref<std::vector<float>>("mass"))
-          total_mass += m;
-      }
-      total_particle_released += n;
-
-      return n;
-    } else {
-      data.clear();
-      return 0;
-    }
-  }
-  void print() const
-  {
-    std::cout << m_id << std::endl;
-  }
+  void print() const { std::cout << m_id << std::endl; }
 };

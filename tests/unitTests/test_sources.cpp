@@ -23,7 +23,7 @@
 #include "plume/SourceGeometryPoint.h"
 #include "plume/SourceReleaseController.h"
 #include "plume/PI_Source.hpp"
-#include "plume/PI_SourceGeometry.hpp"
+#include "plume/PI_SourceComponent.hpp"
 #include "plume/PI_SourceGeometry_Cube.hpp"
 #include "plume/PI_SourceGeometry_FullDomain.hpp"
 #include "plume/PI_SourceGeometry_Line.hpp"
@@ -272,7 +272,7 @@ private:
   std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
   std::uniform_real_distribution<float> uniform;
 };*/
-
+/*
 class SetMass : public SourceComponent
 {
 public:
@@ -280,7 +280,6 @@ public:
     : m_release(in)
   {}
   ~SetMass() override = default;
-  void initialize(const WINDSGeneralData *WGD, const PLUMEGeneralData *PGD) override {}
 
   void generate(const QEStime &currTime, const int &n, QESDataTransport &data) override
   {
@@ -292,6 +291,7 @@ private:
 
   SourceReleaseController *m_release{};
 };
+*/
 
 class SetPhysicalProperties : public SourceComponent
 {
@@ -300,7 +300,6 @@ public:
     : m_particleDiameter(particleDiameter)
   {}
   ~SetPhysicalProperties() override = default;
-  void initialize(const WINDSGeneralData *WGD, const PLUMEGeneralData *PGD) override {}
 
   void generate(const QEStime &currTime, const int &n, QESDataTransport &data) override
   {
@@ -315,7 +314,7 @@ private:
   float m_particleDensity{};
 };
 
-class Source_test
+/*class Source_test
 {
 public:
   Source_test()
@@ -392,7 +391,7 @@ private:
 
   float total_mass = 0;
   int total_particle_released = 0;
-};
+};*/
 
 /*
 class MySourceBuilder : public SourceComponentBuilderInterface
@@ -444,16 +443,17 @@ void setParticle(const QEStime &currTime, Source *s, ManagedContainer<TracerPart
   // - query the source for the number of particle to be released
   // - format the particle container and return a list of pointer to the new particles
   // this need to be refined... is there an option to avoid copy?
-  for (size_t k = 0; k < s->getData().get_ref<std::vector<u_int32_t>>("ID").size(); ++k) {
+  for (size_t k = 0; k < s->data().get_ref<std::vector<u_int32_t>>("ID").size(); ++k) {
     // p.get(k)->pos_init = x[k];
     p.insert();
-    p.last_added()->ID = s->data.get_ref<std::vector<u_int32_t>>("ID")[k];
+    p.last_added()->ID = s->data().get_ref<std::vector<u_int32_t>>("ID")[k];
     p.last_added()->sourceIdx = s->getID();
     p.last_added()->timeStrt = currTime;
-    p.last_added()->pos_init = s->data.get_ref<std::vector<vec3>>("position")[k];
+    p.last_added()->pos_init = s->data().get_ref<std::vector<vec3>>("position")[k];
 
-    // p.last_added()->m = s->data.get_ref<std::vector<float>>("mass")[k];
-
+    if (s->data().contains("mass")) {
+      p.last_added()->m = s->data().get_ref<std::vector<float>>("mass")[k];
+    }
     // p.last_added()->d = s->data.get_ref<std::vector<float>>("diameter")[k];
     // p.last_added()->rho = s->data.get_ref<std::vector<float>>("density")[k];
   }
@@ -494,7 +494,7 @@ TEST_CASE("Source generator")
   //  sources.back()->addComponent(new SetPhysicalProperties(0.0));
 
 
-  /*PI_SourceGeometry *ptr_geom = new PI_SourceGeometry_Point();
+  /*PI_SourceComponent *ptr_geom = new PI_SourceGeometry_Point();
   sources.emplace_back(new Source_test(new SourceReleaseController_base(time, time + 10, 10, 0.1),
                                        { ptr_geom->create(),
                                          new SetPhysicalProperties(0.0) }));

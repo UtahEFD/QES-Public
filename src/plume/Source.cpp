@@ -28,44 +28,49 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file SourceGeometryFullDomain.h
- * @brief This class defines the interface for the source components.
+/** @file Source.cpp
+ * @brief  This class represents a generic source type
+ *
+ * @note
  */
 
-#pragma once
+#include "Source.h"
 
-#include <random>
-
-#include "util/QEStime.h"
-#include "util/VectorMath.h"
-
-#include "SourceComponent.h"
-
-class WINDSGeneralData;
-class PLUMEGeneralData;
-
-/**
- * \brief Source Geometry: Full Domain
- */
-class SourceGeometryFullDomain : public SourceComponent
+Source::Source(SourceReleaseController *r)
+  : m_release(r)
 {
-public:
-  SourceGeometryFullDomain();
-  ~SourceGeometryFullDomain() override = default;
+  auto sourceID = SourceIDGen::getInstance();
+  m_id = sourceID->get();
 
-  void initialize(const WINDSGeneralData *WGD, const PLUMEGeneralData *PGD) override;
+  m_components.emplace_back(new SetParticleID());
+  m_components.emplace_back(new SetMass(m_release));
+}
 
-  void generate(const QEStime &currTime, const int &n, QESDataTransport &data) override;
 
-private:
-  float xStart = -1.0;
-  float yStart = -1.0;
-  float zStart = -1.0;
-  float xEnd = -1.0;
-  float yEnd = -1.0;
-  float zEnd = -1.0;
+bool Source::isActive(const QEStime &currTime) const
+{
+  return (currTime >= m_release->startTime() && currTime <= m_release->endTime());
+}
 
-  std::random_device rd;// Will be used to obtain a seed for the random number engine
-  std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
-  std::uniform_real_distribution<float> uniform;
-};
+int Source::generate(const QEStime &currTime)
+{
+  // query how many particle need to be released
+  if (isActive(currTime)) {
+    // m_releaseType->m_particlePerTimestep;
+    int n = m_release->particles(currTime);
+    for (auto c : m_components)
+      c->generate(currTime, n, m_data);
+
+    // update source counter
+    if (m_data.contains("mass")) {
+      for (auto m : m_data.get_ref<std::vector<float>>("mass"))
+        total_mass += m;
+    }
+    total_particle_released += n;
+
+    return n;
+  } else {
+    m_data.clear();
+    return 0;
+  }
+}

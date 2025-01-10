@@ -40,7 +40,7 @@
 
 #include "util/ParseInterface.h"
 
-#include "PI_SourceGeometry.hpp"
+#include "PI_SourceComponent.hpp"
 #include "PI_SourceGeometry_Cube.hpp"
 #include "PI_SourceGeometry_FullDomain.hpp"
 #include "PI_SourceGeometry_Line.hpp"
@@ -60,7 +60,7 @@ class PI_Source : public ParseInterface,
 private:
 protected:
 public:
-  PI_SourceGeometry *m_sourceGeometry{};
+  PI_SourceComponent *m_sourceGeometry{};
   PI_ReleaseType *m_releaseType{};
 
 public:
@@ -79,20 +79,7 @@ public:
     setSourceGeometry();
   }
 
-  void checkPosInfo(const float &domainXstart,
-                    const float &domainXend,
-                    const float &domainYstart,
-                    const float &domainYend,
-                    const float &domainZstart,
-                    const float &domainZend);
+  void initialize(const float &timestep);
 
-  void checkReleaseInfo(const float &timestep, const float &simDur);
-
-  Source *create(QESDataTransport &data) override
-  {
-    Source *source = new Source();
-    source->addRelease(m_releaseType->create(data));
-    source->addComponent(m_sourceGeometry->create(data));
-    return source;
-  }
+  Source *create(QESDataTransport &data) override;
 };

@@ -65,10 +65,10 @@ public:
     parseMultiElements(false, sources, "source");
   }
 
-  void check(const PI_PlumeParameters *plumeParams) override
+  void initialize(const PI_PlumeParameters *plumeParams) override
   {
     for (auto s : sources) {
-      s->checkReleaseInfo(plumeParams->timeStep, plumeParams->simDur);
+      s->initialize(plumeParams->timeStep);
     }
   }
 

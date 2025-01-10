@@ -31,6 +31,7 @@
             <source>
                 <releaseType_continuous>
                     <particlePerTimestep> 10 </particlePerTimestep>
+                    <massPerTimestep> 1.0 </massPerTimestep>
                 </releaseType_continuous>
                 <sourceGeometry_Point>
                     <posX> 20.0 </posX>

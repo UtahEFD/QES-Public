@@ -36,17 +36,20 @@
 
 int TracerParticle_Source::getNewParticleNumber(const float &dt, const float &currTime)
 {
+  /*
   if (currTime >= m_releaseType->m_releaseStartTime && currTime <= m_releaseType->m_releaseEndTime) {
     return m_releaseType->m_particlePerTimestep;
   } else {
     return 0;
-  }
+  }*/
+  return 0;
 }
 
 void TracerParticle_Source::emitParticles(const float &dt,
                                           const float &currTime,
                                           ManagedContainer<TracerParticle> *particles)
 {
+  /*
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_releaseType->m_releaseStartTime && currTime <= m_releaseType->m_releaseEndTime) {
     if (!particles->check_size(m_releaseType->m_particlePerTimestep)) {
@@ -59,12 +62,13 @@ void TracerParticle_Source::emitParticles(const float &dt,
       particles->insert();
       // changing the particle ID
       particles->last_added()->ID = id_gen->get();
-      m_sourceGeometry->setInitialPosition(particles->last_added()->pos_init);
-      // m_protoParticle->setParticleParameters(particles->last_added());
+      // m_sourceGeometry->setInitialPosition(particles->last_added()->pos_init);
+      //  m_protoParticle->setParticleParameters(particles->last_added());
       particles->last_added()->tStrt = currTime;
       particles->last_added()->sourceIdx = sourceIdx;
       particles->last_added()->m = m_releaseType->m_massPerTimestep / (float)m_releaseType->m_particlePerTimestep;
     }
     // int emitted = (int)particles->get_nbr_added();
   }
+   */
 }

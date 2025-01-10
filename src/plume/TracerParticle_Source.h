@@ -43,7 +43,7 @@
 
 
 #include "PI_Source.hpp"
-#include "PI_SourceGeometry.hpp"
+#include "PI_SourceComponent.hpp"
 #include "PI_SourceGeometry_Cube.hpp"
 #include "PI_SourceGeometry_FullDomain.hpp"
 #include "PI_SourceGeometry_Line.hpp"
@@ -60,53 +60,15 @@
 
 #include "SourceComponent.h"
 
-class Source_old
-{
-private:
-protected:
-  Source_old() = default;
-
-  PI_SourceGeometry *m_sourceGeometry{};
-  PI_ReleaseType *m_releaseType{};
-
-  ParticleIDGen *id_gen = nullptr;
-
-public:
-  int sourceIdx = -1;
-
-  // constructor
-  Source_old(const int &sidx, const PI_Source *in)
-  {
-    sourceIdx = sidx;
-
-    m_sourceGeometry = in->m_sourceGeometry;
-    m_releaseType = in->m_releaseType;
-    id_gen = ParticleIDGen::getInstance();
-  }
-
-  // destructor
-  virtual ~Source_old() = default;
-
-  virtual int getNewParticleNumber(const float &dt,
-                                   const float &currTime)
-  {
-    if (currTime >= m_releaseType->m_releaseStartTime && currTime <= m_releaseType->m_releaseEndTime) {
-      return m_releaseType->m_particlePerTimestep;
-    } else {
-      return 0;
-    }
-  }
-};
-
-class TracerParticle_Source : public Source_old
+class TracerParticle_Source
 {
 public:
-  TracerParticle_Source(const int &sidx, const PI_Source *in) : Source_old(sidx, in) {}
+  TracerParticle_Source(const int &sidx, const PI_Source *in);
   // destructor
-  ~TracerParticle_Source() override = default;
+  ~TracerParticle_Source() = default;
 
   int getNewParticleNumber(const float &dt,
-                           const float &currTime) override;
+                           const float &currTime);
 
   virtual void emitParticles(const float &dt,
                              const float &currTime,

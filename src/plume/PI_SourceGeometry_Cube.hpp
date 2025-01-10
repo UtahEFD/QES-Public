@@ -37,15 +37,12 @@
 
 #pragma once
 
-#include "PI_SourceGeometry.hpp"
+#include "PI_SourceComponent.hpp"
 #include "SourceGeometryCube.h"
 
-class PI_SourceGeometry_Cube : public PI_SourceGeometry
+class PI_SourceGeometry_Cube : public PI_SourceComponent
 {
 private:
-  // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
-  // guidelines for how to set these variables within an inherited source are given in SourceType.
-
   float m_minX = -1.0;
   float m_minY = -1.0;
   float m_minZ = -1.0;
@@ -53,18 +50,10 @@ private:
   float m_maxY = -1.0;
   float m_maxZ = -1.0;
 
-  std::random_device rd;// Will be used to obtain a seed for the random number engine
-  std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
-  std::uniform_real_distribution<> uniformDistribution;
-
 protected:
 public:
   // Default constructor
-  PI_SourceGeometry_Cube() : PI_SourceGeometry(SourceShape::cube)
-  {
-    prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
-    uniformDistribution = std::uniform_real_distribution<>(0.0, 1.0);
-  }
+  PI_SourceGeometry_Cube() : PI_SourceComponent() {}
 
   // destructor
   ~PI_SourceGeometry_Cube() = default;
@@ -79,19 +68,5 @@ public:
     parsePrimitive<float>(true, m_maxZ, "maxZ");
   }
 
-
-  void checkPosInfo(const float &domainXstart,
-                    const float &domainXend,
-                    const float &domainYstart,
-                    const float &domainYend,
-                    const float &domainZstart,
-                    const float &domainZend) override;
-
-  void setInitialPosition(vec3 &) override;
-
-  SourceComponent *create(QESDataTransport &data) override
-  {
-    return new SourceGeometryCube({ m_minX, m_minY, m_minZ },
-                                  { m_maxX, m_maxY, m_maxZ });
-  }
+  SourceComponent *create(QESDataTransport &data) override;
 };

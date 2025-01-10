@@ -57,9 +57,9 @@ public:
     // parseMultiPolymorphs(false, particles, Polymorph<PI_Particle, PI_HeavyParticle>("heavyParticle"));
   }
 
-  void check(const PI_PlumeParameters* plumeParam)
+  void initialize(const PI_PlumeParameters *plumeParam)
   {
-    for(auto p : particles)
-      p->check(plumeParam);
+    for (auto p : particles)
+      p->initialize(plumeParam);
   }
 };

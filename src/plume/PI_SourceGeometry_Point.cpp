@@ -39,6 +39,13 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
+SourceComponent *PI_SourceGeometry_Point::create(QESDataTransport &data)
+{
+  // return new SourceGeometryPoint(this);
+  return new SourceGeometryPoint({ m_posX, m_posY, m_posZ });
+}
+
+/*
 void PI_SourceGeometry_Point::checkPosInfo(const float &domainXstart,
                                            const float &domainXend,
                                            const float &domainYstart,
@@ -70,3 +77,4 @@ void PI_SourceGeometry_Point::setInitialPosition(vec3 &p)
   p._2 = posY;
   p._3 = posZ;
 }
+*/

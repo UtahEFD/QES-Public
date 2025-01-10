@@ -28,33 +28,49 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file SourceGeometryFullDomain.cpp
- * @brief
+/** @file SourceType.hpp
+ * @brief  This class represents a generic sourece type
+ *
+ * @note Pure virtual child of ParseInterface
+ * @sa ParseInterface
  */
 
-#include "SourceGeometryFullDomain.h"
-#include "PLUMEGeneralData.h"
+#pragma once
 
-SourceGeometryFullDomain::SourceGeometryFullDomain()
+#include <random>
+#include <list>
+
+// #include "Interp.h"
+
+#include "util/ParseInterface.h"
+#include "util/VectorMath.h"
+// #include "winds/WINDSGeneralData.h"
+
+#include "SourceComponent.h"
+
+enum SourceShape {
+  point,
+  line,
+  sphereShell,
+  cube,
+  fullDomain
+};
+
+class PI_SourceComponent : public ParseInterface,
+                           public SourceComponentBuilderInterface
 {
-  prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
-  uniform = std::uniform_real_distribution<float>(0.0, 1.0);
-}
+private:
+protected:
+  PI_SourceComponent() = default;
 
-void SourceGeometryFullDomain::initialize(const WINDSGeneralData *WGD, const PLUMEGeneralData *PGD)
-{
-  PGD->interp->getDomainBounds(xStart, yStart, zStart, xEnd, yEnd, zEnd);
-}
+public:
+  // destructor
+  virtual ~PI_SourceComponent() = default;
 
-void SourceGeometryFullDomain::generate(const QEStime &currTime, const int &n, QESDataTransport &data)
-{
-  std::vector<vec3> init(n);
 
-  for (int k = 0; k < n; ++k) {
-    // init[k] = { m_posX_0 + t * m_diffX, m_posY_0 + t * m_diffY, m_posZ_0 + t * m_diffZ };
-    init[k]._1 = uniform(prng) * (xEnd - xStart) + xStart;
-    init[k]._2 = uniform(prng) * (yEnd - yStart) + yStart;
-    init[k]._3 = uniform(prng) * (zEnd - zStart) + zStart;
-  }
-  data.put("position", init);
-}
+  // this function is used to parse all the variables for each source from the input .xml file
+  // each source overloads this function with their own version, allowing different combinations of input variables for each source,
+  // all these differences handled by parseInterface().
+  // The = 0 at the end should force each inheriting class to require their own version of this function
+  virtual void parseValues() = 0;
+};

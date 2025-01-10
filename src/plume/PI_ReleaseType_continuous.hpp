@@ -42,7 +42,7 @@
 class PI_ReleaseType_continuous : public PI_ReleaseType
 {
 private:
-  float m_massPerSec = 0;
+  float m_massPerSec = 0.0;
 
 protected:
 public:
@@ -61,16 +61,22 @@ public:
     parsePrimitive<float>(false, m_massPerSec, "massPerSec");
     parsePrimitive<float>(false, m_massPerTimestep, "massPerTimestep");
 
-    if(m_releaseStartTime == -1) {
+    if (m_releaseStartTime == -1) {
       m_releaseStartTime = 0;
     }
     m_releaseEndTime = 1.0E10;
+
+    if (m_massPerSec != 0.0 && m_massPerTimestep != 0.0) {
+      throw std::runtime_error("[ReleaseType_continuous] at MOST ONE must be set: massPerSec or massPerTimestep");
+    }
   }
 
   void initialize(const float &timestep) override
   {
     // set the overall releaseType variables from the variables found in this class
-    m_massPerTimestep = m_massPerSec * timestep;
+    if (m_massPerSec != 0.0 && m_massPerTimestep == 0.0) {
+      m_massPerTimestep = m_massPerSec * timestep;
+    }
   }
 
   SourceReleaseController *create(QESDataTransport &data) override

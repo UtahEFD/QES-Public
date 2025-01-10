@@ -37,6 +37,12 @@
 
 #include "PI_SourceGeometry_SphereShell.hpp"
 
+SourceComponent *PI_SourceGeometry_SphereShell::create(QESDataTransport &data)
+{
+  return new SourceGeometrySphereShell({ m_posX, m_posY, m_posZ }, radius);
+}
+
+/*
 void PI_SourceGeometry_SphereShell::checkPosInfo(const float &domainXstart,
                                                  const float &domainXend,
                                                  const float &domainYstart,
@@ -77,3 +83,4 @@ void PI_SourceGeometry_SphereShell::setInitialPosition(vec3 &p)
   p._2 = posY + radius * ny * overn;
   p._3 = posZ + radius * nz * overn;
 }
+*/

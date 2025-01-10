@@ -48,7 +48,7 @@
 class AddSource : public ParticleModel_Visitor
 {
 public:
-  AddSource(std::vector<TracerParticle_Source *> sources)
+  AddSource(std::vector<Source *> sources)
     : m_tracerParticle_sources(sources)//, m_heavyParticle_sources(0)
   {
   }
@@ -73,6 +73,6 @@ private:
   AddSource()
   {}
 
-  std::vector<TracerParticle_Source *> m_tracerParticle_sources;
+  std::vector<Source *> m_tracerParticle_sources;
   // std::vector<HeavyParticle_Source *> m_heavyParticle_sources;
 };

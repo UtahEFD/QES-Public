@@ -55,8 +55,6 @@ public:
   SourceGeometryCube(const vec3 &min, const vec3 &max);
   ~SourceGeometryCube() override = default;
 
-  void initialize(const WINDSGeneralData *WGD, const PLUMEGeneralData *PGD) override {}
-
   void generate(const QEStime &currTime, const int &n, QESDataTransport &data) override;
 
 private:

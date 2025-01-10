@@ -37,36 +37,17 @@
 
 #pragma once
 
-#include "PI_SourceGeometry.hpp"
-#include "SourceGeometryFullDomain.h"
+#include "PI_SourceComponent.hpp"
+#include "SourceGeometryCube.h"
 
-class PI_SourceGeometry_FullDomain : public PI_SourceGeometry
+class PI_SourceGeometry_FullDomain : public PI_SourceComponent
 {
 private:
-  // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
-  // guidelines for how to set these variables within an inherited source are given in SourceType.
-
-  // this source is a bit weird because the domain size has to be obtained after the input parser.
-  //  this would mean either doing a function call unique to this source to supply the required data during the dispersion constructor
-  //  or by using checkPosInfo() differently than it is normally intended to set the domain size variables
-  float xDomainStart = -1.0;
-  float yDomainStart = -1.0;
-  float zDomainStart = -1.0;
-  float xDomainEnd = -1.0;
-  float yDomainEnd = -1.0;
-  float zDomainEnd = -1.0;
-
-  std::random_device rd;// Will be used to obtain a seed for the random number engine
-  std::mt19937 prng;// Standard mersenne_twister_engine seeded with rd()
-  std::uniform_real_distribution<> uniformDistribution;
-  
 protected:
 public:
   // Default constructor
-  PI_SourceGeometry_FullDomain() : PI_SourceGeometry(SourceShape::fullDomain)
+  PI_SourceGeometry_FullDomain() : PI_SourceComponent()
   {
-    prng = std::mt19937(rd());// Standard mersenne_twister_engine seeded with rd()
-    uniformDistribution = std::uniform_real_distribution<>(0.0, 1.0);
   }
 
   // destructor
@@ -77,17 +58,5 @@ public:
     // no paramter
   }
 
-  void checkPosInfo(const float &domainXstart,
-                    const float &domainXend,
-                    const float &domainYstart,
-                    const float &domainYend,
-                    const float &domainZstart,
-                    const float &domainZend) override;
-
-  void setInitialPosition(vec3 &) override;
-
-  SourceComponent *create(QESDataTransport &data) override
-  {
-    return new SourceGeometryFullDomain();
-  }
+  SourceComponent *create(QESDataTransport &data) override;
 };

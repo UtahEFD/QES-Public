@@ -76,14 +76,14 @@ void PI_Source::setSourceGeometry()
   // !!! To make this happen, each source is expected to call the function setReleaseType() inside their call of the function parseValues()
   //  setReleaseType uses parseMultiPolymorph() to fill this variable, then checks to make sure it is size 1 as only 1 release type is allowed,
   //  then setReleaseType() sets the variable m_rType to be the one value found in this variable.
-  std::vector<PI_SourceGeometry *> sGeom_tmp;
+  std::vector<PI_SourceComponent *> sGeom_tmp;
 
   // first parse all the release types into the temporary variable rType_tmp
-  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<PI_SourceGeometry, PI_SourceGeometry_Cube>("sourceGeometry_Cube"));
-  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<PI_SourceGeometry, PI_SourceGeometry_FullDomain>("sourceGeometry_FullDomain"));
-  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<PI_SourceGeometry, PI_SourceGeometry_Line>("sourceGeometry_Line"));
-  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<PI_SourceGeometry, PI_SourceGeometry_Point>("sourceGeometry_Point"));
-  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<PI_SourceGeometry, PI_SourceGeometry_SphereShell>("sourceGeometry_SphereShell"));
+  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<PI_SourceComponent, PI_SourceGeometry_Cube>("sourceGeometry_Cube"));
+  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<PI_SourceComponent, PI_SourceGeometry_FullDomain>("sourceGeometry_FullDomain"));
+  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<PI_SourceComponent, PI_SourceGeometry_Line>("sourceGeometry_Line"));
+  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<PI_SourceComponent, PI_SourceGeometry_Point>("sourceGeometry_Point"));
+  parseMultiPolymorphs(false, sGeom_tmp, Polymorph<PI_SourceComponent, PI_SourceGeometry_SphereShell>("sourceGeometry_SphereShell"));
 
 
   // now if the number of release types is not 1, there was a problem, need to quit with an error
@@ -100,17 +100,14 @@ void PI_Source::setSourceGeometry()
   m_sourceGeometry = sGeom_tmp.at(0);
 }
 
-void PI_Source::checkReleaseInfo(const float &timestep, const float &simDur)
+void PI_Source::initialize(const float &timestep)
 {
   m_releaseType->initialize(timestep);
 }
 
-void PI_Source::checkPosInfo(const float &domainXstart,
-                             const float &domainXend,
-                             const float &domainYstart,
-                             const float &domainYend,
-                             const float &domainZstart,
-                             const float &domainZend)
+Source *PI_Source::create(QESDataTransport &data)
 {
-  m_sourceGeometry->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
+  auto *source = new Source(m_releaseType->create(data));
+  source->addComponent(m_sourceGeometry->create(data));
+  return source;
 }

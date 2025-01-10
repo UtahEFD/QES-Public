@@ -37,26 +37,23 @@
 
 #pragma once
 
-#include "PI_SourceGeometry.hpp"
+#include "PI_SourceComponent.hpp"
 #include "SourceGeometryLine.h"
 
-class PI_SourceGeometry_Line : public PI_SourceGeometry
+class PI_SourceGeometry_Line : public PI_SourceComponent
 {
 private:
-  // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
-  // guidelines for how to set these variables within an inherited source are given in SourceType.
-
-  float posX_0 = -1.0;
-  float posY_0 = -1.0;
-  float posZ_0 = -1.0;
-  float posX_1 = -1.0;
-  float posY_1 = -1.0;
-  float posZ_1 = -1.0;
+  float m_posX_0 = -1.0;
+  float m_posY_0 = -1.0;
+  float m_posZ_0 = -1.0;
+  float m_posX_1 = -1.0;
+  float m_posY_1 = -1.0;
+  float m_posZ_1 = -1.0;
 
 protected:
 public:
   // Default constructor
-  PI_SourceGeometry_Line() : PI_SourceGeometry(SourceShape::line)
+  PI_SourceGeometry_Line() : PI_SourceComponent()
   {
   }
 
@@ -65,27 +62,13 @@ public:
 
   void parseValues() override
   {
-    parsePrimitive<float>(true, posX_0, "posX_0");
-    parsePrimitive<float>(true, posY_0, "posY_0");
-    parsePrimitive<float>(true, posZ_0, "posZ_0");
-    parsePrimitive<float>(true, posX_1, "posX_1");
-    parsePrimitive<float>(true, posY_1, "posY_1");
-    parsePrimitive<float>(true, posZ_1, "posZ_1");
+    parsePrimitive<float>(true, m_posX_0, "m_posX_0");
+    parsePrimitive<float>(true, m_posY_0, "m_posY_0");
+    parsePrimitive<float>(true, m_posZ_0, "m_posZ_0");
+    parsePrimitive<float>(true, m_posX_1, "m_posX_1");
+    parsePrimitive<float>(true, m_posY_1, "m_posY_1");
+    parsePrimitive<float>(true, m_posZ_1, "m_posZ_1");
   }
 
-
-  void checkPosInfo(const float &domainXstart,
-                    const float &domainXend,
-                    const float &domainYstart,
-                    const float &domainYend,
-                    const float &domainZstart,
-                    const float &domainZend) override;
-
-  void setInitialPosition(vec3 &) override;
-
-  SourceComponent *create(QESDataTransport &data) override
-  {
-    return new SourceGeometryLine({ posX_0, posY_0, posZ_0 },
-                                  { posX_1, posY_1, posZ_1 });
-  }
+  SourceComponent *create(QESDataTransport &data) override;
 };

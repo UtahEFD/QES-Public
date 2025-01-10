@@ -35,8 +35,21 @@
  * @sa SourceType
  */
 
-#include "PI_SourceGeometry_FullDomain.hpp"
+#include "PLUMEGeneralData.h"
 
+SourceComponent *PI_SourceGeometry_FullDomain::create(QESDataTransport &data)
+{
+  float minX, minY, minZ;
+  float maxX, maxY, maxZ;
+  auto PGD = data.get_ref<PLUMEGeneralData *>("PGF");
+  PGD->interp->getDomainBounds(minX, minY, minZ, maxX, maxY, maxZ);
+
+  return new SourceGeometryCube({ minX, minY, minZ },
+                                { maxX, maxY, maxZ });
+}
+
+#include "PI_SourceGeometry_FullDomain.hpp"
+/*
 void PI_SourceGeometry_FullDomain::checkPosInfo(const float &domainXstart,
                                                 const float &domainXend,
                                                 const float &domainYstart,
@@ -81,3 +94,4 @@ void PI_SourceGeometry_FullDomain::setInitialPosition(vec3 &p)
   p._2 = uniformDistribution(prng) * (yDomainEnd - yDomainStart) + yDomainStart;
   p._3 = uniformDistribution(prng) * (zDomainEnd - zDomainStart) + zDomainStart;
 }
+*/

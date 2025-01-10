@@ -37,7 +37,15 @@
 
 #include "Random.h"
 #include "PI_SourceGeometry_Line.hpp"
+#include "PLUMEGeneralData.h"
 
+SourceComponent *PI_SourceGeometry_Line::create(QESDataTransport &data)
+{
+  return new SourceGeometryLine({ m_posX_0, m_posY_0, m_posZ_0 },
+                                { m_posX_1, m_posY_1, m_posZ_1 });
+}
+
+/*
 void PI_SourceGeometry_Line::checkPosInfo(const float &domainXstart,
                                           const float &domainXend,
                                           const float &domainYstart,
@@ -92,3 +100,4 @@ void PI_SourceGeometry_Line::setInitialPosition(vec3 &p)
   p._2 = posY_0 + t * diffY;
   p._3 = posZ_0 + t * diffZ;
 }
+*/

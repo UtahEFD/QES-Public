@@ -38,21 +38,21 @@
 #pragma once
 
 
-#include "PI_SourceGeometry.hpp"
+#include "PI_SourceComponent.hpp"
 #include "SourceGeometryPoint.h"
 
-class PI_SourceGeometry_Point : public PI_SourceGeometry
+class PI_SourceGeometry_Point : public PI_SourceComponent
 {
 private:
   // position of the source
-  float posX = -1.0f;
-  float posY = -1.0f;
-  float posZ = -1.0f;
+  float m_posX = -1.0f;
+  float m_posY = -1.0f;
+  float m_posZ = -1.0f;
 
 protected:
 public:
   // Default constructor
-  PI_SourceGeometry_Point() : PI_SourceGeometry(SourceShape::point)
+  PI_SourceGeometry_Point() : PI_SourceComponent()
   {
   }
 
@@ -62,24 +62,10 @@ public:
 
   void parseValues() override
   {
-    parsePrimitive<float>(true, posX, "posX");
-    parsePrimitive<float>(true, posY, "posY");
-    parsePrimitive<float>(true, posZ, "posZ");
+    parsePrimitive<float>(true, m_posX, "posX");
+    parsePrimitive<float>(true, m_posY, "posY");
+    parsePrimitive<float>(true, m_posZ, "posZ");
   }
 
-
-  void checkPosInfo(const float &domainXstart,
-                    const float &domainXend,
-                    const float &domainYstart,
-                    const float &domainYend,
-                    const float &domainZstart,
-                    const float &domainZend) override;
-
-  void setInitialPosition(vec3 &) override;
-
-  SourceComponent *create(QESDataTransport &data) override
-  {
-    // return new SourceGeometryPoint(this);
-    return new SourceGeometryPoint({ posX, posY, posZ });
-  }
+  SourceComponent *create(QESDataTransport &data) override;
 };

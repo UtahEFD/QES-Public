@@ -37,6 +37,14 @@
 
 #include "PI_SourceGeometry_Cube.hpp"
 
+SourceComponent *PI_SourceGeometry_Cube::create(QESDataTransport &data)
+{
+  // [FM] need to add initialization and checks here...
+  return new SourceGeometryCube({ m_minX, m_minY, m_minZ },
+                                { m_maxX, m_maxY, m_maxZ });
+}
+
+/*
 void PI_SourceGeometry_Cube ::checkPosInfo(const float &domainXstart,
                                            const float &domainXend,
                                            const float &domainYstart,
@@ -100,3 +108,4 @@ void PI_SourceGeometry_Cube ::setInitialPosition(vec3 &p)
   p._2 = uniformDistribution(prng) * (m_maxY - m_minY) + m_minY;
   p._3 = uniformDistribution(prng) * (m_maxZ - m_minZ) + m_minZ;
 }
+*/

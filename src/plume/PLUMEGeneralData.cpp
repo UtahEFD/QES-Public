@@ -175,8 +175,8 @@ PLUMEGeneralData::PLUMEGeneralData(const PlumeParameters &PP,
   for (auto p : PID->particleParams->particles) {
     for (auto s : p->sources) {
       //  now do anything that is needed to the source via the pointer
-      s->checkReleaseInfo(PID->plumeParams->timeStep, PID->plumeParams->simDur);
-      s->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
+      // s->checkReleaseInfo(PID->plumeParams->timeStep, PID->plumeParams->simDur);
+      // s->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
     }
     models[p->tag] = p->create();
     models[p->tag]->initialize(PID, WGD, TGD, this);
