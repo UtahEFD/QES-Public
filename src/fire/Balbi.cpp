@@ -78,7 +78,8 @@ struct Fire::FireProperties Fire ::balbi(FuelProperties *fuel, float u_mid, floa
         float tau = tau_0 / (savrT / 0.3048)+300;///MM-11-2-22
         // fuel constants
         float m = fmc_g;///< fuel particle moisture content [0-1]
-        float sigma = oneHour * 0.2471;///< dead fine fuel load [kg/m^2]
+	float transfer = liveHerb * (1.20 - cure) / .90;
+        float sigma = (oneHour + transfer)* 0.2471;///< dead fine fuel load [kg/m^2]
         float sigmaT = fgi;///< total fine fuel load [kg/m^2]
         //float rhoFuel  = 1500;                    ///< fuel density [kg/m^3]
         float T_i = 600;///< ignition temp [k]

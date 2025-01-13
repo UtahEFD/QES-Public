@@ -46,7 +46,7 @@ class Fires : public ParseInterface
 private:
 public:
   int numFires, fuelType, fieldFlag;
-  float fireDur, fmc, courant;
+  float fireDur, fmc, courant, cure;
   std::vector<ignition *> IG;
   std::string fuelFile;
   virtual void parseValues()
@@ -58,6 +58,7 @@ public:
     parsePrimitive<float>(true, courant, "courant");
     parseMultiElements<ignition>(false, IG, "ignition");
     parsePrimitive<int>(true, fieldFlag, "fieldFlag");
+    parsePrimitive<float>(true, cure, "fmc");
     fuelFile = "";
     parsePrimitive<std::string>(false, fuelFile, "fuelMap");
     if (fuelFile != ""){

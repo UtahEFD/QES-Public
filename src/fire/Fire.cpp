@@ -45,7 +45,12 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
   FFII_flag = WID->fires->fieldFlag;
   std::cout << "Field flag [" << FFII_flag << "]" << std::endl;
   fmc = WID->fires->fmc;
-
+  cure = WID->fires->cure;
+  if (cure < .30){
+    cure = .30;
+  } else if (cure > 1.20){
+    cure = 1.20;
+  }
   /**
 	* Set-up the mapper array - cell centered
 	**/
