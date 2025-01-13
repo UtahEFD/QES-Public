@@ -287,22 +287,23 @@ __global__ void BarnesScheme(float *d_u_prof, float *d_v_prof, float *d_wm, floa
   dim3 numberOfBlocks(ceil((num_sites * nx * ny) / (float)(BLOCKSIZE)), 1, 1);
 
   Calculatewm<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_wm, d_wms, d_sum_wm, d_site_xcoord, d_site_ycoord, d_x, d_y, lamda, s_gamma, num_sites, nx, ny, nz);
-  cudaDeviceSynchronize();
-
+  //cudaDeviceSynchronize();
+  __syncthreads();
   dim3 numberOfThreadsPerBlock1(BLOCKSIZE, 1, 1);
   dim3 numberOfBlocks1(ceil((nx * ny) / (float)(BLOCKSIZE)), 1, 1);
 
   CalculateInitialWind<<<numberOfBlocks1, numberOfThreadsPerBlock1>>>(d_wm, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_u_prof, d_v_prof, d_site_id, d_terrain_face_id, d_k_mod, num_sites, nx, ny, nz, asl_percent, abl_height, d_z, d_surf_layer_height);
-  cudaDeviceSynchronize();
-
+  //cudaDeviceSynchronize();
+  __syncthreads();
   dim3 numberOfThreadsPerBlock2(BLOCKSIZE, 1, 1);
   dim3 numberOfBlocks2(ceil((num_sites) / (float)(BLOCKSIZE)), 1, 1);
 
   CalculateInit<<<numberOfBlocks2, numberOfThreadsPerBlock2>>>(d_site_xcoord, d_site_ycoord, d_x, d_y, d_dxx, d_dyy, d_iwork, d_jwork, d_u12, d_u34, d_v12, d_v34, d_u0_int, d_v0_int, d_u0, d_v0, d_u_prof, d_v_prof, d_site_id, d_terrain_face_id, num_sites, dx, dy, nx, ny, nz);
-  cudaDeviceSynchronize();
-
+  //cudaDeviceSynchronize();
+  __syncthreads();
   CorrectInitialWind<<<numberOfBlocks1, numberOfThreadsPerBlock1>>>(d_wm, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_u_prof, d_v_prof, d_u0_int, d_v0_int, d_site_id, d_terrain_face_id, d_k_mod, num_sites, nx, ny, nz, asl_percent, abl_height, d_z, d_surf_layer_height);
-  cudaDeviceSynchronize();
+  //cudaDeviceSynchronize();
+  __syncthreads();
 }
 
 void WindProfilerBarnGPU::BarnesInterpolationGPU(const WINDSInputData *WID, WINDSGeneralData *WGD)

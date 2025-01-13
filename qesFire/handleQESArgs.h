@@ -70,7 +70,7 @@ public:
   std::string netCDFFileBasename = "";
 
   // flag to turn on/off different modules
-  bool solveWind, compTurb, compPlume;
+  bool solveWind, compTurb, compPlume, fireWindsFlag;
   int solveType;
 
   // QES_WINDS output files:

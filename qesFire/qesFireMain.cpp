@@ -314,17 +314,20 @@ int main(int argc, char *argv[])
        **/
       WGD->applyWindProfile(WID, index, arguments.solveType);
     
-      /**
-       * Run ROS model to get initial spread rate and fire properties
-       **/
 
-      fire->LevelSetNB(WGD);
+      // Run fire induced winds (default) if flag is not set
+      if(!arguments.fireWindsFlag){
+        /**
+        * Run ROS model to get initial spread rate and fire properties
+        **/
+
+        fire->LevelSetNB(WGD);
     
-      /**
-       * Calculate fire-induced winds from burning cells
-       **/
-      fire->potential(WGD);
-
+        /**
+        * Calculate fire-induced winds from burning cells
+        **/
+        fire->potential(WGD);
+      }
        /** 
        * Apply parameterizations
        **/
@@ -356,47 +359,47 @@ int main(int argc, char *argv[])
       std::cout << "time = " << simTimeCurr << endl;
 
       if (plume != nullptr){
-	std::cout << "------Running Plume------" << std::endl;
+	      std::cout << "------Running Plume------" << std::endl;
         // Loop through domain to find new smoke sources
-	for (int j=1;j<WGD->ny-2;j++){
-	  for (int i=1;i<WGD->nx-2;i++){
-	    int idx = i+j*(WGD->nx-1);
-	    // If smoke flag set in fire program, get x, y, z location and set source
-	    if (fire->smoke_flag[idx] == 1){
-	      float x_pos = i*WGD->dx;
-	      float y_pos = j*WGD->dy;
-	      float z_pos = WGD->terrain[idx]+1;
-	      float ppt = 20;
-	      std::cout<<"x = "<<x_pos<<", y = "<<y_pos<<", z = "<<z_pos<<std::endl;
-	      SourceFire *source = new SourceFire(x_pos, y_pos, z_pos, ppt);
-	      source->setSource(); 
-	      std::vector<Source *> sourceList;
-	      sourceList.push_back(dynamic_cast<Source*>(source));
-	      // Add source to plume
-	      plume->addSources(sourceList);
-	      // Clear smoke flag in fire program so no duplicate source set next time step
-	      fire->smoke_flag[idx] = 0;
-	    }
-	  }	  
-	}
-	std::cout<<"Plume run"<<std::endl;
-	QEStime pendtime;///< End time for fire time loop
-	pendtime = simTimeCurr; //run until end of fire timestep
-	plume->run(pendtime, WGD, TGD, PoutputVec);
-	std::cout << "------Plume Finished------" << std::endl;
+	      for (int j=1;j<WGD->ny-2;j++){
+	        for (int i=1;i<WGD->nx-2;i++){
+	          int idx = i+j*(WGD->nx-1);
+	          // If smoke flag set in fire program, get x, y, z location and set source
+	          if (fire->smoke_flag[idx] == 1){
+	            float x_pos = i*WGD->dx;
+	            float y_pos = j*WGD->dy;
+	            float z_pos = WGD->terrain[idx]+1;
+	            float ppt = 20;
+	            std::cout<<"x = "<<x_pos<<", y = "<<y_pos<<", z = "<<z_pos<<std::endl;
+	            SourceFire *source = new SourceFire(x_pos, y_pos, z_pos, ppt);
+	            source->setSource(); 
+	            std::vector<Source *> sourceList;
+	            sourceList.push_back(dynamic_cast<Source*>(source));
+	            // Add source to plume
+	            plume->addSources(sourceList);
+	            // Clear smoke flag in fire program so no duplicate source set next time step
+	            fire->smoke_flag[idx] = 0;
+	          }
+	        }	  
+	      }
+	      std::cout<<"Plume run"<<std::endl;
+	      QEStime pendtime;///< End time for fire time loop
+	      pendtime = simTimeCurr; //run until end of fire timestep
+	      plume->run(pendtime, WGD, TGD, PoutputVec);
+	      std::cout << "------Plume Finished------" << std::endl;
       }
 
 
       /**
-	* Save fire data to netCDF file
-	**/
+	    * Save fire data to netCDF file
+	    **/
       for (auto outItr = outFire.begin(); outItr != outFire.end(); ++outItr) {
         (*outItr)->save(simTimeCurr);
       }
 
       /**
-	 * Reset wind fields to initial values for sensor timestep
-	 **/
+	    * Reset wind fields to initial values for sensor timestep
+	    **/
       //WGD->u0 = Fu0;
       //WGD->v0 = Fv0;
       //WGD->w0 = Fw0;

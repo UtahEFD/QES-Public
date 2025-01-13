@@ -27,15 +27,18 @@
  ****************************************************************************/
 /**
  * @file PotentialGlobal.cu
- * @brief This function calculates the fire induced winds based on heat release and plume merging using CUDA global memory
+ * @brief This function calculates the fire induced winds based on heat release and plume merging using CUDA Global Memory
  */
+
 #include "PotentialGlobal.h"
 
 
-
+// Main function
 void Fire ::potentialGlobal(WINDSGeneralData *WGD)
 {
     auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
+    const int gridSize = (nx - 1) * (ny - 1) * (nz - 1);
+
     float g = 9.81;
     float rhoAir = 1.125;
     float C_pa = 1150;
@@ -53,11 +56,20 @@ void Fire ::potentialGlobal(WINDSGeneralData *WGD)
     // dr and dz, assume linear spacing between
     float drStar = rStar[1] - rStar[0];
     float dzStar = zStar[1] - zStar[0];
-
+/** 
     // reset potential fields
     std::fill(Pot_u.begin(), Pot_u.end(), 0);
     std::fill(Pot_v.begin(), Pot_v.end(), 0);
     std::fill(Pot_w.begin(), Pot_w.end(), 0);
+*/
+    // allocate and initialize temporary potential velocity on device
+    cudaMalloc((void **)&d_Pot_u, gridSize * sizeof(float));
+    cudaMalloc((void **)&d_Pot_v, gridSize * sizeof(float));
+    cudaMalloc((void **)&d_Pot_w, gridSize * sizeof(float));
+    cudaMemcpy(d_Pot_u, 0.0, gridSize * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_Pot_v, 0.0, gridSize * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_Pot_w, 0.0, gridSize * sizeof(float), cudaMemcpyHostToDevice);
+
 
     // set z_mix to terrain height
     for (int i = 0; i < nx - 1; i++) {

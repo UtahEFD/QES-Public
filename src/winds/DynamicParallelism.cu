@@ -194,25 +194,29 @@ __global__ void SOR_iteration(float *d_lambda, float *d_lambda_old, int nx, int 
 
     // Save previous iteration values for error calculation
     saveLambda<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, nx, ny, nz);
-    cudaDeviceSynchronize();
-
+    //cudaDeviceSynchronize();
+    __syncthreads();
     // SOR part
     int offset = 0;// red nodes
     //  Invoke red-black SOR kernel for red nodes
     SOR_RB<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, nx, ny, nz, omega, A, B, dx, d_e, d_f, d_g, d_h, d_m, d_n, d_R, offset);
-    cudaDeviceSynchronize();
+    //cudaDeviceSynchronize();
+    __syncthreads();
     offset = 1;// black nodes
     //  Invoke red-black SOR kernel for black nodes
     SOR_RB<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, nx, ny, nz, omega, A, B, dx, d_e, d_f, d_g, d_h, d_m, d_n, d_R, offset);
-    cudaDeviceSynchronize();
-
+    //cudaDeviceSynchronize();
+    __syncthreads();
+    
     dim3 numberOfBlocks2(ceil(((nx - 1) * (ny - 1)) / (float)(BLOCKSIZE)), 1, 1);
     // Invoke kernel to apply Neumann boundary condition (lambda (@k=0) = lambda (@k=1))
     applyNeumannBC<<<numberOfBlocks2, numberOfThreadsPerBlock>>>(d_lambda, nx, ny);
-    cudaDeviceSynchronize();
+    //cudaDeviceSynchronize();
+    __syncthreads();
     // Error calculation
     calculateError<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, nx, ny, nz, d_value, d_bvalue);
-    cudaDeviceSynchronize();
+    //cudaDeviceSynchronize();
+    __syncthreads();
     // Final step of the reduction to calculate error.
     error = 0.0;
     for (int k = 0; k < ((nx - 1) * (ny - 1) * (nz - 1) / BLOCKSIZE) + 1; k++) {

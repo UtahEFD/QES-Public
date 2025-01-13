@@ -149,6 +149,7 @@ public:
   void potential(WINDSGeneralData *);
   void FuelMap(WINDSInputData *, WINDSGeneralData *);
   float computeTimeStep();
+  void potentialGlobal(WINDSGeneralData *);
 
 private:
   // grid information

@@ -68,6 +68,8 @@ QESArgs::QESArgs()
   //reg("doEulDataOutput",     "should debug Eulerian data be output",           ArgumentParsing::NONE,   'e');
   reg("doParticleDataOutput", "should debug Lagrangian data be output", ArgumentParsing::NONE, 'l');
   reg("fireout", "Turns on the netcdf fire output", ArgumentParsing::NONE, 'b');
+  // command line to turn off fire-induced winds
+  reg("fireWindsOff", "Turns off the fire-induced winds in the fire model", ArgumentParsing::NONE, 'i');
 }
 
 
@@ -114,6 +116,8 @@ void QESArgs::processArguments(int argc, char *argv[])
   } else if (compTurb) {
     std::cout << "Turbulence model: ON" << std::endl;
   }
+  
+  fireWindsFlag = isSet("fireWindsOff");
 
   isSet("outbasename", netCDFFileBasename);
   if (netCDFFileBasename != "") {
