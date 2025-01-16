@@ -57,6 +57,12 @@
 float calcRMSE(std::vector<float> &A, std::vector<float> &B);
 float calcMaxAbsErr(std::vector<float> &A, std::vector<float> &B);
 
+class TestAccess : public TracerParticle_Model
+{
+public:
+  StatisticsDirector *access_stats() { return stats; }
+};
+
 TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
 {
   // set up timer information for the simulation runtime
@@ -135,8 +141,8 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
             << std::endl;
 
   // auto *test_model = dynamic_cast<TracerParticle_Model *>(PGD->models[PID->particleParams->particles.at(0)->tag]);
-
-  auto *test_conc = dynamic_cast<TracerParticle_Concentration *>(PGD->models[PID->particleParams->particles.at(0)->tag]->stats->get("concentration"));
+  auto *test_model = dynamic_cast<TestAccess *>(PGD->models[PID->particleParams->particles.at(0)->tag]);
+  auto *test_conc = dynamic_cast<TracerParticle_Concentration *>(test_model->access_stats()->get("concentration"));
 
   // source info (hard coded because no way to access the source info here)
   float xS = 20;

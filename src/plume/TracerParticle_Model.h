@@ -48,13 +48,12 @@
 
 #include "Deposition.h"
 
-class PI_TracerParticle;
 class TracerParticle_Concentration;
 
 class TracerParticle_Model : public ParticleModel
 {
 public:
-  explicit TracerParticle_Model(const PI_TracerParticle *);
+  TracerParticle_Model(QESDataTransport &, const string &);
 
   ~TracerParticle_Model();
 
@@ -62,11 +61,6 @@ public:
   {
     visitor->visit(this);
   }
-
-  void initialize(const PlumeInputData *PID,
-                  WINDSGeneralData *WGD,
-                  TURBGeneralData *TGD,
-                  PLUMEGeneralData *PGD) override;
 
   void generateParticleList(QEStime &timeCurrent,
                             const float &dt,
@@ -89,14 +83,11 @@ public:
   int get_nbr_inserted() override { return (int)particles.get_nbr_inserted(); };
   ManagedContainer<TracerParticle> *get_particles() { return &particles; }
 
-  void addSources(std::vector<Source *>);
-
   // friend class declaration
   friend class TracerParticle_Concentration;
 
 protected:
   ManagedContainer<TracerParticle> particles;
-  std::vector<Source *> sources;
 
 private:
 };

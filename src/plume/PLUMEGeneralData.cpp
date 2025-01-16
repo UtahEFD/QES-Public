@@ -31,6 +31,7 @@
 /** @file PLUMEGeneralData.cpp */
 
 #include "PLUMEGeneralData.h"
+#include "TracerParticle_Concentration.h"
 #include <queue>
 
 PLUMEGeneralData::PLUMEGeneralData(const PlumeParameters &PP,
@@ -172,14 +173,20 @@ PLUMEGeneralData::PLUMEGeneralData(const PlumeParameters &PP,
   // nParsReleased = 0;
 
   std::cout << "[QES-Plume]\t Initializing Particle Models: " << std::endl;
+  QESDataTransport data;
   for (auto p : PID->particleParams->particles) {
-    for (auto s : p->sources) {
-      //  now do anything that is needed to the source via the pointer
-      // s->checkReleaseInfo(PID->plumeParams->timeStep, PID->plumeParams->simDur);
-      // s->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
+    models[p->tag] = p->create(data);
+    QESFileOutput_Interface *outfile;
+    if (plumeParameters.plumeOutput) {
+      outfile = new QESNetCDFOutput_v2(plumeParameters.outputFileBasename + "_" + p->tag + "_plumeOut.nc");
+    } else {
+      outfile = new QESNullOutput(plumeParameters.outputFileBasename + "_" + p->tag + "_plumeOut.nc");
     }
-    models[p->tag] = p->create();
-    models[p->tag]->initialize(PID, WGD, TGD, this);
+    auto *stats = new StatisticsDirector(PID, this, outfile);
+    if (PID->colParams) {
+      // stats->attach("concentration", new TracerParticle_Concentration(PID->colParams, models[p->tag]->));
+    }
+    models[p->tag]->setStats(stats);
   }
 
   /* FM - NOTE ON MODEL INITIALIZATION

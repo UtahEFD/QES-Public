@@ -34,16 +34,18 @@
 
 #include "TracerParticle_Concentration.h"
 
-TracerParticle_Concentration::TracerParticle_Concentration(const PI_CollectionParameters *colParams, TracerParticle_Model *pm)
+TracerParticle_Concentration::TracerParticle_Concentration(const PI_CollectionParameters *colParams,
+                                                           ManagedContainer<TracerParticle> *particles_in)
   : averagingPeriod(colParams->averagingPeriod), ongoingAveragingTime(0.0),
     nBoxesX(colParams->nBoxesX), nBoxesY(colParams->nBoxesY), nBoxesZ(colParams->nBoxesZ),
     lBndx(colParams->boxBoundsX1), uBndx(colParams->boxBoundsX2),
     lBndy(colParams->boxBoundsY1), uBndy(colParams->boxBoundsY2),
-    lBndz(colParams->boxBoundsZ1), uBndz(colParams->boxBoundsZ2)
+    lBndz(colParams->boxBoundsZ1), uBndz(colParams->boxBoundsZ2),
+    m_particles(particles_in)
 {
   // setup output frequency control information
   // averagingStartTime = m_plume->getSimTimeStart() + PID->colParams->averagingStartTime;
-  averagingPeriod = colParams->averagingPeriod;
+  // averagingPeriod = colParams->averagingPeriod;
 
   // set the initial next output time value
   // nextOutputTime = averagingStartTime + averagingPeriod;
@@ -53,9 +55,9 @@ TracerParticle_Concentration::TracerParticle_Concentration(const PI_CollectionPa
   // --------------------------------------------------------
 
   // Sampling box variables for calculating concentration data
-  boxSizeX = (uBndx - lBndx) / (nBoxesX);
-  boxSizeY = (uBndy - lBndy) / (nBoxesY);
-  boxSizeZ = (uBndz - lBndz) / (nBoxesZ);
+  boxSizeX = (uBndx - lBndx) / ((float)nBoxesX);
+  boxSizeY = (uBndy - lBndy) / ((float)nBoxesY);
+  boxSizeZ = (uBndz - lBndz) / ((float)nBoxesZ);
 
   volume = boxSizeX * boxSizeY * boxSizeZ;
 
@@ -64,25 +66,23 @@ TracerParticle_Concentration::TracerParticle_Concentration(const PI_CollectionPa
   yBoxCen.resize(nBoxesY);
   zBoxCen.resize(nBoxesZ);
 
-  int zR = 0, yR = 0, xR = 0;
+  float zR = 0.0, yR = 0.0, xR = 0.0;
   for (int k = 0; k < nBoxesZ; ++k) {
-    zBoxCen.at(k) = lBndz + (zR * boxSizeZ) + (boxSizeZ / 2.0);
-    zR++;
+    zBoxCen.at(k) = lBndz + (zR * boxSizeZ) + (boxSizeZ / 2.0f);
+    zR = zR + 1.0f;
   }
   for (int j = 0; j < nBoxesY; ++j) {
-    yBoxCen.at(j) = lBndy + (yR * boxSizeY) + (boxSizeY / 2.0);
-    yR++;
+    yBoxCen.at(j) = lBndy + (yR * boxSizeY) + (boxSizeY / 2.0f);
+    yR = yR + 1.0f;
   }
   for (int i = 0; i < nBoxesX; ++i) {
-    xBoxCen.at(i) = lBndx + (xR * boxSizeX) + (boxSizeX / 2.0);
-    xR++;
+    xBoxCen.at(i) = lBndx + (xR * boxSizeX) + (boxSizeX / 2.0f);
+    xR = xR + 1.0f;
   }
 
   // initialization of the container
   pBox.resize(nBoxesX * nBoxesY * nBoxesZ, 0);
   conc.resize(nBoxesX * nBoxesY * nBoxesZ, 0.0);
-
-  m_particles = pm->get_particles();
 }
 
 void TracerParticle_Concentration::collect(QEStime &timeIn, const float &timeStep)

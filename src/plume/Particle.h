@@ -80,8 +80,11 @@ typedef struct
 struct particle_physcal
 {
   float *d;
+  float *m;
+  float *rho;
 };
 
+/*
 class Particle;
 
 class ParseParticle : public ParseInterface
@@ -122,31 +125,55 @@ public:
   virtual void parseValues() = 0;
 
   virtual void setParticleParameters(Particle *) = 0;
-};
+};*/
 
 
-class Metadata
-{
-public:
-  Metadata() = default;
-  ~Metadata() = default;
-  // the initial position for the particle
-  vec3 pos_init{};
-  // the time of release for the particle (need to change to QEStime)
-  double timeStrt{};
-  // the index of the source the particle came from
-  int sourceID{};
-};
-
+// core particle properties
 class Core
 {
 public:
   Core() = default;
   ~Core() = default;
-  // once initial positions are known, can set these values using urb and turb info
-  // Initially, the initial x component of position for the particle.
-  // After the solver starts to run, the current x component of position for the particle.
+
+  // state of the particle
+  ParticleState state;
+  // id of particle (for tracking purposes)
+  uint32_t ID{};
+  // position for the particle
   vec3 pos{};
+  // particle diameter diameter [microns]
+  float d{};
+  // particle mass [g]
+  float m{};// particle mass [g]
+  // density of particle g/m3
+  float rho{};
+  // decay (1 - fraction) particle decayed [0,1]
+  float wdecay{};
+
+  void reset(const uint32_t &ID, const vec3 &p0)
+  {
+    state = ACTIVE;
+    pos = p0;
+    d = 0.0;
+    m = 0.0;
+    rho = 0.0;
+  }
+
+  void reset(const uint32_t &ID, const vec3 &p0, const float &d0, const float &m0, const float &rho0)
+  {
+    state = ACTIVE;
+    pos = p0;
+    d = d0;
+    m = m0;
+    rho = rho0;
+  }
+};
+
+class LSDM
+{
+public:
+  LSDM() = default;
+  ~LSDM() = default;
 
   // The velocit for a particle for a given iteration.
   vec3 velMean{};
@@ -166,35 +193,42 @@ public:
   float CoEps{};
   float nuT{};
 
-  // particle diameter diameter [microns]
-  double d{};
-  // particle mass [g]
-  double m{};// particle mass [g]
-  // initial particle mass [g]
-  double m_o{};
-  // density of particle g/m3
-  double rho{};
-  // decay (1 - fraction) particle decayed [0,1]
-  double wdecay{};
+  void reset(const vec3 &velFluct0, const mat3sym &tau0)
+  {
+    // note: velMean, CoEps, and nuT are set by the interpolation, no need to reset them.
+    velFluct = velFluct0;
+    velFluct_old = velFluct;
+    delta_velFluct = { 0.0, 0.0, 0.0 };
+
+    tau = tau0;
+  }
 };
 
-// particle physical properties
-class BasePhysical
+class Metadata
 {
 public:
-  BasePhysical() = default;
-  ~BasePhysical() = default;
+  Metadata() = default;
+  ~Metadata() = default;
 
-  // particle diameter diameter [microns]
-  double d{};
-  // particle mass [g]
-  double m{};// particle mass [g]
+  // particle type
+  ParticleType type{};
+  // the initial position for the particle
+  vec3 pos_init{};
+  // the time of release for the particle (need to change to QEStime)
+  QEStime time_start{};
+  // the index of the source the particle came from
+  int source_id{};
   // initial particle mass [g]
-  double m_o{};
-  // density of particle g/m3
-  double rho{};
-  // decay (1 - fraction) particle decayed [0,1]
-  double wdecay{};
+  float m_init{};
+
+  void reset(const ParticleType &t, const vec3 &p0, const QEStime &t0, const int &sID, const float &m0)
+  {
+    type = t;
+    pos_init = p0;
+    time_start = t0;
+    source_id = sID;
+    m_init = m0;
+  }
 };
 
 

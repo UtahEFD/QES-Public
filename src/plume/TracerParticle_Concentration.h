@@ -49,7 +49,7 @@
 class TracerParticle_Concentration : public DataSource
 {
 public:
-  TracerParticle_Concentration(const PI_CollectionParameters *, TracerParticle_Model *);
+  TracerParticle_Concentration(const PI_CollectionParameters *, ManagedContainer<TracerParticle> *);
 
   void collect(QEStime &timeIn, const float &timeStep) override;
   void finalize(QEStime &timeIn) override;

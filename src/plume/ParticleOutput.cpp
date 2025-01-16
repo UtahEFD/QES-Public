@@ -74,13 +74,13 @@ ExportParticleData::ExportParticleData(QEStime &t, PLUMEGeneralData *PGD)
 
 void ExportParticleData::visit(TracerParticle_Model *pm)
 {
-  std::string sout = fname_prefix + "_" + pm->tag + "_" + fname_suffix;
+  std::string sout = fname_prefix + "_" + pm->get_tag() + "_" + fname_suffix;
 
   // opens an existing csv file or creates a new file.
   fstream fout;
   fout.open(sout, ios::out);
   fout << "# Particle Data File\n";
-  fout << "# Model particle tag: " << pm->tag << "\n";
+  fout << "# Model particle tag: " << pm->get_tag() << "\n";
   fout << file_prologue;
   fout << "#particleID,tStrt,sourceIdx,"
        << "d,m,wdecay,"

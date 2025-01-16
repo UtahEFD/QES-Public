@@ -39,34 +39,28 @@
 #pragma once
 
 #include "util/ParseInterface.h"
+#include "util/QESDataTransport.h"
 
 #include "PI_PlumeParameters.hpp"
 #include "PI_Source.hpp"
 #include "Particle.h"
 #include "ParticleModel.h"
 
-class Source;
-class GroundDeposition;
-class CanopyDeposition;
-
-class PI_Particle : public ParseInterface
+class PI_Particle : public ParseInterface,
+                    public ParticleModelBuilderInterface
 {
-private:
+public:
   // default constructor
   PI_Particle()
     : d(0.0), m(0.0), rho(0.0),
       depFlag(false), decayConst(0.0), c1(2.049), c2(1.19)
   {}
 
-protected:
   PI_Particle(const ParticleType &type, const bool &flag)
     : particleType(type),
       d(0.0), m(0.0), rho(0.0),
       depFlag(flag), decayConst(0.0), c1(2.049), c2(1.19)
   {}
-
-public:
-  virtual ParticleModel *create() = 0;
 
   // particle type
   ParticleType particleType;
@@ -89,8 +83,8 @@ public:
   // destructor
   ~PI_Particle() = default;
 
-  virtual void parseValues() = 0;
-  virtual void initialize(const PI_PlumeParameters *) = 0;
-
+  virtual void parseValues(){};
+  virtual void initialize(const PI_PlumeParameters *){};
+  virtual ParticleModel *create(QESDataTransport &data){};
   // virtual void setParticleParameters(Particle *) = 0;
 };

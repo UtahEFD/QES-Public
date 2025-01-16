@@ -85,8 +85,6 @@
 // #include "HeavyParticle_Model.h"
 #include "TracerParticle_Model.h"
 
-#include "AddSource.h"
-
 class PlumeParameters
 {
 public:

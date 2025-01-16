@@ -62,7 +62,19 @@ public:
   void parseValues() override
   {
     parsePrimitive<std::string>(true, tag, "tag");
+
+    parsePrimitive<float>(true, rho, "particleDensity");
+    parsePrimitive<float>(true, d, "particleDiameter");
+
+    parsePrimitive<bool>(true, depFlag, "depositionFlag");
+    parsePrimitive<float>(false, c1, "c1");
+    parsePrimitive<float>(false, c2, "c2");
+
+    parsePrimitive<float>(false, decayConst, "decayConst");
+
     parseMultiElements(false, sources, "source");
+
+
   }
 
   void initialize(const PI_PlumeParameters *plumeParams) override
@@ -72,9 +84,14 @@ public:
     }
   }
 
-  virtual ParticleModel *create() override
+  virtual ParticleModel *create(QESDataTransport &data) override
   {
-    return new TracerParticle_Model(this);
+    auto *model = new TracerParticle_Model(data, tag);
+    for (auto s : sources) {
+      // add source into the vector of sources
+      model->addSource(s->create(data));
+    }
+    return model;
   }
 
   // void setParticleParameters(Particle *ptr) override {}

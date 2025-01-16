@@ -40,24 +40,15 @@
 #include "PI_Source.hpp"
 
 
-TracerParticle_Model::TracerParticle_Model(const PI_TracerParticle *in)
-  : ParticleModel(ParticleType::tracer, in->tag),
+TracerParticle_Model::TracerParticle_Model(QESDataTransport &data, const string &tag_in)
+  : ParticleModel(ParticleType::tracer, tag_in),
     particles()
 {
   std::cout << "[QES-Plume]\t Model: Tracer Particle - Tag: " << tag << std::endl;
 
+  deposition = new Deposition(data.get<WINDSGeneralData *>("WGD"));
+
   // particles = new ManagedContainer<TracerParticle>();
-
-  QESDataTransport data;
-
-  for (auto s : in->sources) {
-    // now determine the number of particles to release for the source and update the overall count
-    // totalParsToRelease += s->getNumParticles();
-
-    // add source into the vector of sources
-    sources.push_back(s->create(data));
-    // sources.emplace_back(new TracerParticle_Source((int)sources.size(), s));
-  }
 }
 
 TracerParticle_Model::~TracerParticle_Model()
@@ -66,17 +57,23 @@ TracerParticle_Model::~TracerParticle_Model()
   delete stats;
 }
 
-void TracerParticle_Model::initialize(const PlumeInputData *PID,
+/*void TracerParticle_Model::initialize(const PlumeInputData *PID,
                                       WINDSGeneralData *WGD,
                                       TURBGeneralData *TGD,
                                       PLUMEGeneralData *PGD)
 {
-  deposition = new Deposition(WGD);
+  QESDataTransport data;
+  data.put("WGD", WGD);
+  data.put("TGD", TGD);
+  data.put("PGD", PGD);
+
+
 
   // stats = new TracerParticle_Statistics(PID, PGD, this);
   // concentration = new TracerParticle_Concentration(PID, pm);
 
-  QESFileOutput_Interface *outfile = nullptr;
+
+  QESFileOutput_Interface *outfile;
   if (PGD->plumeParameters.plumeOutput) {
     outfile = new QESNetCDFOutput_v2(PGD->plumeParameters.outputFileBasename + "_" + tag + "_plumeOut.nc");
   } else {
@@ -87,7 +84,7 @@ void TracerParticle_Model::initialize(const PlumeInputData *PID,
     stats->attach("concentration", new TracerParticle_Concentration(PID->colParams, this));
   }
   // other statistics can be added here
-}
+}*/
 
 void TracerParticle_Model::generateParticleList(QEStime &timeCurrent,
                                                 const float &dt,
@@ -99,11 +96,14 @@ void TracerParticle_Model::generateParticleList(QEStime &timeCurrent,
   for (auto s : sources)
     nbr_new_particle += s->generate(timeCurrent);
 
+  particles.check_resize(nbr_new_particle);
+
   for (auto s : sources) {
-    if (s->isActive(timeCurrent))
+    if (s->isActive(timeCurrent)) {
       for (size_t k = 0; k < s->data().get_ref<std::vector<u_int32_t>>("ID").size(); ++k) {
         // p.get(k)->pos_init = x[k];
         particles.insert();
+
         particles.last_added()->ID = s->data().get_ref<std::vector<u_int32_t>>("ID")[k];
         particles.last_added()->sourceIdx = s->getID();
         particles.last_added()->timeStrt = timeCurrent;
@@ -112,9 +112,29 @@ void TracerParticle_Model::generateParticleList(QEStime &timeCurrent,
         if (s->data().contains("mass")) {
           particles.last_added()->m = s->data().get_ref<std::vector<float>>("mass")[k];
         }
+      }
+      std::vector<size_t> newIdx;
+      particles.obtain_available(s->data().get_ref<std::vector<u_int32_t>>("ID").size(), newIdx);
+
+      for (size_t k = 0; k < newIdx.size(); ++k) {
+        // p.get(k)->pos_init = x[k];
+        particles[newIdx[k]].ID = s->data().get_ref<std::vector<u_int32_t>>("ID")[k];
+        particles[newIdx[k]].sourceIdx = s->getID();
+        particles[newIdx[k]].timeStrt = timeCurrent;
+        particles[newIdx[k]].pos_init = s->data().get_ref<std::vector<vec3>>("position")[k];
+
+        if (s->data().contains("mass")) {
+          particles[newIdx[k]].m = s->data().get_ref<std::vector<float>>("mass")[k];
+        }
         // p.last_added()->d = s->data.get_ref<std::vector<float>>("diameter")[k];
         // p.last_added()->rho = s->data.get_ref<std::vector<float>>("density")[k];
+
+        // [FM] How to reset the particle...
+        // CORE[k].reset(s->data().get_ref<std::vector<u_int32_t>>("ID")[k],
+        //               s->data().get_ref<std::vector<vec3>>("position")[k]);
+        // METADATA[k].reset(type,CORE[k].pos,timeCurrent,s->getID(),CORE[k].m);
       }
+    }
     // setParticle(time, s, particles);
   }
   /*
@@ -137,10 +157,6 @@ void TracerParticle_Model::generateParticleList(QEStime &timeCurrent,
   }
 }
 
-void TracerParticle_Model::addSources(std::vector<Source *> newSources)
-{
-  sources.insert(sources.end(), newSources.begin(), newSources.end());
-}
 
 void TracerParticle_Model::advect(const double &total_time_interval,
                                   WINDSGeneralData *WGD,
@@ -157,7 +173,7 @@ void TracerParticle_Model::advect(const double &total_time_interval,
     float vs = 0;
 
     float timeRemainder = total_time_interval;
-    while (p->state == ACTIVE && timeRemainder > 0.0) {
+    while (particles[k].state == ACTIVE && timeRemainder > 0.0) {
 
       /*
         now get the Lagrangian values for the current iteration from the wind/turbulence grid

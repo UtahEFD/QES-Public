@@ -36,11 +36,12 @@
 
 #include <utility>
 
-
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
 
 #include "ManagedContainer.h"
+
+#include "Particle.h"
 
 #include "ParticleModel_Visitor.h"
 #include "StatisticsDirector.h"
@@ -50,8 +51,15 @@
 class PlumeInputData;
 class PLUMEGeneralData;
 
-class TracerParticle_Model;
-class HeavyParticle_Model;
+class ParticleModel;
+class ParticleModelBuilderInterface
+{
+public:
+  /**
+   * /brief
+   */
+  virtual ParticleModel *create(QESDataTransport &) = 0;
+};
 
 class ParticleModel
 {
@@ -59,11 +67,6 @@ public:
   virtual ~ParticleModel() = default;
 
   virtual void accept(ParticleModel_Visitor *visitor) = 0;
-
-  virtual void initialize(const PlumeInputData *PID,
-                          WINDSGeneralData *WGD,
-                          TURBGeneralData *TGD,
-                          PLUMEGeneralData *PGD) = 0;
 
   virtual void generateParticleList(QEStime &timeCurrent,
                                     const float &dt,
@@ -82,15 +85,17 @@ public:
                        TURBGeneralData *TGD,
                        PLUMEGeneralData *PGD) = 0;
 
-  int get_nbr_rogue() { return nbr_rogue; };
+  int get_nbr_rogue() { return nbr_rogue; }
+  std::string get_tag() { return tag; }
+
   virtual int get_nbr_active() = 0;
   virtual int get_nbr_inserted() = 0;
 
+  void setStats(StatisticsDirector *in) { stats = in; }
 
+  void addSource(Source *);
+  void addSources(std::vector<Source *>);
   ParticleType getParticleType() { return particleType; }
-
-  std::string tag{};
-  StatisticsDirector *stats = nullptr;
 
 protected:
   explicit ParticleModel(ParticleType type, std::string tag_in)
@@ -98,8 +103,11 @@ protected:
   {}
 
   ParticleType particleType{};
+  std::string tag{};
 
+  std::vector<Source *> sources;
 
+  StatisticsDirector *stats = nullptr;
   Deposition *deposition = nullptr;
 
   int nbr_rogue = 0;
@@ -107,3 +115,13 @@ protected:
 private:
   ParticleModel() = default;
 };
+
+inline void ParticleModel::addSource(Source *newSource)
+{
+  sources.push_back(newSource);
+}
+
+inline void ParticleModel::addSources(std::vector<Source *> newSources)
+{
+  sources.insert(sources.end(), newSources.begin(), newSources.end());
+}
