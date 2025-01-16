@@ -17,7 +17,6 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 foreach (example ${examples})
   
   target_link_libraries(${example} PRIVATE qesplumecore)
-  target_link_libraries(${example} PRIVATE qeswindscore)
   IF ($CACHE{HAS_CUDA_SUPPORT})
     target_link_libraries(${example} PRIVATE qeswindsgpu)
   ENDIF()

@@ -14,7 +14,6 @@ set(REGRESSTESTS
 foreach (regresstest ${REGRESSTESTS})
 
   target_link_libraries(${regresstest} PRIVATE qesplumecore)
-  target_link_libraries(${regresstest} PRIVATE qeswindscore)
   IF ($CACHE{HAS_CUDA_SUPPORT})
     target_link_libraries(${regresstest} PRIVATE qeswindsgpu)
   ENDIF()

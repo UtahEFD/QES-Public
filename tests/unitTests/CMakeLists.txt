@@ -156,7 +156,6 @@ ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 foreach (unittest ${UNITTESTS})
   
   target_link_libraries(${unittest} PRIVATE qesplumecore)
-  target_link_libraries(${unittest} PRIVATE qeswindscore)
   IF ($CACHE{HAS_CUDA_SUPPORT})
     target_link_libraries(${unittest} PRIVATE qeswindsgpu)
   ENDIF()
