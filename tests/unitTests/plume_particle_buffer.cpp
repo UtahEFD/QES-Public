@@ -106,7 +106,7 @@ TEST_CASE("buffer", "[in progress]")
   ParticleIDGen *id_gen = ParticleIDGen::getInstance();
   int new_tracers = 1E3;
   for (int k = 0; k < 10000; ++k) {
-    tracers.sweep(new_tracers);
+    tracers.check_resize(new_tracers);
 
     for (int pidx = 0; pidx < new_tracers; ++pidx) {
       tracers.insert();
@@ -136,12 +136,21 @@ TEST_CASE("buffer large", "[in progress]")
   auto start = std::chrono::high_resolution_clock::now();
 
   ManagedContainer<TracerParticle> tracers(1E5);
+  std::vector<float> tmp(1E5);
   for (int k = 0; k < 1E4; ++k) {
-    tracers.sweep(2E3);
+    tracers.check_resize(2E3);
+    tracers.resize_companion(tmp);
 
-    for (int pidx = 0; pidx < 2E3; ++pidx) {
+    /*for (int pidx = 0; pidx < 2E3; ++pidx) {
       tracers.insert();
+    }*/
+
+    std::vector<size_t> newParticleIndices;
+    tracers.obtain_available(2E3, newParticleIndices);
+    for (size_t n = 0; k < newParticleIndices.size(); ++k) {
+      tracers[newParticleIndices[n]].state = ACTIVE;
     }
+
     Random prng;
     for (auto &tracer : tracers) {
       float t = prng.uniRan();
@@ -152,6 +161,7 @@ TEST_CASE("buffer large", "[in progress]")
   }
 
   std::cout << tracers.size() << " " << tracers.get_nbr_active() << std::endl;
+  std::cout << tracers.size() << " " << tmp.size() << std::endl;
 
   auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
   std::chrono::duration<float> elapsed = finish - start;

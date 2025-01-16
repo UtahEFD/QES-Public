@@ -50,6 +50,8 @@ protected:
   std::vector<size_t> added;
   std::queue<size_t> available;
 
+  size_t m_resized = 0;
+
 private:
   size_t screen_elements()
   {
@@ -92,17 +94,20 @@ public:
   T *last_added() { return &elements[added.back()]; }
   T *get_added(const size_t &k) { return &elements[added[k]]; }
   T *get(const size_t &k) { return &elements[k]; }
+  T &operator[](const size_t &k) { return elements[k]; }
 
   typename std::vector<T>::iterator begin() { return elements.begin(); }
   typename std::vector<T>::iterator end() { return elements.end(); }
 
   bool check_size(const int &needed) { return needed <= available.size(); }
 
-  void sweep(const int &new_part)
+  void check_resize(const int &new_part)
   {
+    m_resized = 0;
     size_t nbr_used = screen_elements();
     size_t elements_size = elements.size();
     if (elements_size < nbr_used + new_part) {
+      m_resized = new_part;
       elements.resize(elements_size + new_part);
       for (size_t it = elements_size; it < elements.size(); ++it) {
         available.push(it);
@@ -110,9 +115,19 @@ public:
     }
   }
 
+  template<typename U>
+  void resize_companion(std::vector<U> &v)
+  {
+    if (m_resized > 0) {
+      size_t elements_size = v.size();
+      v.resize(elements_size + m_resized);
+      if (elements.size() != v.size())
+        throw std::runtime_error("[ManagedContainer] mismatch containers sizes");
+    }
+  }
+
   void insert()
   {
-    // this requires an extra copy: elements[available.front()] = T(nbr_inserted);
     // reset the particle:
     // - turning the particle active:
     elements[available.front()].state = ACTIVE;
@@ -121,5 +136,22 @@ public:
     available.pop();
     // increment the counter
     nbr_inserted++;
+  }
+
+  void obtain_available(const size_t &n, std::vector<size_t> &out)
+  {
+    out.clear();
+    out.resize(n);
+    // reset the particle:
+    // - turning the particle active:
+    // adding index to out and remove from available:
+    for (size_t k = 0; k < n; ++k) {
+      out[k] = available.front();
+      available.pop();
+    }
+    // adding index to added
+    added.insert(added.end(), out.begin(), out.end());
+    // increment the counter
+    nbr_inserted += n;
   }
 };
