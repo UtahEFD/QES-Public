@@ -137,6 +137,7 @@ TEST_CASE("buffer large", "[in progress]")
 
   ManagedContainer<TracerParticle> tracers(1E5);
   std::vector<float> tmp(1E5);
+
   for (int k = 0; k < 1E4; ++k) {
     tracers.check_resize(2E3);
     tracers.resize_companion(tmp);
@@ -147,7 +148,7 @@ TEST_CASE("buffer large", "[in progress]")
 
     std::vector<size_t> newParticleIndices;
     tracers.obtain_available(2E3, newParticleIndices);
-    for (size_t n = 0; k < newParticleIndices.size(); ++k) {
+    for (size_t n = 0; n < newParticleIndices.size(); ++n) {
       tracers[newParticleIndices[n]].state = ACTIVE;
     }
 

@@ -83,8 +83,34 @@ public:
   // destructor
   ~PI_Particle() = default;
 
-  virtual void parseValues(){};
-  virtual void initialize(const PI_PlumeParameters *){};
-  virtual ParticleModel *create(QESDataTransport &data){};
+  virtual void parseValues()
+  {
+    parsePrimitive<std::string>(true, tag, "tag");
+    
+    parsePrimitive<bool>(false, depFlag, "depositionFlag");
+    parsePrimitive<float>(false, c1, "c1");
+    parsePrimitive<float>(false, c2, "c2");
+
+    parsePrimitive<float>(false, decayConst, "decayConst");
+
+    parseMultiElements(false, sources, "source");
+  }
+
+  virtual void initialize(const PI_PlumeParameters *plumeParams)
+  {
+    for (auto s : sources) {
+      s->initialize(plumeParams->timeStep);
+    }
+  }
+  virtual ParticleModel *create(QESDataTransport &data)
+  {
+
+    auto *model = new ParticleModel(data, tag);
+    for (auto s : sources) {
+      // add source into the vector of sources
+      model->addSource(s->create(data));
+    }
+    return model;
+  }
   // virtual void setParticleParameters(Particle *) = 0;
 };

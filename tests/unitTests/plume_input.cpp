@@ -34,17 +34,16 @@ TEST_CASE("Plume test inputs for multiple particle models")
 
   // parse xml settings
   auto PID = new PlumeInputData(qesPlumeParamFile);
-  std::cout << PID->particleParams->particles.size() << std::endl;
+  std::cout << "Number of particle type: " << PID->particleParams->particles.size() << std::endl;
+  REQUIRE(PID->particleParams->particles.size() == 2);
 
   std::cout << "--------------------" << std::endl;
   // std::vector<ParticleModel *> test;
   std::map<std::string, ParticleModel *> test;
 
   for (auto p : PID->particleParams->particles) {
-
-    std::cout << p->tag << std::endl;
-    std::cout << p->particleType << std::endl;
-    std::cout << p->sources.size() << std::endl;
+    std::cout << "Particle tag: " << p->tag << std::endl;
+    std::cout << "Number of source(s): " << p->sources.size() << std::endl;
     QESDataTransport data;
     test[p->tag] = p->create(data);
     /*switch (p->particleType) {
@@ -63,22 +62,13 @@ TEST_CASE("Plume test inputs for multiple particle models")
 
   std::cout << "--------------------" << std::endl;
 
-  /* Need C++17
-   * for (const auto &[key, pm] : test) {
-    std::cout << key << " " << pm->tag << std::endl;
-    std::cout << pm->getParticleType() << std::endl;
-  }*/
-
-  for (const auto &pm : test) {
-    std::cout << pm.first << " " << pm.second->get_tag() << std::endl;
-    std::cout << pm.second->getParticleType() << std::endl;
+  for (const auto &[key, pm] : test) {
+    // check tags
+    // std::cout << key << " " << pm->get_tag() << std::endl;
+    REQUIRE(key == pm->get_tag());
   }
-
-  /*for (auto pm : test) {
-    std::cout << pm->generateParticleList() << std::endl;
-    std::cout << pm->getParticleType() << std::endl;
-  }*/
 }
+
 TEST_CASE("Plume test inputs for multiple particle models with uniform winds and turbulence")
 {
   // set up timer information for the simulation runtime

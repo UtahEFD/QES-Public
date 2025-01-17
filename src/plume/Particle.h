@@ -42,6 +42,7 @@
 #include "util/ParseInterface.h"
 
 enum ParticleType {
+  base,
   tracer,
   heavy
 };
@@ -84,59 +85,28 @@ struct particle_physcal
   float *rho;
 };
 
-/*
-class Particle;
-
-class ParseParticle : public ParseInterface
-{
-private:
-  // default constructor
-  ParseParticle()
-    : d(0.0), m(0.0), rho(0.0),
-      depFlag(false), decayConst(0.0), c1(2.049), c2(1.19),
-      particleType(ParticleType::tracer)
-  {}
-
-protected:
-  ParseParticle(const bool &flag, const ParticleType &type)
-    : d(0.0), m(0.0), rho(0.0),
-      depFlag(flag), decayConst(0.0), c1(2.049), c2(1.19),
-      particleType(type)
-  {}
-
-public:
-  // particle type
-  ParticleType particleType;
-
-  // Physical properties
-  // diameter of particle (micron)
-  double d;
-  // mass of particle (g)
-  double m;
-  // density of particle (kg/m3)
-  double rho;
-
-  bool depFlag;
-  double decayConst, c1, c2;
-
-  // destructor
-  ~ParseParticle() = default;
-
-  virtual void parseValues() = 0;
-
-  virtual void setParticleParameters(Particle *) = 0;
-};*/
-
-
-// core particle properties
-class Core
+class ParticleControl
 {
 public:
-  Core() = default;
-  ~Core() = default;
+  ParticleControl() = default;
+  ~ParticleControl() = default;
 
   // state of the particle
   ParticleState state;
+
+  void reset()
+  {
+    state = ACTIVE;
+  }
+};
+
+// core particle properties
+class ParticleCore
+{
+public:
+  ParticleCore() = default;
+  ~ParticleCore() = default;
+
   // id of particle (for tracking purposes)
   uint32_t ID{};
   // position for the particle
@@ -152,7 +122,6 @@ public:
 
   void reset(const uint32_t &ID, const vec3 &p0)
   {
-    state = ACTIVE;
     pos = p0;
     d = 0.0;
     m = 0.0;
@@ -161,7 +130,6 @@ public:
 
   void reset(const uint32_t &ID, const vec3 &p0, const float &d0, const float &m0, const float &rho0)
   {
-    state = ACTIVE;
     pos = p0;
     d = d0;
     m = m0;
@@ -169,11 +137,11 @@ public:
   }
 };
 
-class LSDM
+class ParticleLSDM
 {
 public:
-  LSDM() = default;
-  ~LSDM() = default;
+  ParticleLSDM() = default;
+  ~ParticleLSDM() = default;
 
   // The velocit for a particle for a given iteration.
   vec3 velMean{};
@@ -204,11 +172,11 @@ public:
   }
 };
 
-class Metadata
+class ParticleMetadata
 {
 public:
-  Metadata() = default;
-  ~Metadata() = default;
+  ParticleMetadata() = default;
+  ~ParticleMetadata() = default;
 
   // particle type
   ParticleType type{};

@@ -26,12 +26,11 @@
         <nBoxesZ> 69 </nBoxesZ>
     </collectionParameters>
     <particleParameters>
-        <tracerParticle>
-            <tag>tracer1</tag>
+        <baseParticle>
+            <tag>tracer</tag>
             <source>
                 <releaseType_continuous>
                     <particlePerTimestep> 10 </particlePerTimestep>
-                    <massPerTimestep> 1.0 </massPerTimestep>
                 </releaseType_continuous>
                 <sourceGeometry_Point>
                     <posX> 20.0 </posX>
@@ -49,15 +48,17 @@
                     <posZ> 70.0 </posZ>
                 </sourceGeometry_Point>
             </source>
-        </tracerParticle>
-        <heavyParticle>
+        </baseParticle>
+        <baseParticle>
             <tag>pollen</tag>
-            <particleDensity> 0.001 </particleDensity>
-            <particleDiameter> 0.01 </particleDiameter>
+
             <depositionFlag>true</depositionFlag>
             <source>
+                <particleDensity> 0.001 </particleDensity>
+                <particleDiameter> 0.01 </particleDiameter>
                 <releaseType_continuous>
                     <particlePerTimestep> 400 </particlePerTimestep>
+                    <massPerTimestep> 1.0 </massPerTimestep>
                 </releaseType_continuous>
                 <sourceGeometry_Point>
                     <posX> 20.0 </posX>
@@ -65,7 +66,7 @@
                     <posZ> 70.0 </posZ>
                 </sourceGeometry_Point>
             </source>
-        </heavyParticle>
+        </baseParticle>
     </particleParameters>
     <boundaryConditions>
         <xBCtype>exiting</xBCtype>

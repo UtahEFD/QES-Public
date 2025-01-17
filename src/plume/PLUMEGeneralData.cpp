@@ -31,7 +31,6 @@
 /** @file PLUMEGeneralData.cpp */
 
 #include "PLUMEGeneralData.h"
-#include "TracerParticle_Concentration.h"
 #include <queue>
 
 PLUMEGeneralData::PLUMEGeneralData(const PlumeParameters &PP,
@@ -174,17 +173,29 @@ PLUMEGeneralData::PLUMEGeneralData(const PlumeParameters &PP,
 
   std::cout << "[QES-Plume]\t Initializing Particle Models: " << std::endl;
   QESDataTransport data;
+  data.put("WGD", WGD);
+  data.put("TGD", TGD);
+  data.put("PGD", this);
+
   for (auto p : PID->particleParams->particles) {
     models[p->tag] = p->create(data);
+
     QESFileOutput_Interface *outfile;
     if (plumeParameters.plumeOutput) {
       outfile = new QESNetCDFOutput_v2(plumeParameters.outputFileBasename + "_" + p->tag + "_plumeOut.nc");
     } else {
       outfile = new QESNullOutput(plumeParameters.outputFileBasename + "_" + p->tag + "_plumeOut.nc");
     }
-    auto *stats = new StatisticsDirector(PID, this, outfile);
+    outfile->setStartTime(simTimeStart);
+
+    auto *stats = new StatisticsDirector(simTimeStart + PID->colParams->averagingStartTime,
+                                         PID->colParams->averagingPeriod,
+                                         outfile);
     if (PID->colParams) {
-      // stats->attach("concentration", new TracerParticle_Concentration(PID->colParams, models[p->tag]->));
+      stats->attach("concentration",
+                    new Concentration(PID->colParams,
+                                      models[p->tag]->particles_control,
+                                      models[p->tag]->particles_core));
     }
     models[p->tag]->setStats(stats);
   }
@@ -276,9 +287,9 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd,
     }
 
     // This the main loop over all active particles
-    for (const auto &pm : models) {
-      pm.second->generateParticleList(simTimeCurr, timeRemainder, WGD, TGD, this);
-      pm.second->advect(timeRemainder, WGD, TGD, this);
+    for (const auto &[key, pm] : models) {
+      pm->generateParticleList(simTimeCurr, timeRemainder, WGD, TGD, this);
+      pm->advect(timeRemainder, WGD, TGD, this);
     }
 
     // incrementation of time and timestep
@@ -287,8 +298,8 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd,
     simTime = simTimeCurr - simTimeStart;
 
     // process particle information of output
-    for (const auto &pm : models) {
-      pm.second->process(simTimeCurr, timeRemainder, WGD, TGD, this);
+    for (const auto &[key, pm] : models) {
+      pm->process(simTimeCurr, timeRemainder, WGD, TGD, this);
     }
 
     // output for particle data (using visitor)
@@ -335,6 +346,14 @@ void PLUMEGeneralData::applyBC(Particle *p)
   if (p->state == ACTIVE) domainBC_x->enforce(p->pos._1, p->velFluct._1, p->state);
   if (p->state == ACTIVE) domainBC_y->enforce(p->pos._2, p->velFluct._2, p->state);
   if (p->state == ACTIVE) domainBC_z->enforce(p->pos._3, p->velFluct._3, p->state);
+}
+
+void PLUMEGeneralData::applyBC(vec3 &pos, vec3 &velFluct, ParticleState &state)
+{
+  // now apply boundary conditions
+  if (state == ACTIVE) domainBC_x->enforce(pos._1, velFluct._1, state);
+  if (state == ACTIVE) domainBC_y->enforce(pos._2, velFluct._2, state);
+  if (state == ACTIVE) domainBC_z->enforce(pos._3, velFluct._3, state);
 }
 
 
@@ -607,6 +626,71 @@ void PLUMEGeneralData::initializeParticleValues(Particle *par_ptr,
   }
   */
 }
+
+void PLUMEGeneralData::initializeParticleValues(const vec3 &pos,
+                                                ParticleLSDM &particle_ldsm,
+                                                TURBGeneralData *TGD)
+{
+  // get the sigma values from the QES grid for the particle value
+  vec3 sig;
+  // get the tau values from the QES grid for the particle value
+  mat3sym tau;
+
+  interp->interpTurbInitialValues(TGD, pos, tau, sig);
+
+
+  // now set the initial velocity fluctuations for the particle
+  // The  sqrt of the variance is to match Bailey's code
+  // normally distributed random number
+  vec3 velFluct0;
+#ifdef _OPENMP
+  velFluct0._1 = sig._1 * threadRNG[omp_get_thread_num()]->norRan();
+  velFluct0._2 = sig._2 * threadRNG[omp_get_thread_num()]->norRan();
+  velFluct0._3 = sig._3 * threadRNG[omp_get_thread_num()]->norRan();
+#else
+  velFluct._1 = sig._1 * RNG->norRan();
+  velFluct._2 = sig._2 * RNG->norRan();
+  velFluct._3 = sig._3 * RNG->norRan();
+#endif
+
+  // now need to call makeRealizable on tau
+  VectorMath::makeRealizable(invarianceTol, tau);
+
+  particle_ldsm.reset(velFluct0, tau);
+  /*
+  // set the initial values for the old velFluct values
+  par_ptr->velFluct_old = par_ptr->velFluct;
+
+  // now need to call makeRealizable on tau
+  VectorMath::makeRealizable(invarianceTol, tau);
+
+  // set tau_old to the interpolated values for each position
+  par_ptr->tau = tau;
+
+  // set delta_velFluct values to zero for now
+  par_ptr->delta_velFluct = { 0.0, 0.0, 0.0 };
+
+  // set isRogue to false and isActive to true for each particle
+  // isActive = true as particle relased is active immediately
+  par_ptr->state = ACTIVE;
+  // par_ptr->isRogue = false;
+  // par_ptr->isActive = true;
+
+  long cellIdNew = interp->getCellId(par_ptr->pos);
+  if ((WGD->icellflag[cellIdNew] == 0) || (WGD->icellflag[cellIdNew] == 2)) {
+    // std::cerr << "WARNING invalid initial position" << std::endl;
+    par_ptr->state = INACTIVE;
+  }*/
+
+  /*
+  double det = txx * (tyy * tzz - tyz * tyz) - txy * (txy * tzz - tyz * txz) + txz * (txy * tyz - tyy * txz);
+  if (std::abs(det) < 1e-10) {
+    // std::cerr << "WARNING invalid position stress" << std::endl;
+    par_ptr->isActive = false;
+  }
+  */
+}
+
 
 double PLUMEGeneralData::getMaxVariance(const TURBGeneralData *TGD)
 {

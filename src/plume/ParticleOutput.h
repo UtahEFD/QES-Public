@@ -70,8 +70,8 @@ public:
 
   ~ExportParticleData() = default;
 
-  void visit(TracerParticle_Model *element) override;
-  // void visit(HeavyParticle_Model *element) override;
+  void visit(ParticleModel *) override;
+  void visit(TracerParticle_Model *) override;
 
 private:
   std::string fname_prefix, fname_suffix;

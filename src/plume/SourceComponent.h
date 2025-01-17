@@ -56,3 +56,24 @@ public:
 
 protected:
 };
+
+class SetPhysicalProperties : public SourceComponent
+{
+public:
+  SetPhysicalProperties(const float &particleDiameter, const float &particleDensity)
+    : m_particleDiameter(particleDiameter), m_particleDensity(particleDensity)
+  {}
+  ~SetPhysicalProperties() override = default;
+
+  void generate(const QEStime &currTime, const int &n, QESDataTransport &data) override
+  {
+    data.put("diameter", std::vector<float>(n, m_particleDiameter));
+    data.put("density", std::vector<float>(n, m_particleDensity));
+  }
+
+private:
+  SetPhysicalProperties() = default;
+
+  float m_particleDiameter{};
+  float m_particleDensity{};
+};

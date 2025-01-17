@@ -63,18 +63,16 @@ public:
   {
     parsePrimitive<std::string>(true, tag, "tag");
 
-    parsePrimitive<float>(true, rho, "particleDensity");
-    parsePrimitive<float>(true, d, "particleDiameter");
+    parsePrimitive<float>(false, rho, "particleDensity");
+    parsePrimitive<float>(false, d, "particleDiameter");
 
-    parsePrimitive<bool>(true, depFlag, "depositionFlag");
+    parsePrimitive<bool>(false, depFlag, "depositionFlag");
     parsePrimitive<float>(false, c1, "c1");
     parsePrimitive<float>(false, c2, "c2");
 
     parsePrimitive<float>(false, decayConst, "decayConst");
 
     parseMultiElements(false, sources, "source");
-
-
   }
 
   void initialize(const PI_PlumeParameters *plumeParams) override

@@ -16,6 +16,7 @@ SET( qesPlumeCoreSources
     InterpPowerLaw.cpp
     InterpTriLinear.cpp    
 
+    Concentration.cpp
     Deposition.cpp
     StatisticsDirector.cpp
 
@@ -25,6 +26,8 @@ SET( qesPlumeCoreSources
 
     PI_BoundaryConditions.hpp
     DomainBoundaryConditions.cpp
+
+    ParticleModel.cpp
 
     TracerParticle_Model.cpp
     TracerParticle_Source.cpp

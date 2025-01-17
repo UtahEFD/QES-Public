@@ -26,15 +26,15 @@
     <nBoxesZ> 40 </nBoxesZ>
   </collectionParameters>
   <particleParameters>
-    <heavyParticle>
+    <baseParticle>
       <tag>heavy</tag>
-      <particleDensity> 2.0 </particleDensity>
-      <particleDiameter> 5 </particleDiameter>
       <depositionFlag>false</depositionFlag>
       <decayConst> 0.0 </decayConst>
       <source>
         <releaseType_continuous>
           <massPerSec> 5 </massPerSec>
+          <particleDensity> 2.0 </particleDensity>
+          <particleDiameter> 5 </particleDiameter>
           <particlePerTimestep> 100 </particlePerTimestep>
         </releaseType_continuous>
         <sourceGeometry_Line>
@@ -46,7 +46,7 @@
           <posZ_1> 20.0 </posZ_1>
         </sourceGeometry_Line>
       </source>
-    </heavyParticle>
+    </baseParticle>
   </particleParameters>
   <boundaryConditions>
     <xBCtype>exiting</xBCtype>

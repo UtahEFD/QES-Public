@@ -72,6 +72,48 @@ ExportParticleData::ExportParticleData(QEStime &t, PLUMEGeneralData *PGD)
   file_prologue.append("# Simulation current time: " + time.getTimestamp() + "\n");
 }
 
+void ExportParticleData::visit(ParticleModel *pm)
+{
+  std::string sout = fname_prefix + "_" + pm->get_tag() + "_" + fname_suffix;
+
+  // opens an existing csv file or creates a new file.
+  fstream fout;
+  fout.open(sout, ios::out);
+  fout << "# Particle Data File\n";
+  fout << "# Model particle tag: " << pm->get_tag() << "\n";
+  fout << file_prologue;
+  fout << "#particleID,tStrt,sourceIdx,d,m,wdecay,"
+       << "xPos_init,yPos_init,"
+          "zPos_init,xPos,yPos,zPos,"
+          "uFluct,vFluct,wFluct,"
+          "delta_uFluct,delta_vFluct,delta_wFluct\n";
+
+  for (auto k = 0u; k < pm->particles_control.size(); ++k) {// Insert the data to file
+    if (pm->particles_control[k].state == ACTIVE) {
+      fout << pm->particles_core[k].ID << ", "
+           << pm->particles_metadata[k].time_start << ", "
+           << pm->particles_metadata[k].source_id << ", "
+           << pm->particles_core[k].d << ", "
+           << pm->particles_core[k].m << ", "
+           << pm->particles_core[k].wdecay << ", "
+           << pm->particles_metadata[k].pos_init._1 << ", "
+           << pm->particles_metadata[k].pos_init._1 << ", "
+           << pm->particles_metadata[k].pos_init._1 << ", "
+           << pm->particles_core[k].pos._1 << ", "
+           << pm->particles_core[k].pos._2 << ", "
+           << pm->particles_core[k].pos._3 << ", "
+           << pm->particles_lsdm[k].velFluct._1 << ", "
+           << pm->particles_lsdm[k].velFluct._2 << ", "
+           << pm->particles_lsdm[k].velFluct._3 << ", "
+           << pm->particles_lsdm[k].delta_velFluct._1 << ", "
+           << pm->particles_lsdm[k].delta_velFluct._2 << ", "
+           << pm->particles_lsdm[k].delta_velFluct._3 << "\n";
+    }
+  }
+
+  fout.close();
+}
+
 void ExportParticleData::visit(TracerParticle_Model *pm)
 {
   std::string sout = fname_prefix + "_" + pm->get_tag() + "_" + fname_suffix;
@@ -90,7 +132,7 @@ void ExportParticleData::visit(TracerParticle_Model *pm)
           "delta_uFluct,delta_vFluct,delta_wFluct\n";
 
   for (auto k = 0u; k < pm->get_particles()->size(); ++k) {// Insert the data to file
-    TracerParticle *p = pm->get_particles()->get(k);
+    TracerParticle *p = pm->get_particles()->get_ptr(k);
     if (p->state == ACTIVE) {
       fout << p->ID << ", "
            << p->tStrt << ", "
@@ -115,46 +157,3 @@ void ExportParticleData::visit(TracerParticle_Model *pm)
 
   fout.close();
 }
-
-/*void ExportParticleData::visit(HeavyParticle_Model *pm)
-{
-  std::string sout = fname_prefix + "_" + pm->tag + "_" + fname_suffix;
-
-  // opens an existing csv file or creates a new file.
-  fstream fout;
-  fout.open(sout, ios::out);
-  fout << "# Particle Data File\n";
-  fout << "# Model particle tag: " << pm->tag << "\n";
-  fout << file_prologue;
-  fout << "#particleID,tStrt,sourceIdx,d,m,wdecay,"
-       << "xPos_init,yPos_init,"
-          "zPos_init,xPos,yPos,zPos,"
-          "uFluct,vFluct,wFluct,"
-          "delta_uFluct,delta_vFluct,delta_wFluct\n";
-
-  for (auto k = 0u; k < pm->get_particles()->size(); ++k) {// Insert the data to file
-    HeavyParticle *p = pm->get_particles()->get(k);
-    if (p->isActive && !p->isRogue) {
-      fout << p->particleID << ", "
-           << p->tStrt << ", "
-           << p->sourceIdx << ", "
-           << p->d << ", "
-           << p->m << ", "
-           << p->wdecay << ", "
-           << p->xPos_init << ", "
-           << p->yPos_init << ", "
-           << p->zPos_init << ", "
-           << p->xPos << ", "
-           << p->yPos << ", "
-           << p->zPos << ", "
-           << p->uFluct << ", "
-           << p->vFluct << ", "
-           << p->wFluct << ", "
-           << p->delta_uFluct << ", "
-           << p->delta_vFluct << ", "
-           << p->delta_wFluct << "\n";
-    }
-  }
-
-  fout.close();
-}*/

@@ -37,6 +37,19 @@
 
 #include "PI_Source.hpp"
 
+void PI_Source::parseValues()
+{
+  setReleaseType();
+  setSourceGeometry();
+
+  float rho, d;
+
+  parsePrimitive<float>(false, rho, "particleDensity");
+  parsePrimitive<float>(false, d, "particleDiameter");
+
+  m_sourceComponents.push_back(new ParticlePhysicalPropertiesBuilder(d, rho));
+}
+
 void PI_Source::setReleaseType()
 {
   // this variable is a temporary variable to set the publicly available variable m_rType.
@@ -97,7 +110,7 @@ void PI_Source::setSourceGeometry()
   }
 
   // the number of release types is 1, so now set the public release type to be the one that we have
-  m_sourceGeometry = sGeom_tmp.at(0);
+  m_sourceComponents.push_back(sGeom_tmp.at(0));
 }
 
 void PI_Source::initialize(const float &timestep)
@@ -108,6 +121,8 @@ void PI_Source::initialize(const float &timestep)
 Source *PI_Source::create(QESDataTransport &data)
 {
   auto *source = new Source(m_releaseType->create(data));
-  source->addComponent(m_sourceGeometry->create(data));
+  for (auto sc : m_sourceComponents) {
+    source->addComponent(sc->create(data));
+  }
   return source;
 }

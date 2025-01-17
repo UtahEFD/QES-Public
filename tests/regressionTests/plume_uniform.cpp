@@ -49,19 +49,14 @@
 
 #include "plume/PLUMEInputData.h"
 #include "plume/PLUMEGeneralData.h"
-#include "plume/TracerParticle_Concentration.h"
+
+#include "plume/Concentration.h"
 
 // float calcEntropy(int nbrBins, Plume *plume);
 // void calcRMSE_wFluct(int nbrBins, Plume *plume, std::map<std::string, float> &rmse);
 // void calcRMSE_delta_wFluct(int nbrBins, Plume *plume, double delta_t, std::map<std::string, float> &rmse);
 float calcRMSE(std::vector<float> &A, std::vector<float> &B);
 float calcMaxAbsErr(std::vector<float> &A, std::vector<float> &B);
-
-class TestAccess : public TracerParticle_Model
-{
-public:
-  StatisticsDirector *access_stats() { return stats; }
-};
 
 TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
 {
@@ -140,9 +135,8 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
   std::cout << "##############################################################" << std::endl
             << std::endl;
 
-  // auto *test_model = dynamic_cast<TracerParticle_Model *>(PGD->models[PID->particleParams->particles.at(0)->tag]);
-  auto *test_model = dynamic_cast<TestAccess *>(PGD->models[PID->particleParams->particles.at(0)->tag]);
-  auto *test_conc = dynamic_cast<TracerParticle_Concentration *>(test_model->access_stats()->get("concentration"));
+  auto tag = PID->particleParams->particles.at(0)->tag;
+  auto *test_conc = dynamic_cast<Concentration *>(PGD->models[tag]->stats->get("concentration"));
 
   // source info (hard coded because no way to access the source info here)
   float xS = 20;

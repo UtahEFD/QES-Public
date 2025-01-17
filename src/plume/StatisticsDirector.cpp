@@ -34,16 +34,13 @@
 
 #include "StatisticsDirector.h"
 
-#include "PLUMEInputData.h"
-#include "PLUMEGeneralData.h"
-
-StatisticsDirector::StatisticsDirector(const PlumeInputData *PID, PLUMEGeneralData *PGD, QESFileOutput_Interface *outfile)
+StatisticsDirector::StatisticsDirector(const QEStime &startCollectionTime,
+                                       const float &collectionPeriod,
+                                       QESFileOutput_Interface *outfile)
+  : m_startCollectionTime(startCollectionTime), m_collectionPeriod(collectionPeriod),
+    m_statsFile(outfile)
 {
-  m_startCollectionTime = PGD->getSimTimeStart() + PID->colParams->averagingStartTime;
-  m_collectionPeriod = PID->colParams->averagingPeriod;
   m_nextOutputTime = m_startCollectionTime + m_collectionPeriod;
-  m_statsFile = outfile;
-  m_statsFile->setStartTime(PGD->getSimTimeStart());
 }
 
 StatisticsDirector::~StatisticsDirector()

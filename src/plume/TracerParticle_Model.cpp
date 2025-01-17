@@ -165,7 +165,7 @@ void TracerParticle_Model::advect(const double &total_time_interval,
 {
 #pragma omp parallel for default(none) shared(WGD, TGD, PGD, total_time_interval)
   for (auto k = 0u; k < particles.size(); ++k) {
-    TracerParticle *p = particles.get(k);
+    TracerParticle *p = particles.get_ptr(k);
     float rhoAir = 1.225;// in kg m^-3
     float nuAir = 1.506E-5;// in m^2 s^-1
 

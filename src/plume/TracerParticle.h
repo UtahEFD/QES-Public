@@ -58,7 +58,7 @@ public:
 private:
 };
 
-
+/*
 class BasePhysicalProperties
 {
 public:
@@ -95,3 +95,4 @@ public:
   Core core;
   BasePhysicalProperties physical;
 };
+*/

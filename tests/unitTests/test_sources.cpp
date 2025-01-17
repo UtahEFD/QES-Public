@@ -293,7 +293,7 @@ private:
 };
 */
 
-class SetPhysicalProperties : public SourceComponent
+/*class SetPhysicalProperties : public SourceComponent
 {
 public:
   explicit SetPhysicalProperties(float particleDiameter)
@@ -312,7 +312,7 @@ private:
 
   float m_particleDiameter{};
   float m_particleDensity{};
-};
+};*/
 
 /*class Source_test
 {

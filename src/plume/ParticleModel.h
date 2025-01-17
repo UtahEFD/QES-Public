@@ -36,6 +36,9 @@
 
 #include <utility>
 
+#include "util/DataSource.h"
+#include "util/QESDataTransport.h"
+
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
 
@@ -64,32 +67,37 @@ public:
 class ParticleModel
 {
 public:
-  virtual ~ParticleModel() = default;
+  ParticleModel(QESDataTransport &, const string &);
 
-  virtual void accept(ParticleModel_Visitor *visitor) = 0;
+  virtual ~ParticleModel();
+
+  virtual void accept(ParticleModel_Visitor *visitor)
+  {
+    visitor->visit(this);
+  }
 
   virtual void generateParticleList(QEStime &timeCurrent,
                                     const float &dt,
                                     WINDSGeneralData *WGD,
                                     TURBGeneralData *TGD,
-                                    PLUMEGeneralData *PGD) = 0;
+                                    PLUMEGeneralData *PGD);
 
   virtual void advect(const double &timeRemainder,
                       WINDSGeneralData *WGD,
                       TURBGeneralData *TGD,
-                      PLUMEGeneralData *PGD) = 0;
+                      PLUMEGeneralData *PGD);
 
   virtual void process(QEStime &timeIn,
                        const float &dt,
                        WINDSGeneralData *WGD,
                        TURBGeneralData *TGD,
-                       PLUMEGeneralData *PGD) = 0;
+                       PLUMEGeneralData *PGD);
 
   int get_nbr_rogue() { return nbr_rogue; }
   std::string get_tag() { return tag; }
 
-  virtual int get_nbr_active() = 0;
-  virtual int get_nbr_inserted() = 0;
+  virtual int get_nbr_active() { return (int)particles_control.get_nbr_active(); };
+  virtual int get_nbr_inserted() { return (int)particles_control.get_nbr_inserted(); };
 
   void setStats(StatisticsDirector *in) { stats = in; }
 
@@ -97,6 +105,14 @@ public:
   void addSources(std::vector<Source *>);
   ParticleType getParticleType() { return particleType; }
 
+  ManagedContainer<ParticleControl> particles_control;
+  std::vector<ParticleCore> particles_core;
+  std::vector<ParticleLSDM> particles_lsdm;
+  std::vector<ParticleMetadata> particles_metadata;
+
+  StatisticsDirector *stats = nullptr;
+  Deposition *deposition = nullptr;
+  
 protected:
   explicit ParticleModel(ParticleType type, std::string tag_in)
     : particleType(type), tag(std::move(tag_in))
@@ -107,13 +123,13 @@ protected:
 
   std::vector<Source *> sources;
 
-  StatisticsDirector *stats = nullptr;
-  Deposition *deposition = nullptr;
-
   int nbr_rogue = 0;
 
 private:
   ParticleModel() = default;
+
+  // class ExportParticleData;
+  // friend ExportParticleData;
 };
 
 inline void ParticleModel::addSource(Source *newSource)

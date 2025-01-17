@@ -60,8 +60,8 @@ class PI_Source : public ParseInterface,
 private:
 protected:
 public:
-  PI_SourceComponent *m_sourceGeometry{};
   PI_ReleaseType *m_releaseType{};
+  std::vector<SourceComponentBuilderInterface *> m_sourceComponents{};
 
 public:
   // constructor
@@ -70,16 +70,35 @@ public:
   // destructor
   virtual ~PI_Source() = default;
 
+  void parseValues() override;
+
   void setReleaseType();
   void setSourceGeometry();
 
-  void parseValues() override
-  {
-    setReleaseType();
-    setSourceGeometry();
-  }
 
   void initialize(const float &timestep);
 
   Source *create(QESDataTransport &data) override;
+};
+
+class ParticlePhysicalPropertiesBuilder : public SourceComponentBuilderInterface
+{
+private:
+  float m_particleDiameter{};
+  float m_particleDensity{};
+
+protected:
+public:
+  // Default constructor
+  ParticlePhysicalPropertiesBuilder(const float &particleDiameter, const float &particleDensity)
+    : m_particleDiameter(particleDiameter), m_particleDensity(particleDensity)
+  {}
+
+  // destructor
+  ~ParticlePhysicalPropertiesBuilder() = default;
+
+  SourceComponent *create(QESDataTransport &data)
+  {
+    return new SetPhysicalProperties(m_particleDiameter, m_particleDensity);
+  }
 };

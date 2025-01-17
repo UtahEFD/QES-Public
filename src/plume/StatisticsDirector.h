@@ -36,7 +36,7 @@
 
 #include <iostream>
 #include <fstream>
-#include <unordered_map>
+#include <map>
 #include <cmath>
 #include <cstring>
 
@@ -55,13 +55,25 @@ class PLUMEGeneralData;
 class StatisticsDirector
 {
 public:
-  StatisticsDirector(const PlumeInputData *, PLUMEGeneralData *, QESFileOutput_Interface *);
+  /**
+   * /brief Adds a key value pair to the container.
+   *
+   * Given a key (as a string), and a value of any type, this will store
+   * the data in the container for retrieval later.
+   *
+   * @param startCollectionTime Time to start collecting.
+   * @param collectionPeriod    collection period.
+   * @param outfile             output file for statistics.
+   */
+
+  StatisticsDirector(const QEStime &, const float &, QESFileOutput_Interface *);
 
   ~StatisticsDirector();
 
   DataSource *get(const std::string &key) { return dataSources[key]; }
-  typename std::unordered_map<std::string, DataSource *>::iterator begin() { return dataSources.begin(); }
-  typename std::unordered_map<std::string, DataSource *>::iterator end() { return dataSources.end(); }
+  bool is_set(const std::string &key) { return !(dataSources.find(key) == dataSources.end()); }
+  typename std::map<std::string, DataSource *>::iterator begin() { return dataSources.begin(); }
+  typename std::map<std::string, DataSource *>::iterator end() { return dataSources.end(); }
 
   void attach(const std::string &key, DataSource *s);
 
@@ -70,7 +82,7 @@ public:
   QESFileOutput_Interface *getOutputFile() { return m_statsFile; }
 
 protected:
-  std::unordered_map<std::string, DataSource *> dataSources;
+  std::map<std::string, DataSource *> dataSources;
 
   QEStime m_startCollectionTime;
   QEStime m_nextOutputTime;
