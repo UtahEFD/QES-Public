@@ -69,6 +69,7 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
   z_mix.resize((nx - 1) * (ny - 1));
   z_mix_old.resize((nx - 1) * (ny - 1));
   smoke_flag.resize((nx -1) * (ny - 1));
+  H0.resize((nx - 1) * (ny - 1));
   /**
 	* Read Potential Field
 	**/
@@ -76,7 +77,7 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
   Pot_u.resize((nx - 1) * (ny - 1) * (nz - 2));
   Pot_v.resize((nx - 1) * (ny - 1) * (nz - 2));
   Pot_w.resize((nx - 1) * (ny - 1) * (nz - 2));
-
+  
   // Open netCDF for Potential Field as read only
   NcFile Potential("../data/FireFiles/HeatPot.nc", NcFile::read);
 

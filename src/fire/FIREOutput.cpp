@@ -172,14 +172,4 @@ void FIREOutput::save(QEStime timeOut)
 
   // save the fields to NetCDF files
   saveOutputFields();
-  /*
-    // remove x, y, z and terrain
-    // from output array after first save
-    if (output_counter==0) {
-        rmTimeIndepFields();
-    }
-    
-    // increment for next time insertion
-    output_counter +=1;
-    */
 };

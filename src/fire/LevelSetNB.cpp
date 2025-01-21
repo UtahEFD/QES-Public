@@ -37,7 +37,7 @@ void Fire ::LevelSetNB(WINDSGeneralData *WGD)
    * Reset forcing function for level set
    */
   std::fill(Force.begin(), Force.end(), 0);
- 
+  std::fill(H0.begin(), H0.end(), 0);
   // indices for burning cells
   std::vector<int> cells_burning;
   // search predicate for burn state
@@ -107,49 +107,48 @@ void Fire ::LevelSetNB(WINDSGeneralData *WGD)
     float sdmx, sdpx, sdmy, sdpy, sn_star_x, sn_star_y;
     for (int n = ymin; n <= ymax; n++) {
       for (int m = xmin; m <= xmax; m++) {
-	//std::cout<<"[m][n]:["<<m<<"]["<<n<<"]"<<std::endl;
-	int idx = m + n * (nx - 1);
-	int idxjp = m + (n + 1) * (nx - 1);
-	int idxjm = m + (n - 1) * (nx - 1);
+	      int idx = m + n * (nx - 1);
+	      int idxjp = m + (n + 1) * (nx - 1);
+	      int idxjm = m + (n - 1) * (nx - 1);
 
-	dmy = (front_map[idx] - front_map[idxjm]) / dx;
-	dpy = (front_map[idxjp] - front_map[idx]) / dx;
-	dmx = (front_map[idx] - front_map[idx - 1]) / dy;
-	dpx = (front_map[idx + 1] - front_map[idx]) / dy;
+	      dmy = (front_map[idx] - front_map[idxjm]) / dx;
+	      dpy = (front_map[idxjp] - front_map[idx]) / dx;
+	      dmx = (front_map[idx] - front_map[idx - 1]) / dy;
+	      dpx = (front_map[idx + 1] - front_map[idx]) / dy;
 
-	del_plus[idx] = sqrt(fmax(dmx, 0) * fmax(dmx, 0) + fmin(dpx, 0) * fmin(dpx, 0) + fmax(dmy, 0) * fmax(dmy, 0) + fmin(dpy, 0) * fmin(dpy, 0));
-	del_min[idx] = sqrt(fmax(dpx, 0) * fmax(dpx, 0) + fmin(dmx, 0) * fmin(dmx, 0) + fmax(dpy, 0) * fmax(dpy, 0) + fmin(dmy, 0) * fmin(dmy, 0));
-	n_star_x = dpx / sqrt(dpx * dpx + dpy * dpy) + dmx / sqrt(dmx * dmx + dpy * dpy) + dpx / sqrt(dpx * dpx + dmy * dmy) + dmx / sqrt(dmx * dmx + dmy * dmy);
-	n_star_y = dpy / sqrt(dpx * dpx + dpy * dpy) + dpy / sqrt(dmx * dmx + dpy * dpy) + dmy / sqrt(dpx * dpx + dmy * dmy) + dmy / sqrt(dmx * dmx + dmy * dmy);
-	if (n_star_x == 0){
-	  xNorm[idx] = 0;
-	} else {
-	  xNorm[idx] = n_star_x / sqrt(n_star_x * n_star_x + n_star_y * n_star_y);
-	}
-	if (n_star_y == 0){
-	  yNorm[idx] = 0;
-	} else {
-	  yNorm[idx] = n_star_y / sqrt(n_star_x * n_star_x + n_star_y * n_star_y);
-	}
+	      del_plus[idx] = sqrt(fmax(dmx, 0) * fmax(dmx, 0) + fmin(dpx, 0) * fmin(dpx, 0) + fmax(dmy, 0) * fmax(dmy, 0) + fmin(dpy, 0) * fmin(dpy, 0));
+	      del_min[idx] = sqrt(fmax(dpx, 0) * fmax(dpx, 0) + fmin(dmx, 0) * fmin(dmx, 0) + fmax(dpy, 0) * fmax(dpy, 0) + fmin(dmy, 0) * fmin(dmy, 0));
+	      n_star_x = dpx / sqrt(dpx * dpx + dpy * dpy) + dmx / sqrt(dmx * dmx + dpy * dpy) + dpx / sqrt(dpx * dpx + dmy * dmy) + dmx / sqrt(dmx * dmx + dmy * dmy);
+	      n_star_y = dpy / sqrt(dpx * dpx + dpy * dpy) + dpy / sqrt(dmx * dmx + dpy * dpy) + dmy / sqrt(dpx * dpx + dmy * dmy) + dmy / sqrt(dmx * dmx + dmy * dmy);
+	      if (n_star_x == 0){
+	        xNorm[idx] = 0;
+	      } else {
+	        xNorm[idx] = n_star_x / sqrt(n_star_x * n_star_x + n_star_y * n_star_y);
+	      }
+	      if (n_star_y == 0){
+	        yNorm[idx] = 0;
+	      } else {
+	        yNorm[idx] = n_star_y / sqrt(n_star_x * n_star_x + n_star_y * n_star_y);
+	      }
 
 
-	// get horizontal wind at flame height
-	int cell_face = m + n * nx + (kh) * ny * nx;
-	float u = 0.5 * (WGD->u[cell_face] + WGD->u[cell_face + 1]);
-	float v = 0.5 * (WGD->v[cell_face] + WGD->v[cell_face + nx]);
-	// run Balbi model
-	//float burnTime = fire_cells[id].state.burn_time;
-	struct FireProperties fp = balbi(fuel, u, v, xNorm[idx], yNorm[idx], slope_x[idx], slope_y[idx], fmc);
-	fire_cells[idx].properties = fp;
-	Force[idx] = fp.r;
-	
+	      // get horizontal wind at flame height
+	      int cell_face = m + n * nx + (kh) * ny * nx;
+	      float u = 0.5 * (WGD->u[cell_face] + WGD->u[cell_face + 1]);
+	      float v = 0.5 * (WGD->v[cell_face] + WGD->v[cell_face + nx]);
+	      // run Balbi model to get fire properties
+	      struct FireProperties fp = balbi(fuel, u, v, xNorm[idx], yNorm[idx], slope_x[idx], slope_y[idx], fmc);
+	      fire_cells[idx].properties = fp;
+	      // Set forcing (Force) and heat release (H0)
+        Force[idx] = fp.r;
+        H0[idx] = fp.H0;
       }
     }
     // update icell value for flame
-	for (int k = TID; k <= maxkh; k++) {
-	  int icell_cent = ii + jj * (nx - 1) + (k) * (nx - 1) * (ny - 1);
-	  WGD->icellflag[icell_cent] = 12;
-	}
+	  for (int k = TID; k <= maxkh; k++) {
+	    int icell_cent = ii + jj * (nx - 1) + (k) * (nx - 1) * (ny - 1);
+	    WGD->icellflag[icell_cent] = 12;
+	  }
   }
 
   // compute time step

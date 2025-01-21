@@ -112,7 +112,7 @@ public:
   std::vector<float> Pot_u;
   std::vector<float> Pot_v;
   std::vector<float> Pot_w;
-
+  std::vector<float> H0;
 
   // output fields
   std::vector<float> burn_flag;

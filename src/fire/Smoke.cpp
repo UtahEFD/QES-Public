@@ -57,25 +57,22 @@ void Smoke ::genSmoke(WINDSGeneralData *WGD, Fire *fire, Plume *plume)
       int idx = i+j*(nx-1);
       
       if (fire->smoke_flag[idx] == 1){
-	//add source here
-	// get location of source
-	x_pos = i*dx;
-	y_pos = j*dy;
-	z_pos = WGD->terrain[idx]+1;
-	ppt = 20;
-	std::cout<<"x = "<<x_pos<<", y = "<<y_pos<<", z = "<<z_pos<<std::endl;
-	SourceFire source = SourceFire(x_pos, y_pos, z_pos, ppt);
-	source.setSource();
-	std::vector<Source *> sourceList;
-	sourceList.push_back(dynamic_cast<Source*>(&source));
-	plume->addSources(sourceList);
-	// turn off smoke flag so new source not added next time step
-	fire->smoke_flag[idx] = 0;
-	// clear add source vector
-        
+		//add source here
+		// get location of source
+		x_pos = i*dx;
+		y_pos = j*dy;
+		z_pos = WGD->terrain[idx]+1;
+		ppt = 20;
+		std::cout<<"x = "<<x_pos<<", y = "<<y_pos<<", z = "<<z_pos<<std::endl;
+		SourceFire source = SourceFire(x_pos, y_pos, z_pos, ppt);
+		source.setSource();
+		std::vector<Source *> sourceList;
+		sourceList.push_back(dynamic_cast<Source*>(&source));
+		plume->addSources(sourceList);
+		// turn off smoke flag so new source not added next time step
+		fire->smoke_flag[idx] = 0;
+		// clear add source vector
       }
-      
     }
   }
-  
 }

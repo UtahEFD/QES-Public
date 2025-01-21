@@ -42,9 +42,9 @@ void Fire ::potential(WINDSGeneralData *WGD)
     float T_a = 293.15;
 
     float ur, uz;
-    float u_p;      ///< u velocity from potential field in target cell
-    float v_p;      ///< v velocity from potential field in target cell
-    float w_p;      ///< w velocity from potential field in target cell
+    float u_p = 0;      ///< u velocity from potential field in target cell
+    float v_p = 0;      ///< v velocity from potential field in target cell
+    float w_p = 0;      ///< w velocity from potential field in target cell
     float alpha_e = 0.09;///< entrainment constant (Kaye & Linden 2004)
     float lambda_mix = 1 / alpha_e * sqrt(25.0 / 132.0);///< nondimensional plume mixing height
     float U_c;      ///<characteristic velocity 
@@ -73,7 +73,7 @@ void Fire ::potential(WINDSGeneralData *WGD)
 
     // loop through burning cells to get heat release
 
-    float H0 = 0;///< heat release
+    //float H0 = 0;///< heat release
     int cent = 0;
     int icent = 0;
     int jcent = 0;
@@ -89,12 +89,12 @@ void Fire ::potential(WINDSGeneralData *WGD)
                 counter += 1;
                 icent += ii;
                 jcent += jj;
-                H0 += fire_cells[id].properties.H0;
+                H += H0[id];
             }
         }
     }
 
-    if (H0 != 0) {
+    if (H != 0) {
         float kmax = 0;///< plume mixing height
         int XIDX;
         int YIDX;
@@ -107,7 +107,7 @@ void Fire ::potential(WINDSGeneralData *WGD)
 
         while (filt < nx - 1) {
             filt = pow(2.0, ZIDX);
-            counter = filt*filt;
+            counter = 0;
             ZIDX += 1;
             z_mix_old = z_mix;
             XIDX = 0;
@@ -119,16 +119,17 @@ void Fire ::potential(WINDSGeneralData *WGD)
                     k_fire_old = 0;
                     icent = 0;
                     jcent = 0;
+                    counter = 0;
                     for (int ii = XIDX; ii < XIDX + filt; ii++) {
                         for (int jj = YIDX; jj < YIDX + filt; jj++) {
                             int id = ii + jj * (nx - 1);
                             if (burn_flag[id] == 1) {
-                                struct FireProperties fp = fire_cells[id].properties;
                                 icent += ii;
                                 jcent += jj;
-                                H += fp.H0;
+                                H += H0[id];
                                 k_fire += WGD->terrain[id];
                                 k_fire_old += z_mix_old[id];
+                                counter += 1;
                             }
                         }
                     }
@@ -140,7 +141,7 @@ void Fire ::potential(WINDSGeneralData *WGD)
                         L_c = pow(H / rhoAir / C_pa / T_a / pow(g, 1.0 / 2.0), 2.0 / 5.0);
                         firek = k_fire / counter;
                         mixIDX_old = floor(k_fire_old / counter);
-                        mixIDX = (lambda_mix * dx * filt);
+                        mixIDX = (lambda_mix * dx * filt)/dz;
                         for (int ii = XIDX; ii < XIDX + filt; ii++) {
                             for (int jj = YIDX; jj < YIDX + filt; jj++) {
                                 int id = ii + jj * (nx - 1);
@@ -219,12 +220,12 @@ void Fire ::potential(WINDSGeneralData *WGD)
                 }//while YIDX
                 XIDX += filt;
             }//while XIDX
-        }//kfilt
+        }//k
     }//H0!=0
     // Modify u,v,w in solver - superimpose Potential field onto velocity field (interpolate from potential cell centered values)
-    for (int iadd = 1; iadd < nx - 1; iadd++) {
+    for (int kadd = 1; kadd < nz - 2; kadd++) {
         for (int jadd = 1; jadd < ny - 1; jadd++) {
-            for (int kadd = 1; kadd < nz - 2; kadd++) {
+            for (int iadd = 1; iadd < nx - 1; iadd++) {
                 int cell_face = iadd + jadd * nx + (kadd - 1) * nx * ny;
                 int cell_cent = iadd + jadd * (nx - 1) + (kadd - 1) * (nx - 1) * (ny - 1);
                 if (WGD->icellflag[cell_cent] == 12 or WGD->icellflag[cell_cent] == 1) {

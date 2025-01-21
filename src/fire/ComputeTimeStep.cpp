@@ -72,25 +72,14 @@ float Fire ::computeTimeStep()
     r = fire_cells[idx].properties.r;
     r_max = r > r_max ? r : r_max;
   }
-
-  /**  
-  // get max spread rate
-  for (int j = 0; j < ny - 1; j++) {
-    for (int i = 0; i < nx - 1; i++) {
-      int idx = i + j * (nx - 1);
-      r = fire_cells[idx].properties.r;
-      r_max = r > r_max ? r : r_max;
-    }
-  }
-  */
   
   std::cout << "max ROS = " << r_max << std::endl;
   
-  if (r_max < 0.3) {
-    r_max = 0.3;
+  if (r_max < 0.05) {
+    r_max = 0.05;
   }
   else if (isnan(r_max)){
-    r_max = 0.3;
+    r_max = 0.05;
     std::cout<<"r_max is NaN, setting to 0.3"<<std::endl;
   }
   

@@ -125,11 +125,13 @@ void Fire ::move(WINDSGeneralData *WGD)
       // if burn flag = 1, update burn time
       if (burn_flag[idx] == 1) {
         fire_cells[idx].state.burn_time += dt;
+        H0[idx] = fire_cells[idx].properties.H0;
       }
       // set burn flag to 2 (burned) if residence time exceeded, set Forcing function to 0, and update z0 to bare soil
       if (fire_cells[idx].state.burn_time >= fp.tau && fire_cells[idx].state.burn_flag == 1) {
         fire_cells[idx].state.burn_flag = 2;
         Force[idx] = 0;
+        H0[idx] = 0;
         // Need to fix where z0 is reset MM
         //WGD->z0_domain[idx] = 0.01;
       }
@@ -142,11 +144,12 @@ void Fire ::move(WINDSGeneralData *WGD)
       // if level set < threshold, set burn flag to 1 and start smoke flag
       if (front_map[idx] <= 0.1 && burn_flag[idx] < 1) {
         fire_cells[idx].state.burn_flag = 1;
-	    smoke_flag[idx] = 1;
+	      smoke_flag[idx] = 1;
       }
       // update burn flag field
       burn_flag[idx] = fire_cells[idx].state.burn_flag;
       burn_out[idx] = burn_flag[idx];
+      
     }
   }
   // advance time

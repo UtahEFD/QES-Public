@@ -15,7 +15,8 @@
  *
  * QES-Fire is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, version 3 of the License.
+ * the Free Software Foundation, version 3 of the Lic
+ * ense.
  *
  * QES-Fire is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -70,7 +71,6 @@
 #include "winds/SharedMemory.h"
 #endif
 #include "winds/Sensor.h"
-
 #include "fire/Fire.h"
 #include "fire/FIREOutput.h"
 #include "fire/SourceFire.h"
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
 
 
   
-  
+  int potFLAG = 0;
   // //////////////////////////////////////////
   //
   // Run the QES-Winds Solver
@@ -165,6 +165,7 @@ int main(int argc, char *argv[])
   } else if (arguments.solveType == Global_M) {
     std::cout << "Run Global Memory Solver (GPU) ..." << std::endl;
     solver = new GlobalMemory(WID, WGD);
+    potFLAG = 1;
   } else if (arguments.solveType == Shared_M) {
     std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
     solver = new SharedMemory(WID, WGD);
@@ -313,6 +314,22 @@ int main(int argc, char *argv[])
        * Create initial velocity field from the new sensors
        **/
       WGD->applyWindProfile(WID, index, arguments.solveType);
+
+      /**
+       * Run WINDS simulation code
+       **/
+    solver->solve(WID, WGD, !arguments.solveWind);
+
+    std::cout << "Solver done!\n";
+
+    /**
+       * Run turbulence if specified
+       **/
+   
+    if (TGD != nullptr) {
+      TGD->run();
+      std::cout << "Turbulance calculated\n";
+    }
     
 
       // Run fire induced winds (default) if flag is not set
@@ -326,7 +343,13 @@ int main(int argc, char *argv[])
         /**
         * Calculate fire-induced winds from burning cells
         **/
+       if (potFLAG == 1){
+        std::cout << "GPU POTENTIAL" << std::endl;
+        fire->potentialGlobal(WGD);
+       } else {
+        std::cout << "Serial POTENTIAL" << std::endl;
         fire->potential(WGD);
+       }
       }
        /** 
        * Apply parameterizations
@@ -340,7 +363,7 @@ int main(int argc, char *argv[])
       if (TGD != nullptr) {
 	      TGD->run();
       }
-
+      
       /**
        * Run ROS model to calculate spread rates with updated winds
        **/
@@ -370,7 +393,6 @@ int main(int argc, char *argv[])
 	            float y_pos = j*WGD->dy;
 	            float z_pos = WGD->terrain[idx]+1;
 	            float ppt = 20;
-	            std::cout<<"x = "<<x_pos<<", y = "<<y_pos<<", z = "<<z_pos<<std::endl;
 	            SourceFire *source = new SourceFire(x_pos, y_pos, z_pos, ppt);
 	            source->setSource(); 
 	            std::vector<Source *> sourceList;
@@ -388,24 +410,13 @@ int main(int argc, char *argv[])
 	      plume->run(pendtime, WGD, TGD, PoutputVec);
 	      std::cout << "------Plume Finished------" << std::endl;
       }
-
-
       /**
 	    * Save fire data to netCDF file
 	    **/
       for (auto outItr = outFire.begin(); outItr != outFire.end(); ++outItr) {
         (*outItr)->save(simTimeCurr);
       }
-
-      /**
-	    * Reset wind fields to initial values for sensor timestep
-	    **/
-      //WGD->u0 = Fu0;
-      //WGD->v0 = Fv0;
-      //WGD->w0 = Fw0;
     }
-  
-
   }
   std::cout << "Simulation finished" << std::endl;
   exit(EXIT_SUCCESS);

@@ -19,12 +19,14 @@ SET( qesFireCoreSources
   LevelSetNB.cpp
   Move.cpp
   OldFuelProperties.hpp
-  Potential.cpp  
-  Rothermel.cpp 
+  Potential.cpp
+  PotentialGlobal.cu
+  PotentialGlobal.h  
+  Rothermel.cpp
+  Smoke.cpp
+  Smoke.h 
   SourceFire.cpp
   SourceFire.h
-  Smoke.cpp
-  Smoke.h
   )
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
