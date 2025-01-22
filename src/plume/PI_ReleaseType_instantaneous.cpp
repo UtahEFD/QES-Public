@@ -28,35 +28,41 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file ReleaseType_continuous.hpp
+/** @file ReleaseType_continuous.cpp
  * @brief This class represents a specific release type.
  *
  * @note Child of ReleaseType
  * @sa ReleaseType
  */
 
-#pragma once
+#include "PI_ReleaseType_instantaneous.hpp"
+#include "PLUMEGeneralData.h"
 
-#include "PI_ReleaseType.hpp"
-
-class PI_ReleaseType_duration : public PI_ReleaseType
+void PI_ReleaseType_instantaneous::parseValues()
 {
-private:
-  float m_totalMass = 0;
-  float m_massPerSec = 0;
-  float m_duration = 0.0;
+  parsePrimitive<float>(false, m_releaseTime, "releaseTime");
+  parsePrimitive<int>(true, m_numPar, "numPar");
+  parsePrimitive<float>(false, m_totalMass, "totalMass");
 
-protected:
-public:
-  // Default constructor
-  PI_ReleaseType_duration() : PI_ReleaseType()
-  {
+  if (m_numPar <= 0) {
+    throw std::runtime_error("[PI_ReleaseType_instantaneous] invalid number of particles");
   }
+}
 
-  // destructor
-  ~PI_ReleaseType_duration() override = default;
+void PI_ReleaseType_instantaneous::initialize(const float &timestep)
+{
+  // set the overall releaseType variables from the variables found in this class
+  m_particlePerTimestep = m_numPar;
+  m_massPerTimestep = m_totalMass / (float)m_numPar;
+  m_releaseStartTime = m_releaseTime;
+  m_releaseEndTime = m_releaseTime;
+}
 
-  void parseValues() override;
-  void initialize(const float &timestep) override;
-  SourceReleaseController *create(QESDataTransport &data) override;
-};
+SourceReleaseController *PI_ReleaseType_instantaneous::create(QESDataTransport &data)
+{
+  auto PGD = data.get_ref<PLUMEGeneralData *>("PGD");
+  QEStime start = PGD->getSimTimeStart() + m_releaseStartTime;
+  QEStime end = start + m_releaseEndTime;
+
+  return new SourceReleaseController_base(start, end, m_particlePerTimestep, m_massPerTimestep);
+}

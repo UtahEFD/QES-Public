@@ -44,20 +44,6 @@ TEST_CASE("Plume test inputs for multiple particle models")
   for (auto p : PID->particleParams->particles) {
     std::cout << "Particle tag: " << p->tag << std::endl;
     std::cout << "Number of source(s): " << p->sources.size() << std::endl;
-    QESDataTransport data;
-    test[p->tag] = p->create(data);
-    /*switch (p->particleType) {
-    case ParticleType::tracer: {
-      test.emplace_back(new TracerParticle_Model(PID, dynamic_cast<PI_TracerParticle *>(p)));
-      break;
-    }
-    case ParticleType::heavy: {
-      test.emplace_back(new HeavyParticle_Model(PID, dynamic_cast<PI_HeavyParticle *>(p)));
-      break;
-    }
-    default:
-      exit(1);
-    }*/
   }
 
   std::cout << "--------------------" << std::endl;

@@ -60,32 +60,8 @@ public:
 
   // destructor
   ~PI_ReleaseType_instantaneous() override = default;
-  
-  void parseValues() override
-  {
-    parsePrimitive<float>(false, m_releaseTime, "releaseTime");
-    parsePrimitive<int>(true, m_numPar, "numPar");
-    parsePrimitive<float>(false, m_totalMass, "totalMass");
 
-    if (m_numPar <= 0) {
-      throw std::runtime_error("[PI_ReleaseType_instantaneous] invalid number of particles");
-    }
-  }
-
-  void initialize(const float &timestep) override
-  {
-    // set the overall releaseType variables from the variables found in this class
-    m_particlePerTimestep = m_numPar;
-    m_massPerTimestep = m_totalMass / (float)m_numPar;
-    m_releaseStartTime = m_releaseTime;
-    m_releaseEndTime = m_releaseTime;
-  }
-
-  SourceReleaseController *create(QESDataTransport &data) override
-  {
-    QEStime start = QEStime("2020-01-01T00:00") + m_releaseStartTime;
-    QEStime end = start + m_releaseEndTime;
-
-    return new SourceReleaseController_base(start, end, m_particlePerTimestep, m_massPerTimestep);
-  }
+  void parseValues() override;
+  void initialize(const float &timestep) override;
+  SourceReleaseController *create(QESDataTransport &data) override;
 };

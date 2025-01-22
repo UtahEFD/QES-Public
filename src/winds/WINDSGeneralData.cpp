@@ -894,7 +894,7 @@ WINDSGeneralData::WINDSGeneralData(const std::string &inputFile)
 {
   std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "[QES-WINDS]\t Initialization of wind model...\n";
-  std::cout << "[WINDS Data]\t Loading QES-winds fields " << std::endl;
+  std::cout << "[QES-WINDS]\t Loading QES-winds fields " << std::endl;
 
   // fullname passed to WINDSGeneralData
   input = new NetCDFInput(inputFile);
@@ -1147,7 +1147,7 @@ void WINDSGeneralData::allocateMemory()
 void WINDSGeneralData::loadNetCDFData(int stepin)
 {
 
-  std::cout << "[WINDS Data] \t Loading data at step " << stepin
+  std::cout << "[QES-WINDS] \t Loading data at step " << stepin
             << " (" << timestamp[stepin] << ")" << std::endl;
 #if 0
   std::vector<size_t> start_time;

@@ -50,11 +50,12 @@
 
 #include "plume/PLUMEInputData.h"
 #include "plume/PLUMEGeneralData.h"
-#include "plume/TracerParticle_Concentration.h"
+#include "plume/Concentration.h"
 
-float calcEntropy(int nbrBins, ManagedContainer<TracerParticle> *particles);
-void calcRMSE_wFluct(int nbrBins, ManagedContainer<TracerParticle> *particles, std::map<std::string, float> &rmse);
-void calcRMSE_delta_wFluct(int nbrBins, ManagedContainer<TracerParticle> *particles, double delta_t, std::map<std::string, float> &rmse);
+
+float calcEntropy(int nbrBins, ParticleModel *pm);
+void calcRMSE_wFluct(int nbrBins, ParticleModel *pm, std::map<std::string, float> &rmse);
+void calcRMSE_delta_wFluct(int nbrBins, ParticleModel *pm, double delta_t, std::map<std::string, float> &rmse);
 float calcRMSE(std::vector<float> &A, std::vector<float> &B);
 
 TEST_CASE("Regression test of QES-Plume: sinusoidal stress")
@@ -119,14 +120,14 @@ TEST_CASE("Regression test of QES-Plume: sinusoidal stress")
   std::cout << "##############################################################" << std::endl
             << std::endl;
 
-  TracerParticle_Model *test_model = dynamic_cast<TracerParticle_Model *>(PGD->models[PID->particleParams->particles.at(0)->tag]);
+  ParticleModel *test_model = PGD->models[PID->particleParams->particles.at(0)->tag];
 
   // check the results
-  float entropy = calcEntropy(25, test_model->get_particles());
+  float entropy = calcEntropy(25, test_model);
 
   std::map<std::string, float> rmse;
-  calcRMSE_wFluct(20, test_model->get_particles(), rmse);
-  calcRMSE_delta_wFluct(20, test_model->get_particles(), PID->plumeParams->timeStep, rmse);
+  calcRMSE_wFluct(20, test_model, rmse);
+  calcRMSE_delta_wFluct(20, test_model, PID->plumeParams->timeStep, rmse);
 
   std::cout << "--------------------------------------------------------------" << std::endl;
   std::cout << "TEST RESULTS" << std::endl;
@@ -147,7 +148,7 @@ TEST_CASE("Regression test of QES-Plume: sinusoidal stress")
   REQUIRE(rmse["var_delta_wFluct"] < 0.3);
 }
 
-float calcEntropy(int nbrBins, ManagedContainer<TracerParticle> *particles)
+float calcEntropy(int nbrBins, ParticleModel *pm)
 {
   std::vector<float> pBin;
   pBin.resize(nbrBins, 0.0);
@@ -155,12 +156,12 @@ float calcEntropy(int nbrBins, ManagedContainer<TracerParticle> *particles)
     int k = floor(parItr->zPos / (1.0 / nbrBins + 1e-9));
     pBin[k]++;
   }*/
-  for (auto &par : *particles) {
+  for (auto &par : pm->particles_core) {
     int k = floor(par.pos._3 / (1.0 / nbrBins + 1e-9));
     pBin[k]++;
   }
 
-  float expectedParsPerBin = particles->get_nbr_active() / (float)nbrBins;
+  float expectedParsPerBin = pm->particles_control.get_nbr_active() / (float)nbrBins;
   float entropy = 0.0;
 
   std::vector<float> proba;
@@ -177,7 +178,7 @@ float calcEntropy(int nbrBins, ManagedContainer<TracerParticle> *particles)
   return -entropy;
 }
 
-void calcRMSE_wFluct(int nbrBins, ManagedContainer<TracerParticle> *particles, std::map<std::string, float> &rmse)
+void calcRMSE_wFluct(int nbrBins, ParticleModel *pm, std::map<std::string, float> &rmse)
 {
   std::vector<float> pBin;
   pBin.resize(nbrBins, 0.0);
@@ -190,10 +191,10 @@ void calcRMSE_wFluct(int nbrBins, ManagedContainer<TracerParticle> *particles, s
     pBin[k]++;
     pBin_mean[k] += parItr->wFluct;
   }*/
-  for (auto &par : *particles) {
-    int k = floor(par.pos._3 / (1.0 / nbrBins + 1e-9));
-    pBin[k]++;
-    pBin_mean[k] += par.velFluct._3;
+  for (auto k = 0u; k < pm->particles_control.size(); ++k) {
+    int n = floor(pm->particles_core[k].pos._3 / (1.0 / nbrBins + 1e-9));
+    pBin[n]++;
+    pBin_mean[n] += pm->particles_lsdm[k].velFluct._3;
   }
   for (int k = 0; k < nbrBins; ++k) {
     pBin_mean[k] /= pBin[k];
@@ -212,9 +213,9 @@ void calcRMSE_wFluct(int nbrBins, ManagedContainer<TracerParticle> *particles, s
     int k = floor(parItr->zPos / (1.0 / nbrBins + 1e-9));
     pBin_var[k] += pow(parItr->wFluct - pBin_mean[k], 2) / pBin[k];
   }*/
-  for (auto &par : *particles) {
-    int k = floor(par.pos._3 / (1.0 / nbrBins + 1e-9));
-    pBin_var[k] += pow(par.velFluct._3 - pBin_mean[k], 2) / pBin[k];
+  for (auto k = 0u; k < pm->particles_control.size(); ++k) {
+    int n = floor(pm->particles_core[k].pos._3 / (1.0 / nbrBins + 1e-9));
+    pBin_var[n] += pow(pm->particles_lsdm[k].velFluct._3 - pBin_mean[n], 2) / pBin[n];
   }
 
   // calculate theoretical mean of time derivative of fluctuation
@@ -226,7 +227,7 @@ void calcRMSE_wFluct(int nbrBins, ManagedContainer<TracerParticle> *particles, s
   rmse["var_wFluct"] = calcRMSE(pBin_var, sig2);
 }
 
-void calcRMSE_delta_wFluct(int nbrBins, ManagedContainer<TracerParticle> *particles, double delta_t, std::map<std::string, float> &rmse)
+void calcRMSE_delta_wFluct(int nbrBins, ParticleModel *pm, double delta_t, std::map<std::string, float> &rmse)
 {
   std::vector<float> pBin;
   pBin.resize(nbrBins, 0.0);
@@ -239,10 +240,10 @@ void calcRMSE_delta_wFluct(int nbrBins, ManagedContainer<TracerParticle> *partic
     pBin[k]++;
     pBin_mean[k] += parItr->delta_wFluct;
   }*/
-  for (auto &par : *particles) {
-    int k = floor(par.pos._3 / (1.0 / nbrBins + 1e-9));
-    pBin[k]++;
-    pBin_mean[k] += par.delta_velFluct._3;
+  for (auto k = 0u; k < pm->particles_control.size(); ++k) {
+    int n = floor(pm->particles_core[k].pos._3 / (1.0 / nbrBins + 1e-9));
+    pBin[n]++;
+    pBin_mean[n] += pm->particles_lsdm[k].delta_velFluct._3;
   }
 
   for (int k = 0; k < nbrBins; ++k) {
@@ -256,9 +257,9 @@ void calcRMSE_delta_wFluct(int nbrBins, ManagedContainer<TracerParticle> *partic
     int k = floor(parItr->zPos / (1.0 / nbrBins + 1e-9));
     pBin_var[k] += pow(parItr->delta_wFluct - pBin_mean[k], 2) / pBin[k];
   }*/
-  for (auto &par : *particles) {
-    int k = floor(par.pos._3 / (1.0 / nbrBins + 1e-9));
-    pBin_var[k] += pow(par.delta_velFluct._3 - pBin_mean[k], 2) / pBin[k];
+  for (auto k = 0u; k < pm->particles_control.size(); ++k) {
+    int n = floor(pm->particles_core[k].pos._3 / (1.0 / nbrBins + 1e-9));
+    pBin_var[n] += pow(pm->particles_lsdm[k].delta_velFluct._3 - pBin_mean[n], 2) / pBin[n];
   }
   for (int k = 0; k < nbrBins; ++k) {
     pBin_var[k] /= delta_t;

@@ -80,7 +80,6 @@ void InterpTriLinear::interpTurbValues(const TURBGeneralData *TGD,
 {
   // these are the current interp3D variables, as they are used for multiple interpolations for each particle
   interpWeight wgt{ 0, 0, 0, 0.0, 0.0, 0.0 };
-
   // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
   // then get interpolated values from the InterpTriLinear grid to the particle Lagrangian values for multiple datatype
   setInterp3Dindex_cellVar(pos, wgt);
@@ -334,7 +333,7 @@ void InterpTriLinear::interp3D_cellVar(const std::vector<float> &EulerData,
       for (int iii = 0; iii <= 1; iii++) {
         // set the actual indices to use for the linearized Euler data
         int idx = (wgt.kk + kkk) * (ny - 1) * (nx - 1) + (wgt.jj + jjj) * (nx - 1) + (wgt.ii + iii);
-        cube[iii][jjj][kkk] = EulerData[idx];
+        cube[iii][jjj][kkk] = EulerData.at(idx);
       }
     }
   }

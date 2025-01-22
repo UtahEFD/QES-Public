@@ -41,7 +41,7 @@ SourceComponent *PI_SourceGeometry_FullDomain::create(QESDataTransport &data)
 {
   float minX, minY, minZ;
   float maxX, maxY, maxZ;
-  auto PGD = data.get_ref<PLUMEGeneralData *>("PGF");
+  auto PGD = data.get_ref<PLUMEGeneralData *>("PGD");
   PGD->interp->getDomainBounds(minX, minY, minZ, maxX, maxY, maxZ);
 
   return new SourceGeometryCube({ minX, minY, minZ },

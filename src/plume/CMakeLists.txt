@@ -46,12 +46,10 @@ SET( qesPlumeCoreSources
 
     PI_Source.cpp
 
-    PI_ReleaseType.hpp
-    PI_ReleaseType_instantaneous.hpp
-    PI_ReleaseType_continuous.hpp
-    PI_ReleaseType_duration.hpp
+    PI_ReleaseType_instantaneous.cpp
+    PI_ReleaseType_continuous.cpp
+    PI_ReleaseType_duration.cpp
 
-        PI_SourceComponent.hpp
     PI_SourceGeometry_Cube.cpp PI_SourceGeometry_Cube.hpp
     PI_SourceGeometry_FullDomain.cpp PI_SourceGeometry_FullDomain.hpp
     PI_SourceGeometry_Line.cpp PI_SourceGeometry_Line.hpp

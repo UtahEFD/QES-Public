@@ -465,6 +465,7 @@ void setParticle(const QEStime &currTime, Source *s, ManagedContainer<TracerPart
   // copy(s->data.get_ref<float>("mass").data())
 }
 
+
 TEST_CASE("Source generator")
 {
   std::vector<Source *> sources;

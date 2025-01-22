@@ -103,6 +103,7 @@ PLUMEGeneralData::PLUMEGeneralData(const PlumeParameters &PP,
     if (WGD->mesh) {
       wallReflect = new WallReflection_TriMesh(interp);
     } else {
+      std::cerr << "[WARRNING] mesh wall reflection method not available" << std::endl;
       wallReflect = new WallReflection_StairStep(interp);
     }
   } else {
@@ -648,9 +649,9 @@ void PLUMEGeneralData::initializeParticleValues(const vec3 &pos,
   velFluct0._2 = sig._2 * threadRNG[omp_get_thread_num()]->norRan();
   velFluct0._3 = sig._3 * threadRNG[omp_get_thread_num()]->norRan();
 #else
-  velFluct._1 = sig._1 * RNG->norRan();
-  velFluct._2 = sig._2 * RNG->norRan();
-  velFluct._3 = sig._3 * RNG->norRan();
+  velFluct0._1 = sig._1 * RNG->norRan();
+  velFluct0._2 = sig._2 * RNG->norRan();
+  velFluct0._3 = sig._3 * RNG->norRan();
 #endif
 
   // now need to call makeRealizable on tau
@@ -728,9 +729,9 @@ void PLUMEGeneralData::setBCfunctions(const std::string &xBCtype,
 
   // output some debug information
   if (debug) {
-    std::cout << "xBCtype = \"" << xBCtype << "\"" << std::endl;
-    std::cout << "yBCtype = \"" << yBCtype << "\"" << std::endl;
-    std::cout << "zBCtype = \"" << zBCtype << "\"" << std::endl;
+    std::cout << "xBCtype = " << xBCtype << ":" << domainXstart << " " << domainXend << std::endl;
+    std::cout << "yBCtype = " << yBCtype << ":" << domainYstart << " " << domainYend << std::endl;
+    std::cout << "zBCtype = " << zBCtype << ":" << domainZstart << " " << domainZend << std::endl;
   }
 
   if (xBCtype == "exiting") {

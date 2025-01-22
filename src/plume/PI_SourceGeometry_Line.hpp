@@ -62,12 +62,12 @@ public:
 
   void parseValues() override
   {
-    parsePrimitive<float>(true, m_posX_0, "m_posX_0");
-    parsePrimitive<float>(true, m_posY_0, "m_posY_0");
-    parsePrimitive<float>(true, m_posZ_0, "m_posZ_0");
-    parsePrimitive<float>(true, m_posX_1, "m_posX_1");
-    parsePrimitive<float>(true, m_posY_1, "m_posY_1");
-    parsePrimitive<float>(true, m_posZ_1, "m_posZ_1");
+    parsePrimitive<float>(true, m_posX_0, "posX_0");
+    parsePrimitive<float>(true, m_posY_0, "posY_0");
+    parsePrimitive<float>(true, m_posZ_0, "posZ_0");
+    parsePrimitive<float>(true, m_posX_1, "posX_1");
+    parsePrimitive<float>(true, m_posY_1, "posY_1");
+    parsePrimitive<float>(true, m_posZ_1, "posZ_1");
   }
 
   SourceComponent *create(QESDataTransport &data) override;

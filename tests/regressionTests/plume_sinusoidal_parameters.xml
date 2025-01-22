@@ -26,7 +26,7 @@
 	<nBoxesZ> 20 </nBoxesZ>
 </collectionParameters>
 	<particleParameters>
-	<tracerParticle>
+	<baseParticle>
 		<tag>tracer</tag>
 		<source>
 		<releaseType_instantaneous>
@@ -35,7 +35,7 @@
 		<sourceGeometry_FullDomain>
   		</sourceGeometry_FullDomain>
 	</source>
-	</tracerParticle>
+	</baseParticle>
 	</particleParameters>
 <boundaryConditions>
   	<xBCtype>periodic</xBCtype>

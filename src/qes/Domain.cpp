@@ -52,6 +52,8 @@ Domain::Domain(const std::string &inputFile)
   domainData.dy = y[1] - y[0]; /**< Grid resolution in x-direction */
   // dxy = MIN_S(dx, dy);
 
+  domainData.dxy = std::min(domainData.dx, domainData.dy);
+
   input->getVariableData("z", z);
   // check if dz_array is in the NetCDF file
   NcVar NcVar_dz;

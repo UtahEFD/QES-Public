@@ -1,6 +1,6 @@
 <QESPlumeParameters>
   <plumeParameters>
-    <simDur> 1000.0 </simDur>
+    <simDur> 1000 </simDur>
     <timeStep> 1.0 </timeStep>
     <CourantNumber> 0.25 </CourantNumber>
     <invarianceTol> 1e-10 </invarianceTol>
@@ -14,7 +14,7 @@
   </particleOutputParameters>
   <collectionParameters>
     <timeAvgStart> 200.0 </timeAvgStart>
-    <timeAvgFreq> 200.0 </timeAvgFreq>
+    <timeAvgFreq> 800.0 </timeAvgFreq>
     <boxBoundsX1> 0.0 </boxBoundsX1>
     <boxBoundsX2> 200.0 </boxBoundsX2>
     <boxBoundsY1> 0.0 </boxBoundsY1>
@@ -29,12 +29,12 @@
     <baseParticle>
       <tag>heavy</tag>
       <depositionFlag>false</depositionFlag>
-      <decayConst> 0.0 </decayConst>
       <source>
         <releaseType_continuous>
           <massPerSec> 5 </massPerSec>
           <particleDensity> 2.0 </particleDensity>
           <particleDiameter> 5 </particleDiameter>
+          <decayConst> 0.0 </decayConst>
           <particlePerTimestep> 100 </particlePerTimestep>
         </releaseType_continuous>
         <sourceGeometry_Line>

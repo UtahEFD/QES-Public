@@ -28,35 +28,46 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file ReleaseType_continuous.hpp
+/** @file ReleaseType_continuous.cpp
  * @brief This class represents a specific release type.
  *
  * @note Child of ReleaseType
  * @sa ReleaseType
  */
 
-#pragma once
+#include "PI_ReleaseType_continuous.hpp"
+#include "PLUMEGeneralData.h"
 
-#include "PI_ReleaseType.hpp"
-
-class PI_ReleaseType_duration : public PI_ReleaseType
+void PI_ReleaseType_continuous::parseValues()
 {
-private:
-  float m_totalMass = 0;
-  float m_massPerSec = 0;
-  float m_duration = 0.0;
+  parsePrimitive<int>(true, m_particlePerTimestep, "particlePerTimestep");
+  parsePrimitive<float>(false, m_releaseStartTime, "releaseStartTime");
+  parsePrimitive<float>(false, m_massPerSec, "massPerSec");
+  parsePrimitive<float>(false, m_massPerTimestep, "massPerTimestep");
 
-protected:
-public:
-  // Default constructor
-  PI_ReleaseType_duration() : PI_ReleaseType()
-  {
+  if (m_releaseStartTime == -1) {
+    m_releaseStartTime = 0;
   }
+  m_releaseEndTime = 1.0E10;
 
-  // destructor
-  ~PI_ReleaseType_duration() override = default;
+  if (m_massPerSec != 0.0 && m_massPerTimestep != 0.0) {
+    throw std::runtime_error("[ReleaseType_continuous] at MOST ONE must be set: massPerSec or massPerTimestep");
+  }
+}
 
-  void parseValues() override;
-  void initialize(const float &timestep) override;
-  SourceReleaseController *create(QESDataTransport &data) override;
-};
+void PI_ReleaseType_continuous::initialize(const float &timestep)
+{
+  // set the overall releaseType variables from the variables found in this class
+  if (m_massPerSec != 0.0 && m_massPerTimestep == 0.0) {
+    m_massPerTimestep = m_massPerSec * timestep;
+  }
+}
+
+SourceReleaseController *PI_ReleaseType_continuous::create(QESDataTransport &data)
+{
+  auto PGD = data.get_ref<PLUMEGeneralData *>("PGD");
+  QEStime start = PGD->getSimTimeStart() + m_releaseStartTime;
+  QEStime end = start + m_releaseEndTime;
+
+  return new SourceReleaseController_base(start, end, m_particlePerTimestep, m_massPerTimestep);
+}

@@ -268,7 +268,7 @@ inline bool VectorMath::invert(mat3 &A)
   float det = determinant(A);
 
   // check for near zero value determinants
-  if (std::abs(det) < 1e-6) {
+  if (std::abs(det) < 1e-10) {
     det = 10e10;
     A = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
     return false;

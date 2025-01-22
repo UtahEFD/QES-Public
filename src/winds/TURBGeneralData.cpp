@@ -214,7 +214,7 @@ TURBGeneralData::TURBGeneralData(const std::string inputFile, WINDSGeneralData *
   // nt - number of time instance in data
   input->getDimensionSize("t", nt);
 
-  if ((nx != domain.nx()) || (ny != domain.ny()) || (nz != domain.nz())) {
+  if ((nx != domain.nx() - 1) || (ny != domain.ny() - 1) || (nz != domain.nz() - 1)) {
     std::cerr << "[ERROR] \t data size incompatible " << std::endl;
     exit(1);
   }
@@ -333,7 +333,8 @@ void TURBGeneralData::allocateMemory()
 }
 void TURBGeneralData::loadNetCDFData(int stepin)
 {
-  std::cout << "[QES-TURB]\t loading data at step " << stepin << std::endl;
+  std::cout << "[QES-TURB]\t Loading data at step " << stepin
+            << " (" << m_WGD->timestamp[stepin] << ")" << std::endl;
 
   // netCDF variables
   std::vector<size_t> start;

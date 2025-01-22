@@ -81,8 +81,8 @@ int main(int argc, char **argv)
 
   for (int index = 0; index < WGD->totalTimeIncrements; index++) {
     // Load data at current time index
-    TGD->loadNetCDFData(index);
     WGD->loadNetCDFData(index);
+    TGD->loadNetCDFData(index);
 
     // Determine the end time for advection
     QEStime endTime = WGD->nextTimeInstance(index, PID->plumeParams->simDur);

@@ -88,7 +88,7 @@ struct particle_physcal
 class ParticleControl
 {
 public:
-  ParticleControl() = default;
+  ParticleControl() : state(INACTIVE) {}
   ~ParticleControl() = default;
 
   // state of the particle
@@ -120,20 +120,24 @@ public:
   // decay (1 - fraction) particle decayed [0,1]
   float wdecay{};
 
-  void reset(const uint32_t &ID, const vec3 &p0)
+  void reset(const uint32_t &ID0, const vec3 &p0)
   {
+    ID = ID0;
     pos = p0;
     d = 0.0;
     m = 0.0;
     rho = 0.0;
+    wdecay = 1.0;
   }
 
-  void reset(const uint32_t &ID, const vec3 &p0, const float &d0, const float &m0, const float &rho0)
+  void reset(const uint32_t &ID0, const vec3 &p0, const float &d0, const float &m0, const float &rho0)
   {
+    ID = ID0;
     pos = p0;
     d = d0;
     m = m0;
     rho = rho0;
+    wdecay = 1.0;
   }
 };
 
@@ -165,7 +169,7 @@ public:
   {
     // note: velMean, CoEps, and nuT are set by the interpolation, no need to reset them.
     velFluct = velFluct0;
-    velFluct_old = velFluct;
+    velFluct_old = velFluct0;
     delta_velFluct = { 0.0, 0.0, 0.0 };
 
     tau = tau0;

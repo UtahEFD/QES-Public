@@ -54,36 +54,7 @@ public:
   // destructor
   ~PI_ReleaseType_continuous() override = default;
 
-  void parseValues() override
-  {
-    parsePrimitive<int>(true, m_particlePerTimestep, "particlePerTimestep");
-    parsePrimitive<float>(false, m_releaseStartTime, "releaseStartTime");
-    parsePrimitive<float>(false, m_massPerSec, "massPerSec");
-    parsePrimitive<float>(false, m_massPerTimestep, "massPerTimestep");
-
-    if (m_releaseStartTime == -1) {
-      m_releaseStartTime = 0;
-    }
-    m_releaseEndTime = 1.0E10;
-
-    if (m_massPerSec != 0.0 && m_massPerTimestep != 0.0) {
-      throw std::runtime_error("[ReleaseType_continuous] at MOST ONE must be set: massPerSec or massPerTimestep");
-    }
-  }
-
-  void initialize(const float &timestep) override
-  {
-    // set the overall releaseType variables from the variables found in this class
-    if (m_massPerSec != 0.0 && m_massPerTimestep == 0.0) {
-      m_massPerTimestep = m_massPerSec * timestep;
-    }
-  }
-
-  SourceReleaseController *create(QESDataTransport &data) override
-  {
-    QEStime start = QEStime("2020-01-01T00:00") + m_releaseStartTime;
-    QEStime end = start + m_releaseEndTime;
-
-    return new SourceReleaseController_base(start, end, m_particlePerTimestep, m_massPerTimestep);
-  }
+  void parseValues() override;
+  void initialize(const float &timestep) override;
+  SourceReleaseController *create(QESDataTransport &data) override;
 };
