@@ -204,9 +204,12 @@ int main(int argc, char *argv[])
   QEStime simTimeStart = WGD->timestamp[0];
   QEStime simTimeCurr = simTimeStart;
 
-  //std::vector<float> Fu0;
-  //std::vector<float> Fv0;
-  //std::vector<float> Fw0;
+  /**
+   * Temporay velocity arrays to hold initial wind field data per sensor time series
+   */
+  std::vector<float> Fu0((WGD->nx)*(WGD->ny)*(WGD->nz),0.0);
+  std::vector<float> Fv0((WGD->nx)*(WGD->ny)*(WGD->nz),0.0);
+  std::vector<float> Fw0((WGD->nx)*(WGD->ny)*(WGD->nz),0.0);
 
 
   // Generate the general TURB data from WINDS data
@@ -285,10 +288,9 @@ int main(int argc, char *argv[])
     /**
        * Save initial fields from sensor time to reset after each time+fire loop
        **/
-    //Fu0 = WGD->u0;///< Initial u-velocity for sensor timestep
-    //Fv0 = WGD->v0;///< Initial v-velocity for sensor timestep
-    //Fw0 = WGD->w0;///< Initial w-velocity for sensor timestep
-
+      Fu0 = WGD->u0;
+      Fv0 = WGD->v0;
+      Fw0 = WGD->w0;
 
     simTimeCurr = WGD->timestamp[index];///< Simulation time for current sensor time
     QEStime endtime;///< End time for fire time loop
@@ -308,29 +310,35 @@ int main(int argc, char *argv[])
           /**
        * Reset icellflag values
        **/
-      WGD->resetICellFlag();
+      //WGD->resetICellFlag();
 
       /**
        * Create initial velocity field from the new sensors
        **/
-      WGD->applyWindProfile(WID, index, arguments.solveType);
+    //WGD->applyWindProfile(WID, index, arguments.solveType);
 
       /**
        * Run WINDS simulation code
        **/
-    solver->solve(WID, WGD, !arguments.solveWind);
+    //solver->solve(WID, WGD, !arguments.solveWind);
 
-    std::cout << "Solver done!\n";
+    //std::cout << "Solver done!\n";
 
     /**
        * Run turbulence if specified
        **/
    
-    if (TGD != nullptr) {
-      TGD->run();
-      std::cout << "Turbulance calculated\n";
-    }
-    
+    //if (TGD != nullptr) {
+      //TGD->run();
+     //std::cout << "Turbulance calculated\n";
+    //}
+
+    /** 
+     * load initial velocity for current sensor series
+     */
+    WGD->u0 = Fu0;
+    WGD->v0 = Fv0;
+    WGD->w0 = Fw0;
 
       // Run fire induced winds (default) if flag is not set
       if(!arguments.fireWindsFlag){
@@ -363,7 +371,7 @@ int main(int argc, char *argv[])
       if (TGD != nullptr) {
 	      TGD->run();
       }
-      
+
       /**
        * Run ROS model to calculate spread rates with updated winds
        **/

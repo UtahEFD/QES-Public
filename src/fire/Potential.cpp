@@ -141,7 +141,7 @@ void Fire ::potential(WINDSGeneralData *WGD)
                         L_c = pow(H / rhoAir / C_pa / T_a / pow(g, 1.0 / 2.0), 2.0 / 5.0);
                         firek = k_fire / counter;
                         mixIDX_old = floor(k_fire_old / counter);
-                        mixIDX = (lambda_mix * dx * filt)/dz;
+                        mixIDX = (lambda_mix * dx * filt)/dz + k_fire;
                         for (int ii = XIDX; ii < XIDX + filt; ii++) {
                             for (int jj = YIDX; jj < YIDX + filt; jj++) {
                                 int id = ii + jj * (nx - 1);

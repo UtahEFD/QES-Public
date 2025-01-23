@@ -151,8 +151,7 @@ void Fire ::LevelSetNB(WINDSGeneralData *WGD)
 	  }
   }
 
-  // compute time step
-  dt = computeTimeStep();
+  
 
   std::vector<int>().swap(cells_burning);
 }

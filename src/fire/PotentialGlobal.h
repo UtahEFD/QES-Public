@@ -51,3 +51,4 @@ float *d_Pot_u, *d_Pot_v, *d_Pot_w;
 
 // potential variables
 float *d_u_r, *d_u_z, *d_G, *d_Gprime;
+

@@ -34,7 +34,7 @@
 </turbParams>
 
 <fires>
-	<fireDur> 30 </fireDur>
+	<fireDur> 100 </fireDur>
 	<fuelType> 106 </fuelType>
 	<!--fuelMap>../FireFiles/test.tif</fuelMap-->
 	<fmc> 0.05 </fmc> <!--dead fuel moisture content-->

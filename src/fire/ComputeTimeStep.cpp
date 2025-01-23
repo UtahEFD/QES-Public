@@ -73,7 +73,7 @@ float Fire ::computeTimeStep()
     r_max = r > r_max ? r : r_max;
   }
   
-  std::cout << "max ROS = " << r_max << std::endl;
+  std::cout << "max ROS = " << r_max << "[ms^-1]" << std::endl;
   
   if (r_max < 0.05) {
     r_max = 0.05;

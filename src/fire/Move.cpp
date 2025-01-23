@@ -33,6 +33,9 @@
 
 void Fire ::move(WINDSGeneralData *WGD)
 {
+  // compute time step
+  dt = computeTimeStep();
+
   if (FFII_flag == 1) {
     int FT_idx1 = 0;
     int FT_idx2 = 0;
@@ -152,6 +155,7 @@ void Fire ::move(WINDSGeneralData *WGD)
       
     }
   }
+  
   // advance time
   time += dt;
 }
