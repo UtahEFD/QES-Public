@@ -164,8 +164,7 @@ for (auto source : sources) {
   }
 }
 
-
-/*void ParticleModel::advect(const double &total_time_interval,
+void ParticleModel::advect(const float &total_time_interval,
                            WINDSGeneralData *WGD,
                            TURBGeneralData *TGD,
                            PLUMEGeneralData *PGD)
@@ -183,12 +182,11 @@ for (auto source : sources) {
 
       float timeRemainder = total_time_interval;
 
-      long cellId = PGD->interp->getCellId(particles_core[k].pos);
 
       while (particles_control[k].state == ACTIVE && timeRemainder > 0.0) {
 
-      //  now get the Lagrangian values for the current iteration from the wind/turbulence grid
-      //  will need to use the interp3D function
+        //  now get the Lagrangian values for the current iteration from the wind/turbulence grid
+        //  will need to use the interp3D function
 
         PGD->interp->interpWindsValues(WGD, particles_core[k].pos, particles_lsdm[k].velMean);
 
@@ -199,8 +197,7 @@ for (auto source : sources) {
         // and the grid sizes.
         // Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
         // int cellId = PGD->interp->getCellId(p->xPos, p->yPos, p->zPos);
-
-
+        long cellId = PGD->interp->getCellId(particles_core[k].pos);
         float dWall = WGD->mixingLengths[cellId];
         vec3 mTot = VectorMath::add(VectorMath::abs(particles_lsdm[k].velMean),
                                     VectorMath::abs(particles_lsdm[k].velFluct));
@@ -211,7 +208,7 @@ for (auto source : sources) {
         // par_time = par_time + par_dt;
 
         // PGD->GLE_solver->solve(p, par_dt, TGD, PGD);
-        //PGD->GLE_solver->solve(par_dt, particles_control[k], particles_core[k], particles_lsdm[k], TGD, PGD);
+        PGD->GLE_solver->solve(par_dt, particles_control[k], particles_core[k], particles_lsdm[k], TGD, PGD);
 
         if (particles_control[k].state == ROGUE) {
           nbr_rogue++;
@@ -229,7 +226,7 @@ for (auto source : sources) {
         vec3 velTot = VectorMath::add(particles_lsdm[k].velMean, particles_lsdm[k].velFluct);
 
         // Deposit mass (vegetation only right now)
-        //if (p->depFlag && p->state == ACTIVE) {
+        // if (p->depFlag && p->state == ACTIVE) {
         //  deposition->deposit(p, dist, velTot, vs, WGD, TGD, PGD->interp);
         //}
 
@@ -268,7 +265,7 @@ for (auto source : sources) {
       particles_control[k].state = INACTIVE;
     }
   }//  END OF OPENMP WORK SHARE
-}*/
+}
 
 void ParticleModel::process(QEStime &timeIn,
                             const float &dt,
@@ -279,6 +276,7 @@ void ParticleModel::process(QEStime &timeIn,
   stats->compute(timeIn, dt);
 }
 
+/*
 void ParticleModel::advect(const float &total_time_interval,
                            WINDSGeneralData *WGD,
                            TURBGeneralData *TGD,
@@ -299,41 +297,41 @@ void ParticleModel::advect(const float &total_time_interval,
 
       bool isRogue = false;
 
-      vec3 pos = particles_core[k].pos;
-      // vec3 dist = { 0.0, 0.0, 0.0 };
-      vec3 velMean = { 0.0, 0.0, 0.0 };
+      // vec3 pos = particles_core[k].pos;
+      //  vec3 dist = { 0.0, 0.0, 0.0 };
+      // vec3 velMean = { 0.0, 0.0, 0.0 };
 
-      float nuT;
-      float CoEps = 1e-6;
+      // float nuT;
+      // float CoEps = 1e-6;
 
-      vec3 velFluct = particles_lsdm[k].velFluct;
-      vec3 velFluct_old = particles_lsdm[k].velFluct_old;
+      // vec3 velFluct = particles_lsdm[k].velFluct;
+      // vec3 velFluct_old = particles_lsdm[k].velFluct_old;
 
-      mat3sym tau_old = particles_lsdm[k].tau;
-      mat3sym tau = particles_lsdm[k].tau;
-
-      vec3 delta_velFluct = { 0.0, 0.0, 0.0 };
+      // vec3 delta_velFluct = { 0.0, 0.0, 0.0 };
 
       while (particles_control[k].state == ACTIVE && timeRemainder > 0.0) {
 
         // now get the Lagrangian values for the current iteration from the wind/turbulence grid
         // will need to use the interp3D function
 
-        PGD->interp->interpWindsValues(WGD, pos, velMean);
+        PGD->interp->interpWindsValues(WGD, particles_core[k].pos, particles_lsdm[k].velMean);
 
         // adjusting mean vertical velocity for settling velocity
-        velMean._3 -= vs;
+        particles_lsdm[k].velMean._3 -= vs;
 
-        long cellId = PGD->interp->getCellId(pos);
+        long cellId = PGD->interp->getCellId(particles_core[k].pos);
         float dWall = WGD->mixingLengths[cellId];
-        vec3 mTot = VectorMath::add(VectorMath::abs(velMean),
-                                    VectorMath::abs(velFluct));
+        vec3 mTot = VectorMath::add(VectorMath::abs(particles_lsdm[k].velMean),
+                                    VectorMath::abs(particles_lsdm[k].velFluct));
         float dt = PGD->calcCourantTimestep(dWall, mTot, timeRemainder);
 
         // mat3sym tau = particles_lsdm[k].tau;
         vec3 flux_div = { 0.0, 0.0, 0.0 };
 
-        PGD->interp->interpTurbValues(TGD, pos, tau, flux_div, nuT, CoEps);
+        mat3sym tau_old = particles_lsdm[k].tau;
+        mat3sym tau = particles_lsdm[k].tau;
+
+        PGD->interp->interpTurbValues(TGD, particles_core[k].pos, tau, flux_div, particles_lsdm[k].nuT, particles_lsdm[k].CoEps);
 
         // now calculate the particle timestep using the courant number, the velocity fluctuation from the last time,
         // and the grid sizes.
@@ -384,20 +382,20 @@ void ParticleModel::advect(const float &total_time_interval,
 
         // now calculate and set the A and b matrices for an Ax = b
         // A = -I + 0.5*(-CoEps*L + dTdt*L )*par_dt;
-        mat3 A = { -1.0f + 0.5f * (-CoEps * L._11 + L._11 * tau_ddt._11 + L._12 * tau_ddt._12 + L._13 * tau_ddt._13) * dt,
-                   -0.0f + 0.5f * (-CoEps * L._12 + L._12 * tau_ddt._11 + L._22 * tau_ddt._12 + L._23 * tau_ddt._13) * dt,
-                   -0.0f + 0.5f * (-CoEps * L._13 + L._13 * tau_ddt._11 + L._23 * tau_ddt._12 + L._33 * tau_ddt._13) * dt,
-                   -0.0f + 0.5f * (-CoEps * L._12 + L._11 * tau_ddt._12 + L._12 * tau_ddt._22 + L._13 * tau_ddt._23) * dt,
-                   -1.0f + 0.5f * (-CoEps * L._22 + L._12 * tau_ddt._12 + L._22 * tau_ddt._22 + L._23 * tau_ddt._23) * dt,
-                   -0.0f + 0.5f * (-CoEps * L._23 + L._13 * tau_ddt._12 + L._23 * tau_ddt._22 + L._33 * tau_ddt._23) * dt,
-                   -0.0f + 0.5f * (-CoEps * L._13 + L._11 * tau_ddt._13 + L._12 * tau_ddt._23 + L._13 * tau_ddt._33) * dt,
-                   -0.0f + 0.5f * (-CoEps * L._23 + L._12 * tau_ddt._13 + L._22 * tau_ddt._23 + L._23 * tau_ddt._33) * dt,
-                   -1.0f + 0.5f * (-CoEps * L._33 + L._13 * tau_ddt._13 + L._23 * tau_ddt._23 + L._33 * tau_ddt._33) * dt };
+        mat3 A = { -1.0f + 0.5f * (-particles_lsdm[k].CoEps * L._11 + L._11 * tau_ddt._11 + L._12 * tau_ddt._12 + L._13 * tau_ddt._13) * dt,
+                   -0.0f + 0.5f * (-particles_lsdm[k].CoEps * L._12 + L._12 * tau_ddt._11 + L._22 * tau_ddt._12 + L._23 * tau_ddt._13) * dt,
+                   -0.0f + 0.5f * (-particles_lsdm[k].CoEps * L._13 + L._13 * tau_ddt._11 + L._23 * tau_ddt._12 + L._33 * tau_ddt._13) * dt,
+                   -0.0f + 0.5f * (-particles_lsdm[k].CoEps * L._12 + L._11 * tau_ddt._12 + L._12 * tau_ddt._22 + L._13 * tau_ddt._23) * dt,
+                   -1.0f + 0.5f * (-particles_lsdm[k].CoEps * L._22 + L._12 * tau_ddt._12 + L._22 * tau_ddt._22 + L._23 * tau_ddt._23) * dt,
+                   -0.0f + 0.5f * (-particles_lsdm[k].CoEps * L._23 + L._13 * tau_ddt._12 + L._23 * tau_ddt._22 + L._33 * tau_ddt._23) * dt,
+                   -0.0f + 0.5f * (-particles_lsdm[k].CoEps * L._13 + L._11 * tau_ddt._13 + L._12 * tau_ddt._23 + L._13 * tau_ddt._33) * dt,
+                   -0.0f + 0.5f * (-particles_lsdm[k].CoEps * L._23 + L._12 * tau_ddt._13 + L._22 * tau_ddt._23 + L._23 * tau_ddt._33) * dt,
+                   -1.0f + 0.5f * (-particles_lsdm[k].CoEps * L._33 + L._13 * tau_ddt._13 + L._23 * tau_ddt._23 + L._33 * tau_ddt._33) * dt };
 
         // b = -vectFluct - 0.5*vecFluxDiv*par_dt - sqrt(CoEps*par_dt)*vecRandn;
-        vec3 b = { -velFluct_old._1 - 0.5f * flux_div._1 * dt - sqrtf(CoEps * dt) * vRandn._1,
-                   -velFluct_old._2 - 0.5f * flux_div._2 * dt - sqrtf(CoEps * dt) * vRandn._2,
-                   -velFluct_old._3 - 0.5f * flux_div._3 * dt - sqrtf(CoEps * dt) * vRandn._3 };
+        vec3 b = { -particles_lsdm[k].velFluct_old._1 - 0.5f * flux_div._1 * dt - sqrtf(particles_lsdm[k].CoEps * dt) * vRandn._1,
+                   -particles_lsdm[k].velFluct_old._2 - 0.5f * flux_div._2 * dt - sqrtf(particles_lsdm[k].CoEps * dt) * vRandn._2,
+                   -particles_lsdm[k].velFluct_old._3 - 0.5f * flux_div._3 * dt - sqrtf(particles_lsdm[k].CoEps * dt) * vRandn._3 };
 
         // now prepare for the Ax=b calculation by calculating the inverted A matrix
         isRogue = !VectorMath::invert(A);
@@ -407,50 +405,38 @@ void ParticleModel::advect(const float &total_time_interval,
           // isActive = false;
           break;
         }
-
+        // tau_old = tau;
+        particles_lsdm[k].tau = tau;
         // now do the Ax=b calculation using the inverted matrix (vecFluct = A*b)
-        VectorMath::multiply(A, b, velFluct);
-        
+        VectorMath::multiply(A, b, particles_lsdm[k].velFluct);
+
         // now check to see if the value is rogue or not
-        if (std::abs(velFluct._1) >= PGD->vel_threshold || isnan(velFluct._1)) {
+        if (std::abs(particles_lsdm[k].velFluct._1) >= PGD->vel_threshold || isnan(particles_lsdm[k].velFluct._1)) {
           // std::cerr << "Particle # " << particles_core[k].ID << " is rogue" << std::endl;
           //  std::cerr << "uFluct = " << p_lsdm.velFluct._1 << ", CoEps = " << p_lsdm.CoEps << std::endl;
           //  velFluct._1 = 0.0;
           //  isActive = false;
           isRogue = true;
-          // break;
+          break;
         }
-        if (std::abs(velFluct._2) >= PGD->vel_threshold || isnan(velFluct._2)) {
+        if (std::abs(particles_lsdm[k].velFluct._2) >= PGD->vel_threshold || isnan(particles_lsdm[k].velFluct._2)) {
           // std::cerr << "Particle # " << particles_core[k].ID << " is rogue" << std::endl;
           // std::cerr << "vFluct = " << p_lsdm.velFluct._2 << ", CoEps = " << p_lsdm.CoEps << std::endl;
           // velFluct._2 = 0.0;
           // isActive = false;
           isRogue = true;
-          // break;
+          break;
         }
-        if (std::abs(velFluct._3) >= PGD->vel_threshold || isnan(velFluct._3)) {
+        if (std::abs(particles_lsdm[k].velFluct._3) >= PGD->vel_threshold || isnan(particles_lsdm[k].velFluct._3)) {
           // std::cerr << "Particle # " << particles_core[k].ID << " is rogue" << std::endl;
           // std::cerr << "wFluct = " << p_lsdm.velFluct._3 << ", CoEps = " << p_lsdm.CoEps << std::endl;
           // velFluct._3 = 0.0;
           // isActive = false;
           isRogue = true;
-          // break;
+          break;
         }
 
         if (isRogue) {
-          /*std::cerr << "---------------------------------------------------------------------------- \n"
-                    << "Particle: " << (isRogue ? "ROGUE" : "ACTIVE") << "\n"
-                    << "ID:   " << particles_core[k].ID << " \n"
-                    << "dt:   " << dt << "\n"
-                    << "x:    " << pos._1 << " " << pos._2 << " " << pos._3 << "\n"
-                    << "U:    " << velMean._1 << " " << velMean._2 << " " << velMean._3 << "\n"
-                    << "u_o:  " << velFluct_old._1 << " " << velFluct_old._2 << " " << velFluct_old._3 << "\n"
-                    << "u:    " << velFluct._1 << " " << velFluct._2 << " " << velFluct._3 << "\n"
-                    << "b:    " << b._1 << " " << b._2 << " " << b._3 << "\n"
-                    << "T:    " << tau._11 << " " << tau._12 << " " << tau._13 << " " << tau._22 << " " << tau._23 << " " << tau._33 << "\n"
-                    << "dTdt: " << tau_ddt._11 << " " << tau_ddt._12 << " " << tau_ddt._13 << " " << tau_ddt._22 << " " << tau_ddt._23 << " " << tau_ddt._33 << "\n"
-                    << "fdiv: " << flux_div._1 << " " << flux_div._2 << " " << flux_div._3 << "\n"
-                    << "----------------------------------------------------------------------------" << std::endl;*/
           break;
         }
 
@@ -460,9 +446,9 @@ void ParticleModel::advect(const float &total_time_interval,
         //    assert( isRogue == false );
 
         // now update the particle position for this iteration
-        vec3 dist = VectorMath::multiply(dt, VectorMath::add(velMean, velFluct));
+        vec3 dist = VectorMath::multiply(dt, VectorMath::add(particles_lsdm[k].velMean, particles_lsdm[k].velFluct));
         // x_n+1 = x_n + v*dt
-        pos = VectorMath::add(pos, dist);
+        particles_core[k].pos = VectorMath::add(particles_core[k].pos, dist);
 
         vec3 velTot = VectorMath::add(particles_lsdm[k].velMean, particles_lsdm[k].velFluct);
 
@@ -474,25 +460,23 @@ void ParticleModel::advect(const float &total_time_interval,
         // check and do wall (building and terrain) reflection (based in the method)
         if (particles_control[k].state == ACTIVE) {
           PGD->wallReflect->reflect(WGD,
-                                    pos,
+                                    particles_core[k].pos,
                                     dist,
-                                    velFluct,
+                                    particles_lsdm[k].velFluct,
                                     particles_control[k].state);
         }
 
         // now apply boundary conditions
-        PGD->applyBC(pos,
-                     velFluct,
+        PGD->applyBC(particles_core[k].pos,
+                     particles_lsdm[k].velFluct,
                      particles_control[k].state);
 
         // now update the old values to be ready for the next particle time iteration
         // the current values are already set for the next iteration by the above calculations
         // !!! this is extremely important for the next iteration to work accurately
-        delta_velFluct = VectorMath::subtract(velFluct, velFluct_old);
+        particles_lsdm[k].delta_velFluct = VectorMath::subtract(particles_lsdm[k].velFluct, particles_lsdm[k].velFluct_old);
 
-        velFluct_old = velFluct;
-
-        tau_old = tau;
+        particles_lsdm[k].velFluct_old = particles_lsdm[k].velFluct;
 
         // now set the time remainder for the next loop
         // if the par_dt calculated from the Courant Number is greater than the timeRemainder,
@@ -502,15 +486,14 @@ void ParticleModel::advect(const float &total_time_interval,
 
       }// while( isActive == true && timeRemainder > 0.0 )
 
-      particles_core[k].pos = pos;
+      // particles_core[k].pos = pos;
 
-      particles_lsdm[k].CoEps = CoEps;
-      particles_lsdm[k].velMean = velMean;
-      particles_lsdm[k].delta_velFluct = delta_velFluct;
-      particles_lsdm[k].velFluct = velFluct;
-      particles_lsdm[k].velFluct_old = velFluct_old;
-      particles_lsdm[k].delta_velFluct = delta_velFluct;
-      particles_lsdm[k].tau = tau_old;
+      // particles_lsdm[k].CoEps = CoEps;
+      // particles_lsdm[k].velMean = velMean;
+      // particles_lsdm[k].delta_velFluct = delta_velFluct;
+      // particles_lsdm[k].velFluct = velFluct;
+      // particles_lsdm[k].velFluct_old = velFluct_old;
+
 
       if (isRogue) {
         particles_control[k].state = ROGUE;
@@ -519,11 +502,12 @@ void ParticleModel::advect(const float &total_time_interval,
 
     } catch (const std::out_of_range &oor) {
       // cell ID out of bound (assuming particle outside of domain)
-      /*std::cerr << "Particle: " << particles_core[k].ID << " state: " << particles_control[k].state << "\n"
-                << particles_core[k].pos._1 << " " << particles_core[k].pos._2 << " " << particles_core[k].pos._3 << std::endl;*/
+      // std::cerr << "Particle: " << particles_core[k].ID << " state: " << particles_control[k].state << "\n"
+      //           << particles_core[k].pos._1 << " " << particles_core[k].pos._2 << " " << particles_core[k].pos._3 << std::endl;
       particles_control[k].state = INACTIVE;
     }
 
 
   }//  END OF OPENMP WORK SHARE
 }
+*/

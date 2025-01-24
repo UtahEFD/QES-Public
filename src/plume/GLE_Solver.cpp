@@ -201,13 +201,11 @@ void GLE_Solver_CPU::solve(float &dt,
   // these are the random numbers for each direction
 
 #ifdef _OPENMP
-  vec3 vRandn = { static_cast<float>(PGD->threadRNG[omp_get_thread_num()]->norRan()),
-                  static_cast<float>(PGD->threadRNG[omp_get_thread_num()]->norRan()),
-                  static_cast<float>(PGD->threadRNG[omp_get_thread_num()]->norRan()) };
+  vec3 vRandn = { PGD->threadRNG[omp_get_thread_num()]->norRan(),
+                  PGD->threadRNG[omp_get_thread_num()]->norRan(),
+                  PGD->threadRNG[omp_get_thread_num()]->norRan() };
 #else
-  vec3 vRandn = { (float)PGD->RNG->norRan(),
-                  (float)PGD->RNG->norRan(),
-                  (float)PGD->RNG->norRan() };
+  vec3 vRandn = { PGD->RNG->norRan(), PGD->RNG->norRan(), PGD->RNG->norRan() };
 #endif
 
   // now calculate a bunch of values for the current particle
