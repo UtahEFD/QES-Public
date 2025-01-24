@@ -54,12 +54,12 @@ RandomSingleton::RandomSingleton()
   prng.seed(std::time(nullptr));
 }
 
-double RandomSingleton::uniRan()
+float RandomSingleton::uniRan()
 {
   return distribution(prng);
 }
 
-double RandomSingleton::norRan()
+float RandomSingleton::norRan()
 {
   float rsq, v1, v2;
   if (!m_normal_value) {

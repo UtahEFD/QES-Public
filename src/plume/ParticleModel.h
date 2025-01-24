@@ -82,7 +82,7 @@ public:
                                     TURBGeneralData *TGD,
                                     PLUMEGeneralData *PGD);
 
-  virtual void advect(const double &timeRemainder,
+  virtual void advect(const float &timeRemainder,
                       WINDSGeneralData *WGD,
                       TURBGeneralData *TGD,
                       PLUMEGeneralData *PGD);
@@ -112,7 +112,7 @@ public:
 
   StatisticsDirector *stats = nullptr;
   Deposition *deposition = nullptr;
-  
+
 protected:
   explicit ParticleModel(ParticleType type, std::string tag_in)
     : particleType(type), tag(std::move(tag_in))

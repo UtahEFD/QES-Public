@@ -49,9 +49,9 @@
 
 struct interpWeight
 {
-  int ii;// nearest cell index to the left in the x direction
-  int jj;// nearest cell index to the left in the y direction
-  int kk;// nearest cell index to the left in the z direction
+  long ii;// nearest cell index to the left in the x direction
+  long jj;// nearest cell index to the left in the y direction
+  long kk;// nearest cell index to the left in the z direction
   float iw;// normalized distance to the nearest cell index to the left in the x direction
   float jw;// normalized distance to the nearest cell index to the left in the y direction
   float kw;// normalized distance to the nearest cell index to the left in the z direction

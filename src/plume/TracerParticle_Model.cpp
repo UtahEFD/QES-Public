@@ -138,7 +138,7 @@ void TracerParticle_Model::generateParticleList(QEStime &timeCurrent,
     // setParticle(time, s, particles);
   }
   /*
-  double time = timeCurrent - PGD->getSimTimeStart();
+  float time = timeCurrent - PGD->getSimTimeStart();
   for (auto source : sources) {
     nbr_new_particle += source->getNewParticleNumber(dt, time);
   }
@@ -158,7 +158,7 @@ void TracerParticle_Model::generateParticleList(QEStime &timeCurrent,
 }
 
 
-void TracerParticle_Model::advect(const double &total_time_interval,
+void TracerParticle_Model::advect(const float &total_time_interval,
                                   WINDSGeneralData *WGD,
                                   TURBGeneralData *TGD,
                                   PLUMEGeneralData *PGD)

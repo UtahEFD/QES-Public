@@ -142,8 +142,8 @@ PLUMEGeneralData::PLUMEGeneralData(const PlumeParameters &PP,
   GLE_solver = new GLE_Solver_CPU();
 
   // Need dz for ground deposition
-  double lBndz = PID->colParams->boxBoundsZ1;
-  double uBndz = PID->colParams->boxBoundsZ2;
+  float lBndz = PID->colParams->boxBoundsZ1;
+  float uBndz = PID->colParams->boxBoundsZ2;
   int nBoxesZ = PID->colParams->nBoxesZ;
   boxSizeZ = (uBndz - lBndz) / (nBoxesZ);
 
@@ -264,7 +264,7 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd,
   }
 
   QEStime nextUpdate = simTimeCurr + updateFrequency_timeLoop;
-  double simTime = simTimeCurr - simTimeStart;
+  float simTime = simTimeCurr - simTimeStart;
 
   updateCounts();
 
@@ -282,7 +282,7 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd,
     auto startTime = std::chrono::high_resolution_clock::now();
 
     // the current time, updated in this loop with each new par_dt.
-    double timeRemainder = loopTimeEnd - simTimeCurr;
+    float timeRemainder = loopTimeEnd - simTimeCurr;
     if (timeRemainder > sim_dt) {
       timeRemainder = sim_dt;
     }
@@ -399,7 +399,7 @@ float PLUMEGeneralData::calcCourantTimestep(const float &d,
   }
 
   float min_ds = std::min(dxy, dz);
-  // double max_u = std::max({ u, v, w });
+  // float max_u = std::max({ u, v, w });
   float max_u = VectorMath::length(vel);
   float CN = 0.0;
 
@@ -428,7 +428,7 @@ float PLUMEGeneralData::calcCourantTimestep(const float &d,
   return std::min(timeRemainder, CN * min_ds / max_u);
 }
 
-/*void PLUMEGeneralData::GLE_solver_func(Particle *p, double &par_dt, TURBGeneralData *TGD)
+/*void PLUMEGeneralData::GLE_solver_func(Particle *p, float &par_dt, TURBGeneralData *TGD)
 {
   double txx = 0.0, txy = 0.0, txz = 0.0, tyy = 0.0, tyz = 0.0, tzz = 0.0;
   double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
@@ -693,11 +693,11 @@ void PLUMEGeneralData::initializeParticleValues(const vec3 &pos,
 }
 
 
-double PLUMEGeneralData::getMaxVariance(const TURBGeneralData *TGD)
+float PLUMEGeneralData::getMaxVariance(const TURBGeneralData *TGD)
 {
   // set the initial maximum value to a very small number. The idea is to go through each value of the data,
   // setting the current value to the max value each time the current value is bigger than the old maximum value
-  double maximumVal = -10e-10;
+  float maximumVal = -10e-10;
 
   // go through each vector to find the maximum value
   // each one could potentially be different sizes if the grid is not 3D
@@ -792,7 +792,6 @@ void PLUMEGeneralData::printProgress(const double &time)
 {
   updateCounts();
   if (verbose) {
-
     std::cout << "[QES-Plume]\t Time = " << simTimeCurr
               << " (t = " << time << " s, iter = " << simTimeIdx << "). "
               << "Particles: released = " << isReleasedCount << " "

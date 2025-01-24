@@ -68,7 +68,7 @@ public:
                             TURBGeneralData *TGD,
                             PLUMEGeneralData *PGD) override;
 
-  void advect(const double &total_time_interval,
+  void advect(const float &total_time_interval,
               WINDSGeneralData *WGD,
               TURBGeneralData *TGD,
               PLUMEGeneralData *PGD) override;

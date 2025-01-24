@@ -143,20 +143,20 @@ void InterpTriLinear::setInterp3Dindex_uFace(const vec3 &pos, interpWeight &wgt)
 {
 
   // set a particle position corrected by the start of the domain in each direction
-  // double par_x = par_xPos - xStart + 1.0*dx;
-  // double par_y = par_yPos - yStart + 0.5*dy;
-  // double par_z = par_zPos - zStart + 0.5*dz;
-  float par_x = pos._1 - 0.0 * dx;
-  float par_y = pos._2 - 0.5 * dy;
-  // double par_z = par_zPos + 0.5 * dz;
+  // float par_x = par_xPos - xStart + 1.0*dx;
+  // float par_y = par_yPos - yStart + 0.5*dy;
+  // float par_z = par_zPos - zStart + 0.5*dz;
+  float par_x = pos._1 - 0.0f * dx;
+  float par_y = pos._2 - 0.5f * dy;
+  // float par_z = par_zPos + 0.5 * dz;
 
-  wgt.ii = floor(par_x / (dx + 1e-7));
-  wgt.jj = floor(par_y / (dy + 1e-7));
+  wgt.ii = std::floorf(par_x / (dx + 1e-7));
+  wgt.jj = std::floorf(par_y / (dy + 1e-7));
   // wgt.kk = floor(par_z / (dz + 1e-7));
 
   // fractional distance between the nearest nodes
-  wgt.iw = (par_x / dx) - floor(par_x / (dx + 1e-7));
-  wgt.jw = (par_y / dy) - floor(par_y / (dy + 1e-7));
+  wgt.iw = (par_x / dx) - std::floorf(par_x / (dx + 1e-7));
+  wgt.jw = (par_y / dy) - std::floorf(par_y / (dy + 1e-7));
   // wgt.kw = (par_z / dz) - floor(par_z / (dz + 1e-7));
 
   auto itr = std::lower_bound(domain.z.begin(), domain.z.end(), pos._3);
@@ -170,20 +170,20 @@ void InterpTriLinear::setInterp3Dindex_vFace(const vec3 &pos, interpWeight &wgt)
 {
 
   // set a particle position corrected by the start of the domain in each direction
-  // double par_x = par_xPos - xStart + 0.5*dx;
-  // double par_y = par_yPos - yStart + 1.0*dy;
-  // double par_z = par_zPos - zStart + 0.5*dz;
-  double par_x = pos._1 - 0.5 * dx;
-  double par_y = pos._2 - 0.0 * dy;
-  // double par_z = par_zPos + 0.5 * dz;
+  // float par_x = par_xPos - xStart + 0.5*dx;
+  // float par_y = par_yPos - yStart + 1.0*dy;
+  // float par_z = par_zPos - zStart + 0.5*dz;
+  float par_x = pos._1 - 0.5f * dx;
+  float par_y = pos._2 - 0.0f * dy;
+  // float par_z = par_zPos + 0.5 * dz;
 
-  wgt.ii = floor(par_x / (dx + 1e-7));
-  wgt.jj = floor(par_y / (dy + 1e-7));
+  wgt.ii = std::floorf(par_x / (dx + 1e-7));
+  wgt.jj = std::floorf(par_y / (dy + 1e-7));
   // wgt.kk = floor(par_z / (dz + 1e-7));
 
   // fractional distance between the nearest nodes
-  wgt.iw = (par_x / dx) - floor(par_x / (dx + 1e-4));
-  wgt.jw = (par_y / dy) - floor(par_y / (dy + 1e-4));
+  wgt.iw = (par_x / dx) - std::floorf(par_x / (dx + 1e-7));
+  wgt.jw = (par_y / dy) - std::floorf(par_y / (dy + 1e-7));
   // wgt.kw = (par_z / dz) - floor(par_z / (dz + 1e-4));
 
   auto itr = std::lower_bound(domain.z.begin(), domain.z.end(), pos._3);
@@ -196,20 +196,20 @@ void InterpTriLinear::setInterp3Dindex_wFace(const vec3 &pos, interpWeight &wgt)
 {
 
   // set a particle position corrected by the start of the domain in each direction
-  // double par_x = par_xPos - xStart + 0.5*dx;
-  // double par_y = par_yPos - yStart + 0.5*dy;
-  // double par_z = par_zPos - zStart + 1.0*dz;
-  float par_x = pos._1 - 0.5 * dx;
-  float par_y = pos._2 - 0.5 * dy;
-  // double par_z = par_zPos + 1.0 * dz;
+  // float par_x = par_xPos - xStart + 0.5*dx;
+  // float par_y = par_yPos - yStart + 0.5*dy;
+  // float par_z = par_zPos - zStart + 1.0*dz;
+  float par_x = pos._1 - 0.5f * dx;
+  float par_y = pos._2 - 0.5f * dy;
+  // float par_z = par_zPos + 1.0 * dz;
 
   wgt.ii = floor(par_x / (dx + 1e-7));
   wgt.jj = floor(par_y / (dy + 1e-7));
   // wgt.kk = floor(par_z / (dz + 1e-7));
 
   // fractional distance between the nearest nodes
-  wgt.iw = (par_x / dx) - floor(par_x / (dx + 1e-7));
-  wgt.jw = (par_y / dy) - floor(par_y / (dy + 1e-7));
+  wgt.iw = (par_x / dx) - std::floorf(par_x / (dx + 1e-7));
+  wgt.jw = (par_y / dy) - std::floorf(par_y / (dy + 1e-7));
   // wgt.kw = (par_z / dz) - floor(par_z / (dz + 1e-7));
 
   auto itr = std::lower_bound(domain.z_face.begin(), domain.z_face.end(), pos._3);
@@ -264,7 +264,7 @@ void InterpTriLinear::interp3D_faceVar(const std::vector<double> &EulerData,
     for (int jjj = 0; jjj <= 1; jjj++) {
       for (int iii = 0; iii <= 1; iii++) {
         // set the actual indices to use for the linearized Euler data
-        int idx = (wgt.kk + kkk) * (ny * nx) + (wgt.jj + jjj) * (nx) + (wgt.ii + iii);
+        long idx = (wgt.kk + kkk) * (ny * nx) + (wgt.jj + jjj) * (nx) + (wgt.ii + iii);
         cube[iii][jjj][kkk] = EulerData[idx];
       }
     }
@@ -292,8 +292,8 @@ void InterpTriLinear::setInterp3Dindex_cellVar(const vec3 &pos, interpWeight &wg
   // set a particle position corrected by the start of the domain in each direction
   // the algorithm assumes the list starts at x = 0.
 
-  float par_x = pos._1 - 0.5 * dx;
-  float par_y = pos._2 - 0.5 * dy;
+  float par_x = pos._1 - 0.5f * dx;
+  float par_y = pos._2 - 0.5f * dy;
   // double par_z = par_zPos + 0.5 * dz;
 
   // double par_x = par_xPos - xStart + 0.5*dx;
@@ -301,13 +301,13 @@ void InterpTriLinear::setInterp3Dindex_cellVar(const vec3 &pos, interpWeight &wg
   // double par_z = par_zPos - zStart + 0.5*dz;
 
   // index of the nearest node in negative direction
-  wgt.ii = floor(par_x / (dx + 1e-7));
-  wgt.jj = floor(par_y / (dy + 1e-7));
+  wgt.ii = std::floorf(par_x / (dx + 1e-7));
+  wgt.jj = std::floorf(par_y / (dy + 1e-7));
   // wgt.kk = floor(par_z / (dz + 1e-7));
 
   // fractional distance between the nearest nodes
-  wgt.iw = (par_x / dx) - floor(par_x / (dx + 1e-7));
-  wgt.jw = (par_y / dy) - floor(par_y / (dy + 1e-7));
+  wgt.iw = (par_x / dx) - std::floorf(par_x / (dx + 1e-7));
+  wgt.jw = (par_y / dy) - std::floorf(par_y / (dy + 1e-7));
   // wgt.kw = (par_z / dz) - floor(par_z / (dz + 1e-7));
 
   auto itr = std::lower_bound(domain.z.begin(), domain.z.end(), pos._3);
@@ -332,7 +332,7 @@ void InterpTriLinear::interp3D_cellVar(const std::vector<float> &EulerData,
     for (int jjj = 0; jjj <= 1; jjj++) {
       for (int iii = 0; iii <= 1; iii++) {
         // set the actual indices to use for the linearized Euler data
-        int idx = (wgt.kk + kkk) * (ny - 1) * (nx - 1) + (wgt.jj + jjj) * (nx - 1) + (wgt.ii + iii);
+        long idx = (wgt.kk + kkk) * (ny - 1) * (nx - 1) + (wgt.jj + jjj) * (nx - 1) + (wgt.ii + iii);
         cube[iii][jjj][kkk] = EulerData.at(idx);
       }
     }
@@ -372,7 +372,7 @@ void InterpTriLinear::interp3D_cellVar(const std::vector<double> &EulerData,
     for (int jjj = 0; jjj <= 1; jjj++) {
       for (int iii = 0; iii <= 1; iii++) {
         // set the actual indices to use for the linearized Euler data
-        int idx = (wgt.kk + kkk) * (ny - 1) * (nx - 1) + (wgt.jj + jjj) * (nx - 1) + (wgt.ii + iii);
+        long idx = (wgt.kk + kkk) * (ny - 1) * (nx - 1) + (wgt.jj + jjj) * (nx - 1) + (wgt.ii + iii);
         cube[iii][jjj][kkk] = EulerData[idx];
       }
     }

@@ -108,11 +108,11 @@ void Deposition::deposit(Particle *p,
     /*if (false) {
 
       // Calculate distance (in x-y plane) from source
-      double distFromSource = pow(pow(p->xPos - p->xPos_init, 2)
+      float distFromSource = pow(pow(p->xPos - p->xPos_init, 2)
                                     + pow(p->yPos - p->yPos_init, 2),
                                   0.5);
       // Take deposited mass away from particle
-      double P_r = exp(-p->decayConst * distFromSource);// undeposited fraction of mass
+      float P_r = exp(-p->decayConst * distFromSource);// undeposited fraction of mass
       p->m = p->m_o * P_r;
       // p->m_kg = p->m_kg_o * P_r;
     }*/
@@ -151,7 +151,7 @@ void Deposition::deposit(Particle *p,
       // non-impaction surface weighting factor
       float gam = -6.5e-5 * ReLeaf + 0.43;
       // temporarily set to 1 because of problems (gam is becoming negative, but should be positive and ~0.1)
-      // double gam = 0.1;
+      // float gam = 0.1;
 
       // LAD adjusted to include non-impaction surface
       float adjLAD = leafAreaDensitydep * (1.0 + gam);

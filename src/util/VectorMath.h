@@ -174,7 +174,7 @@ inline void VectorMath::calcInvariants(const mat3sym &tau, vec3 &invar)
   invar._2 = tau._11 * tau._22 + tau._11 * tau._33 + tau._22 * tau._33
              - (tau._12 * tau._12 + tau._13 * tau._13 + tau._23 * tau._23);
   invar._3 = tau._11 * (tau._22 * tau._33 - tau._23 * tau._23)
-             - tau._12 * (tau._23 * tau._33 - tau._23 * tau._13)
+             - tau._12 * (tau._12 * tau._33 - tau._23 * tau._13)
              + tau._13 * (tau._12 * tau._23 - tau._22 * tau._13);
 }
 
@@ -244,8 +244,7 @@ inline void VectorMath::makeRealizable(const float &invarianceTol, mat3sym &tau)
   }
 
   if (iter == 999) {
-    // std::cout << "WARNING (Plume::makeRealizable): unable to make stress "
-    //              "tensor realizble.";
+    std::cout << "WARNING (Plume::makeRealizable): unable to make stress tensor realizable." << std::endl;
   }
 
   // now set the output actual stress tensor using the separate temporary stress

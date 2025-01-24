@@ -81,17 +81,17 @@ void WallReflection_StairStep::reflect(const WINDSGeneralData *WGD,
     // particle end trajectory inside solide -> need for reflection
 
     // position of the particle start of trajectory
-    Vector3Double X = { pos._1 - dist._1, pos._2 - dist._2, pos._3 - dist._3 };
+    Vector3Float X = { pos._1 - dist._1, pos._2 - dist._2, pos._3 - dist._3 };
     // vector of the trajectory
-    Vector3Double U = { dist._1, dist._2, dist._3 };
+    Vector3Float U = { dist._1, dist._2, dist._3 };
     // postion of the particle end of trajectory
-    Vector3Double Xnew = X + U;
+    Vector3Float Xnew = X + U;
     // vector of fluctuations
-    Vector3Double vecFluct = { fluct._1, fluct._2, fluct._3 };
+    Vector3Float vecFluct = { fluct._1, fluct._2, fluct._3 };
 
-    double d = U.length();
-    double d1 = 0.0;
-    double d2 = U.length();
+    float d = U.length();
+    float d1 = 0.0;
+    float d2 = U.length();
 
     // normailzation of direction verctor for particle trajectory
     U = U / U.length();
@@ -117,12 +117,12 @@ void WallReflection_StairStep::reflect(const WINDSGeneralData *WGD,
 }
 
 void WallReflection_StairStep::trajectorySplit_recursive(const WINDSGeneralData *WGD,
-                                                         Vector3Double &X,
-                                                         Vector3Double &u,
-                                                         const double &d,
-                                                         double &d1,
-                                                         double &d2,
-                                                         Vector3Double &vecFluct,
+                                                         Vector3Float &X,
+                                                         Vector3Float &u,
+                                                         const float &d,
+                                                         float &d1,
+                                                         float &d2,
+                                                         Vector3Float &vecFluct,
                                                          bool &isActive)
 {
   /*
@@ -139,8 +139,8 @@ void WallReflection_StairStep::trajectorySplit_recursive(const WINDSGeneralData 
     return;
   } else {
 
-    Vector3Double Xold = X;
-    Vector3Double Xnew = X + d2 * u;
+    Vector3Float Xold = X;
+    Vector3Float Xnew = X + d2 * u;
 
     // linearized cell ID for origine of the trajectory of the particle
     long cellIdOld = m_interp->getCellId(Xold);
@@ -154,7 +154,7 @@ void WallReflection_StairStep::trajectorySplit_recursive(const WINDSGeneralData 
 
 
     if ((abs(i_old - i_new) > 1) || (abs(j_old - j_new) > 1) || (abs(k_old - k_new) > 1)) {
-      d2 = 0.5 * d2;
+      d2 = 0.5f * d2;
       if (d2 < 0.125 * d) {
         std::cerr << "END OF REGRESSION dist \t" << d2 / d << std::endl;
         isActive = false;
@@ -175,14 +175,14 @@ void WallReflection_StairStep::trajectorySplit_recursive(const WINDSGeneralData 
 }
 
 void WallReflection_StairStep::oneReflection(const WINDSGeneralData *WGD,
-                                             Vector3Double &X,
-                                             Vector3Double &u,
-                                             const double &d,
-                                             Vector3Double &vecFluct,
+                                             Vector3Float &X,
+                                             Vector3Float &u,
+                                             const float &d,
+                                             Vector3Float &vecFluct,
                                              bool &isActive)
 {
   // some constants
-  const double eps_S = 0.001;
+  const float eps_S = 0.001;
   const int maxCount = 10;
 
   // QES-winds grid information
@@ -190,7 +190,7 @@ void WallReflection_StairStep::oneReflection(const WINDSGeneralData *WGD,
   auto [dx, dy, dz] = WGD->domain.getDomainSize();
 
   // cartesian basis vectors
-  const Vector3Double e1 = { 1.0, 0.0, 0.0 }, e2 = { 0.0, 1.0, 0.0 }, e3 = { 0.0, 0.0, 1.0 };
+  const Vector3Float e1 = { 1.0, 0.0, 0.0 }, e2 = { 0.0, 1.0, 0.0 }, e3 = { 0.0, 0.0, 1.0 };
 
   /* Vector3 variables informations:
      Xold     = origine of the trajectory of the particle
@@ -204,9 +204,9 @@ void WallReflection_StairStep::oneReflection(const WINDSGeneralData *WGD,
      R        = unit vector giving orentation of the reflection
      N        = unit vector noraml to the surface
   */
-  Vector3Double Xnew, Xold, U;
-  Vector3Double P, S, V1, V2;
-  Vector3Double R, N;
+  Vector3Float Xnew, Xold, U;
+  Vector3Float P, S, V1, V2;
+  Vector3Float R, N;
 
   Xold = X;
   U = d * u;
@@ -231,10 +231,10 @@ void WallReflection_StairStep::oneReflection(const WINDSGeneralData *WGD,
      r           - distance travel after reflection
   */
   int count = 0;
-  double f1, f2, f3;
-  double l1, l2, l3;
+  float f1, f2, f3;
+  float l1, l2, l3;
   int validSurface;
-  double s, r;
+  float s, r;
 
   while ((cellFlagNew == 0 || cellFlagNew == 2) && (count < maxCount)) {
 
@@ -258,20 +258,20 @@ void WallReflection_StairStep::oneReflection(const WINDSGeneralData *WGD,
 
     // x-drection
     N = -f1 * e1;
-    S = { WGD->domain.x[i] + f1 * 0.50 * dx, double(WGD->domain.y[j]), double(WGD->domain.z[k]) };
+    S = { WGD->domain.x[i] + f1 * 0.50f * dx, WGD->domain.y[j], WGD->domain.z[k] };
     l1 = -(Xold * N - S * N) / (U * N);
 
     // y-drection
     N = -f2 * e2;
-    S = { double(WGD->domain.x[i]), WGD->domain.y[j] + f2 * 0.50 * dy, double(WGD->domain.z[k]) };
+    S = { WGD->domain.x[i], WGD->domain.y[j] + f2 * 0.50f * dy, WGD->domain.z[k] };
     l2 = -(Xold * N - S * N) / (U * N);
 
     // z-drection (dz can be variable with hieght)
     N = -f3 * e3;
     if (f3 >= 0.0) {
-      S = { double(WGD->domain.x[i]), double(WGD->domain.y[j]), double(WGD->domain.z_face[k + 1]) };
+      S = { WGD->domain.x[i], WGD->domain.y[j], WGD->domain.z_face[k + 1] };
     } else {
-      S = { double(WGD->domain.x[i]), double(WGD->domain.y[j]), double(WGD->domain.z_face[k]) };
+      S = { WGD->domain.x[i], WGD->domain.y[j], WGD->domain.z_face[k] };
     }
     l3 = -(Xold * N - S * N) / (U * N);
 
@@ -341,9 +341,9 @@ void WallReflection_StairStep::oneReflection(const WINDSGeneralData *WGD,
 
       // list of potential surface
       // - ratio of dist. to wall over dist. total
-      std::vector<double> vl(3, 0.0);
+      std::vector<float> vl(3, 0.0);
       // - normal vector for each surface
-      std::vector<Vector3Double> vN(3, { 0, 0, 0 });
+      std::vector<Vector3Float> vN(3, { 0, 0, 0 });
       // - linear index for icellflag check
       std::vector<int> vn(3, 0);
 

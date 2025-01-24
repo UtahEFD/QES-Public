@@ -62,16 +62,16 @@ private:
 class BasePhysicalProperties
 {
 public:
-  double d;// particle diameter diameter [microns]
-  // double d_m;// particle diameter diameter [m]
-  double m;// particle mass [g]
-  // double m_kg;// particle mass [kg]
-  double m_o;// initial particle mass [g]
-  // double m_kg_o;// initial particle mass [kg]
-  double rho;// density of particle
+  float d;// particle diameter diameter [microns]
+  // float d_m;// particle diameter diameter [m]
+  float m;// particle mass [g]
+  // float m_kg;// particle mass [kg]
+  float m_o;// initial particle mass [g]
+  // float m_kg_o;// initial particle mass [kg]
+  float rho;// density of particle
 
   // mass decay constant
-  double decayConst;
+  float decayConst;
 
   // decay variables
   double wdecay;// (1 - fraction) particle decayed [0,1]

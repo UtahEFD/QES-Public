@@ -70,18 +70,18 @@ public:
 
 private:
   void trajectorySplit_recursive(const WINDSGeneralData *,
-                                 Vector3Double &,
-                                 Vector3Double &,
-                                 const double &,
-                                 double &,
-                                 double &,
-                                 Vector3Double &,
+                                 Vector3Float &,
+                                 Vector3Float &,
+                                 const float &,
+                                 float &,
+                                 float &,
+                                 Vector3Float &,
                                  bool &);
 
   void oneReflection(const WINDSGeneralData *,
-                     Vector3Double &,
-                     Vector3Double &,
-                     const double &,
-                     Vector3Double &,
+                     Vector3Float &,
+                     Vector3Float &,
+                     const float &,
+                     Vector3Float &,
                      bool &);
 };

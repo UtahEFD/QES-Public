@@ -49,13 +49,13 @@ InterpPowerLaw::InterpPowerLaw(qes::Domain domain_in, bool debug_val = 0)
   }
 }
 
-double InterpPowerLaw::getMaxFluctuation()
+float InterpPowerLaw::getMaxFluctuation()
 {
   // calculate the threshold velocity
-  double a = 4.8;
-  double p = 0.15;
+  float a = 4.8;
+  float p = 0.15;
 
-  double us = 0.4 * p * a * pow(zEnd, p);
+  float us = 0.4 * p * a * pow(zEnd, p);
   return 10.0 * 2.5 * us;
 }
 
@@ -66,13 +66,13 @@ void InterpPowerLaw::interpWindsValues(const WINDSGeneralData *WGD,
   float a = 4.8;
   float p = 0.15;
 
-  // double b = 0.08;
-  // double n = 1.0;
+  // float b = 0.08;
+  // float n = 1.0;
 
   float z = 0.1 * ceil(10.0 * pos._3);
 
   float us = 0.4 * p * a * powf(z, p);
-  // double us = sqrt(b * p * a * pow(z, n + p - 1));
+  // float us = sqrt(b * p * a * pow(z, n + p - 1));
 
   vel_out._1 = a * powf(z, p);
   vel_out._2 = 0.0;
@@ -89,13 +89,13 @@ void InterpPowerLaw::interpTurbValues(const TURBGeneralData *TGD,
   float a = 4.8;
   float p = 0.15;
 
-  // double b = 0.08;
-  // double n = 1.0;
+  // float b = 0.08;
+  // float n = 1.0;
 
   float z = 0.1 * ceil(10.0 * pos._3);
 
   float us = 0.4 * p * a * pow(z, p);
-  // double us = sqrt(b * p * a * pow(z, n + p - 1));
+  // float us = sqrt(b * p * a * pow(z, n + p - 1));
 
   CoEps_out = (5.7f * us * us * us) / (0.4f * z);
 
@@ -117,12 +117,12 @@ void InterpPowerLaw::interpTurbInitialValues(const TURBGeneralData *TGD,
   float a = 4.8;
   float p = 0.15;
 
-  // double b = 0.08;
-  // double n = 1.0;
+  // float b = 0.08;
+  // float n = 1.0;
   float z = 0.1 * ceil(10.0 * pos._3);
 
   float us = 0.4 * p * a * powf(z, p);
-  // double us = sqrt(b * p * a * pow(zPos, n + p - 1));
+  // float us = sqrt(b * p * a * pow(zPos, n + p - 1));
 
   tau_out = { powf(2.5f * us, 2.0f), powf(2.3f * us, 2.0f), powf(1.3f * us, 2.0f), 0.0f, 0.0f, -powf(us, 2.0f) };
   sig_out = { 2.5f * us, 2.3f * us, 1.3f * us };

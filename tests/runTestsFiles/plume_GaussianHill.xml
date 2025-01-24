@@ -3,7 +3,7 @@
     <simDur> 1000 </simDur>
     <timeStep> 1.0 </timeStep>
     <CourantNumber> 0.25 </CourantNumber>
-    <invarianceTol> 1e-10 </invarianceTol>
+    <invarianceTol> 1e-6 </invarianceTol>
     <C_0> 1.0 </C_0>
     <updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop>
     <updateFrequency_timeLoop> 60 </updateFrequency_timeLoop>

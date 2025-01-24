@@ -39,8 +39,8 @@ void GLE_Solver_CPU::solve(Particle *p, float &dt, TURBGeneralData *TGD, PLUMEGe
 {
   bool isRogue = false;
 
-  double txx = 0.0, txy = 0.0, txz = 0.0, tyy = 0.0, tyz = 0.0, tzz = 0.0;
-  double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
+  float txx = 0.0, txy = 0.0, txz = 0.0, tyy = 0.0, tyz = 0.0, tzz = 0.0;
+  float flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
 
   mat3sym tau = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
   vec3 flux_div = { 0.0, 0.0, 0.0 };
@@ -172,8 +172,8 @@ void GLE_Solver_CPU::solve(float &dt,
 {
   bool isRogue = false;
 
-  double txx = 0.0, txy = 0.0, txz = 0.0, tyy = 0.0, tyz = 0.0, tzz = 0.0;
-  double flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
+  float txx = 0.0, txy = 0.0, txz = 0.0, tyy = 0.0, tyz = 0.0, tzz = 0.0;
+  float flux_div_x = 0.0, flux_div_y = 0.0, flux_div_z = 0.0;
 
   mat3sym tau = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
   vec3 flux_div = { 0.0, 0.0, 0.0 };

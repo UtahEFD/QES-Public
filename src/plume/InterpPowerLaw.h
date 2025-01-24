@@ -72,5 +72,5 @@ public:
                                mat3sym &tau_out,
                                vec3 &sig_out) override;
 
-  double getMaxFluctuation();
+  float getMaxFluctuation();
 };

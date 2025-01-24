@@ -49,18 +49,18 @@ private:
   static RandomSingleton *m_the_instance;
 
   bool m_normal_value;
-  double m_remaining_value;
+  float m_remaining_value;
 
   std::default_random_engine prng;
 
   // We must also create a distribution from which to pull the random numbers
-  // we want.  In this case, I would like random integers to be generated 
+  // we want.  In this case, I would like random integers to be generated
   // uniformly from betwen -10000000 and 10000000
-  std::uniform_real_distribution<double> distribution;
+  std::uniform_real_distribution<float> distribution;
 
 public:
   static RandomSingleton *getInstance();
 
-  double uniRan();
-  double norRan();
+  float uniRan();
+  float norRan();
 };

@@ -190,11 +190,11 @@ private:
   int ny{};
   int nz{};// a copy of the wind grid nz value
   // a copy of the wind grid dx, dy, dz value
-  double dx{};
-  double dy{};
-  double dz{};
-  double dxy{};
-  double boxSizeZ{};
+  float dx{};
+  float dy{};
+  float dz{};
+  float dxy{};
+  float boxSizeZ{};
 
   // domain boundary conditions method
   DomainBC *domainBC_x = nullptr;
@@ -202,7 +202,7 @@ private:
   DomainBC *domainBC_z = nullptr;
 
   // time variables
-  double sim_dt = 0.0;// the simulation timestep
+  float sim_dt = 0.0;// the simulation timestep
   QEStime simTimeStart;
   QEStime simTimeCurr;
   int simTimeIdx = 0;
@@ -215,15 +215,15 @@ private:
 public:
   // important time variables not copied from dispersion
   // the Courant number, used to know how to divide up the simulation timestep into smaller per particle timesteps.
-  double CourantNum = 0.0;
-  double vel_threshold = 0.0;
+  float CourantNum = 0.0;
+  float vel_threshold = 0.0;
 
   // this is the total number of particles expected to be released during the simulation
   // !!! this has to be calculated carefully inside the getInputSources() function
   int totalParsToRelease = 0;
 
   // tolerance used to determine whether makeRealizeable should be run on the stress tensor for a particle
-  double invarianceTol = 1.0e-10;
+  float invarianceTol = 1.0e-10;
 
   // used to know how frequently to print out information during the time loop of the solver
   float updateFrequency_timeLoop = 0.0;
@@ -261,10 +261,10 @@ public:
   // this function scrubs the inactive particle for the particle list (particleList)
   // void scrubParticleList();
 
-  static double getMaxVariance(const TURBGeneralData *);
+  static float getMaxVariance(const TURBGeneralData *);
 
   // this function moves (advects) one particle
-  // void advectParticle(double, Particle *, double, WINDSGeneralData *, TURBGeneralData *);
+  // void advectParticle(float, Particle *, double, WINDSGeneralData *, TURBGeneralData *);
 
   // function for calculating the individual particle timestep from the courant number, the current velocity fluctuations,
   // and the grid size. Forces particles to always move only at one timestep at at time.

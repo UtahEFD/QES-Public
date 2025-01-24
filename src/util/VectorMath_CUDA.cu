@@ -68,7 +68,7 @@ __device__ void calcInvariants(const mat3sym &tau, vec3 &invar)
   invar._2 = tau._11 * tau._22 + tau._11 * tau._33 + tau._22 * tau._33
              - (tau._12 * tau._12 + tau._13 * tau._13 + tau._23 * tau._23);
   invar._3 = tau._11 * (tau._22 * tau._33 - tau._23 * tau._23)
-             - tau._12 * (tau._23 * tau._33 - tau._23 * tau._13)
+             - tau._12 * (tau._12 * tau._33 - tau._23 * tau._13)
              + tau._13 * (tau._12 * tau._23 - tau._22 * tau._13);
 }
 

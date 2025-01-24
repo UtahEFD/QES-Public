@@ -49,14 +49,14 @@ Random::Random(long seed)
   prng.seed(seed);
 }
 
-double Random::uniRan()
+float Random::uniRan()
 {
   return distribution(prng);
 }
 
-double Random::norRan()
+float Random::norRan()
 {
-  double rsq, v1, v2;
+  float rsq, v1, v2;
   if (!m_normal_value) {
     do {
       v1 = 2.0 * uniRan() - 1.0;
@@ -85,12 +85,12 @@ double Random::norRan()
 //   std::srand(std::time(0));
 // }
 //
-// double random::uniRan()
+// float random::uniRan()
 //{
-//   return std::rand() / (double)RAND_MAX;
+//   return std::rand() / (float)RAND_MAX;
 // }
 //
-// double random::norRan()
+// float random::norRan()
 //{
 //   float rsq, v1, v2;
 //   if (m_normal_value == false) {
@@ -112,10 +112,10 @@ double Random::norRan()
 //   }
 // }
 //
-// double random::rangen()
+// float random::rangen()
 //{
 //
-//   double x, u, v, w, summ;
+//   float x, u, v, w, summ;
 //
 //   u = uniRan();
 //   if (u <= .8638) {
@@ -161,4 +161,4 @@ double Random::norRan()
 //
 //
 // bool random::m_normal_value;
-// double random::m_remaining_value;
+// float random::m_remaining_value;

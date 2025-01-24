@@ -231,7 +231,7 @@ public:
   {}
   /*
     // initializer
-    Particle(const bool &flag, const ParticleType &type, const double &d_p, const double &m_p, const double &rho_p)
+    Particle(const bool &flag, const ParticleType &type, const float &d_p, const float &m_p, const float &rho_p)
       : particleType(type),
         d(d_p), m(m_p), m_o(m_p), rho(rho_p),
         c1(2.049), c2(1.19), depFlag(flag), decayConst(0.0), wdecay(1.0)
@@ -255,7 +255,7 @@ public:
   vec3 pos_init;
 
   // the time of release for the particle
-  double tStrt{};
+  float tStrt{};
   QEStime timeStrt{};
   // id of particle (for tracking purposes)
   uint32_t ID{};
@@ -299,29 +299,29 @@ public:
   // bool isActive = false;// this is true until it becomes false.
 
   // particle physical property
-  double d;// particle diameter diameter [microns]
-  // double d_m;// particle diameter diameter [m]
-  double m;// particle mass [g]
-  // double m_kg;// particle mass [kg]
-  double m_o;// initial particle mass [g]
-  // double m_kg_o;// initial particle mass [kg]
-  double rho;// density of particle
+  float d;// particle diameter diameter [microns]
+  // float d_m;// particle diameter diameter [m]
+  float m;// particle mass [g]
+  // float m_kg;// particle mass [kg]
+  float m_o;// initial particle mass [g]
+  // float m_kg_o;// initial particle mass [kg]
+  float rho;// density of particle
 
   // deposition variables
-  double c1;// Stk* fit param (exponent)
-  double c2;// Stk* fit param (exponent)
-  // double Sc{};// Schmidt number
-  // double taud{};// characteristic relaxation time [s]
-  // double vd{};// deposition velocity [m/s]
+  float c1;// Stk* fit param (exponent)
+  float c2;// Stk* fit param (exponent)
+  // float Sc{};// Schmidt number
+  // float taud{};// characteristic relaxation time [s]
+  // float vd{};// deposition velocity [m/s]
   bool depFlag;// whether a particle deposits
 
   // deposition container
   bool dep_buffer_flag{};
-  double decayConst;// mass decay constant
+  float decayConst;// mass decay constant
 
   // settling variables (only use as local variables)
-  // double dstar = 0;// dimensionless grain diameter
-  // double Cd = 0;// drag coefficient
+  // float dstar = 0;// dimensionless grain diameter
+  // float Cd = 0;// drag coefficient
   // double wstar = 0;// dimensionless settling velocity
   // double vs = 0;// settling velocity [m/s]
 

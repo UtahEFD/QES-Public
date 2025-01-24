@@ -84,7 +84,7 @@ public:
                                        vec3 &sig_out) = 0;
 
   int getCellId(const float &, const float &, const float &);
-  int getCellId(Vector3Double &);
+  int getCellId(Vector3Float &);
   int getCellId(const vec3 &);
   int getCellId2d(const float &, const float &);
   std::tuple<int, int, int> getCellIndex(const long &);
@@ -134,7 +134,7 @@ inline int Interp::getCellId(const float &xPos, const float &yPos, const float &
   return domain.cell(i, j, k);
 }
 
-inline int Interp::getCellId(Vector3Double &X)
+inline int Interp::getCellId(Vector3Float &X)
 {
   // int i = floor((xPos - xStart + 0.5*dx)/(dx+1e-9));
   // int j = floor((yPos - yStart + 0.5*dy)/(dy+1e-9));

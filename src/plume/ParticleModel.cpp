@@ -279,7 +279,7 @@ void ParticleModel::process(QEStime &timeIn,
   stats->compute(timeIn, dt);
 }
 
-void ParticleModel::advect(const double &total_time_interval,
+void ParticleModel::advect(const float &total_time_interval,
                            WINDSGeneralData *WGD,
                            TURBGeneralData *TGD,
                            PLUMEGeneralData *PGD)
@@ -300,7 +300,7 @@ void ParticleModel::advect(const double &total_time_interval,
       bool isRogue = false;
 
       vec3 pos = particles_core[k].pos;
-      vec3 dist = { 0.0, 0.0, 0.0 };
+      // vec3 dist = { 0.0, 0.0, 0.0 };
       vec3 velMean = { 0.0, 0.0, 0.0 };
 
       float nuT;
@@ -335,7 +335,6 @@ void ParticleModel::advect(const double &total_time_interval,
 
         PGD->interp->interpTurbValues(TGD, pos, tau, flux_div, nuT, CoEps);
 
-
         // now calculate the particle timestep using the courant number, the velocity fluctuation from the last time,
         // and the grid sizes.
         // Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
@@ -359,22 +358,19 @@ void ParticleModel::advect(const double &total_time_interval,
         if (isRogue) {
           // std::cerr << "Particle # " << particles_core[k].ID << " is rogue, ";
           // int cellIdNew = interp->getCellId(xPos,yPos,zPos);
-          std::cerr << "ERROR in Matrix inversion of stress tensor" << std::endl;
-          std::cerr << "Particle # " << particles_core[k].ID << " is rogue " << std::endl;
-
+          // std::cerr << "ERROR in Matrix inversion of stress tensor" << std::endl;
+          // std::cerr << "Particle # " << particles_core[k].ID << " is rogue " << std::endl;
           break;
         }
 
         // these are the random numbers for each direction
 
 #ifdef _OPENMP
-        vec3 vRandn = { static_cast<float>(PGD->threadRNG[omp_get_thread_num()]->norRan()),
-                        static_cast<float>(PGD->threadRNG[omp_get_thread_num()]->norRan()),
-                        static_cast<float>(PGD->threadRNG[omp_get_thread_num()]->norRan()) };
+        vec3 vRandn = { PGD->threadRNG[omp_get_thread_num()]->norRan(),
+                        PGD->threadRNG[omp_get_thread_num()]->norRan(),
+                        PGD->threadRNG[omp_get_thread_num()]->norRan() };
 #else
-        vec3 vRandn = { (float)PGD->RNG->norRan(),
-                        (float)PGD->RNG->norRan(),
-                        (float)PGD->RNG->norRan() };
+        vec3 vRandn = { PGD->RNG->norRan(), PGD->RNG->norRan(), PGD->RNG->norRan() };
 #endif
 
         // now calculate a bunch of values for the current particle
@@ -406,42 +402,55 @@ void ParticleModel::advect(const double &total_time_interval,
         // now prepare for the Ax=b calculation by calculating the inverted A matrix
         isRogue = !VectorMath::invert(A);
         if (isRogue) {
-          std::cerr << "ERROR in matrix inversion in Langevin equation" << std::endl;
-          std::cerr << "Particle # " << particles_core[k].ID << " is rogue " << std::endl;
-          //  isActive = false;
+          // std::cerr << "ERROR in matrix inversion in Langevin equation" << std::endl;
+          // std::cerr << "Particle # " << particles_core[k].ID << " is rogue " << std::endl;
+          // isActive = false;
           break;
         }
 
         // now do the Ax=b calculation using the inverted matrix (vecFluct = A*b)
         VectorMath::multiply(A, b, velFluct);
-
+        
         // now check to see if the value is rogue or not
         if (std::abs(velFluct._1) >= PGD->vel_threshold || isnan(velFluct._1)) {
-          std::cerr << "Particle # " << particles_core[k].ID << " is rogue" << std::endl;
-          // std::cerr << "uFluct = " << p_lsdm.velFluct._1 << ", CoEps = " << p_lsdm.CoEps << std::endl;
-          velFluct._1 = 0.0;
-          // isActive = false;
+          // std::cerr << "Particle # " << particles_core[k].ID << " is rogue" << std::endl;
+          //  std::cerr << "uFluct = " << p_lsdm.velFluct._1 << ", CoEps = " << p_lsdm.CoEps << std::endl;
+          //  velFluct._1 = 0.0;
+          //  isActive = false;
           isRogue = true;
-          break;
+          // break;
         }
         if (std::abs(velFluct._2) >= PGD->vel_threshold || isnan(velFluct._2)) {
-          std::cerr << "Particle # " << particles_core[k].ID << " is rogue" << std::endl;
+          // std::cerr << "Particle # " << particles_core[k].ID << " is rogue" << std::endl;
           // std::cerr << "vFluct = " << p_lsdm.velFluct._2 << ", CoEps = " << p_lsdm.CoEps << std::endl;
-          velFluct._2 = 0.0;
+          // velFluct._2 = 0.0;
           // isActive = false;
           isRogue = true;
-          break;
+          // break;
         }
         if (std::abs(velFluct._3) >= PGD->vel_threshold || isnan(velFluct._3)) {
-          std::cerr << "Particle # " << particles_core[k].ID << " is rogue" << std::endl;
+          // std::cerr << "Particle # " << particles_core[k].ID << " is rogue" << std::endl;
           // std::cerr << "wFluct = " << p_lsdm.velFluct._3 << ", CoEps = " << p_lsdm.CoEps << std::endl;
-          velFluct._3 = 0.0;
+          // velFluct._3 = 0.0;
           // isActive = false;
           isRogue = true;
-          break;
+          // break;
         }
 
         if (isRogue) {
+          /*std::cerr << "---------------------------------------------------------------------------- \n"
+                    << "Particle: " << (isRogue ? "ROGUE" : "ACTIVE") << "\n"
+                    << "ID:   " << particles_core[k].ID << " \n"
+                    << "dt:   " << dt << "\n"
+                    << "x:    " << pos._1 << " " << pos._2 << " " << pos._3 << "\n"
+                    << "U:    " << velMean._1 << " " << velMean._2 << " " << velMean._3 << "\n"
+                    << "u_o:  " << velFluct_old._1 << " " << velFluct_old._2 << " " << velFluct_old._3 << "\n"
+                    << "u:    " << velFluct._1 << " " << velFluct._2 << " " << velFluct._3 << "\n"
+                    << "b:    " << b._1 << " " << b._2 << " " << b._3 << "\n"
+                    << "T:    " << tau._11 << " " << tau._12 << " " << tau._13 << " " << tau._22 << " " << tau._23 << " " << tau._33 << "\n"
+                    << "dTdt: " << tau_ddt._11 << " " << tau_ddt._12 << " " << tau_ddt._13 << " " << tau_ddt._22 << " " << tau_ddt._23 << " " << tau_ddt._33 << "\n"
+                    << "fdiv: " << flux_div._1 << " " << flux_div._2 << " " << flux_div._3 << "\n"
+                    << "----------------------------------------------------------------------------" << std::endl;*/
           break;
         }
 
@@ -479,7 +488,7 @@ void ParticleModel::advect(const double &total_time_interval,
         // now update the old values to be ready for the next particle time iteration
         // the current values are already set for the next iteration by the above calculations
         // !!! this is extremely important for the next iteration to work accurately
-        // delta_velFluct = VectorMath::subtract(velFluct, velFluct_old);
+        delta_velFluct = VectorMath::subtract(velFluct, velFluct_old);
 
         velFluct_old = velFluct;
 
@@ -497,7 +506,7 @@ void ParticleModel::advect(const double &total_time_interval,
 
       particles_lsdm[k].CoEps = CoEps;
       particles_lsdm[k].velMean = velMean;
-      particles_lsdm[k].delta_velFluct = VectorMath::subtract(particles_lsdm[k].velFluct, particles_lsdm[k].velFluct_old);
+      particles_lsdm[k].delta_velFluct = delta_velFluct;
       particles_lsdm[k].velFluct = velFluct;
       particles_lsdm[k].velFluct_old = velFluct_old;
       particles_lsdm[k].delta_velFluct = delta_velFluct;
@@ -510,8 +519,8 @@ void ParticleModel::advect(const double &total_time_interval,
 
     } catch (const std::out_of_range &oor) {
       // cell ID out of bound (assuming particle outside of domain)
-      std::cerr << "Particle: " << particles_core[k].ID << " state: " << particles_control[k].state << "\n"
-                << particles_core[k].pos._1 << " " << particles_core[k].pos._2 << " " << particles_core[k].pos._3 << std::endl;
+      /*std::cerr << "Particle: " << particles_core[k].ID << " state: " << particles_control[k].state << "\n"
+                << particles_core[k].pos._1 << " " << particles_core[k].pos._2 << " " << particles_core[k].pos._3 << std::endl;*/
       particles_control[k].state = INACTIVE;
     }
 
