@@ -40,7 +40,6 @@
 #include "winds/DTEHeightField.h"
 #include "ignition.h"
 
-
 class Fires : public ParseInterface
 {
 private:
@@ -66,13 +65,11 @@ public:
     }
   }
 
-
   void parseTree(pt::ptree t)
   {
     setTree(t);
     setParents("root");
     parseValues();
-
   }
 };
 #endif

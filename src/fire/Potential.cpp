@@ -152,8 +152,8 @@ void Fire ::potential(WINDSGeneralData *WGD)
                         // Loop through vertical levels
                         for (int kpot = mixIDX_old; kpot < kmax; kpot++) {
                             // Calculate virtual origin
-                            float z_v = dx * filt * 0.124 / alpha_e + firek;///< virtual origin for merged plumes
-                            float z_k = (kpot + z_v) * dz / L_c;///< non-dim vertical distance between fire cell and target cell k
+                            float z_v = -0.2869 * dx * filt * lambda_mix + firek;///< virtual origin for merged plumes
+                            float z_k = (kpot * dz - z_v)  / L_c;///< non-dim vertical distance between fire cell and target cell k
                             if (z_k < 0) {
                                 z_k = 0;
                             }

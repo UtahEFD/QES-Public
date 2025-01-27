@@ -46,7 +46,6 @@ using std::vector;
 using std::cout;
 using std::to_string;
 
-
 #define cudaCheck(x) _cudaCheck(x, #x, __FILE__, __LINE__)
 
 template<typename T>
@@ -57,7 +56,6 @@ void _cudaCheck(T e, const char *func, const char *call, const int line)
     exit(EXIT_FAILURE);
   }
 }
-
 
 // Fire-Induced Potential kernal
 __global__ 
@@ -70,33 +68,28 @@ void PotGlob(
     int pot_r, int pot_G, float z_v, float U_c, float L_c,
     float* d_Pot_u, float* d_Pot_v, float* d_Pot_w
 ) {
-    //int cell_cent = blockDim.x * blockIdx.x + threadIdx.x;
-
-    //int kpot = cell_cent / ((nx - 1) * (ny - 1));
-    //int jpot = (cell_cent - kpot * (nx - 1) * (ny - 1)) / (nx - 1);
-    //int ipot = cell_cent - kpot * (nx - 1) * (ny - 1) - jpot * (nx - 1);
-
     int ipot = blockDim.x * blockIdx.x + threadIdx.x;
     int jpot = blockDim.y * blockIdx.y + threadIdx.y;
     int kpot = blockDim.z * blockIdx.z + threadIdx.z;
 
-    if (ipot >= nx - 1 || jpot >= ny - 1) return;
+    float d_u_p = 0.0;
+    float d_v_p = 0.0;
+    float d_w_p = 0.0;
+    float ur = 0.0;
+    float uz = 0.0;
 
+    if (ipot >= nx - 1 || jpot >= ny - 1) return;
     if (kpot > mixIDX_old && kpot <= kmax){
 
-    float z_k = (kpot + z_v) * dz / L_c;///< non-dim vertical distance between fire cell and target cell k
+    float z_k = (kpot*dz - z_v) / L_c;
     if (z_k < 0) {
         z_k = 0;
     }
 
     float deltaX = (ipot - firei) * dx / L_c;///< non-dim distance between fire cell and target cell k in x direction
     float deltaY = (jpot - firej) * dy / L_c;///< non-dim distance between fire cell and target cell k in y direction
-    float h_k = sqrt(deltaX * deltaX + deltaY * deltaY);///< non-dim radial distance from fire cell and target cell k in horizontal
-    float d_u_p = 0.0;
-    float d_v_p = 0.0;
-    float d_w_p = 0.0;
-    float ur = 0.0;
-    float uz = 0.0;
+    float h_k = sqrtf(deltaX * deltaX + deltaY * deltaY);///< non-dim radial distance from fire cell and target cell k in horizontal
+    
     // if radius = 0
     if (h_k < 0.00001 && z_k < 60) {
         int zMinIdx = floor(z_k / dzStar);
@@ -119,27 +112,27 @@ void PotGlob(
         d_u_p = U_c * ur * deltaX / h_k;
         d_v_p = U_c * ur * deltaY / h_k;
         d_w_p = U_c * uz;
-    } else {
-        float zeta = sqrt(h_k * h_k + z_k * z_k);
+    } 
+    else {
+        float zeta = sqrtf(h_k * h_k + z_k * z_k);
         //float x1 = (1 + cos(atan(h_k / z_k))) / 2.0; 
-        float x1 = (1 + (1 / sqrt((h_k / z_k) * (h_k / z_k) + 1))) / 2.0;
+        float x1 = (1 + (1 / sqrtf((h_k / z_k) * (h_k / z_k) + 1))) / 2.0;
         // lookup indices for G(x) and G'(x) - spans 0.5 to 1.0
         int gMinIdx = floor(pot_G * (x1 - .5) / .5);
         int gMaxIdx = ceil(pot_G * (x1 - .5) / .5);
         // values for G and G'
         float g_x = 0.5 * (d_G[gMinIdx] + d_G[gMaxIdx]);
         float gprime_x = 0.5 * (d_Gprime[gMinIdx] + d_Gprime[gMaxIdx]);
-        ur = h_k / (2 * M_PI * pow(h_k * h_k + z_k * z_k, (3 / 2.0))) + 
-            pow(zeta, (-1 / 3.0)) * ((5 / 6.0) * (1 - 2 * x1) / sqrt(x1 * (1 - x1)) * g_x - sqrt(x1 * (1 - x1)) * gprime_x);
-        uz = z_k / (2 * M_PI * pow(h_k * h_k + z_k * z_k, (3 / 2.0))) + 
-            pow(zeta, (-1 / 3.0)) * ((5 / 3.0) * g_x + (1 - 2 * x1) / 2.0 * gprime_x);
+        ur = h_k / (2 * M_PI * powf(h_k * h_k + z_k * z_k, (3 / 2.0))) + 
+            powf(zeta, (-1 / 3.0)) * ((5 / 6.0) * (1 - 2 * x1) / sqrtf(x1 * (1 - x1)) * g_x - sqrtf(x1 * (1 - x1)) * gprime_x);
+        uz = z_k / (2 * M_PI * powf(h_k * h_k + z_k * z_k, (3 / 2.0))) + 
+            powf(zeta, (-1 / 3.0)) * ((5 / 3.0) * g_x + (1 - 2 * x1) / 2.0 * gprime_x);
         if (h_k != 0) {
             d_u_p = U_c * ur * deltaX / h_k;
             d_v_p = U_c * ur * deltaY / h_k;
         }
         d_w_p = U_c * uz;
     }
-
     // modify potential fields
 	int cellCentPot = ipot + jpot * (nx - 1) + (kpot) * (nx - 1) * (ny - 1);
     
@@ -149,7 +142,6 @@ void PotGlob(
 
     }
 }
-
 
 // Main function
 void Fire ::potentialGlobal(WINDSGeneralData *WGD)
@@ -161,7 +153,6 @@ void Fire ::potentialGlobal(WINDSGeneralData *WGD)
     float rhoAir = 1.125;
     float C_pa = 1150;
     float T_a = 293.15;
-
     float alpha_e = 0.09;///< entrainment constant (Kaye & Linden 2004)
     float lambda_mix = 1 / alpha_e * sqrt(25.0 / 132.0);///< nondimensional plume mixing height
     float U_c;      ///<characteristic velocity 
@@ -174,13 +165,6 @@ void Fire ::potentialGlobal(WINDSGeneralData *WGD)
     std::fill(Pot_u.begin(), Pot_u.end(), 0);
     std::fill(Pot_v.begin(), Pot_v.end(), 0);
     std::fill(Pot_w.begin(), Pot_w.end(), 0);
-
-
-    int testx = 285;
-    int testy = 285;
-    int testz = 7;
-    int testidx = testx + testy * (nx-1) + testz * (nx-1) * (ny-1);
-    std::cout << " Start:: Pot_v [" << testx << "][" << testy << "][" << testz << "] = " << Pot_v[testidx] << std::endl;
 
     // allocate and copy potential velocity variables
     cudaMalloc((void **)&d_u_r, pot_r*pot_z * sizeof(float));
@@ -212,8 +196,6 @@ void Fire ::potentialGlobal(WINDSGeneralData *WGD)
             z_mix[id] = WGD->terrain_id[id];
         }
     }
-    
-    // loop through burning cells to get heat release
 
     int icent = 0;
     int jcent = 0;
@@ -267,6 +249,7 @@ void Fire ::potentialGlobal(WINDSGeneralData *WGD)
                     firej = jcent / counter;
                     U_c = pow(g * g * H / rhoAir / T_a / C_pa, 1.0 / 5.0);
                     L_c = pow(H / rhoAir / C_pa / T_a / pow(g, 1.0 / 2.0), 2.0 / 5.0);
+                    
                     firek = k_fire / counter;
                     mixIDX_old = floor(k_fire_old / counter);
                     mixIDX = ceil((lambda_mix * dx * filt)/dz + k_fire);
@@ -278,13 +261,8 @@ void Fire ::potentialGlobal(WINDSGeneralData *WGD)
                     }
                     kmax = nz - 3 > mixIDX ? mixIDX : nz - 3;
 
-                    // Loop through vertical levels
-
                     // Calculate virtual origin
-                    float z_v = dx * filt * 0.124 / alpha_e + firek;///< virtual origin for merged plumes
-            
-                    //dim3 threadsPerBlock(BLOCKSIZE, 1, 1);
-                    //dim3 numBlocks(ceil(((WGD->nx - 1) * (WGD->ny - 1) * (WGD->nz -1)) / (float)(BLOCKSIZE)), 1, 1);
+                    float z_v = -0.2869 * dx * filt * lambda_mix + firek;
                     
                     dim3 threadsPerBlock(32,32,1);
                     dim3 numBlocks(ceil(WGD->nx/16), ceil(WGD->ny/16), ceil(WGD->nz)/1);
@@ -311,19 +289,7 @@ void Fire ::potentialGlobal(WINDSGeneralData *WGD)
     cudaMemcpy(Pot_u.data(), d_Pot_u, gridSize * sizeof(float), cudaMemcpyDeviceToHost);
     cudaMemcpy(Pot_v.data(), d_Pot_v, gridSize * sizeof(float), cudaMemcpyDeviceToHost);
     cudaMemcpy(Pot_w.data(), d_Pot_w, gridSize * sizeof(float), cudaMemcpyDeviceToHost);
-    
-    std::cout << " End:: Pot_v [" << testx << "][" << testy << "][" << testz << "] = " << Pot_v[testidx] << std::endl; 
-    int TestCount = 0;
-    for (int ii = 0; ii < nx - 1; ii++) {
-        for (int jj = 0; jj < ny - 1; jj++) {
-            int id = ii + jj * (nx - 1);
-            if (burn_flag[id] == 1) {
-                TestCount += 1;
 
-            }
-        }
-    } 
-    std::cout << "Number of burning cells: " << TestCount << std::endl;
     // Modify u,v,w in solver - superimpose Potential field onto velocity field (interpolate from potential cell centered values)
     for (int iadd = 1; iadd < nx - 1; iadd++) {
         for (int jadd = 1; jadd < ny - 1; jadd++) {

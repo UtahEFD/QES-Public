@@ -40,7 +40,6 @@ FuelRead::FuelRead(const std::string &filename,
                    std::tuple<int, int> dim,
                    std::tuple<float, float> cellSize)
 {
-
   int nx = get<0>(dim);
   int ny = get<1>(dim);
   float dx = get<0>(cellSize);
@@ -76,7 +75,6 @@ FuelRead::FuelRead(const std::string &filename,
   std::cout << "Fuel Pixel Size = (" << X_pixel << "," << Y_pixel << ")" << std::endl;
   std::cout << "Fuel file size is " << NCOLS << "x" << NROWS << std::endl;
 
-
   int idx;
   int rasterData;
   fuelField.resize((nx) * (ny));
@@ -87,17 +85,14 @@ FuelRead::FuelRead(const std::string &filename,
   rasterCount.resize(ceil(xStride) * ceil(yStride));
   int n = rasterCount.size();
   int countIDX = 0;
-
   int xpix;
   int ypix;
-
 
   for (int j = 0; j < ny; j++) {
     for (int i = 0; i < nx; i++) {
 
       idx = i + (ny - 1 - j) * (nx);
       rasterData = 0;
-
 
       if (xStride < 1) {
         std::fill(rasterCount.begin(), rasterCount.end(), 0);
@@ -111,7 +106,6 @@ FuelRead::FuelRead(const std::string &filename,
             rasterCount[countIDX] = rasterBandData[ypix][xpix];
           }
         }
-
 
         // variable to store max of
         // input array which will

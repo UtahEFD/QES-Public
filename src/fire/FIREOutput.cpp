@@ -79,15 +79,6 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd, Fire *fire, std::string output_fil
 
   std::cout << "dimensions added" << std::endl;
 
-
-  /*
-    // create attributes for time dimension
-    std::vector<NcDim> dim_vect_tstr;
-    dim_vect_tstr.push_back(NcDim_t);
-    dim_vect_tstr.push_back(NcDim_tstr);
-    createAttVector("times", "date time", "-", dim_vect_tstr, &timestamp);
-    */
-
   // create attributes space dimensions
   std::vector<NcDim> dim_vect_x;
   dim_vect_x.push_back(NcDim_x);
@@ -98,14 +89,6 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd, Fire *fire, std::string output_fil
   std::vector<NcDim> dim_vect_z;
   dim_vect_z.push_back(NcDim_z);
   createAttVector("z", "z-distance", "m", dim_vect_z, &z_out);
-
-
-  /*
-    // create attributes for time dimension
-    std::vector<NcDim> dim_vect_t;
-    dim_vect_t.push_back(NcDim_t);
-    createAttScalar("t_f","time","s",dim_vect_t,&time);
-    */
 
   // create 2D vector (x,y- time independent)
   std::vector<NcDim> dim_vect_2d;
@@ -143,7 +126,6 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd, Fire *fire, std::string output_fil
   addOutputFields();
 }
 
-
 // Save output at cell-centered values
 void FIREOutput::save(QEStime timeOut)
 {
@@ -154,7 +136,6 @@ void FIREOutput::save(QEStime timeOut)
 
   // set time
   timeCurrent = timeOut;
-
 
   // get cell-centered values
   for (auto k = 1; k < nz - 1; k++) {

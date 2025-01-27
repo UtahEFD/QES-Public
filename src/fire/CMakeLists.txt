@@ -20,8 +20,6 @@ SET( qesFireCoreSources
   Move.cpp
   OldFuelProperties.hpp
   Potential.cpp
-  PotentialGlobal.cu
-  PotentialGlobal.h  
   Rothermel.cpp
   Smoke.cpp
   Smoke.h 
@@ -38,3 +36,19 @@ ELSE ($CACHE{HAS_CUDA_SUPPORT})
             ${qesFireCoreSources}
             )
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
+
+IF ($CACHE{HAS_CUDA_SUPPORT})
+  CUDA_ADD_LIBRARY(qesfiregpu
+  PotentialGlobal.cu
+  PotentialGlobal.h)
+ENDIF ($CACHE{HAS_CUDA_SUPPORT})
+
+IF ($CACHE{HAS_OPTIX_SUPPORT})
+  cuda_compile_and_embed(embedded_ptx_code OptixRayTrace.cu)
+ 
+  add_library(qesOptix
+    ${embedded_ptx_code}
+    OptixRayTrace.h
+    OptixRayTrace.cpp
+    )  
+ENDIF ($CACHE{HAS_OPTIX_SUPPORT})

@@ -39,7 +39,6 @@ public:
 
   virtual void parseValues()
   {
-
     parsePrimitive<float>(true, height, "height");
     parsePrimitive<float>(true, baseHeight, "baseHeight");
     parsePrimitive<float>(true, xStart, "xStart");

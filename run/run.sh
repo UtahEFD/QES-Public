@@ -1,1 +1,1 @@
-./../build/qesFire/qesFire -q ../data/InputFiles/BMRA_5.xml -s 3 -o ../../QESOutput/BMRA/test -b
+./../build/qesFire/qesFire -q ../data/InputFiles/BMRA_30.xml -s 3 -o ../../QESOutput/BMRA/GPU_30m -b

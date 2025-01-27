@@ -54,7 +54,6 @@ public:
 
   void save(QEStime);
 
-
 private:
   // data container for output (on cell-center without ghost cell)
   std::vector<float> x_out, y_out, z_out;

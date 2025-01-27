@@ -59,9 +59,7 @@ void Fire ::FuelMap(WINDSInputData *WID, WINDSGeneralData *WGD)
 
         fID = Fuel_read->fuelField[idx];
         fuel_map[idx] = fID;
-
         fuelID = fID;
-        //std::cout<<"fuel["<<i<<"]["<<j<<"] = "<<fuelID<<std::endl;
 
         if (fuelID == 1)
           fire_cells[idx].fuel = new ShortGrass();

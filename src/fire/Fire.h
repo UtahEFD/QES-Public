@@ -92,17 +92,11 @@ public:
   int FFII_flag = 0;
 
   std::vector<FireCell> fire_cells;
-
   std::vector<float> w_base;
-
   std::vector<float> front_map;
-
   std::vector<float> del_plus;
-
   std::vector<float> del_min;
-
   std::vector<float> xNorm;
-
   std::vector<float> yNorm;
   std::vector<float> slope_x;
   std::vector<float> slope_y;
@@ -168,7 +162,6 @@ private:
 
   FireProperties balbi(FuelProperties *, float, float, float, float, float, float, float);
   
-
   FireProperties runFire(float, float, int);
 };
 

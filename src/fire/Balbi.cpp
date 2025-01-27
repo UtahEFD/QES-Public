@@ -81,7 +81,6 @@ struct Fire::FireProperties Fire ::balbi(FuelProperties *fuel, float u_mid, floa
 	    float transfer = liveHerb * (1.20 - cure) / .90;
         float sigma = (oneHour + transfer)* 0.2471;///< dead fine fuel load [kg/m^2]
         float sigmaT = fgi;///< total fine fuel load [kg/m^2]
-        //float rhoFuel  = 1500;                    ///< fuel density [kg/m^3]
         float T_i = 600;///< ignition temp [k]
 
         // model parameters

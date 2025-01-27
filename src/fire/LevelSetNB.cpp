@@ -131,7 +131,6 @@ void Fire ::LevelSetNB(WINDSGeneralData *WGD)
 	        yNorm[idx] = n_star_y / sqrt(n_star_x * n_star_x + n_star_y * n_star_y);
 	      }
 
-
 	      // get horizontal wind at flame height
 	      int cell_face = m + n * nx + (kh) * ny * nx;
 	      float u = 0.5 * (WGD->u[cell_face] + WGD->u[cell_face + 1]);
@@ -150,8 +149,5 @@ void Fire ::LevelSetNB(WINDSGeneralData *WGD)
 	    WGD->icellflag[icell_cent] = 12;
 	  }
   }
-
-  
-
   std::vector<int>().swap(cells_burning);
 }

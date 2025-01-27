@@ -32,36 +32,27 @@
 #include <cstdlib>
 #include <cstdio>
 #include <algorithm>
-
-
 #include <boost/foreach.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-
 #include "util/calcTime.h"
-
 #include "plume/PlumeInputData.hpp"
 #include "util/NetCDFInput.h"
 #include "plume/Plume.hpp"
 #include "plume/PlumeOutput.h"
 #include "plume/PlumeOutputParticleData.h"
-
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
 #include "util/QESout.h"
 #include "util/QESNetCDFOutput.h"
-
 #include "handleQESArgs.h"
-
 #include "winds/WINDSInputData.h"
 #include "winds/WINDSGeneralData.h"
 #include "winds/WINDSOutputVisualization.h"
 #include "winds/WINDSOutputWorkspace.h"
-
 #include "winds/TURBGeneralData.h"
 #include "winds/TURBOutput.h"
-
 #include "winds/Solver.h"
 #include "winds/CPUSolver.h"
 #include "winds/Solver_CPU_RB.h"
@@ -81,7 +72,6 @@ namespace pt = boost::property_tree;
 
 using namespace boost::gregorian;
 using namespace boost::posix_time;
-
 using namespace netCDF;             //plume
 using namespace netCDF::exceptions; //plume
 
@@ -181,32 +171,31 @@ int main(int argc, char *argv[])
   // /////////////////////////////
 
   /** 
-     * Create Fire Map
-     **/
+   * Create Fire Map
+   **/
 
   Fire *fire = new Fire(WID, WGD);
   /**
    * Set fuel map
-   */
+   **/
   fire->FuelMap(WID, WGD);
 
   /**
-     * Create FIREOutput manager
-     **/
+   * Create FIREOutput manager
+   **/
 
   std::vector<QESNetCDFOutput *> outFire;
   outFire.push_back(new FIREOutput(WGD, fire, arguments.netCDFFileFireOut));
 
-
   /**
-     * Time variables to track fire time and sensor timesteps
-     **/
+   * Time variables to track fire time and sensor timesteps
+   **/
   QEStime simTimeStart = WGD->timestamp[0];
   QEStime simTimeCurr = simTimeStart;
 
   /**
    * Temporay velocity arrays to hold initial wind field data per sensor time series
-   */
+   **/
   std::vector<float> Fu0((WGD->nx)*(WGD->ny)*(WGD->nz),0.0);
   std::vector<float> Fv0((WGD->nx)*(WGD->ny)*(WGD->nz),0.0);
   std::vector<float> Fw0((WGD->nx)*(WGD->ny)*(WGD->nz),0.0);
@@ -255,30 +244,30 @@ int main(int argc, char *argv[])
     std::cout << "----------------------------------------" << std::endl;
 
     /**
-       * Reset icellflag values
-       **/
+     * Reset icellflag values
+     **/
     WGD->resetICellFlag();
 
     /**
-       * Create initial velocity field from the new sensors
-       **/
+     * Create initial velocity field from the new sensors
+     **/
     WGD->applyWindProfile(WID, index, arguments.solveType);
 
     /** 
-       * Apply parametrizations
-       **/
+     * Apply parametrizations
+     **/
     WGD->applyParametrizations(WID);
 
     /**
-       * Run WINDS simulation code
-       **/
+     * Run WINDS simulation code
+     **/
     solver->solve(WID, WGD, !arguments.solveWind);
 
     std::cout << "Solver done!\n";
 
     /**
-       * Run turbulence if specified
-       **/
+     * Run turbulence if specified
+     **/
    
     if (TGD != nullptr) {
       TGD->run();
@@ -286,11 +275,11 @@ int main(int argc, char *argv[])
     }
    
     /**
-       * Save initial fields from sensor time to reset after each time+fire loop
-       **/
-      Fu0 = WGD->u0;
-      Fv0 = WGD->v0;
-      Fw0 = WGD->w0;
+     * Save initial fields from sensor time to reset after each time+fire loop
+     **/
+    Fu0 = WGD->u0;
+    Fv0 = WGD->v0;
+    Fw0 = WGD->w0;
 
     simTimeCurr = WGD->timestamp[index];///< Simulation time for current sensor time
     QEStime endtime;///< End time for fire time loop
@@ -303,42 +292,17 @@ int main(int argc, char *argv[])
     }
 
     /**
-       * Fire time loop for current sensor time
-       **/
+     * Fire time loop for current sensor time
+     **/
 
     while (simTimeCurr < endtime) {
-          /**
-       * Reset icellflag values
-       **/
-      //WGD->resetICellFlag();
 
-      /**
-       * Create initial velocity field from the new sensors
-       **/
-    //WGD->applyWindProfile(WID, index, arguments.solveType);
-
-      /**
-       * Run WINDS simulation code
-       **/
-    //solver->solve(WID, WGD, !arguments.solveWind);
-
-    //std::cout << "Solver done!\n";
-
-    /**
-       * Run turbulence if specified
-       **/
-   
-    //if (TGD != nullptr) {
-      //TGD->run();
-     //std::cout << "Turbulance calculated\n";
-    //}
-
-    /** 
-     * load initial velocity for current sensor series
-     */
-    WGD->u0 = Fu0;
-    WGD->v0 = Fv0;
-    WGD->w0 = Fw0;
+      /** 
+       * load initial velocity for current sensor series
+       */
+      WGD->u0 = Fu0;
+      WGD->v0 = Fv0;
+      WGD->w0 = Fw0;
 
       // Run fire induced winds (default) if flag is not set
       if(!arguments.fireWindsFlag){
@@ -351,15 +315,15 @@ int main(int argc, char *argv[])
         /**
         * Calculate fire-induced winds from burning cells
         **/
-       if (potFLAG == 1){
-        std::cout << "GPU POTENTIAL" << std::endl;
-        fire->potentialGlobal(WGD);
-       } else {
-        std::cout << "Serial POTENTIAL" << std::endl;
-        fire->potential(WGD);
-       }
+        if (potFLAG == 1){
+          std::cout << "GPU POTENTIAL" << std::endl;
+          fire->potentialGlobal(WGD);
+        } else {
+          std::cout << "Serial POTENTIAL" << std::endl;
+          fire->potential(WGD);
+        }
       }
-       /** 
+      /** 
        * Apply parameterizations
        **/
       WGD->applyParametrizations(WID);
