@@ -135,6 +135,10 @@ void Fire ::move(WINDSGeneralData *WGD)
         fire_cells[idx].state.burn_flag = 2;
         Force[idx] = 0;
         H0[idx] = 0;
+        for (int k = TID; k <= maxkh; k++){
+          int icell_cent = i + j * (nx - 1) + (k) * (nx - 1) * (ny - 1);
+	        WGD->icellflag[icell_cent] = 1;
+        }
         // Need to fix where z0 is reset MM
         //WGD->z0_domain[idx] = 0.01;
       }

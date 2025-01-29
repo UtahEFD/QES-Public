@@ -143,11 +143,41 @@ void PotGlob(
     }
 }
 
+__global__ 
+void PotSuperposition(
+    int nx, int ny, int nz,
+    float* d_Pot_u, float* d_Pot_v, float* d_Pot_w,
+    float* d_u0, float* d_v0, float* d_w0,
+    int* d_icellflag
+){
+    int iadd = blockDim.x * blockIdx.x + threadIdx.x;
+    int jadd = blockDim.y * blockIdx.y + threadIdx.y;
+    int kadd = blockDim.z * blockIdx.z + threadIdx.z;
+
+    if (iadd >= nx - 1 || iadd < 1) return;
+    if (jadd >= ny - 1 || jadd < 1) return;
+    if (kadd >= nz - 2 || kadd < 1) return;
+
+    int cell_face = iadd + jadd * nx + (kadd - 1) * nx * ny;
+    int cell_cent = iadd + jadd * (nx - 1) + (kadd - 1) * (nx - 1) * (ny - 1);
+
+    if (d_icellflag[cell_cent] == 12 or d_icellflag[cell_cent] == 1) {
+        float u_p = 0.5 * (d_Pot_u[cell_cent] + d_Pot_u[cell_cent + 1]);
+        float v_p = 0.5 * (d_Pot_v[cell_cent] + d_Pot_v[cell_cent + (nx - 1)]);
+        float w_p = 0.5 * (d_Pot_w[cell_cent] + d_Pot_w[cell_cent + (nx - 1) * (ny - 1)]);
+
+        atomicAdd(&d_u0[cell_face], u_p);
+        atomicAdd(&d_v0[cell_face], v_p);
+        atomicAdd(&d_w0[cell_face], w_p);
+    }
+
+}
 // Main function
 void Fire ::potentialGlobal(WINDSGeneralData *WGD)
 {
     auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
     const int gridSize = (nx - 1) * (ny - 1) * (nz - 1);    ///< 3D grid size
+    const int faceSize = nx * ny * nz;
 
     float g = 9.81;
     float rhoAir = 1.125;
@@ -168,12 +198,12 @@ void Fire ::potentialGlobal(WINDSGeneralData *WGD)
 
     // allocate and copy potential velocity variables
     cudaMalloc((void **)&d_u_r, pot_r*pot_z * sizeof(float));
-    cudaMemcpy(d_u_r, u_r.data(), pot_r*pot_z * sizeof(float), cudaMemcpyHostToDevice);
     cudaMalloc((void **)&d_u_z, pot_r*pot_z * sizeof(float));
-    cudaMemcpy(d_u_z, u_z.data(), pot_r*pot_z * sizeof(float), cudaMemcpyHostToDevice);
     cudaMalloc((void **)&d_G, pot_G * sizeof(float));
-    cudaMemcpy(d_G, G.data(), pot_G * sizeof(float), cudaMemcpyHostToDevice);
     cudaMalloc((void **)&d_Gprime, pot_G * sizeof(float));
+    cudaMemcpy(d_u_r, u_r.data(), pot_r*pot_z * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_u_z, u_z.data(), pot_r*pot_z * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_G, G.data(), pot_G * sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(d_Gprime, Gprime.data(), pot_G * sizeof(float), cudaMemcpyHostToDevice);
     
     // allocate and initialize potential velocity on device
@@ -183,7 +213,19 @@ void Fire ::potentialGlobal(WINDSGeneralData *WGD)
     cudaMemcpy(d_Pot_u, Pot_u.data(), gridSize * sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(d_Pot_v, Pot_v.data(), gridSize * sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(d_Pot_w, Pot_w.data(), gridSize * sizeof(float), cudaMemcpyHostToDevice);
-    
+
+    // allocate and initialize V0 velocity field
+    cudaMalloc((void **)&d_u0, faceSize * sizeof(float));
+    cudaMalloc((void **)&d_v0, faceSize * sizeof(float));
+    cudaMalloc((void **)&d_w0, faceSize * sizeof(float));
+    cudaMemcpy(d_u0, WGD->u0.data(), faceSize * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_v0, WGD->v0.data(), faceSize * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_w0, WGD->w0.data(), faceSize * sizeof(float), cudaMemcpyHostToDevice);
+
+    // allocate and initialize icellflag on device
+    cudaMalloc((void **)&d_icellflag, gridSize * sizeof(int));
+    cudaMemcpy(d_icellflag, WGD->icellflag.data(), gridSize * sizeof(int), cudaMemcpyHostToDevice);
+
     /**
      * Calculate Potential field based on heat release
      * Baum and McCaffrey plume model
@@ -285,26 +327,20 @@ void Fire ::potentialGlobal(WINDSGeneralData *WGD)
         }   
     }
   
-    // Copy potential velocity from device to host
-    cudaMemcpy(Pot_u.data(), d_Pot_u, gridSize * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(Pot_v.data(), d_Pot_v, gridSize * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(Pot_w.data(), d_Pot_w, gridSize * sizeof(float), cudaMemcpyDeviceToHost);
+    dim3 threadsPerBlock(32,32,1);
+    dim3 numBlocks(ceil(WGD->nx/16), ceil(WGD->ny/16), ceil(WGD->nz)/1);
 
-    // Modify u,v,w in solver - superimpose Potential field onto velocity field (interpolate from potential cell centered values)
-    for (int iadd = 1; iadd < nx - 1; iadd++) {
-        for (int jadd = 1; jadd < ny - 1; jadd++) {
-            for (int kadd = 1; kadd < nz - 2; kadd++) {
-                int cell_face = iadd + jadd * nx + (kadd - 1) * nx * ny;
-                int cell_cent = iadd + jadd * (nx - 1) + (kadd - 1) * (nx - 1) * (ny - 1);
-                if (WGD->icellflag[cell_cent] == 12 or WGD->icellflag[cell_cent] == 1) {
-                    WGD->u0[cell_face] = WGD->u0[cell_face] + 0.5 * (Pot_u[cell_cent] + Pot_u[cell_cent + 1]);
-                    WGD->v0[cell_face] = WGD->v0[cell_face] + 0.5 * (Pot_v[cell_cent] + Pot_v[cell_cent + (nx - 1)]);
-                    WGD->w0[cell_face] = WGD->w0[cell_face] + 0.5 * (Pot_w[cell_cent] + Pot_w[cell_cent + (nx - 1) * (ny - 1)]);
-                }
-            }
-        }
-    }
-    
+    PotSuperposition<<<numBlocks, threadsPerBlock>>>(
+        nx, ny, nz,
+        d_Pot_u, d_Pot_v, d_Pot_w,
+        d_u0, d_v0, d_w0,
+        d_icellflag
+    );
+
+    cudaMemcpy(WGD->u0.data(), d_u0, faceSize * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(WGD->v0.data(), d_v0, faceSize * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(WGD->w0.data(), d_w0, faceSize * sizeof(float), cudaMemcpyDeviceToHost);
+
     // Free memory
     cudaFree(d_Pot_u);
     cudaFree(d_Pot_v);
@@ -313,6 +349,9 @@ void Fire ::potentialGlobal(WINDSGeneralData *WGD)
     cudaFree(d_u_z);
     cudaFree(d_G);
     cudaFree(d_Gprime);
+    cudaFree(d_u0);
+    cudaFree(d_v0);
+    cudaFree(d_w0);
 
     auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
     std::chrono::duration<float> elapsed = finish - start;
