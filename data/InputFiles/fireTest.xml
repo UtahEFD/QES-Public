@@ -3,7 +3,7 @@
   	<halo_x> 16.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 16.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
     <domain> 110 110 125 </domain> <!-- nx,ny,nz-->
-	<cellSize> 15.5 15.5 0.5 </cellSize> <!-- dx, dy,dz [Meters]-->	
+	<cellSize> 1 1 1 </cellSize> <!-- dx, dy,dz [Meters]-->	
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 3 </totalTimeIncrements>
 	<!--UTCConversion> 0 </UTCConversion -->

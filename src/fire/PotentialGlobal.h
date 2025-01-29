@@ -41,7 +41,7 @@
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
 
-#include "fire.h"
+#include "Fire.h"
 
 template<typename T>
   void _cudaCheck(T e, const char *func, const char *call, const int line);

@@ -2,8 +2,8 @@
 <simulationParameters>       
   	<halo_x> 0 </halo_x >						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 0 </halo_y >						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
-    <domain> 100 100 35 </domain> <!-- nx,ny,nz-->
-	<cellSize> 5 5 1 </cellSize> <!-- dx, dy,dz [Meters]-->	
+    <domain> 100 100 20 </domain> <!-- nx,ny,nz-->
+	<cellSize> 1 1 1 </cellSize> <!-- dx, dy,dz [Meters]-->	
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 1 </totalTimeIncrements>
 	<maxIterations> 500 </maxIterations>
@@ -34,7 +34,7 @@
 </turbParams>
 
 <fires>
-	<fireDur> 100 </fireDur>
+	<fireDur> 1000 </fireDur>
 	<fuelType> 106 </fuelType>
 	<!--fuelMap>../FireFiles/test.tif</fuelMap-->
 	<fmc> 0.05 </fmc> <!--dead fuel moisture content-->
@@ -44,7 +44,7 @@
     <ignition>
     	<height> 2 </height>
     	<baseHeight> 0 </baseHeight> <!--meters-->
-    	<xStart> 105.0 </xStart> <!--meters-->
+    	<xStart> 50.0 </xStart> <!--meters-->
     	<yStart> 15.0 </yStart> <!--meters-->
     	<length> 20.0 </length> <!--meters-->
     	<width>  5.0 </width> <!--meters-->
