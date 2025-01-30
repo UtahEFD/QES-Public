@@ -45,15 +45,22 @@ class PLUMEGeneralData;
 class GLE_Solver
 {
 public:
-  void virtual solve(Particle *, float &, TURBGeneralData *, PLUMEGeneralData *) = 0;
-  void virtual solve(float &, ParticleControl &, ParticleCore &, ParticleLSDM &, TURBGeneralData *, PLUMEGeneralData *) = 0;
+  void virtual solve(float &,
+                     ParticleCore &,
+                     ParticleLSDM &,
+                     ParticleState &,
+                     TURBGeneralData *,
+                     PLUMEGeneralData *) = 0;
 };
 
 
 class GLE_Solver_CPU : public GLE_Solver
 {
 public:
-  void solve(Particle *, float &, TURBGeneralData *, PLUMEGeneralData *) override;
-  void solve(float &, ParticleControl &, ParticleCore &, ParticleLSDM &, TURBGeneralData *, PLUMEGeneralData *) override;
-
+  void solve(float &,
+             ParticleCore &,
+             ParticleLSDM &,
+             ParticleState &,
+             TURBGeneralData *,
+             PLUMEGeneralData *) override;
 };

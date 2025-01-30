@@ -67,7 +67,7 @@ public:
 class ParticleModel
 {
 public:
-  ParticleModel(QESDataTransport &, const string &);
+  ParticleModel(QESDataTransport &, string);
 
   virtual ~ParticleModel();
 

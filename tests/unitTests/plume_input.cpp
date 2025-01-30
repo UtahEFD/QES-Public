@@ -15,8 +15,7 @@
 #include "plume/PLUMEInputData.h"
 #include "plume/PLUMEGeneralData.h"
 
-#include "plume/TracerParticle_Model.h"
-// #include "plume/HeavyParticle_Model.h"
+#include "plume/ParticleModel.h"
 
 
 TEST_CASE("Plume test inputs for multiple particle models")

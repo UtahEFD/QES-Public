@@ -333,7 +333,7 @@ void InterpTriLinear::interp3D_cellVar(const std::vector<float> &EulerData,
       for (int iii = 0; iii <= 1; iii++) {
         // set the actual indices to use for the linearized Euler data
         long idx = (wgt.kk + kkk) * (ny - 1) * (nx - 1) + (wgt.jj + jjj) * (nx - 1) + (wgt.ii + iii);
-        cube[iii][jjj][kkk] = EulerData.at(idx);
+        cube[iii][jjj][kkk] = EulerData[idx];
       }
     }
   }

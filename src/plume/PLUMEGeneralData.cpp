@@ -341,13 +341,13 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd,
   std::cout << "\t\t elapsed time: " << Elapsed.count() << " s" << std::endl;
 }
 
-void PLUMEGeneralData::applyBC(Particle *p)
+/*void PLUMEGeneralData::applyBC(Particle *p)
 {
   // now apply boundary conditions
   if (p->state == ACTIVE) domainBC_x->enforce(p->pos._1, p->velFluct._1, p->state);
   if (p->state == ACTIVE) domainBC_y->enforce(p->pos._2, p->velFluct._2, p->state);
   if (p->state == ACTIVE) domainBC_z->enforce(p->pos._3, p->velFluct._3, p->state);
-}
+}*/
 
 void PLUMEGeneralData::applyBC(vec3 &pos, vec3 &velFluct, ParticleState &state)
 {
@@ -566,7 +566,7 @@ float PLUMEGeneralData::calcCourantTimestep(const float &d,
 }
 */
 
-void PLUMEGeneralData::initializeParticleValues(Particle *par_ptr,
+/*void PLUMEGeneralData::initializeParticleValues(Particle *par_ptr,
                                                 WINDSGeneralData *WGD,
                                                 TURBGeneralData *TGD)
 {
@@ -619,14 +619,13 @@ void PLUMEGeneralData::initializeParticleValues(Particle *par_ptr,
     par_ptr->state = INACTIVE;
   }
 
-  /*
-  double det = txx * (tyy * tzz - tyz * tyz) - txy * (txy * tzz - tyz * txz) + txz * (txy * tyz - tyy * txz);
-  if (std::abs(det) < 1e-10) {
-    // std::cerr << "WARNING invalid position stress" << std::endl;
-    par_ptr->isActive = false;
-  }
-  */
-}
+
+  //double det = txx * (tyy * tzz - tyz * tyz) - txy * (txy * tzz - tyz * txz) + txz * (txy * tyz - tyy * txz);
+  //if (std::abs(det) < 1e-10) {
+  //  // std::cerr << "WARNING invalid position stress" << std::endl;
+  //  par_ptr->isActive = false;
+  //}
+}*/
 
 void PLUMEGeneralData::initializeParticleValues(const vec3 &pos,
                                                 ParticleLSDM &particle_ldsm,

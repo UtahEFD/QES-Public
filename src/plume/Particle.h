@@ -203,7 +203,7 @@ public:
   }
 };
 
-
+/*
 class Particle
 {
 private:
@@ -229,15 +229,6 @@ public:
       c1(2.049), c2(1.19), depFlag(false), decayConst(0.0), wdecay(1.0),
       sourceIdx(-1)
   {}
-  /*
-    // initializer
-    Particle(const bool &flag, const ParticleType &type, const float &d_p, const float &m_p, const float &rho_p)
-      : particleType(type),
-        d(d_p), m(m_p), m_o(m_p), rho(rho_p),
-        c1(2.049), c2(1.19), depFlag(flag), decayConst(0.0), wdecay(1.0)
-    {
-    }
-  */
 
   // particle type
   ParticleType type;
@@ -328,3 +319,4 @@ public:
   // decay variables
   double wdecay;// (1 - fraction) particle decayed [0,1]
 };
+*/

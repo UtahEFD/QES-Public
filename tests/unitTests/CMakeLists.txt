@@ -36,15 +36,11 @@ list(APPEND UNITTESTS plume_interpolation_CPU)
 add_executable(plume_input plume_input.cpp)
 list(APPEND UNITTESTS plume_input)
 
-add_executable(plume_particle_buffer plume_particle_buffer.cpp)
-list(APPEND UNITTESTS plume_particle_buffer)
+add_executable(plume_managed_container plume_managed_container.cpp)
+list(APPEND UNITTESTS plume_managed_container)
   
 add_executable(test_qesDataTransporter test_qesDataTransporter.cpp)
 list(APPEND UNITTESTS test_qesDataTransporter)
-
-add_executable(test_sources
-        test_sources.cpp)
-list(APPEND UNITTESTS test_sources)
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
   

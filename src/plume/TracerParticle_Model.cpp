@@ -201,7 +201,7 @@ void TracerParticle_Model::advect(const float &total_time_interval,
       //  update the par_time, useful for debugging
       // par_time = par_time + par_dt;
 
-      PGD->GLE_solver->solve(p, par_dt, TGD, PGD);
+      // PGD->GLE_solver->solve(p, par_dt, TGD, PGD);
 
       if (p->state == ROGUE) {
         nbr_rogue++;

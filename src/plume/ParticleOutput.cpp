@@ -114,7 +114,7 @@ void ExportParticleData::visit(ParticleModel *pm)
   fout.close();
 }
 
-void ExportParticleData::visit(TracerParticle_Model *pm)
+/*void ExportParticleData::visit(TracerParticle_Model *pm)
 {
   std::string sout = fname_prefix + "_" + pm->get_tag() + "_" + fname_suffix;
 
@@ -156,4 +156,4 @@ void ExportParticleData::visit(TracerParticle_Model *pm)
   }
 
   fout.close();
-}
+}*/

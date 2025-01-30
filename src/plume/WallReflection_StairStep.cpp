@@ -156,7 +156,7 @@ void WallReflection_StairStep::trajectorySplit_recursive(const WINDSGeneralData 
     if ((abs(i_old - i_new) > 1) || (abs(j_old - j_new) > 1) || (abs(k_old - k_new) > 1)) {
       d2 = 0.5f * d2;
       if (d2 < 0.125 * d) {
-        std::cerr << "END OF REGRESSION dist \t" << d2 / d << std::endl;
+        // std::cerr << "END OF REGRESSION dist \t" << d2 / d << std::endl;
         isActive = false;
       }
 
@@ -217,8 +217,14 @@ void WallReflection_StairStep::oneReflection(const WINDSGeneralData *WGD,
   long cellIdNew = m_interp->getCellId(Xnew);
 
   // icellFlag of the cell at the end of the trajectory of the particle
-  int cellFlagNew = WGD->icellflag.at(cellIdNew);
-
+  int cellFlagNew;
+  try {
+    cellFlagNew = WGD->icellflag.at(cellIdNew);
+  } catch (const std::out_of_range &oor) {
+    // assume it exited the domain -> set to inactive & end
+    isActive = false;
+    return;
+  }
 
   /* Working variables informations:
      count       - number of reflections

@@ -76,11 +76,12 @@ Deposition::Deposition(const WINDSGeneralData *WGD)
             + WGD->wall_right_indices.size();
 }
 
-void Deposition::deposit(Particle *p,
+void Deposition::deposit(ParticleState &state,
+                         ParticleCore &p_core,
+                         ParticleLSDM &p_lsdm,
                          const vec3 &dist,
                          const vec3 &vel,
                          const float &vs,
-
                          WINDSGeneralData *WGD,
                          TURBGeneralData *TGD,
                          Interp *interp)
@@ -89,124 +90,120 @@ void Deposition::deposit(Particle *p,
   float rhoAir = 1.225;// in kg m^-3
   float nuAir = 1.506E-5;// in m^2 s^-1
 
-  if (p->state == ACTIVE) {
 
-    // Particle position and attributes
-    vec3 pos_old = VectorMath::subtract(p->pos, dist);
+  // Particle position and attributes
+  vec3 pos_old = VectorMath::subtract(p_core.pos, dist);
 
-    long cellId_old = interp->getCellId(pos_old);
-    long cellId = interp->getCellId(p->pos);
-    auto [i, j, k] = interp->getCellIndex(cellId);
+  long cellId_old = interp->getCellId(pos_old);
+  long cellId = interp->getCellId(p_core.pos);
+  auto [i, j, k] = interp->getCellIndex(cellId);
 
-    // distance travelled through veg
-    float partDist = sqrtf(powf(dist._1, 2) + powf(dist._2, 2) + powf(dist._3, 2));
-    // particle speed [m/s]
-    float MTot = sqrtf(powf(vel._1, 2) + powf(vel._2, 2) + powf(vel._3, 2));
-
-
-    // Radial distance-based mass decay from data
-    /*if (false) {
-
-      // Calculate distance (in x-y plane) from source
-      float distFromSource = pow(pow(p->xPos - p->xPos_init, 2)
-                                    + pow(p->yPos - p->yPos_init, 2),
-                                  0.5);
-      // Take deposited mass away from particle
-      float P_r = exp(-p->decayConst * distFromSource);// undeposited fraction of mass
-      p->m = p->m_o * P_r;
-      // p->m_kg = p->m_kg_o * P_r;
-    }*/
+  // distance travelled through veg
+  float partDist = sqrtf(powf(dist._1, 2) + powf(dist._2, 2) + powf(dist._3, 2));
+  // particle speed [m/s]
+  float MTot = sqrtf(powf(vel._1, 2) + powf(vel._2, 2) + powf(vel._3, 2));
 
 
-    // Apply deposition model depending on particle location
-    if (WGD->isCanopy(cellId_old)) {// if particle was in veg cell last time step
+  // Radial distance-based mass decay from data
+  /*if (false) {
 
-      // Calculate deposition fraction
-      // temporarily hard-coded [m]
-      float elementDiameter = 100.0e-3;
-      // LAD, temporarily hard-coded [m^-1]
-      float leafAreaDensitydep = 5.57;
-      // Cunningham correction factor, temporarily hard-coded, only important for <10um particles
-      float Cc = 1.0;
-      // RMS of velocity fluctuations the particle is experiencing [m/s]
-      float parRMS = 1.0 / sqrt(3.0) * sqrt(p->tau._11 + p->tau._22 + p->tau._33);
-      float taylorMicroscale = sqrt((15.0 * nuAir * 5.0 * pow(parRMS, 2.0)) / p->CoEps);
-      // classical Stokes number
-      float Stk = (p->rho * pow((1.0E-6) * p->d, 2.0) * MTot * Cc) / (18.0 * rhoAir * nuAir * elementDiameter);
-      // Taylor microscale Reynolds number
-      float ReLambda = parRMS * taylorMicroscale / nuAir;
-      // deposition efficiency (E in Bailey 2018 Eq. 13)
-      float depEff = 1.0 - 1.0 / (p->c1 * pow(pow(ReLambda, 0.3) * Stk, p->c2) + 1.0);
-      // leaf Reynolds number
-      float ReLeaf = elementDiameter * MTot / nuAir;
+    // Calculate distance (in x-y plane) from source
+    float distFromSource = pow(pow(p->xPos - p->xPos_init, 2)
+                                  + pow(p->yPos - p->yPos_init, 2),
+                                0.5);
+    // Take deposited mass away from particle
+    float P_r = exp(-p->decayConst * distFromSource);// undeposited fraction of mass
+    p->m = p->m_o * P_r;
+    // p->m_kg = p->m_kg_o * P_r;
+  }*/
 
-      // Temporary fix to address limitations of Price 2017 model (their correlation is only valid for 400 < ReLeaf < 6000)
-      if (ReLeaf > 6000.0) {
-        ReLeaf = 6000.0;
-      }
-      if (ReLeaf < 400.0) {
-        ReLeaf = 400.0;
-      }
+  // Apply deposition model depending on particle location
+  if (WGD->isCanopy(cellId_old)) {// if particle was in veg cell last time step
 
-      // non-impaction surface weighting factor
-      float gam = -6.5e-5 * ReLeaf + 0.43;
-      // temporarily set to 1 because of problems (gam is becoming negative, but should be positive and ~0.1)
-      // float gam = 0.1;
+    // Calculate deposition fraction
+    // temporarily hard-coded [m]
+    float elementDiameter = 100.0e-3;
+    // LAD, temporarily hard-coded [m^-1]
+    float leafAreaDensitydep = 5.57;
+    // Cunningham correction factor, temporarily hard-coded, only important for <10um particles
+    float Cc = 1.0;
+    // RMS of velocity fluctuations the particle is experiencing [m/s]
+    float parRMS = 1.0 / sqrt(3.0) * sqrt(p_lsdm.tau._11 + p_lsdm.tau._22 + p_lsdm.tau._33);
+    float taylorMicroscale = sqrt((15.0 * nuAir * 5.0 * pow(parRMS, 2.0)) / p_lsdm.CoEps);
+    // classical Stokes number
+    float Stk = (p_core.rho * pow((1.0E-6) * p_core.d, 2.0) * MTot * Cc) / (18.0 * rhoAir * nuAir * elementDiameter);
+    // Taylor microscale Reynolds number
+    float ReLambda = parRMS * taylorMicroscale / nuAir;
+    // deposition efficiency (E in Bailey 2018 Eq. 13)
+    float depEff = 1.0 - 1.0 / (c1 * pow(pow(ReLambda, 0.3) * Stk, c2) + 1.0);
+    // leaf Reynolds number
+    float ReLeaf = elementDiameter * MTot / nuAir;
 
-      // LAD adjusted to include non-impaction surface
-      float adjLAD = leafAreaDensitydep * (1.0 + gam);
-
-      // the undeposited mass fraction. The /2 comes from Ross' G function, assuming uniform leaf orientation distribution
-      float P_v = exp(-depEff * adjLAD * partDist * 0.7);
-
-      // add deposition amount to the buffer (for parallelization)
-#ifdef _OPENMP
-      thread_depcvol[cellId_old][omp_get_thread_num()] += (1.0 - P_v) * p->m;
-#else
-      depcvol[cellId_old] += (1.0 - P_v) * p->m;
-#endif
-
-      // Take deposited mass away from particle
-      p->m *= P_v;
-      // p->m_kg *= P_v;
-    } else if (WGD->isTerrain(WGD->domain.cellAdd(cellId, 0, 0, -1))) {
-      // Ground deposition
-      float dt = partDist / MTot;
-      float ustarDep = pow(pow(p->tau._13, 2.0) + pow(p->tau._23, 2.0), 0.25);
-      float Sc = nuAir / p->nuT;
-      float ra = 1.0 / (0.4 * ustarDep)
-                 * log(((10000.0 * ustarDep * boxSizeZ) / (2.0 * nuAir) + 1.0 / Sc)
-                       / ((100.0 * ustarDep / nuAir) + 1.0 / Sc));
-      // Cunningham correction factor
-      float Cc = 1.0;
-      float Stk_ground = (vs * pow(ustarDep, 2.0)) / (9.81 * nuAir);
-      float rb = 1.0 / (ustarDep * (pow(Sc, -2.0 / 3.0) + pow(10.0, -3.0 / Stk_ground)));
-      float vd = 1.0 / (ra + rb + ra * rb * vs) + vs;
-      float dz_g = WGD->domain.z_face[k] - WGD->domain.z_face[k - 1];
-
-      float P_g = exp(-vd * dt / dz_g);
-
-      // add deposition amount to the buffer (for parallelization)
-#ifdef _OPENMP
-      thread_depcvol[cellId_old][omp_get_thread_num()] += (1.0 - P_g) * p->m;
-#else
-      depcvol[cellId_old] += (1.0 - P_g) * p->m;
-#endif
-
-      // Take deposited mass away from particle
-      p->m *= P_g;
-      // p->m_kg *= P_g;
-    } else {
-      return;
+    // Temporary fix to address limitations of Price 2017 model (their correlation is only valid for 400 < ReLeaf < 6000)
+    if (ReLeaf > 6000.0) {
+      ReLeaf = 6000.0;
+    }
+    if (ReLeaf < 400.0) {
+      ReLeaf = 400.0;
     }
 
-    // If particle mass drops below mass of a single particle, set it to zero and inactivate it
-    float oneParMass = p->rho * (1.0 / 6.0) * M_PI * pow((1.0E-6) * p->d, 3.0);
-    if (p->m / 1000.0 < oneParMass) {
-      // p->m_kg = 0.0;
-      p->m = 0.0;
-      p->state = INACTIVE;
-    }
+    // non-impaction surface weighting factor
+    float gam = -6.5e-5 * ReLeaf + 0.43;
+    // temporarily set to 1 because of problems (gam is becoming negative, but should be positive and ~0.1)
+    // float gam = 0.1;
 
-  }// if ( isActive == true )
+    // LAD adjusted to include non-impaction surface
+    float adjLAD = leafAreaDensitydep * (1.0 + gam);
+
+    // the undeposited mass fraction. The /2 comes from Ross' G function, assuming uniform leaf orientation distribution
+    float P_v = exp(-depEff * adjLAD * partDist * 0.7);
+
+    // add deposition amount to the buffer (for parallelization)
+#ifdef _OPENMP
+    thread_depcvol[cellId_old][omp_get_thread_num()] += (1.0 - P_v) * p_core.m;
+#else
+    depcvol[cellId_old] += (1.0 - P_v) * p_core.m;
+#endif
+
+    // Take deposited mass away from particle
+    p_core.m *= P_v;
+    // p->m_kg *= P_v;
+  } else if (WGD->isTerrain(WGD->domain.cellAdd(cellId, 0, 0, -1))) {
+    // Ground deposition
+    float dt = partDist / MTot;
+    float ustarDep = pow(pow(p_lsdm.tau._13, 2.0) + pow(p_lsdm.tau._23, 2.0), 0.25);
+    float Sc = nuAir / p_lsdm.nuT;
+    float ra = 1.0 / (0.4 * ustarDep)
+               * log(((10000.0 * ustarDep * boxSizeZ) / (2.0 * nuAir) + 1.0 / Sc)
+                     / ((100.0 * ustarDep / nuAir) + 1.0 / Sc));
+    // Cunningham correction factor
+    float Cc = 1.0;
+    float Stk_ground = (vs * pow(ustarDep, 2.0)) / (9.81 * nuAir);
+    float rb = 1.0 / (ustarDep * (pow(Sc, -2.0 / 3.0) + pow(10.0, -3.0 / Stk_ground)));
+    float vd = 1.0 / (ra + rb + ra * rb * vs) + vs;
+    float dz_g = WGD->domain.z_face[k] - WGD->domain.z_face[k - 1];
+
+    float P_g = exp(-vd * dt / dz_g);
+
+    // add deposition amount to the buffer (for parallelization)
+#ifdef _OPENMP
+    thread_depcvol[cellId_old][omp_get_thread_num()] += (1.0 - P_g) * p_core.m;
+#else
+    depcvol[cellId_old] += (1.0 - P_g) * p_core.m;
+#endif
+
+    // Take deposited mass away from particle
+    p_core.m *= P_g;
+    // p->m_kg *= P_g;
+  } else {
+    return;
+  }
+
+  // If particle mass drops below mass of a single particle, set it to zero and inactivate it
+  float oneParMass = p_core.rho * (1.0 / 6.0) * M_PI * pow((1.0E-6) * p_core.d, 3.0);
+  if (p_core.m / 1000.0 < oneParMass) {
+    // p->m_kg = 0.0;
+    p_core.m = 0.0;
+    state = INACTIVE;
+  }
 }

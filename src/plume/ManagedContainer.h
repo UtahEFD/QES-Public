@@ -92,8 +92,11 @@ public:
   }
 
   T *last_added() { return &elements[added.back()]; }
+  size_t get_last_index_added() { return added.back(); }
+
   T *get_added(const size_t &k) { return &elements[added[k]]; }
   size_t get_added_index(const size_t &k) { return added[k]; }
+
   T *get_ptr(const size_t &k) { return &elements[k]; }
   T &at(const size_t &k) { return elements[k]; }
   T &operator[](const size_t &k) { return elements[k]; }

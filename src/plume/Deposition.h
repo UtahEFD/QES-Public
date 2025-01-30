@@ -80,7 +80,9 @@ public:
   explicit Deposition(const WINDSGeneralData *);
   ~Deposition() = default;
 
-  void deposit(Particle *p,
+  void deposit(ParticleState &,
+               ParticleCore &,
+               ParticleLSDM &,
                const vec3 &dist,
                const vec3 &vel,
                const float &vs,

@@ -84,7 +84,7 @@
 
 #include "ParticleModel.h"
 // #include "HeavyParticle_Model.h"
-#include "TracerParticle_Model.h"
+// #include "TracerParticle_Model.h"
 
 class PlumeParameters
 {
@@ -241,12 +241,12 @@ public:
 public:
   void updateCounts();
 
-  void applyBC(Particle *);
+  // void applyBC(Particle *);
   void applyBC(vec3 &, vec3 &, ParticleState &);
 
   // initialize
   // void setParticleVals(WINDSGeneralData *, TURBGeneralData *, std::list<Particle *>);
-  void initializeParticleValues(Particle *par_ptr, WINDSGeneralData *WGD, TURBGeneralData *TGD);
+  // void initializeParticleValues(Particle *par_ptr, WINDSGeneralData *WGD, TURBGeneralData *TGD);
   void initializeParticleValues(const vec3 &pos, ParticleLSDM &particle_ldsm, TURBGeneralData *TGD);
   // this function gets sources from input data and adds them to the allSources vector
   // this function also calls the many check and calc functions for all the input sources
