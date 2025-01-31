@@ -198,7 +198,6 @@ void ParticleModel::advect(const float &total_time_interval,
 
       // now update the old values to be ready for the next particle time iteration
       particles_lsdm[k].delta_velFluct = VectorMath::subtract(particles_lsdm[k].velFluct, particles_lsdm[k].velFluct_old);
-
       particles_lsdm[k].velFluct_old = particles_lsdm[k].velFluct;
 
       // now set the time remainder for the next loop
