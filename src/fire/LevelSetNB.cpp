@@ -33,6 +33,7 @@
 
 void Fire ::LevelSetNB(WINDSGeneralData *WGD)
 {
+  auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
   /**
    * Reset forcing function for level set
    */
@@ -140,7 +141,19 @@ void Fire ::LevelSetNB(WINDSGeneralData *WGD)
 	      fire_cells[idx].properties = fp;
 	      // Set forcing (Force) and heat release (H0)
         Force[idx] = fp.r;
-        H0[idx] = fp.H0;
+        // calculate percent of cell on fire from LS
+        
+        float percentburn = front_map[idx];
+        if (front_map[idx] < 0){
+          percentburn = 1;
+        } else if (front_map[idx] > 1){
+          percentburn = 0;
+        } else {
+          percentburn = 1 - front_map[idx];
+        }
+        H0[idx] = fp.H0 * percentburn;
+        
+        //H0[idx] = fp.H0;
       }
     }
     // update icell value for flame
@@ -150,4 +163,7 @@ void Fire ::LevelSetNB(WINDSGeneralData *WGD)
 	  }
   }
   std::vector<int>().swap(cells_burning);
+  auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
+  std::chrono::duration<float> elapsed = finish - start;
+  std::cout << "[QES-Fire] Level Set elapsed time:\t" << elapsed.count() << " s\n";// Print out elapsed execution time
 }

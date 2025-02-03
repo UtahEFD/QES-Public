@@ -94,7 +94,6 @@ int main(int argc, char *argv[])
   // ///////////////////////////////////
 
   // Parse the base XML QUIC file -- contains simulation parameters
-  //WINDSInputData* WID = parseXMLTree(arguments.quicFile);
   WINDSInputData *WID = new WINDSInputData(arguments.qesWindsParamFile);
   if (!WID) {
     QESout::error("QES Input file: " + arguments.qesWindsParamFile + " not able to be read successfully.");
@@ -108,30 +107,13 @@ int main(int argc, char *argv[])
   // Generate the general WINDS data from all inputs
   WINDSGeneralData *WGD = new WINDSGeneralData(WID, arguments.solveType);
 
-
-  // create WINDS output classes
-  std::vector<QESNetCDFOutput *> outputVec;
-  if (arguments.visuOutput) {
-    outputVec.push_back(new WINDSOutputVisualization(WGD, WID, arguments.netCDFFileVisu));
-  }
-  if (arguments.wkspOutput) {
-    outputVec.push_back(new WINDSOutputWorkspace(WGD, arguments.netCDFFileWksp));
-  }
-
-  if (arguments.terrainOut) {
-    if (WID->simParams->DTE_heightField) {
-      std::cout << "Creating terrain OBJ....\n";
-      WID->simParams->DTE_heightField->outputOBJ(arguments.filenameTerrain);
-      std::cout << "OBJ created....\n";
-    } else {
-      QESout::error("No dem file specified as input");
-    }
-  }
-
+  // Generate fire general data
+  Fire *fire = new Fire(WID, WGD);
   
+  // Create FIREOutput manager
+  std::vector<QESNetCDFOutput *> outFire;
+  outFire.push_back(new FIREOutput(WGD, fire, arguments.netCDFFileFireOut));
 
-
-  
   int potFLAG = 0;
   // //////////////////////////////////////////
   //
@@ -170,22 +152,10 @@ int main(int argc, char *argv[])
   //
   // /////////////////////////////
 
-  /** 
-   * Create Fire Map
-   **/
-
-  Fire *fire = new Fire(WID, WGD);
   /**
    * Set fuel map
    **/
   fire->FuelMap(WID, WGD);
-
-  /**
-   * Create FIREOutput manager
-   **/
-
-  std::vector<QESNetCDFOutput *> outFire;
-  outFire.push_back(new FIREOutput(WGD, fire, arguments.netCDFFileFireOut));
 
   /**
    * Time variables to track fire time and sensor timesteps
@@ -200,14 +170,15 @@ int main(int argc, char *argv[])
   std::vector<float> Fv0((WGD->nx)*(WGD->ny)*(WGD->nz),0.0);
   std::vector<float> Fw0((WGD->nx)*(WGD->ny)*(WGD->nz),0.0);
 
-
   // Generate the general TURB data from WINDS data
   // based on if the turbulence output file is defined
   TURBGeneralData *TGD = nullptr;
+  
   if (arguments.compTurb) {
     TGD = new TURBGeneralData(WID, WGD);
   }
   if (arguments.compTurb && arguments.turbOutput) {
+    std::vector<QESNetCDFOutput *> outputVec;
     outputVec.push_back(new TURBOutput(TGD, arguments.netCDFFileTurb));
   }
   // parse Plume xml settings
@@ -230,8 +201,6 @@ int main(int argc, char *argv[])
       PoutputVec.push_back(new PlumeOutputParticleData(PID, plume, arguments.outputParticleDataFile));
     }
   }
-
-
 
   /**
 	 * Loop  for sensor time data
@@ -304,17 +273,17 @@ int main(int argc, char *argv[])
       WGD->v0 = Fv0;
       WGD->w0 = Fw0;
 
-      // Run fire induced winds (default) if flag is not set
+      // Run fire induced winds (default) if flag is not set in command line
       if(!arguments.fireWindsFlag){
         /**
         * Run ROS model to get initial spread rate and fire properties
-        **/
+        */
 
         fire->LevelSetNB(WGD);
     
         /**
         * Calculate fire-induced winds from burning cells
-        **/
+        */
         if (potFLAG == 1){
           std::cout << "GPU POTENTIAL" << std::endl;
           fire->potentialGlobal(WGD);
@@ -325,12 +294,12 @@ int main(int argc, char *argv[])
       }
       /** 
        * Apply parameterizations
-       **/
+       */
       WGD->applyParametrizations(WID);
 
       /**
        * Run run wind solver to calculate mass conserved velocity field including fire-induced winds
-       **/
+       */
       solver->solve(WID, WGD, !arguments.solveWind);
       if (TGD != nullptr) {
 	      TGD->run();
@@ -338,17 +307,17 @@ int main(int argc, char *argv[])
 
       /**
        * Run ROS model to calculate spread rates with updated winds
-       **/
+       */
       fire->LevelSetNB(WGD);
 
       /**
        * Advance fire front through level set method
-       **/
+       */
       fire->move(WGD);
 
       /**
 	     * Advance fire time from variable fire timestep
-	     **/
+	     */
       simTimeCurr += fire->dt;
       
       std::cout << "time = " << simTimeCurr << endl;
@@ -384,7 +353,7 @@ int main(int argc, char *argv[])
       }
       /**
 	    * Save fire data to netCDF file
-	    **/
+	    */
       for (auto outItr = outFire.begin(); outItr != outFire.end(); ++outItr) {
         (*outItr)->save(simTimeCurr);
       }

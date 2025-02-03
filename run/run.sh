@@ -1,1 +1,1 @@
-./../build/qesFire/qesFire -q ../data/InputFiles/fire.xml -s 3 -o ../../QESOutput/testAA -b
+./../build/qesFire/qesFire > "../../QESOutput/init_out.txt" -q ../data/InputFiles/fire.xml -s 3 -o ../../QESOutput/test -b 

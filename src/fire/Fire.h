@@ -131,12 +131,8 @@ public:
   std::vector<float> FT_time;
   std::vector<float> FT_x1;
   std::vector<float> FT_y1;
-  std::vector<float> FT_x2;
-  std::vector<float> FT_y2;
-  std::vector<float> FT_x3;
-  std::vector<float> FT_y3;
 
-
+  void LSinit();
   void LevelSet(WINDSGeneralData *);
   void LevelSetNB(WINDSGeneralData *);
   void move(WINDSGeneralData *);

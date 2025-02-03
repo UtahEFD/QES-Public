@@ -1,68 +1,57 @@
-<simulationParameters>
-	<halo_x> 0.0 </halo_x>
-	<halo_y> 0.0 </halo_y>
-  <domain> 80 150 40 </domain> <!-- nx,ny,nz-->
-	<cellSize> 5.0 5.0 .25 </cellSize> <!-- Meters-->
-	<verticalStretching> 0 </verticalStretching>
-	<totalTimeIncrements> 1200 </totalTimeIncrements>
-	<rooftopFlag> 2 </rooftopFlag>
-	<upwindCavityFlag> 3 </upwindCavityFlag>
-	<streetCanyonFlag> 4 </streetCanyonFlag>
-	<streetIntersectionFlag> 1 </streetIntersectionFlag>
-	<wakeFlag> 3 </wakeFlag>
-	<sidewallFlag> 0 </sidewallFlag>
-	<maxIterations> 500 </maxIterations>
-	<tolerance> 3 </tolerance>
-	<meshTypeFlag> 1 </meshTypeFlag>
-
-	<domainRotation> 0 </domainRotation>
-	<UTMX> 0 </UTMX>
-	<UTMY> 0 </UTMY>
-	<UTMZone> 1 </UTMZone>
-	<UTMZoneLetter> 17 </UTMZoneLetter>
-</simulationParameters>
-<metParams>
-	<z0_domain_flag> 0 </z0_domain_flag>
+<QESWindsParameters>
+	<simulationParameters>
+		<halo_x> 0.0 </halo_x>
+		<halo_y> 0.0 </halo_y>
+  		<domain> 80 150 40 </domain> <!-- nx,ny,nz-->
+		<cellSize> 5.0 5.0 .25 </cellSize> <!-- Meters-->
+		<verticalStretching> 0 </verticalStretching>
+		<totalTimeIncrements> 1 </totalTimeIncrements>
+		<maxIterations> 500 </maxIterations>
+		<tolerance> 1e-9 </tolerance>
+		<meshTypeFlag> 1 </meshTypeFlag>
+	</simulationParameters>
+	<metParams>
+		<z0_domain_flag> 0 </z0_domain_flag>
 		<sensor>
-    	    <site_coord_flag> 1 </site_coord_flag> 			<!-- Sensor site coordinate system (1=QUIC (default), 2=UTM, 3=Lat/Lon) -->
-            <site_xcoord> 1.0  </site_xcoord> 				<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
-            <site_ycoord> 1.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->
-            <site_UTM_x> 2.0 </site_UTM_x> 				<!-- x components of site coordinate in UTM (if site_coord_flag = 2) -->
-            <site_UTM_y> 2.0 </site_UTM_y> 				<!-- y components of site coordinate in UTM (if site_coord_flag = 2)-->
+    	   	<site_coord_flag> 1 </site_coord_flag> 			<!-- Sensor site coordinate system (1=QUIC (default), 2=UTM, 3=Lat/Lon) -->
+           	<site_xcoord> 1.0  </site_xcoord> 				<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
+	        <site_ycoord> 1.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->
+    	    <site_UTM_x> 2.0 </site_UTM_x> 				<!-- x components of site coordinate in UTM (if site_coord_flag = 2) -->
+           	<site_UTM_y> 2.0 </site_UTM_y> 				<!-- y components of site coordinate in UTM (if site_coord_flag = 2)-->
             <site_UTM_zone> 0 </site_UTM_zone> 				<!-- UTM zone of the sensor site (if site_coord_flag = 2)-->
 
-    	    <timeSeries>						<!-- Start of timestep informastion for a sensor -->
-       		<boundaryLayerFlag> 1 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-       		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
-       		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
-       		<height>10.0 </height> 				<!-- Height of the sensor -->
-       		<speed> 8.9 </speed> 					<!-- Measured speed at the sensor height -->
-       		<direction> 295.0 </direction> 				<!-- Wind direction of sensor -->
+	    	<timeSeries>						<!-- Start of timestep informastion for a sensor -->
+				<timeStamp>2013-01-30T15:04:08</timeStamp>
+				<boundaryLayerFlag> 1 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
+       			<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
+       			<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
+	       		<height>10.0 </height> 				<!-- Height of the sensor -->
+    	   		<speed> 8.9 </speed> 					<!-- Measured speed at the sensor height -->
+       			<direction> 295.0 </direction> 				<!-- Wind direction of sensor -->
     	    </timeSeries>
-	</sensor>                      					<!-- End of sensor section -->
-</metParams>
-<fires>
-
-    <fuelType>3</fuelType>
-
-
-
-	<fmc> 0.065 </fmc>
-	<ignition>
-    <height> 0.25 </height>
-    <baseHeight> 0 </baseHeight> <!--meters-->
-    <xStart> 65.0 </xStart> <!--meters-->
-    <yStart> 655.0 </yStart> <!--meters-->
-    <length> 5.0 </length> <!--meters-->
-    <width>  5.0 </width> <!--meters-->
-   </ignition>
-    <courant> 0.9 </courant>
-    <fieldFlag> 1 </fieldFlag> <!-- flag for if multiple timesteps for fire -->
-</fires>
-<fileOptions>
-	<outputFlag>1</outputFlag>
-	<outputFields>all</outputFields> 
-	<outputFields>v</outputFields> 
-	<outputFields>w</outputFields>
-	<outputFields>icell</outputFields>
-</fileOptions>
+		</sensor>                      					<!-- End of sensor section -->
+	</metParams>
+	<fires>
+		<fireDur> 1200 </fireDur>
+		<fuelType> 103 </fuelType>
+		<fmc> 0.065 </fmc> <!--dead fuel moisture content-->
+		<cure> 0.3 </cure>  <!--live fuel moisture content-->
+		<ignition>
+    		<height> 0.25 </height>
+	    	<baseHeight> 0 </baseHeight> <!--meters-->
+    		<xStart> 65.0 </xStart> <!--meters-->
+    		<yStart> 655.0 </yStart> <!--meters-->
+	    	<length> 5.0 </length> <!--meters-->
+    		<width>  5.0 </width> <!--meters-->
+   		</ignition>
+	    <courant> 0.9 </courant>
+		<igTimes>../FireFiles/FFII.nc</igTimes> <!--netcdf iginition file-->
+	</fires>
+	<fileOptions>
+		<outputFlag>1</outputFlag>
+		<outputFields>all</outputFields> 
+		<outputFields>v</outputFields> 
+		<outputFields>w</outputFields>
+		<outputFields>icell</outputFields>
+	</fileOptions>
+</QESWindsParameters>

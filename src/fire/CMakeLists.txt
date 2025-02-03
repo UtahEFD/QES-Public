@@ -17,6 +17,7 @@ SET( qesFireCoreSources
   ignition.h
   LevelSet.cpp
   LevelSetNB.cpp
+  LSinit.cpp
   Move.cpp
   OldFuelProperties.hpp
   Potential.cpp
@@ -39,6 +40,6 @@ ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
   CUDA_ADD_LIBRARY(qesfiregpu
-    PotentialGlobal.h
-    PotentialGlobal.cu)
+    CUDA/PotentialGlobal.h
+    CUDA/PotentialGlobal.cu)
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})

@@ -52,14 +52,14 @@ void Fire ::LevelSet(WINDSGeneralData *WGD)
       n_star_x = dpx / sqrt(dpx * dpx + dpy * dpy) + dmx / sqrt(dmx * dmx + dpy * dpy) + dpx / sqrt(dpx * dpx + dmy * dmy) + dmx / sqrt(dmx * dmx + dmy * dmy);
       n_star_y = dpy / sqrt(dpx * dpx + dpy * dpy) + dpy / sqrt(dmx * dmx + dpy * dpy) + dmy / sqrt(dpx * dpx + dmy * dmy) + dmy / sqrt(dmx * dmx + dmy * dmy);
       if (n_star_x == 0){
-	xNorm[idx] = 0;
+	      xNorm[idx] = 0;
       } else {
-	xNorm[idx] = n_star_x / sqrt(n_star_x * n_star_x + n_star_y * n_star_y);
+	      xNorm[idx] = n_star_x / sqrt(n_star_x * n_star_x + n_star_y * n_star_y);
       }
       if (n_star_y == 0){
-	yNorm[idx] = 0;
+	      yNorm[idx] = 0;
       } else {
-	yNorm[idx] = n_star_y / sqrt(n_star_x * n_star_x + n_star_y * n_star_y);
+	      yNorm[idx] = n_star_y / sqrt(n_star_x * n_star_x + n_star_y * n_star_y);
       }
     }
   }
@@ -99,7 +99,6 @@ void Fire ::LevelSet(WINDSGeneralData *WGD)
     }
   }
 
-
   // indices for burning cells
   std::vector<int> cells_burning;
   // search predicate for burn state
@@ -112,7 +111,6 @@ void Fire ::LevelSet(WINDSGeneralData *WGD)
       return f.state.burn_flag == burn;
     }
   };
-
 
   // get indices of burning cells
   std::vector<FireCell>::iterator it = std::find_if(fire_cells.begin(), fire_cells.end(), find_burn(1));

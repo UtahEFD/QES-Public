@@ -42,8 +42,7 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
   dx = WGD->dx;
   dy = WGD->dy;
   dz = WGD->dz;
-  FFII_flag = WID->fires->fieldFlag;
-  std::cout << "Field flag [" << FFII_flag << "]" << std::endl;
+  FFII_flag = 0;
   fmc = WID->fires->fmc;
   cure = WID->fires->cure;
   if (cure < .30){
@@ -109,62 +108,29 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
   /**
 	* Set initial fire info
 	*/
-  if (FFII_flag == 1) {
+  std::string igFile = WID->fires->igFile;
+  if (igFile != "") {
+    FFII_flag = 1;
     // Open netCDF for fire times
-    //std::cout<<"nc file open"<<std::endl;
-    NcFile FireTime("../data/FireFiles/FFII.nc", NcFile::read);
-    //std::cout<<"nc file read"<<std::endl;
+    NcFile FireTime(igFile, NcFile::read);
     // Get size of netCDF data
     SFT_time = FireTime.getVar("time").getDim(0).getSize();
     // Allocate variable arrays
     FT_time.resize(SFT_time);
     FT_x1.resize(SFT_time);
     FT_y1.resize(SFT_time);
-    FT_x2.resize(SFT_time);
-    FT_y2.resize(SFT_time);
 
     // Get variables from netCDF
-
     FireTime.getVar("time").getVar({ 0 }, { SFT_time }, FT_time.data());
     FireTime.getVar("y1").getVar({ 0 }, { SFT_time }, FT_x1.data());
     FireTime.getVar("x1").getVar({ 0 }, { SFT_time }, FT_y1.data());
-    FireTime.getVar("y2").getVar({ 0 }, { SFT_time }, FT_x2.data());
-    FireTime.getVar("x2").getVar({ 0 }, { SFT_time }, FT_y2.data());
-    std::cout << "FFII burn times read" << std::endl;
-  }
-  if (FFII_flag == 2) {
-    // Open netCDF for fire times
-    //std::cout<<"nc file open"<<std::endl;
-    NcFile FireTime("../data/FireFiles/Marshall.nc", NcFile::read);
-    //std::cout<<"nc file read"<<std::endl;
-    // Get size of netCDF data
-    SFT_time = FireTime.getVar("time").getDim(0).getSize();
-    // Allocate variable arrays
-    FT_time.resize(SFT_time);
-    FT_x1.resize(SFT_time);
-    FT_y1.resize(SFT_time);
-    FT_x2.resize(SFT_time);
-    FT_y2.resize(SFT_time);
-    FT_x3.resize(SFT_time);
-    FT_y3.resize(SFT_time);
 
-    // Get variables from netCDF
-
-    FireTime.getVar("time").getVar({ 0 }, { SFT_time }, FT_time.data());
-    FireTime.getVar("x1").getVar({ 0 }, { SFT_time }, FT_x1.data());
-    FireTime.getVar("y1").getVar({ 0 }, { SFT_time }, FT_y1.data());
-    FireTime.getVar("x2").getVar({ 0 }, { SFT_time }, FT_x2.data());
-    FireTime.getVar("y2").getVar({ 0 }, { SFT_time }, FT_y2.data());
-    FireTime.getVar("x3").getVar({ 0 }, { SFT_time }, FT_x3.data());
-    FireTime.getVar("y3").getVar({ 0 }, { SFT_time }, FT_y3.data());
-    std::cout << "Marshall burn times read" << std::endl;
+    std::cout << "Ignition file " << igFile << " read succesfully" << std::endl;
   }
 
-  
   courant = WID->fires->courant;
 
   for (int fidx = 0; fidx < WID->fires->IG.size(); fidx++) {
-    std::cout << "ignition [" << fidx << "]" << std::endl;
     x_start = WID->fires->IG[fidx]->xStart;
     y_start = WID->fires->IG[fidx]->yStart;
     H = WID->fires->IG[fidx]->height;
@@ -180,19 +146,18 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
     k_end = std::round((H + baseHeight) / dz) + 1;
 
     /**
-	* Set-up initial fire state
-	*/
+	  * Set-up initial fire state
+	  */
     for (int j = j_start; j < j_end; j++) {
       for (int i = i_start; i < i_end; i++) {
         int idx = i + j * (nx - 1);
         fire_cells[idx].state.burn_flag = 1;
         fire_cells[idx].state.front_flag = 1;
-	
       }
     }
   }
   /** 
-	*  Set up burn flag field and smoke flag field
+	* Set up burn flag field and smoke flag field
 	*/
   for (int j = 0; j < ny - 1; j++) {
     for (int i = 0; i < nx - 1; i++) {
@@ -202,58 +167,8 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
     }
   }
   std::cout << "burn initialized" << std::endl;
-  int LSmethod = 0;
-  float sdf, sdf_min;
-  if (LSmethod == 0){
-    /**
-     * Set up initial level set. Use signed distance function: swap to fast marching method in future.
-     */    
-    for (int j = 0; j < ny - 1; j++) {
-      for (int i = 0; i < nx - 1; i++) {
-	int idx = i + j * (nx - 1);
-	if (fire_cells[idx].state.front_flag == 1) {
-	  front_map[idx] = 0;
-	} else {
-	  sdf = 1000;
-	  for (int jj = 0; jj < ny - 1; jj++) {
-	    for (int ii = 0; ii < nx - 1; ii++) {
-	      int idx2 = ii + jj * (nx - 1);
-	      if (fire_cells[idx2].state.front_flag == 1) {
-		sdf_min = sqrt((ii - i) * (ii - i) + (jj - j) * (jj - j));
-	      } else {
-		sdf_min = 1000;
-	      }
-	      sdf = sdf_min < sdf ? sdf_min : sdf;
-	    }
-	  }
-	  front_map[idx] = sdf;
-	}
-      }
-    }
-    std::cout << "Level Set Initialized: Signed Distance" << std::endl;
-  } else {
-    for (int j = 0; j < ny - 1; j++) {
-      for (int i = 0; i < nx - 1; i++) {
-	int idx = i + j * (nx - 1);
-	front_map[idx] = 5;
-	if (fire_cells[idx].state.front_flag == 1) {
-	  front_map[idx] = 0;
-	  int xmin = i-2 > 1 ? i-2 : 1;
-	  int xmax = i+2 < nx-3 ? i+2 : nx-3;
-	  int ymin = j-2 > 1 ? j-2 : 1;
-	  int ymax = j+2 < ny-3 ? j+2 : ny-3;
-	  for (int n = ymin; n <= ymax; n++){
-	    for (int m = xmin; m <= xmax; m++){
-	      int idx2 = m + n*(nx-1);
-	      sdf_min = sqrt((m - i) * (m - i) + (n - j) * (n - j));
-	      front_map[idx2] = sdf_min < front_map[idx2] ? sdf_min : front_map[idx2];
-	    }
-	  }
-	}
-      }
-    }
-    std::cout << "Level Set Initialized: Narrow Band" << std::endl;
-  }
+
+  LSinit();
  
   /**
    * Calculate slope at each terrain cell

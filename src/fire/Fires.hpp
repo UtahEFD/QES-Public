@@ -48,6 +48,7 @@ public:
   float fireDur, fmc, courant, cure;
   std::vector<ignition *> IG;
   std::string fuelFile;
+  std::string igFile;
   virtual void parseValues()
   {
     parsePrimitive<float>(true, fireDur, "fireDur");
@@ -56,12 +57,16 @@ public:
     parsePrimitive<float>(true, fmc, "fmc");
     parsePrimitive<float>(true, courant, "courant");
     parseMultiElements<ignition>(false, IG, "ignition");
-    parsePrimitive<int>(true, fieldFlag, "fieldFlag");
-    parsePrimitive<float>(true, cure, "fmc");
+    parsePrimitive<float>(true, cure, "cure");
     fuelFile = "";
+    igFile = "";
     parsePrimitive<std::string>(false, fuelFile, "fuelMap");
     if (fuelFile != ""){
       fuelFile = QESfs::get_absolute_path(fuelFile);
+    }
+    parsePrimitive<std::string>(false, igFile, "igTimes");
+    if (igFile != ""){
+      igFile = QESfs::get_absolute_path(igFile);
     }
   }
 

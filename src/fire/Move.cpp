@@ -33,69 +33,33 @@
 
 void Fire ::move(WINDSGeneralData *WGD)
 {
+  auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
+  int nx = WGD->nx;
+  int ny = WGD->ny;
+  int nz = WGD->nz;
   // compute time step
   dt = computeTimeStep();
 
   if (FFII_flag == 1) {
     int FT_idx1 = 0;
-    int FT_idx2 = 0;
-    float FT = ceil(time) + FT_time[0];
-    int it;
-    for (int IDX = 0; IDX < FT_time.size(); IDX++) {
-      if (FT == FT_time[IDX]) {
-        it = IDX;
-        break;
-      }
-    }
-    int nx1 = round(FT_x1[it] / dx);
-    int ny1 = round((750 - FT_y1[it]) / dy);
-    FT_idx1 = nx1 + ny1 * (nx - 1);
-    int nx2 = round(FT_x2[it] / dx);
-    int ny2 = round((750 - FT_y2[it]) / dy);
-    FT_idx2 = nx2 + ny2 * (nx - 1);
-    if (burn_flag[FT_idx1] < 2) {
-      front_map[FT_idx1] = 0;
-      fire_cells[FT_idx1].state.burn_flag = 1;
-    }
-    if (burn_flag[FT_idx2] < 2) {
-      front_map[FT_idx2] = 0;
-      fire_cells[FT_idx2].state.burn_flag = 1;
-    }
-  }
-  if (FFII_flag == 2) {
-    int FT_idx1 = 0;
-    int FT_idx2 = 0;
-    int FT_idx3 = 0;
-    float FT = ceil(time) + FT_time[0];
-    float FTplus = FT + dt;
-    int it = -1;
-    for (int IDX = 0; IDX < FT_time.size(); IDX++) {
-      if (FT < FT_time[IDX] && FT_time[IDX] < FTplus) {
-        it = IDX;
-        break;
-      }
-    }
-    if (it >= 0) {
-      int nx1 = round(FT_x1[it] / dx);
-      int ny1 = round((FT_y1[it]) / dy);
-      FT_idx1 = nx1 + ny1 * (nx - 1);
-      int nx2 = round(FT_x2[it] / dx);
-      int ny2 = round((FT_y2[it]) / dy);
-      FT_idx2 = nx2 + ny2 * (nx - 1);
-      int nx3 = round(FT_x3[it] / dx);
-      int ny3 = round((FT_y3[it]) / dy);
-      FT_idx3 = nx3 + ny3 * (nx - 1);
-      if (burn_flag[FT_idx1] < 2) {
-        front_map[FT_idx1] = 0;
-        fire_cells[FT_idx1].state.burn_flag = 1;
-      }
-      if (burn_flag[FT_idx2] < 2) {
-        front_map[FT_idx2] = 0;
-        fire_cells[FT_idx2].state.burn_flag = 1;
-      }
-      if (burn_flag[FT_idx3] < 2) {
-        front_map[FT_idx3] = 0;
-        fire_cells[FT_idx3].state.burn_flag = 1;
+    float currTime = time; // calculate simTimeCurrent
+    float nextTime = currTime + dt;
+    // Find all ignition times during current timestep and ignite in domain if not burned
+    for (int it = 0; it < FT_time.size(); it++) {
+      if (FT_time[it] >= currTime && FT_time[it] <= nextTime) {
+        int nx1 = round(FT_x1[it] / dx);
+        if (nx1 > nx-1){
+          nx1 = nx-1;    
+        }
+        int ny1 = round((750 - FT_y1[it]) / dy);
+        if (ny1 > ny-1){
+          ny1 = ny-1;    
+        }
+        FT_idx1 = nx1 + ny1 * (nx - 1);
+        if (burn_flag[FT_idx1] < 2) {
+          front_map[FT_idx1] = 0;
+          fire_cells[FT_idx1].state.burn_flag = 1;
+        }
       }
     }
   }
@@ -128,7 +92,6 @@ void Fire ::move(WINDSGeneralData *WGD)
       // if burn flag = 1, update burn time
       if (burn_flag[idx] == 1) {
         fire_cells[idx].state.burn_time += dt;
-        H0[idx] = fire_cells[idx].properties.H0;
       }
       // set burn flag to 2 (burned) if residence time exceeded, set Forcing function to 0, and update z0 to bare soil
       if (fire_cells[idx].state.burn_time >= fp.tau && fire_cells[idx].state.burn_flag == 1) {
@@ -162,4 +125,7 @@ void Fire ::move(WINDSGeneralData *WGD)
   
   // advance time
   time += dt;
+  auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
+    std::chrono::duration<float> elapsed = finish - start;
+    std::cout << "[QES-Fire] LS move elapsed time:\t" << elapsed.count() << " s\n";// Print out elapsed execution time
 }

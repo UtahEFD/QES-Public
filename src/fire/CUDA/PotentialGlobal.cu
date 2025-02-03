@@ -177,7 +177,7 @@ void Fire ::potentialGlobal(WINDSGeneralData *WGD)
 {
     auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
     const int gridSize = (nx - 1) * (ny - 1) * (nz - 1);    ///< 3D grid size
-    const int faceSize = nx * ny * nz;
+    //const int faceSize = nx * ny * nz;
 
     float g = 9.81;
     float rhoAir = 1.125;
@@ -215,17 +215,18 @@ void Fire ::potentialGlobal(WINDSGeneralData *WGD)
     cudaMemcpy(d_Pot_w, Pot_w.data(), gridSize * sizeof(float), cudaMemcpyHostToDevice);
 
     // allocate and initialize V0 velocity field
+    /**
     cudaMalloc((void **)&d_u0, faceSize * sizeof(float));
     cudaMalloc((void **)&d_v0, faceSize * sizeof(float));
     cudaMalloc((void **)&d_w0, faceSize * sizeof(float));
     cudaMemcpy(d_u0, WGD->u0.data(), faceSize * sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(d_v0, WGD->v0.data(), faceSize * sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(d_w0, WGD->w0.data(), faceSize * sizeof(float), cudaMemcpyHostToDevice);
-
+    
     // allocate and initialize icellflag on device
     cudaMalloc((void **)&d_icellflag, gridSize * sizeof(int));
     cudaMemcpy(d_icellflag, WGD->icellflag.data(), gridSize * sizeof(int), cudaMemcpyHostToDevice);
-
+    */
     /**
      * Calculate Potential field based on heat release
      * Baum and McCaffrey plume model
@@ -326,7 +327,7 @@ void Fire ::potentialGlobal(WINDSGeneralData *WGD)
             XIDX += filt;
         }   
     }
-  
+    /**
     dim3 threadsPerBlock(32,32,1);
     dim3 numBlocks(ceil(WGD->nx/16), ceil(WGD->ny/16), ceil(WGD->nz)/1);
 
@@ -336,11 +337,15 @@ void Fire ::potentialGlobal(WINDSGeneralData *WGD)
         d_u0, d_v0, d_w0,
         d_icellflag
     );
-
     cudaMemcpy(WGD->u0.data(), d_u0, faceSize * sizeof(float), cudaMemcpyDeviceToHost);
     cudaMemcpy(WGD->v0.data(), d_v0, faceSize * sizeof(float), cudaMemcpyDeviceToHost);
     cudaMemcpy(WGD->w0.data(), d_w0, faceSize * sizeof(float), cudaMemcpyDeviceToHost);
+    */
 
+    cudaMemcpy(Pot_u.data(), d_Pot_u, gridSize * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(Pot_v.data(), d_Pot_v, gridSize * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(Pot_w.data(), d_Pot_w, gridSize * sizeof(float), cudaMemcpyDeviceToHost);
+    
     // Free memory
     cudaFree(d_Pot_u);
     cudaFree(d_Pot_v);
@@ -349,9 +354,25 @@ void Fire ::potentialGlobal(WINDSGeneralData *WGD)
     cudaFree(d_u_z);
     cudaFree(d_G);
     cudaFree(d_Gprime);
-    cudaFree(d_u0);
-    cudaFree(d_v0);
-    cudaFree(d_w0);
+    //cudaFree(d_u0);
+    //cudaFree(d_v0);
+    //cudaFree(d_w0);
+    //cudaFree(d_icellflag);
+
+    // Modify u,v,w in solver - superimpose Potential field onto velocity field (interpolate from potential cell centered values)
+    for (int kadd = 1; kadd < nz - 2; kadd++) {
+        for (int jadd = 1; jadd < ny - 1; jadd++) {
+            for (int iadd = 1; iadd < nx - 1; iadd++) {
+                int cell_face = iadd + jadd * nx + (kadd - 1) * nx * ny;
+                int cell_cent = iadd + jadd * (nx - 1) + (kadd - 1) * (nx - 1) * (ny - 1);
+                if (WGD->icellflag[cell_cent] == 12 or WGD->icellflag[cell_cent] == 1) {
+                    WGD->u0[cell_face] = WGD->u0[cell_face] + 0.5 * (Pot_u[cell_cent] + Pot_u[cell_cent + 1]);
+                    WGD->v0[cell_face] = WGD->v0[cell_face] + 0.5 * (Pot_v[cell_cent] + Pot_v[cell_cent + (nx - 1)]);
+                    WGD->w0[cell_face] = WGD->w0[cell_face] + 0.5 * (Pot_w[cell_cent] + Pot_w[cell_cent + (nx - 1) * (ny - 1)]);
+                }
+            }
+        }
+    }
 
     auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
     std::chrono::duration<float> elapsed = finish - start;
