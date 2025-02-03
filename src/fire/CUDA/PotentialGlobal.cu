@@ -1,13 +1,13 @@
 /****************************************************************************
- * Copyright (c) 2024 University of Utah
- * Copyright (c) 2024 University of Minnesota Duluth
+ * Copyright (c) 2025 University of Utah
+ * Copyright (c) 2025 University of Minnesota Duluth
  *
- * Copyright (c) 2024 Matthew Moody
- * Copyright (c) 2024 Jeremy Gibbs
- * Copyright (c) 2024 Rob Stoll
- * Copyright (c) 2024 Fabien Margairaz
- * Copyright (c) 2024 Brian Bailey
- * Copyright (c) 2024 Pete Willemsen
+ * Copyright (c) 2025 Matthew Moody
+ * Copyright (c) 2025 Jeremy Gibbs
+ * Copyright (c) 2025 Rob Stoll
+ * Copyright (c) 2025 Fabien Margairaz
+ * Copyright (c) 2025 Brian Bailey
+ * Copyright (c) 2025 Pete Willemsen
  *
  * This file is part of QES-Fire
  *
@@ -214,19 +214,6 @@ void Fire ::potentialGlobal(WINDSGeneralData *WGD)
     cudaMemcpy(d_Pot_v, Pot_v.data(), gridSize * sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(d_Pot_w, Pot_w.data(), gridSize * sizeof(float), cudaMemcpyHostToDevice);
 
-    // allocate and initialize V0 velocity field
-    /**
-    cudaMalloc((void **)&d_u0, faceSize * sizeof(float));
-    cudaMalloc((void **)&d_v0, faceSize * sizeof(float));
-    cudaMalloc((void **)&d_w0, faceSize * sizeof(float));
-    cudaMemcpy(d_u0, WGD->u0.data(), faceSize * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_v0, WGD->v0.data(), faceSize * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_w0, WGD->w0.data(), faceSize * sizeof(float), cudaMemcpyHostToDevice);
-    
-    // allocate and initialize icellflag on device
-    cudaMalloc((void **)&d_icellflag, gridSize * sizeof(int));
-    cudaMemcpy(d_icellflag, WGD->icellflag.data(), gridSize * sizeof(int), cudaMemcpyHostToDevice);
-    */
     /**
      * Calculate Potential field based on heat release
      * Baum and McCaffrey plume model
@@ -327,20 +314,7 @@ void Fire ::potentialGlobal(WINDSGeneralData *WGD)
             XIDX += filt;
         }   
     }
-    /**
-    dim3 threadsPerBlock(32,32,1);
-    dim3 numBlocks(ceil(WGD->nx/16), ceil(WGD->ny/16), ceil(WGD->nz)/1);
 
-    PotSuperposition<<<numBlocks, threadsPerBlock>>>(
-        nx, ny, nz,
-        d_Pot_u, d_Pot_v, d_Pot_w,
-        d_u0, d_v0, d_w0,
-        d_icellflag
-    );
-    cudaMemcpy(WGD->u0.data(), d_u0, faceSize * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(WGD->v0.data(), d_v0, faceSize * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(WGD->w0.data(), d_w0, faceSize * sizeof(float), cudaMemcpyDeviceToHost);
-    */
 
     cudaMemcpy(Pot_u.data(), d_Pot_u, gridSize * sizeof(float), cudaMemcpyDeviceToHost);
     cudaMemcpy(Pot_v.data(), d_Pot_v, gridSize * sizeof(float), cudaMemcpyDeviceToHost);
@@ -354,10 +328,6 @@ void Fire ::potentialGlobal(WINDSGeneralData *WGD)
     cudaFree(d_u_z);
     cudaFree(d_G);
     cudaFree(d_Gprime);
-    //cudaFree(d_u0);
-    //cudaFree(d_v0);
-    //cudaFree(d_w0);
-    //cudaFree(d_icellflag);
 
     // Modify u,v,w in solver - superimpose Potential field onto velocity field (interpolate from potential cell centered values)
     for (int kadd = 1; kadd < nz - 2; kadd++) {

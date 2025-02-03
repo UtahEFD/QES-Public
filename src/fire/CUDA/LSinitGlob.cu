@@ -1,13 +1,13 @@
 /****************************************************************************
- * Copyright (c) 2024 University of Utah
- * Copyright (c) 2024 University of Minnesota Duluth
+ * Copyright (c) 2025 University of Utah
+ * Copyright (c) 2025 University of Minnesota Duluth
  *
- * Copyright (c) 2024 Matthew Moody
- * Copyright (c) 2024 Jeremy Gibbs
- * Copyright (c) 2024 Rob Stoll
- * Copyright (c) 2024 Fabien Margairaz
- * Copyright (c) 2024 Brian Bailey
- * Copyright (c) 2024 Pete Willemsen
+ * Copyright (c) 2025 Matthew Moody
+ * Copyright (c) 2025 Jeremy Gibbs
+ * Copyright (c) 2025 Rob Stoll
+ * Copyright (c) 2025 Fabien Margairaz
+ * Copyright (c) 2025 Brian Bailey
+ * Copyright (c) 2025 Pete Willemsen
  *
  * This file is part of QES-Fire
  *
@@ -30,7 +30,7 @@
  * @brief This file initializes the level set using CUDA
  */
 
-# include "Fire.h"
+# include "../Fire.h"
 
 using namespace std;
 
@@ -47,63 +47,61 @@ void _cudaCheck(T e, const char *func, const char *call, const int line)
 
 __global__
 void LSGlob(
-	int nx, int ny,
-	int i, int j,
-	float* d_front_map, float* d_fire_cells
+	int nx, int ny,	float* d_front_map
 ) {
 	int ii = blockDim.x * blockIdx.x + threadIdx.x;
 	int jj = blockDim.y * blockIdx.y + threadIdx.y;
 
 	if (ii >= nx - 1 || jj >= ny - 1) return;
+	int idx = ii + jj * (nx - 1);
 
+	if (d_front_map[idx] == 0) return;
 	float sdf = 1000;
-	float sdf_min;
-	int idx = i + j * (nx - 1);
-	int idx2 = ii + jj * (nx - 1);
-
- 	sdf = 1000;
- 
-    if (d_fire_cells[idx2] == 1) {
-        sdf_min = sqrt((ii - i) * (ii - i) + (jj - j) * (jj - j));
-    } else {
-        sdf_min = 1000;
+	float sdf_min = 1000;
+ 	for (int j = 0; j < ny - 1; j++) {
+		for (int i = 0; i < nx - 1; i++) {
+	        int idx2 = i + j * (nx - 1);
+	        if (d_front_map[idx2] == 0) {
+	            sdf_min = sqrt((ii - i) * (ii - i) + (jj - j) * (jj - j));
+				sdf = sdf_min < sdf ? sdf_min : sdf;
+	        }
+		} 
 	}
-    sdf = sdf_min < sdf ? sdf_min : sdf;
 	d_front_map[idx] = sdf;
 }
 
 void Fire ::LSinitGlob()
 {
     auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
-    float sdf, sdf_min;
-    /**
-     * Set up initial level set using signed distance function.
-     */    
+	// Initialize level set map at 1000
+	std::fill(front_map.begin(), front_map.end(), 1000.0);
+	int gridSize = (nx - 1) * (ny - 1);
+    // If a cell is burning, set level set to 0    
     for (int j = 0; j < ny - 1; j++) {
         for (int i = 0; i < nx - 1; i++) {
 	        int idx = i + j * (nx - 1);
 	        if (fire_cells[idx].state.front_flag == 1) {
 	            front_map[idx] = 0;
-	        } else {
-
-				// CUDA CALL HERE!
-	            sdf = 1000;
-    	        for (int jj = 0; jj < ny - 1; jj++) {
-	                for (int ii = 0; ii < nx - 1; ii++) {
-	                    int idx2 = ii + jj * (nx - 1);
-	                    if (fire_cells[idx2].state.front_flag == 1) {
-		                    sdf_min = sqrt((ii - i) * (ii - i) + (jj - j) * (jj - j));
-	                    } else {
-		                    sdf_min = 1000;
-	                    }
-	                    sdf = sdf_min < sdf ? sdf_min : sdf;
-	                }
-	            }   
-	            front_map[idx] = sdf;
-				//CUDA CALL HERE 
 	        }
-        }
-    }
+		}
+	}
+
+	//allocate and initialize LS map
+    cudaMalloc((void **)&d_front_map, gridSize * sizeof(float));
+	cudaMemcpy(d_front_map, front_map.data(), gridSize * sizeof(float), cudaMemcpyHostToDevice);
+	
+	
+	// Call LSGlob kernal
+	dim3 threadsPerBlock(32,32);
+    dim3 numBlocks(ceil(WGD->nx/16), ceil(WGD->ny/16));
+	LSGlob<<<numBlocks, threadsPerBlock>>>(nx, ny, d_front_map);
+
+	cudaCheck(cudaGetLastError());  
+	// Copy data from device to host
+	cudaMemcpy(front_map.data(), d_front_map, gridSize * sizeof(float), cudaMemcpyDeviceToHost);
+	// Free memory	
+	cudaFree(d_front_map);
+
     auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
     std::chrono::duration<float> elapsed = finish - start;
     std::cout << "[QES-Fire] LS init elapsed time:\t" << elapsed.count() << " s\n";// Print out elapsed execution time

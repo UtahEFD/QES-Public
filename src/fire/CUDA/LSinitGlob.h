@@ -26,45 +26,25 @@
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 /**
- * @file Smoke.h
- * @brief This class specifies smoke sources for QES-Fire and QES-Plume integration
+ * @file PotentialGlobal.h
  */
+ #pragma once
 
-#ifndef SMOKE_H
-#define SMOKE_H
-
-#include "Fire.h"
-#include "winds/WINDSInputData.h"
-#include "winds/WINDSGeneralData.h"
-#include "util/Vector3.h"
-#include "util/Vector3Int.h"
-#include "winds/DTEHeightField.h"
-#include <fstream>
+#include <cstdio>
 #include <iostream>
-#include <vector>
+#include <fstream>
+#include <cstdlib>
 #include <math.h>
-#include <cmath>
-#include "SourceFire.h"
-#include "plume/Plume.hpp"
+#include <vector>
+#include <chrono>
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <cuda_gl_interop.h>
 
-using namespace std;
-class Fire;
-class Plume;
-class Smoke
-{
-public:
-  Smoke();
-  void genSmoke(WINDSGeneralData *, Fire *, Plume *);
+#include "../Fire.h"
 
-  
-  void source();
+template<typename T>
+  void _cudaCheck(T e, const char *func, const char *call, const int line);
 
- private:
-  int nx,ny,nz;
-  float dx,dy,dz;
-  float x_pos,y_pos,z_pos;
-  float ppt;
-};
-
-#endif
-
+// potential velocity fields on device
+float *d_front_map;

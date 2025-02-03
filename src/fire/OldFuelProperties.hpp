@@ -1,13 +1,13 @@
 /****************************************************************************
- * Copyright (c) 2024 University of Utah
- * Copyright (c) 2024 University of Minnesota Duluth
+ * Copyright (c) 2025 University of Utah
+ * Copyright (c) 2025 University of Minnesota Duluth
  *
- * Copyright (c) 2024 Matthew Moody
- * Copyright (c) 2024 Jeremy Gibbs
- * Copyright (c) 2024 Rob Stoll
- * Copyright (c) 2024 Fabien Margairaz
- * Copyright (c) 2024 Brian Bailey
- * Copyright (c) 2024 Pete Willemsen
+ * Copyright (c) 2025 Matthew Moody
+ * Copyright (c) 2025 Jeremy Gibbs
+ * Copyright (c) 2025 Rob Stoll
+ * Copyright (c) 2025 Fabien Margairaz
+ * Copyright (c) 2025 Brian Bailey
+ * Copyright (c) 2025 Pete Willemsen
  *
  * This file is part of QES-Fire
  *
