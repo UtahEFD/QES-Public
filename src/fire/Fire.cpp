@@ -167,8 +167,11 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
     }
   }
   std::cout << "burn initialized" << std::endl;
-
-  LSinit();
+  if (potFlag == 1){
+    LSinitGlob();
+  } else {
+    LSinit();
+  }
  
   /**
    * Calculate slope at each terrain cell

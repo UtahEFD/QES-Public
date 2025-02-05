@@ -26,7 +26,7 @@
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 /**
- * @file PotentialGlobal.h
+ * @file LSinitGlob.h
  */
  #pragma once
 

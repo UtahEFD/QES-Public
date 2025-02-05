@@ -31,6 +31,7 @@
  */
 
 # include "../Fire.h"
+# include "LSinitGlob.h"
 
 using namespace std;
 
@@ -62,7 +63,7 @@ void LSGlob(
 		for (int i = 0; i < nx - 1; i++) {
 	        int idx2 = i + j * (nx - 1);
 	        if (d_front_map[idx2] == 0) {
-	            sdf_min = sqrt((ii - i) * (ii - i) + (jj - j) * (jj - j));
+	            sdf_min = sqrtf((ii - i) * (ii - i) + (jj - j) * (jj - j));
 				sdf = sdf_min < sdf ? sdf_min : sdf;
 	        }
 		} 
@@ -93,7 +94,7 @@ void Fire ::LSinitGlob()
 	
 	// Call LSGlob kernal
 	dim3 threadsPerBlock(32,32);
-    dim3 numBlocks(ceil(WGD->nx/16), ceil(WGD->ny/16));
+    dim3 numBlocks(ceil(nx/16), ceil(ny/16));
 	LSGlob<<<numBlocks, threadsPerBlock>>>(nx, ny, d_front_map);
 
 	cudaCheck(cudaGetLastError());  
@@ -104,5 +105,5 @@ void Fire ::LSinitGlob()
 
     auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
     std::chrono::duration<float> elapsed = finish - start;
-    std::cout << "[QES-Fire] LS init elapsed time:\t" << elapsed.count() << " s\n";// Print out elapsed execution time
+    std::cout << "[QES-Fire] LS init GPU elapsed time:\t" << elapsed.count() << " s\n";// Print out elapsed execution time
 }

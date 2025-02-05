@@ -40,8 +40,8 @@ ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
   CUDA_ADD_LIBRARY(qesfiregpu
-    CUDA/LSinit.cu
-    CUDA/LSinit.h
+    CUDA/LSinitGlob.cu
+    CUDA/LSinitGlob.h
     CUDA/PotentialGlobal.cu
     CUDA/PotentialGlobal.h)
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
