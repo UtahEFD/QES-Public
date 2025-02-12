@@ -83,8 +83,6 @@
 #include "Source.h"
 
 #include "ParticleModel.h"
-// #include "HeavyParticle_Model.h"
-// #include "TracerParticle_Model.h"
 
 class PlumeParameters
 {
@@ -143,16 +141,6 @@ public:
 
   std::map<std::string, ParticleModel *> models;
 
-  // This the storage for all particles
-  // the sources can set these values, then the other values are set using urb and turb info using these values
-  // std::list<Particle *> particleList;
-
-  // ManagedContainer<Particle_Tracer> *tracerList;
-  // ParticleContainers *particles;
-
-  // ALL Sources that will be used
-  // std::vector<Source *> allSources;
-
   GLE_Solver *GLE_solver;
 
 #ifdef _OPENMP
@@ -172,7 +160,6 @@ public:
 
 
 private:
-  // Deposition *deposition = nullptr;
 
   // these values are calculated from the urb and turb grids by dispersion
   // they are used for applying boundary conditions at the walls of the domain
@@ -241,12 +228,9 @@ public:
 public:
   void updateCounts();
 
-  // void applyBC(Particle *);
   void applyBC(vec3 &, vec3 &, ParticleState &);
 
   // initialize
-  // void setParticleVals(WINDSGeneralData *, TURBGeneralData *, std::list<Particle *>);
-  // void initializeParticleValues(Particle *par_ptr, WINDSGeneralData *WGD, TURBGeneralData *TGD);
   void initializeParticleValues(const vec3 &pos, ParticleLSDM &particle_ldsm, TURBGeneralData *TGD);
   // this function gets sources from input data and adds them to the allSources vector
   // this function also calls the many check and calc functions for all the input sources
@@ -255,16 +239,8 @@ public:
   // !!! totalParsToRelease needs calculated very carefully here using information from each of the sources
   // void getInputSources(PlumeInputData *);
 
-  // this function generates the list of particle to be released at a given time
-  //  void generateParticleList(float, WINDSGeneralData *, TURBGeneralData *);
-
-  // this function scrubs the inactive particle for the particle list (particleList)
-  // void scrubParticleList();
 
   static float getMaxVariance(const TURBGeneralData *);
-
-  // this function moves (advects) one particle
-  // void advectParticle(float, Particle *, double, WINDSGeneralData *, TURBGeneralData *);
 
   // function for calculating the individual particle timestep from the courant number, the current velocity fluctuations,
   // and the grid size. Forces particles to always move only at one timestep at at time.

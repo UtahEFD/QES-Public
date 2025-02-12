@@ -86,7 +86,7 @@ public:
   virtual void parseValues()
   {
     parsePrimitive<std::string>(true, tag, "tag");
-    
+
     parsePrimitive<bool>(false, depFlag, "depositionFlag");
     parsePrimitive<float>(false, c1, "c1");
     parsePrimitive<float>(false, c2, "c2");
@@ -112,5 +112,4 @@ public:
     }
     return model;
   }
-  // virtual void setParticleParameters(Particle *) = 0;
 };

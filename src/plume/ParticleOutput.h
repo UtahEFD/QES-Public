@@ -38,12 +38,6 @@
 #include "PI_ParticleOutputParameters.hpp"
 #include "ParticleModel_Visitor.h"
 
-// #include "TracerParticle_Model.h"
-// #include "TracerParticle_Source.h"
-
-// #include "HeavyParticle_Model.h"
-// #include "HeavyParticle_Source.h"
-
 class PLUMEGeneralData;
 
 class ParticleOutput
@@ -71,7 +65,6 @@ public:
   ~ExportParticleData() = default;
 
   void visit(ParticleModel *) override;
-  // void visit(TracerParticle_Model *) override;
 
 private:
   std::string fname_prefix, fname_suffix;

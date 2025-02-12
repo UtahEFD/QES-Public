@@ -127,9 +127,6 @@ protected:
 
 private:
   ParticleModel() = default;
-
-  // class ExportParticleData;
-  // friend ExportParticleData;
 };
 
 inline void ParticleModel::addSource(Source *newSource)

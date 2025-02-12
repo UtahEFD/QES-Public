@@ -59,6 +59,7 @@ public:
    * "doNothing" (default)   - nothing happen when particle enter wall
    * "setInactive"           - particle is set to inactive when entering a wall
    * "stairstepReflection"   - particle use full stair step reflection when entering a wall
+   * "meshReflection"        - particle use triangular mesh for reflection
    */
 
   std::string wallReflection;
@@ -73,7 +74,7 @@ public:
     wallReflection = "";
     parsePrimitive<std::string>(false, wallReflection, "wallReflection");
 
-    if (wallReflection == "") {
+    if (wallReflection.empty()) {
       wallReflection = "doNothing";
     }
   }

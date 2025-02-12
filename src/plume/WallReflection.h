@@ -61,17 +61,17 @@ class Plume;
 class WallReflection
 {
 public:
-  WallReflection(Interp *interp)
-  {
-    m_interp = interp;
-  }
-
+  explicit WallReflection(Interp *interp) : m_interp(interp) {}
   virtual ~WallReflection() = default;
-  virtual void reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct, ParticleState &state) = 0;
+
+  virtual void reflect(const WINDSGeneralData *WGD,
+                       vec3 &pos,
+                       vec3 &dist,
+                       vec3 &fluct,
+                       ParticleState &state) = 0;
 
 private:
-  WallReflection()
-  {}
+  WallReflection() : m_interp(nullptr) {}
 
 protected:
   Interp *m_interp;
@@ -80,24 +80,26 @@ protected:
 class WallReflection_DoNothing : public WallReflection
 {
 public:
-  WallReflection_DoNothing(Interp *interp)
-    : WallReflection(interp)
-  {}
-  ~WallReflection_DoNothing()
-  {}
+  explicit WallReflection_DoNothing(Interp *interp) : WallReflection(interp) {}
+  ~WallReflection_DoNothing() = default;
 
-  virtual void reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct, ParticleState &state)
+  virtual void reflect(const WINDSGeneralData *WGD,
+                       vec3 &pos,
+                       vec3 &dist,
+                       vec3 &fluct,
+                       ParticleState &state) override
   {}
 };
 
 class WallReflection_SetToInactive : public WallReflection
 {
 public:
-  WallReflection_SetToInactive(Interp *interp)
-    : WallReflection(interp)
-  {}
-  ~WallReflection_SetToInactive()
-  {}
+  explicit WallReflection_SetToInactive(Interp *interp) : WallReflection(interp) {}
+  ~WallReflection_SetToInactive() = default;
 
-  virtual void reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct, ParticleState &state) override;
+  void reflect(const WINDSGeneralData *WGD,
+               vec3 &pos,
+               vec3 &dist,
+               vec3 &fluct,
+               ParticleState &state) override;
 };
