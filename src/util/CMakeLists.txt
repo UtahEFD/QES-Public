@@ -1,36 +1,36 @@
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 SET(qesUtilSources
-        ArgumentParsing.cpp ArgumentParsing.h
-        ParseInterface.h
-        ParseException.h
+  ArgumentParsing.cpp ArgumentParsing.h
+  ParseInterface.h
+  ParseException.h
+  
+  ESRIShapefile.cpp ESRIShapefile.h
+  GIStool.cpp
+  
+  QESout.cpp
+  TimerTool.h
+  
+  doesFolderExist.h
+  calcTime.cpp calcTime.h
+  
+  BVH.cpp
+  HitRecord.cpp HitRecord.h
+  Mesh.cpp
+  Triangle.cpp
+  Ray.cpp Ray.h
+  SphereDirections.cpp SphereDirections.h
 
-        ESRIShapefile.cpp ESRIShapefile.h
-        GIStool.cpp
-
-        QESout.cpp
-        TimerTool.h
-
-        doesFolderExist.h
-        calcTime.cpp calcTime.h
-
-        BVH.cpp
-        HitRecord.cpp HitRecord.h
-        Mesh.cpp
-        Triangle.cpp
-        Ray.cpp Ray.h
-        SphereDirections.cpp SphereDirections.h
-
-        NetCDFInput.cpp
-        NetCDFOutput.cpp
-        QESNetCDFOutput.cpp
-        QESFileSystemHandler.cpp
-
-        QESFileOutput_v2.cpp
-        QESNetCDFOutput_v2.cpp
-        DataSource.cpp
-
-        QEStime.cpp)
+  NetCDFInput.cpp
+  NetCDFOutput.cpp
+  QESNetCDFOutput.cpp
+  QESFileSystemHandler.cpp
+  
+  QESFileOutput_v2.cpp
+  QESNetCDFOutput_v2.cpp
+  DataSource.cpp
+  
+  QEStime.cpp)
 
 ADD_LIBRARY(qesutil ${LIB_TYPE} ${qesUtilSources})
 

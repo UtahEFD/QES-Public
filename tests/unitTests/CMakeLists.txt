@@ -10,7 +10,7 @@ link_external_libraries(unit_test_example_t00)
 target_link_libraries(unit_test_example_t00 PRIVATE Catch2::Catch2WithMain)
 
 unset(UNITTESTS)
-  
+
 add_executable(util_time util_time.cpp)
 list(APPEND UNITTESTS util_time)
 
@@ -38,7 +38,7 @@ list(APPEND UNITTESTS plume_input)
 
 add_executable(plume_managed_container plume_managed_container.cpp)
 list(APPEND UNITTESTS plume_managed_container)
-  
+
 add_executable(test_qesDataTransporter test_qesDataTransporter.cpp)
 list(APPEND UNITTESTS test_qesDataTransporter)
 
@@ -50,31 +50,31 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
   target_link_libraries(test_GPU PRIVATE qesutilgpu)
   target_link_libraries(test_GPU PRIVATE ${CUDA_LIBRARIES})
   list(APPEND UNITTESTS test_GPU)
-
+  
   add_executable(test_CUDARandomGen
     CUDARandomKernel.cu CUDARandomKernel.h
     test_CUDARandomGen.cpp)
   target_link_libraries(test_CUDARandomGen PRIVATE ${CUDA_LIBRARIES})
   target_link_libraries(test_CUDARandomGen PRIVATE ${CUDA_curand_LIBRARY})
   list(APPEND UNITTESTS test_CUDARandomGen)
-
+  
   add_executable(util_vector_classes_GPU
     CUDA_vector_testkernel.cu CUDA_vector_testkernel.h
     util_vector_classes_GPU.cpp)
   list(APPEND UNITTESTS util_vector_classes_GPU)
-
+  
   add_executable(util_advect_GPU
     CUDA_advect_testkernel.cu
     util_advect_GPU.cpp)
   list(APPEND UNITTESTS util_advect_GPU)
-
+  
   add_executable(test_particle_partition_GPU
     CUDA_particle_partition_testkernel.cu
     test_particle_partition_GPU.cpp)
   target_link_libraries(test_particle_partition_GPU PRIVATE ${CUDA_LIBRARIES})
   target_link_libraries(test_particle_partition_GPU PRIVATE ${CUDA_curand_LIBRARY})
   list(APPEND UNITTESTS test_particle_partition_GPU)
-
+  
   add_executable(test_advect_partition_GPU
     CUDA_particle_partition.cu
     CUDA_boundary_conditions.cu

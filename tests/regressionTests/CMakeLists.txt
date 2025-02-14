@@ -9,7 +9,7 @@ add_executable(plume_uniform plume_uniform.cpp)
 list(APPEND REGRESSTESTS plume_uniform)
 
 foreach (regresstest ${REGRESSTESTS})
-
+  
   target_link_libraries(${regresstest} PRIVATE qesplumecore)
   IF ($CACHE{HAS_CUDA_SUPPORT})
     target_link_libraries(${regresstest} PRIVATE qeswindsgpu)

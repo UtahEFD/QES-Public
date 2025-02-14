@@ -76,54 +76,51 @@ TEST_CASE("Testing QES-TURB derivatives GPU")
   auto *WGD = new WINDSGeneralData(domain);
   auto *TGD = new TURBGeneralData(WGD);
 
-  SECTION("testing velocity derivatives")
-  {
-    std::vector<float> dudx, dvdx, dwdx;
-    dudx.resize(WGD->domain.nx() - 1, 0.0);
-    dvdx.resize(WGD->domain.nx() - 1, 0.0);
-    dwdx.resize(WGD->domain.nx() - 1, 0.0);
+  std::cout << "checking velocity derivatives" << std::endl;
 
-    std::vector<float> dudy, dvdy, dwdy;
-    dudy.resize(WGD->domain.ny() - 1, 0.0);
-    dvdy.resize(WGD->domain.ny() - 1, 0.0);
-    dwdy.resize(WGD->domain.ny() - 1, 0.0);
+  std::vector<float> dudx, dvdx, dwdx;
+  dudx.resize(WGD->domain.nx() - 1, 0.0);
+  dvdx.resize(WGD->domain.nx() - 1, 0.0);
+  dwdx.resize(WGD->domain.nx() - 1, 0.0);
 
-    std::vector<float> dudz, dvdz, dwdz;
-    dudz.resize(WGD->domain.nz() - 1, 0.0);
-    dvdz.resize(WGD->domain.nz() - 1, 0.0);
-    dwdz.resize(WGD->domain.nz() - 1, 0.0);
+  std::vector<float> dudy, dvdy, dwdy;
+  dudy.resize(WGD->domain.ny() - 1, 0.0);
+  dvdy.resize(WGD->domain.ny() - 1, 0.0);
+  dwdy.resize(WGD->domain.ny() - 1, 0.0);
 
-    setVelocityDerivatives(&dudx, &dudy, &dudz, &dvdx, &dvdy, &dvdz, &dwdx, &dwdy, &dwdz, WGD);
-    TGD->derivativeVelocity();
+  std::vector<float> dudz, dvdz, dwdz;
+  dudz.resize(WGD->domain.nz() - 1, 0.0);
+  dvdz.resize(WGD->domain.nz() - 1, 0.0);
+  dwdz.resize(WGD->domain.nz() - 1, 0.0);
 
-    std::cout << "Checking..." << std::endl;
-    REQUIRE(compError1Dx(&dudx, &(TGD->Gxx), domain) < tol);
-    REQUIRE(compError1Dx(&dvdx, &(TGD->Gyx), domain) < tol);
-    REQUIRE(compError1Dx(&dwdx, &(TGD->Gzx), domain) < tol);
+  setVelocityDerivatives(&dudx, &dudy, &dudz, &dvdx, &dvdy, &dvdz, &dwdx, &dwdy, &dwdz, WGD);
+  TGD->derivativeVelocity();
 
-    REQUIRE(compError1Dy(&dudy, &(TGD->Gxy), domain) < tol);
-    REQUIRE(compError1Dy(&dvdy, &(TGD->Gyy), domain) < tol);
-    REQUIRE(compError1Dy(&dwdy, &(TGD->Gzy), domain) < tol);
+  REQUIRE(compError1Dx(&dudx, &(TGD->Gxx), domain) < tol);
+  REQUIRE(compError1Dx(&dvdx, &(TGD->Gyx), domain) < tol);
+  REQUIRE(compError1Dx(&dwdx, &(TGD->Gzx), domain) < tol);
 
-    REQUIRE(compError1Dz(&dudz, &(TGD->Gxz), domain) < tol);
-    REQUIRE(compError1Dz(&dvdz, &(TGD->Gyz), domain) < tol);
-    REQUIRE(compError1Dz(&dwdz, &(TGD->Gzz), domain) < tol);
-  }
-  SECTION("testing stress tensor derivatives")
-  {
-    std::vector<float> div_tau_x, div_tau_y, div_tau_z;
-    div_tau_x.resize(WGD->domain.nx() - 1, 0.0);
-    div_tau_y.resize(WGD->domain.ny() - 1, 0.0);
-    div_tau_z.resize(WGD->domain.nz() - 1, 0.0);
+  REQUIRE(compError1Dy(&dudy, &(TGD->Gxy), domain) < tol);
+  REQUIRE(compError1Dy(&dvdy, &(TGD->Gyy), domain) < tol);
+  REQUIRE(compError1Dy(&dwdy, &(TGD->Gzy), domain) < tol);
 
-    setStressDerivatives(&div_tau_x, &div_tau_y, &div_tau_z, TGD);
-    TGD->divergenceStress();
+  REQUIRE(compError1Dz(&dudz, &(TGD->Gxz), domain) < tol);
+  REQUIRE(compError1Dz(&dvdz, &(TGD->Gyz), domain) < tol);
+  REQUIRE(compError1Dz(&dwdz, &(TGD->Gzz), domain) < tol);
 
-    std::cout << "Checking..." << std::endl;
-    REQUIRE(compError1Dx(&div_tau_x, &(TGD->div_tau_x), domain) < tol);
-    REQUIRE(compError1Dy(&div_tau_y, &(TGD->div_tau_y), domain) < tol);
-    REQUIRE(compError1Dz(&div_tau_z, &(TGD->div_tau_z), domain) < tol);
-  }
+  std::cout << "checking stress tensor derivatives" << std::endl;
+
+  std::vector<float> div_tau_x, div_tau_y, div_tau_z;
+  div_tau_x.resize(WGD->domain.nx() - 1, 0.0);
+  div_tau_y.resize(WGD->domain.ny() - 1, 0.0);
+  div_tau_z.resize(WGD->domain.nz() - 1, 0.0);
+
+  setStressDerivatives(&div_tau_x, &div_tau_y, &div_tau_z, TGD);
+  TGD->divergenceStress();
+
+  REQUIRE(compError1Dx(&div_tau_x, &(TGD->div_tau_x), domain) < tol);
+  REQUIRE(compError1Dy(&div_tau_y, &(TGD->div_tau_y), domain) < tol);
+  REQUIRE(compError1Dz(&div_tau_z, &(TGD->div_tau_z), domain) < tol);
 }
 
 void setVelocityDerivatives(std::vector<float> *dudx,
