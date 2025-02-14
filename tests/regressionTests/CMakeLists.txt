@@ -1,15 +1,12 @@
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
-add_executable(plume_sinusoidal
-  plume_sinusoidal.cpp)
+unset(REGRESSTESTS)
 
-add_executable(plume_uniform
-  plume_uniform.cpp)
+add_executable(plume_sinusoidal plume_sinusoidal.cpp)
+list(APPEND REGRESSTESTS plume_sinusoidal)
 
-
-set(REGRESSTESTS
-  plume_sinusoidal
-  plume_uniform)
+add_executable(plume_uniform plume_uniform.cpp)
+list(APPEND REGRESSTESTS plume_uniform)
 
 foreach (regresstest ${REGRESSTESTS})
 

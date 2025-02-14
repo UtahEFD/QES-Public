@@ -49,27 +49,32 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
   SET_TARGET_PROPERTIES(test_GPU PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
   target_link_libraries(test_GPU PRIVATE qesutilgpu)
   target_link_libraries(test_GPU PRIVATE ${CUDA_LIBRARIES})
-  
+  list(APPEND UNITTESTS test_GPU)
+
   add_executable(test_CUDARandomGen
     CUDARandomKernel.cu CUDARandomKernel.h
     test_CUDARandomGen.cpp)
   target_link_libraries(test_CUDARandomGen PRIVATE ${CUDA_LIBRARIES})
   target_link_libraries(test_CUDARandomGen PRIVATE ${CUDA_curand_LIBRARY})
-  
+  list(APPEND UNITTESTS test_CUDARandomGen)
+
   add_executable(util_vector_classes_GPU
     CUDA_vector_testkernel.cu CUDA_vector_testkernel.h
     util_vector_classes_GPU.cpp)
-  
+  list(APPEND UNITTESTS util_vector_classes_GPU)
+
   add_executable(util_advect_GPU
     CUDA_advect_testkernel.cu
     util_advect_GPU.cpp)
-  
+  list(APPEND UNITTESTS util_advect_GPU)
+
   add_executable(test_particle_partition_GPU
     CUDA_particle_partition_testkernel.cu
     test_particle_partition_GPU.cpp)
   target_link_libraries(test_particle_partition_GPU PRIVATE ${CUDA_LIBRARIES})
   target_link_libraries(test_particle_partition_GPU PRIVATE ${CUDA_curand_LIBRARY})
-  
+  list(APPEND UNITTESTS test_particle_partition_GPU)
+
   add_executable(test_advect_partition_GPU
     CUDA_particle_partition.cu
     CUDA_boundary_conditions.cu
@@ -80,7 +85,8 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
   target_link_libraries(test_advect_partition_GPU PRIVATE qesutilgpu)
   target_link_libraries(test_advect_partition_GPU PRIVATE ${CUDA_LIBRARIES})
   target_link_libraries(test_advect_partition_GPU PRIVATE ${CUDA_curand_LIBRARY})
-  
+  list(APPEND UNITTESTS test_advect_partition_GPU)
+
   add_executable(test_interpolation_GPU
     CUDA_QES_Data.cu
     CUDA_interpolation.cu
@@ -88,7 +94,8 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
     test_interpolation_GPU.cpp)
   target_link_libraries(test_interpolation_GPU PRIVATE ${CUDA_LIBRARIES})
   target_link_libraries(test_interpolation_GPU PRIVATE ${CUDA_curand_LIBRARY})
-  
+  list(APPEND UNITTESTS test_interpolation_GPU)
+
   add_executable(test_concentration_GPU
     CUDA_concentration.cu
     CUDA_particle_partition.cu
@@ -96,7 +103,8 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
     test_concentration_GPU.cpp)
   target_link_libraries(test_concentration_GPU PRIVATE ${CUDA_LIBRARIES})
   target_link_libraries(test_concentration_GPU PRIVATE ${CUDA_curand_LIBRARY})
-  
+  list(APPEND UNITTESTS test_concentration_GPU)
+
   #add_executable(test_plume_GPU
   #  CUDA_QES_Data.cu
   #  CUDA_interpolation.cu
@@ -110,43 +118,20 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
   #target_link_libraries(test_plume_GPU PRIVATE qesutilgpu)
   #target_link_libraries(test_plume_GPU PRIVATE ${CUDA_LIBRARIES})
   #target_link_libraries(test_plume_GPU PRIVATE ${CUDA_curand_LIBRARY})
-  
+  #list(APPEND UNITTESTS util_vector_classes_GPU)
+
   add_executable(util_buffer_GPU
     CUDA_buffer_testkernel.cu
     util_buffer_GPU.cpp)
-  
+  list(APPEND UNITTESTS util_buffer_GPU)
+
   add_executable(test_CUDAPartition
     CUDAPartitionKernel.cu CUDAPartitionKernel.h
     test_CUDAPartition.cpp)
   target_link_libraries(test_CUDAPartition PRIVATE ${CUDA_LIBRARIES})
   target_link_libraries(test_CUDAPartition PRIVATE ${CUDA_curand_LIBRARY})
+  list(APPEND UNITTESTS test_CUDAPartition)
 
-  list(APPEND UNITTESTS
-    #util_time
-    #util_vector_classes_CPU
-    util_vector_classes_GPU
-    util_advect_GPU
-    util_buffer_GPU
-    #winds_terrain
-    #turbulence_derivative_CPU
-    #plume_IDGenerator
-    #plume_interpolation_CPU
-    #plume_input
-    #plume_particle_buffer
-    test_GPU
-    test_CUDARandomGen
-    test_CUDAPartition
-    test_particle_partition_GPU
-    test_advect_partition_GPU
-    test_interpolation_GPU
-    test_concentration_GPU)
-    #test_plume_GPU)
-
-  
-ELSE ($CACHE{HAS_CUDA_SUPPORT})
-  
-
-  
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 foreach (unittest ${UNITTESTS})

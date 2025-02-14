@@ -1,55 +1,45 @@
-
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-SET( qesUtilSources
-  ArgumentParsing.cpp ArgumentParsing.h
-  ParseInterface.h
-  ParseException.h
-  
-  ESRIShapefile.cpp ESRIShapefile.h
-  GIStool.cpp
+SET(qesUtilSources
+        ArgumentParsing.cpp ArgumentParsing.h
+        ParseInterface.h
+        ParseException.h
 
-  QESout.cpp
-  TimerTool.h
-  
-  doesFolderExist.h
-  calcTime.cpp calcTime.h
+        ESRIShapefile.cpp ESRIShapefile.h
+        GIStool.cpp
 
-  BVH.cpp
-  HitRecord.cpp HitRecord.h
-  Mesh.cpp
-  Triangle.cpp
-  Ray.cpp Ray.h
-  SphereDirections.cpp SphereDirections.h
+        QESout.cpp
+        TimerTool.h
 
-  NetCDFInput.cpp
-  NetCDFOutput.cpp
-  QESNetCDFOutput.cpp 
-  QESFileSystemHandler.cpp
+        doesFolderExist.h
+        calcTime.cpp calcTime.h
 
-  QESFileOutput_v2.cpp
-  QESNetCDFOutput_v2.cpp
-  DataSource.cpp
+        BVH.cpp
+        HitRecord.cpp HitRecord.h
+        Mesh.cpp
+        Triangle.cpp
+        Ray.cpp Ray.h
+        SphereDirections.cpp SphereDirections.h
 
-  QEStime.cpp)
+        NetCDFInput.cpp
+        NetCDFOutput.cpp
+        QESNetCDFOutput.cpp
+        QESFileSystemHandler.cpp
 
-#IF ($CACHE{HAS_CUDA_SUPPORT})
-#  CUDA_ADD_LIBRARY(qesutil ${LIB_TYPE} ${qesUtilSources})
-#ELSE ($CACHE{HAS_CUDA_SUPPORT})
+        QESFileOutput_v2.cpp
+        QESNetCDFOutput_v2.cpp
+        DataSource.cpp
+
+        QEStime.cpp)
+
 ADD_LIBRARY(qesutil ${LIB_TYPE} ${qesUtilSources})
+
 IF ($CACHE{HAS_CUDA_SUPPORT})
   TARGET_INCLUDE_DIRECTORIES(qesutil PRIVATE {CUDAToolkit_INCLUDE_DIRS})
 ENDIF($CACHE{HAS_CUDA_SUPPORT})
-#ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
-  ADD_LIBRARY(qesutilgpu STATIC 
-     VectorMath_CUDA.cu VectorMath_CUDA.h)
+  ADD_LIBRARY(qesutilgpu STATIC VectorMath_CUDA.cu VectorMath_CUDA.h)
   TARGET_INCLUDE_DIRECTORIES(qesutilgpu PRIVATE {CUDAToolkit_INCLUDE_DIRS})
   SET_TARGET_PROPERTIES(qesutilgpu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
-
-
-#FILE(GLOB files "*.h")
-#INSTALL(FILES ${files} DESTINATION include/util)
-#INSTALL(TARGETS qesutil LIBRARY ARCHIVE DESTINATION lib)
