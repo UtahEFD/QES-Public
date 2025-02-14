@@ -33,7 +33,7 @@
  */
 #pragma once
 
-#include "plume/IDGenerator.h"
+#include "plume/ParticleIDGen.h"
 
 #include "plume/cuda/QES_data.h"
 #include "plume/cuda/Interpolation.h"
@@ -57,7 +57,7 @@ class Model
 public:
   Model()
   {
-    id_gen = IDGenerator::getInstance();
+    id_gen = ParticleIDGen::getInstance();
   }
 
   ~Model()
@@ -78,5 +78,5 @@ public:
                       RandomGenerator *random);
 
 private:
-  IDGenerator *id_gen;
+  ParticleIDGen *id_gen;
 };

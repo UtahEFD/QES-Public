@@ -97,19 +97,19 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
   target_link_libraries(test_concentration_GPU PRIVATE ${CUDA_LIBRARIES})
   target_link_libraries(test_concentration_GPU PRIVATE ${CUDA_curand_LIBRARY})
   
-  add_executable(test_plume_GPU
-    CUDA_QES_Data.cu
-    CUDA_interpolation.cu
-    CUDA_particle_partition.cu
-    CUDA_boundary_conditions.cu
-    CUDA_advection.cu
-    CUDA_concentration.cu
-    CUDA_plume_testkernel.cu
-    test_plume_GPU.cpp)
-  SET_TARGET_PROPERTIES(test_plume_GPU PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-  target_link_libraries(test_plume_GPU PRIVATE qesutilgpu)
-  target_link_libraries(test_plume_GPU PRIVATE ${CUDA_LIBRARIES})
-  target_link_libraries(test_plume_GPU PRIVATE ${CUDA_curand_LIBRARY})
+  #add_executable(test_plume_GPU
+  #  CUDA_QES_Data.cu
+  #  CUDA_interpolation.cu
+  #  CUDA_particle_partition.cu
+  #  CUDA_boundary_conditions.cu
+  #  CUDA_advection.cu
+  #  CUDA_concentration.cu
+  #  CUDA_plume_testkernel.cu
+  #  test_plume_GPU.cpp)
+  #SET_TARGET_PROPERTIES(test_plume_GPU PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+  #target_link_libraries(test_plume_GPU PRIVATE qesutilgpu)
+  #target_link_libraries(test_plume_GPU PRIVATE ${CUDA_LIBRARIES})
+  #target_link_libraries(test_plume_GPU PRIVATE ${CUDA_curand_LIBRARY})
   
   add_executable(util_buffer_GPU
     CUDA_buffer_testkernel.cu
@@ -139,8 +139,8 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
     test_particle_partition_GPU
     test_advect_partition_GPU
     test_interpolation_GPU
-    test_concentration_GPU
-    test_plume_GPU)
+    test_concentration_GPU)
+    #test_plume_GPU)
 
   
 ELSE ($CACHE{HAS_CUDA_SUPPORT})

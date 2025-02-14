@@ -50,3 +50,8 @@ struct QESTurbData
   float *nuT;
   float *tke;
 };
+
+void copy_data_gpu(const WINDSGeneralData *WGD, QESWindsData &d_qes_winds_data);
+void copy_data_gpu(const TURBGeneralData *TGD, QESTurbData &d_qes_turb_data);
+void copy_data_gpu(const int &num_face, QESWindsData &d_qes_winds_data);
+void copy_data_gpu(const int &num_cell, QESTurbData &d_qes_turb_data);

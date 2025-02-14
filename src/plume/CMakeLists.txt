@@ -71,12 +71,13 @@ SET( qesPlumeCoreSources
 #ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
-  CUDA_ADD_LIBRARY(qesplumegpu
+  ADD_LIBRARY(qesplumegpu
     cuda/Partition.cu
     cuda/RandomGenerator.cpp
     cuda/Interpolation.cu
     cuda/Model.cu
     cuda/Concentration.cu)
+  SET_TARGET_PROPERTIES(qesplumegpu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 #target_link_libraries (qesplumecore quicloader) 

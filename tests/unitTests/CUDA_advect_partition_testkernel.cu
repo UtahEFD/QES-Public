@@ -3,7 +3,7 @@
 
 // #include "util/VectorMath_CUDA.cuh"
 
-#include "plume/IDGenerator.h"
+#include "plume/ParticleIDGen.h"
 
 // #include "CUDA_GLE_Solver.cuh"
 //  #include "Particle.cuh"
@@ -92,8 +92,8 @@ void test_gpu(const int &ntest, const int &new_particle, const int &length)
   // CURAND_CALL(
   curandSetPseudoRandomGeneratorSeed(gen, 1234ULL);
 
-  IDGenerator *id_gen;
-  id_gen = IDGenerator::getInstance();
+  ParticleIDGen *id_gen;
+  id_gen = ParticleIDGen::getInstance();
 
   // set boundary condition
   bc_param.xStartDomain = 0;

@@ -1,13 +1,13 @@
 #include <catch2/catch_test_macros.hpp>
 #include <iostream>
 
-#include "util/QESout.h"
+// #include "util/QESout.h"
 
 
 TEST_CASE("A test to show Catch2 is working for Unit Tests")
 {
 
-  QESout::splashScreen();
+  // QESout::splashScreen();
 
   int sum = 2 + 2;
   REQUIRE(sum == 4);

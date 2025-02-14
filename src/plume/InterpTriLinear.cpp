@@ -150,13 +150,13 @@ void InterpTriLinear::setInterp3Dindex_uFace(const vec3 &pos, interpWeight &wgt)
   float par_y = pos._2 - 0.5f * dy;
   // float par_z = par_zPos + 0.5 * dz;
 
-  wgt.ii = std::floorf(par_x / (dx + 1e-7));
-  wgt.jj = std::floorf(par_y / (dy + 1e-7));
+  wgt.ii = std::floor(par_x / (dx + 1e-7));
+  wgt.jj = std::floor(par_y / (dy + 1e-7));
   // wgt.kk = floor(par_z / (dz + 1e-7));
 
   // fractional distance between the nearest nodes
-  wgt.iw = (par_x / dx) - std::floorf(par_x / (dx + 1e-7));
-  wgt.jw = (par_y / dy) - std::floorf(par_y / (dy + 1e-7));
+  wgt.iw = (par_x / dx) - std::floor(par_x / (dx + 1e-7));
+  wgt.jw = (par_y / dy) - std::floor(par_y / (dy + 1e-7));
   // wgt.kw = (par_z / dz) - floor(par_z / (dz + 1e-7));
 
   auto itr = std::lower_bound(domain.z.begin(), domain.z.end(), pos._3);
@@ -177,13 +177,13 @@ void InterpTriLinear::setInterp3Dindex_vFace(const vec3 &pos, interpWeight &wgt)
   float par_y = pos._2 - 0.0f * dy;
   // float par_z = par_zPos + 0.5 * dz;
 
-  wgt.ii = std::floorf(par_x / (dx + 1e-7));
-  wgt.jj = std::floorf(par_y / (dy + 1e-7));
+  wgt.ii = std::floor(par_x / (dx + 1e-7));
+  wgt.jj = std::floor(par_y / (dy + 1e-7));
   // wgt.kk = floor(par_z / (dz + 1e-7));
 
   // fractional distance between the nearest nodes
-  wgt.iw = (par_x / dx) - std::floorf(par_x / (dx + 1e-7));
-  wgt.jw = (par_y / dy) - std::floorf(par_y / (dy + 1e-7));
+  wgt.iw = (par_x / dx) - std::floor(par_x / (dx + 1e-7));
+  wgt.jw = (par_y / dy) - std::floor(par_y / (dy + 1e-7));
   // wgt.kw = (par_z / dz) - floor(par_z / (dz + 1e-4));
 
   auto itr = std::lower_bound(domain.z.begin(), domain.z.end(), pos._3);
@@ -208,8 +208,8 @@ void InterpTriLinear::setInterp3Dindex_wFace(const vec3 &pos, interpWeight &wgt)
   // wgt.kk = floor(par_z / (dz + 1e-7));
 
   // fractional distance between the nearest nodes
-  wgt.iw = (par_x / dx) - std::floorf(par_x / (dx + 1e-7));
-  wgt.jw = (par_y / dy) - std::floorf(par_y / (dy + 1e-7));
+  wgt.iw = (par_x / dx) - std::floor(par_x / (dx + 1e-7));
+  wgt.jw = (par_y / dy) - std::floor(par_y / (dy + 1e-7));
   // wgt.kw = (par_z / dz) - floor(par_z / (dz + 1e-7));
 
   auto itr = std::lower_bound(domain.z_face.begin(), domain.z_face.end(), pos._3);
@@ -301,13 +301,13 @@ void InterpTriLinear::setInterp3Dindex_cellVar(const vec3 &pos, interpWeight &wg
   // double par_z = par_zPos - zStart + 0.5*dz;
 
   // index of the nearest node in negative direction
-  wgt.ii = std::floorf(par_x / (dx + 1e-7));
-  wgt.jj = std::floorf(par_y / (dy + 1e-7));
+  wgt.ii = std::floor(par_x / (dx + 1e-7));
+  wgt.jj = std::floor(par_y / (dy + 1e-7));
   // wgt.kk = floor(par_z / (dz + 1e-7));
 
   // fractional distance between the nearest nodes
-  wgt.iw = (par_x / dx) - std::floorf(par_x / (dx + 1e-7));
-  wgt.jw = (par_y / dy) - std::floorf(par_y / (dy + 1e-7));
+  wgt.iw = (par_x / dx) - std::floor(par_x / (dx + 1e-7));
+  wgt.jw = (par_y / dy) - std::floor(par_y / (dy + 1e-7));
   // wgt.kw = (par_z / dz) - floor(par_z / (dz + 1e-7));
 
   auto itr = std::lower_bound(domain.z.begin(), domain.z.end(), pos._3);
