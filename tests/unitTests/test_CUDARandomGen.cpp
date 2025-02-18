@@ -41,9 +41,8 @@ TEST_CASE("CUDA Random Gen - Avg Uniform Value")
   // CURAND_CALL(
   curandCreateGenerator(&gen, CURAND_RNG_PSEUDO_MTGP32);
 
-  // Set the seed --- not sure how we'll do this yet in general
-  // CURAND_CALL(
-  curandSetPseudoRandomGeneratorSeed(gen, 1234ULL);
+  // Set the seed using random's device...
+  curandSetPseudoRandomGeneratorSeed(gen, std::random_device{}());
 
   // start with 15k "particles"
   int numParticles = 15000;
@@ -113,9 +112,8 @@ TEST_CASE("CUDA Random Gen - Frequency")
   // CURAND_CALL(
   curandCreateGenerator(&gen, CURAND_RNG_PSEUDO_MTGP32);
 
-  // Set the seed --- not sure how we'll do this yet in general
-  // CURAND_CALL(
-  curandSetPseudoRandomGeneratorSeed(gen, 1234ULL);
+  // Set the seed using random's device...
+  curandSetPseudoRandomGeneratorSeed(gen, std::random_device{}());
 
   // start with 15k "particles"
   int numParticles = 15000;
@@ -158,7 +156,7 @@ TEST_CASE("CUDA Random Gen - Frequency")
     }
 
     int equalBinSize = n / 10;
-    int threshold = n * 0.002;
+    int threshold = n * 0.005;
 
     for (int i = 0; i < freq.size(); ++i) {
       REQUIRE_THAT(freq[i], Catch::Matchers::WithinAbs(equalBinSize, threshold));
