@@ -6,5 +6,4 @@
 
 #include "util/VectorMath.h"
 
-
 void test_gpu_buffer(const int &);

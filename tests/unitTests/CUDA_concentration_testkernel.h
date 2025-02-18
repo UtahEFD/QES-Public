@@ -12,6 +12,11 @@
 
 #include "Particle.h"
 
+#include "util/VectorMath_CUDA.h"
+#include "plume/CUDA/Partition.h"
+#include "plume/CUDA/Concentration.h"
+
+
 #include <cuda.h>
 #include <curand.h>
 

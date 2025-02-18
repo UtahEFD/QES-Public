@@ -31,52 +31,59 @@
 /** @file
  * @brief
  */
-#pragma once
 
-#include "plume/ParticleIDGen.h"
+#ifndef __CUDA_RANDOMGENERATOR_H__
+#define __CUDA_RANDOMGENERATOR_H__
 
-#include "plume/cuda/QES_data.h"
-#include "plume/cuda/Interpolation.h"
-#include "plume/cuda/Partition.h"
-#include "plume/cuda/RandomGenerator.h"
+#include <cmath>
+#include <map>
+#include <utility>
+
+#include <cuda.h>
+#include <curand.h>
+
+#include "util/VectorMath.h"
 
 typedef struct
 {
-  float xStartDomain;
-  float yStartDomain;
-  float zStartDomain;
+  int length;
+  float *vals;
+} rng_array;
 
-  float xEndDomain;
-  float yEndDomain;
-  float zEndDomain;
-
-} BC_Params;
-
-class Model
+class RandomGenerator
 {
 public:
-  Model()
+  RandomGenerator()
   {
-    id_gen = ParticleIDGen::getInstance();
+    // Create pseudo-random number generator
+    // CURAND_CALL(
+    curandCreateGenerator(&gen, CURAND_RNG_PSEUDO_MTGP32);
+
+    // Set the seed --- not sure how we'll do this yet in general
+    // CURAND_CALL(
+    curandSetPseudoRandomGeneratorSeed(gen, 1234ULL);
   }
 
-  ~Model()
+  ~RandomGenerator()
   {
+    // std::cout << "RNG KABOOM" << std::endl;
+    freeAll();
+    // Cleanup
+    curandDestroyGenerator(gen);
   }
 
-  void getNewParticle(const int &num_new_particle,
-                      particle_array d_particle,
-                      const QESTurbData &d_qes_turb_data,
-                      const QESgrid &qes_grid,
-                      RandomGenerator *random,
-                      Interpolation *interpolation,
-                      Partition *partition);
+  float *get(const std::string &key) { return arrays[key].vals; }
 
-  void advectParticle(particle_array d_particle,
-                      const int &num_new_particle,
-                      const BC_Params &bc_param,
-                      RandomGenerator *random);
+  void create(const std::string &, const int &length);
+  void generate(const std::string &, const float &, const float &);
+  void destroy(const std::string &);
 
 private:
-  ParticleIDGen *id_gen;
+  void freeAll();
+
+  curandGenerator_t gen;
+
+  std::map<std::string, rng_array> arrays;
 };
+
+#endif

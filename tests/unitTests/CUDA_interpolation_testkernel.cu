@@ -1,10 +1,6 @@
 
 #include "CUDA_interpolation_testkernel.h"
 
-#include "util/VectorMath_CUDA.h"
-
-#include "CUDA_interpolation.cuh"
-
 __device__ __managed__ QESgrid qes_grid;
 
 void allocate_device_particle_list(particle_array &d_particle_list, int length)

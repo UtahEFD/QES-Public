@@ -52,11 +52,11 @@ ADD_LIBRARY(qesplumecore ${qesPlumeCoreSources})
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
   SET(qesPlumeGPUSources
-    cuda/Partition.cu
-    cuda/RandomGenerator.cpp
-    cuda/Interpolation.cu
-    cuda/Model.cu
-    cuda/Concentration.cu)
+    CUDA/Partition.cu
+    CUDA/RandomGenerator.cpp
+    CUDA/Interpolation.cu
+    CUDA/Model.cu
+    CUDA/Concentration.cu)
   
   ADD_LIBRARY(qesplumegpu ${qesPlumeGPUSources})
   TARGET_INCLUDE_DIRECTORIES(qesplumegpu PRIVATE {CUDAToolkit_INCLUDE_DIRS})

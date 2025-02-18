@@ -6,8 +6,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "util/VectorMath.h"
-
 #include "CUDA_concentration_testkernel.h"
 
 TEST_CASE("test")

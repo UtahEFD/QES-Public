@@ -31,50 +31,54 @@
 /** @file
  * @brief
  */
-#pragma once
 
-#include "plume/Particle.h"
+#ifndef __CUDA_PARTITION_H__
+#define __CUDA_PARTITION_H__
 
-struct ConcentrationParam
-{
-  float lbndx, lbndy, lbndz;
-  float ubndx, ubndy, ubndz;
+#include <cmath>
+#include <utility>
 
-  float dx, dy, dz;
+#include "util/VectorMath.h"
+#include "Particle.h"
 
-  int nx, ny, nz;
-};
-
-class Concentration
+class Partition
 {
 public:
-  Concentration(const ConcentrationParam param_in) : param(param_in)
+  Partition(const int &s) : m_length(s)
   {
-    volume = param.dx * param.dy * param.dz;
-    numcell = param.nx * param.ny * param.nz;
-
-    h_pBox.resize(numcell, 0.0);
-    cudaMalloc(&d_pBox, numcell * sizeof(int));
+    allocate_device();
+  }
+  ~Partition()
+  {
+    // std::cout << "call partition KABOOM" << std::endl;
+    free_device();
   }
 
-  ~Concentration()
-  {
-    cudaFree(d_pBox);
-  }
+  int active() { return h_lower_count; }
+  int empty() { return h_upper_count; }
+  int length() { return m_length; }
 
-  void collect(const float &timeStep,
-               particle_array d_particle_list,
-               const int &num_particle);
-  void copyback();
-
-  float ongoingAveragingTime = 0.0;
-  float volume;
+  void allocate_device_particle_list(particle_array &d_particle_list, const int &length);
+  void free_device_particle_list(particle_array &d_particle_list);
 
 
-  int *d_pBox;
-  std::vector<int> h_pBox;
+  int run(int k, particle_array d_particle[]);
+  void insert(int new_particle, particle_array d_new_particle, particle_array d_particle);
+  void check(particle_array d_particle, int &active, int &empty);
 
 private:
-  const ConcentrationParam param;
-  long numcell;
+  Partition() : m_length(0) {}
+
+  void allocate_device();
+  void free_device();
+
+  int m_length;
+  int m_gpuID = 0;
+
+  int h_lower_count = 0, h_upper_count = 0;
+  int *d_lower_count, *d_upper_count;
+
+  int *d_sorting_index;
 };
+
+#endif

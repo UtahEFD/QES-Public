@@ -13,7 +13,8 @@
 #include <cuda.h>
 #include <curand.h>
 
-#include "plume/cuda/QES_data.h"
-
+#include "plume/CUDA/QES_data.h"
+#include "util/VectorMath_CUDA.h"
+#include "plume/CUDA/Interpolation.h"
 
 void test_gpu(const int &, const int &, const int &);
