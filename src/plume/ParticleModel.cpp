@@ -34,6 +34,7 @@
 
 #include "ParticleModel.h"
 
+#include <cstdint>
 #include <utility>
 
 #include "PLUMEInputData.h"
@@ -75,7 +76,7 @@ void ParticleModel::generateParticleList(QEStime &timeCurrent,
   for (auto s : sources) {
     if (s->isActive(timeCurrent)) {
       std::vector<size_t> newIdx;
-      particles_control.obtain_available(s->data().get_ref<std::vector<u_int32_t>>("ID").size(),
+      particles_control.obtain_available(s->data().get_ref<std::vector<uint32_t>>("ID").size(),
                                          newIdx);
 
       for (size_t k = 0; k < newIdx.size(); ++k) {
@@ -84,7 +85,7 @@ void ParticleModel::generateParticleList(QEStime &timeCurrent,
 
       if (s->data().contains("mass")) {
         for (size_t k = 0; k < newIdx.size(); ++k) {
-          particles_core[newIdx[k]].reset(s->data().get_ref<std::vector<u_int32_t>>("ID")[k],
+          particles_core[newIdx[k]].reset(s->data().get_ref<std::vector<uint32_t>>("ID")[k],
                                           s->data().get_ref<std::vector<vec3>>("position")[k],
                                           s->data().get_ref<std::vector<float>>("diameter")[k],
                                           s->data().get_ref<std::vector<float>>("mass")[k],
@@ -92,7 +93,7 @@ void ParticleModel::generateParticleList(QEStime &timeCurrent,
         }
       } else {
         for (size_t k = 0; k < newIdx.size(); ++k) {
-          particles_core[newIdx[k]].reset(s->data().get_ref<std::vector<u_int32_t>>("ID")[k],
+          particles_core[newIdx[k]].reset(s->data().get_ref<std::vector<uint32_t>>("ID")[k],
                                           s->data().get_ref<std::vector<vec3>>("position")[k]);
         }
       }
