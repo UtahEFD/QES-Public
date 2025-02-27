@@ -5,7 +5,11 @@
 	"boost-property-tree",
 	"netcdf-c",
 	"netcdf-cxx4",
-	"gdal",
+	{
+	    "name": "gdal",
+	    "default-features": false,
+	    "features": ["curl", "geos", "gif", "hdf5", "jpeg", "netcdf", "png"]
+	},
 	"nlohmann-json"
     ]
 }
