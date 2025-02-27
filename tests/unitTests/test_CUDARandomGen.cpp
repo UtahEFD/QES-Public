@@ -1,6 +1,7 @@
 #include <random>
 #include <bitset>
 #include <string>
+#include <iostream>
 #include <cstring>
 
 #include <cmath>
@@ -151,7 +152,9 @@ TEST_CASE("CUDA Random Gen - Frequency")
     for (int i = 0; i < n; i++) {
       float val = hostResults[i];
 
-      int bIdx = (int)floor(val * 10);
+      int bIdx = (int)floor(val * 10.0f);
+      // inssuring that val == 1 is in the top interval (val > 1 is not possible)
+      if (bIdx == 10) { bIdx = 9; }
       freq[bIdx]++;
     }
 
