@@ -6,6 +6,7 @@ include_directories(.)
 
 unset(UNITTESTS)
 
+## Example of empty unit test
 add_executable(example_t00 t00.cpp)
 list(APPEND UNITTESTS example_t00)
 
@@ -37,8 +38,8 @@ list(APPEND UNITTESTS plume_input)
 add_executable(plume_managed_container plume_managed_container.cpp)
 list(APPEND UNITTESTS plume_managed_container)
 
-add_executable(test_qesDataTransporter test_qesDataTransporter.cpp)
-list(APPEND UNITTESTS test_qesDataTransporter)
+add_executable(util_qesDataTransporter util_qesDataTransporter.cpp)
+list(APPEND UNITTESTS util_qesDataTransporter)
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
   
@@ -54,16 +55,20 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
     CUDA_vector_testkernel.cu CUDA_vector_testkernel.h
     util_vector_classes_GPU.cpp)
   list(APPEND UNITTESTS util_vector_classes_GPU)
-
-  #add_executable(util_buffer_GPU
-  #  CUDA_buffer_testkernel.cu
-  #  util_buffer_GPU.cpp)
-  #list(APPEND UNITTESTS util_buffer_GPU)
   
   add_executable(test_CUDAPartition
     CUDAPartitionKernel.cu CUDAPartitionKernel.h
     test_CUDAPartition.cpp)
   list(APPEND UNITTESTS test_CUDAPartition)
+
+  #add_executable(plume_interpolation_GPU
+  #  CUDA_QES_Data.cu
+  #  CUDA_interpolation_testkernel.cu
+  #  test_interpolation_GPU.cpp)
+  #SET_TARGET_PROPERTIES(test_GPU PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+  #target_link_libraries(test_interpolation_GPU PRIVATE ${CUDA_LIBRARIES})
+  #target_link_libraries(test_interpolation_GPU PRIVATE ${CUDA_curand_LIBRARY})
+  #list(APPEND UNITTESTS test_interpolation_GPU)
   
   #add_executable(util_advect_GPU
   #  CUDA_advect_testkernel.cu
@@ -88,15 +93,6 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
   #target_link_libraries(test_advect_partition_GPU PRIVATE ${CUDA_LIBRARIES})
   #target_link_libraries(test_advect_partition_GPU PRIVATE ${CUDA_curand_LIBRARY})
   #list(APPEND UNITTESTS test_advect_partition_GPU)
-
-  #add_executable(test_interpolation_GPU
-  #  CUDA_QES_Data.cu
-  #  CUDA_interpolation_testkernel.cu
-  #  test_interpolation_GPU.cpp)
-  #SET_TARGET_PROPERTIES(test_GPU PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-  #target_link_libraries(test_interpolation_GPU PRIVATE ${CUDA_LIBRARIES})
-  #target_link_libraries(test_interpolation_GPU PRIVATE ${CUDA_curand_LIBRARY})
-  #list(APPEND UNITTESTS test_interpolation_GPU)
 
   #add_executable(test_concentration_GPU
   #  #CUDA_concentration.cu
