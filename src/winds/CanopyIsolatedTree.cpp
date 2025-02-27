@@ -54,8 +54,10 @@ void CanopyIsolatedTree::setCellFlags(const WINDSInputData *WID, WINDSGeneralDat
 {
   // When THIS canopy calls this function, we need to do the
   // following:
-  // readCanopy(nx, ny, nz, landuse_flag, num_canopies, lu_canopy_flag,
+  // readCanopy(grid.nx, grid.ny, nz, landuse_flag, num_canopies, lu_canopy_flag,
   // canopy_atten, canopy_top);
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
 
   // this function need to be called to defined the boundary of the canopy and the icellflags
   float ray_intersect;
@@ -67,9 +69,9 @@ void CanopyIsolatedTree::setCellFlags(const WINDSInputData *WID, WINDSGeneralDat
   // Check the center of each cell, if it's inside, set that cell to building
   for (auto j = j_start; j < j_end; j++) {
     // Center of cell y coordinate
-    float y_cent = (j + 0.5) * WGD->dy;
+    float y_cent = (j + 0.5) * dy;
     for (auto i = i_start; i < i_end; i++) {
-      float x_cent = (i + 0.5) * WGD->dx;
+      float x_cent = (i + 0.5) * dx;
       // Node index
       vert_id = 0;
       start_poly = vert_id;
@@ -93,24 +95,24 @@ void CanopyIsolatedTree::setCellFlags(const WINDSInputData *WID, WINDSGeneralDat
       // if num_crossing is odd = cell is oustside of the polygon
       // if num_crossing is even = cell is inside of the polygon
       if ((num_crossing % 2) != 0) {
-        int icell_2d = i + j * (WGD->nx - 1);
+        long icell_2d = WGD->domain.cell2d(i, j);
 
         if (WGD->icellflag_footprint[icell_2d] == 0) {
           // a  building exist here -> skip
         } else {
           // Define start index of the canopy in z-direction
-          for (size_t k = 1u; k < WGD->z.size(); k++) {
-            if (WGD->terrain[icell_2d] + base_height <= WGD->z[k]) {
+          for (size_t k = 1u; k < WGD->domain.z.size(); k++) {
+            if (WGD->terrain[icell_2d] + base_height <= WGD->domain.z[k]) {
               WGD->canopy->canopy_bot_index[icell_2d] = k;
               WGD->canopy->canopy_bot[icell_2d] = WGD->terrain[icell_2d] + base_height;
-              WGD->canopy->canopy_base[icell_2d] = WGD->z_face[k];
+              WGD->canopy->canopy_base[icell_2d] = WGD->domain.z_face[k];
               break;
             }
           }
 
           // Define end index of the canopy in z-direction
-          for (size_t k = 0u; k < WGD->z.size(); k++) {
-            if (WGD->terrain[icell_2d] + H < WGD->z[k + 1]) {
+          for (size_t k = 0u; k < WGD->domain.z.size(); k++) {
+            if (WGD->terrain[icell_2d] + H < WGD->domain.z[k + 1]) {
               WGD->canopy->canopy_top_index[icell_2d] = k + 1;
               WGD->canopy->canopy_top[icell_2d] = WGD->terrain[icell_2d] + H;
               break;
@@ -124,7 +126,7 @@ void CanopyIsolatedTree::setCellFlags(const WINDSInputData *WID, WINDSGeneralDat
 
           // define icellflag @ (x,y) for all z(k) in [k_start...k_end]
           for (auto k = WGD->canopy->canopy_bot_index[icell_2d]; k < WGD->canopy->canopy_top_index[icell_2d]; k++) {
-            int icell_3d = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+            long icell_3d = WGD->domain.cell(i, j, k);
             if (WGD->icellflag[icell_3d] != 0 && WGD->icellflag[icell_3d] != 2) {
               // Canopy cell
               WGD->icellflag[icell_3d] = getCellFlagCanopy();
@@ -142,7 +144,7 @@ void CanopyIsolatedTree::setCellFlags(const WINDSInputData *WID, WINDSGeneralDat
     k_start = 0;
     k_end = 0;
   } else {
-    k_start = WGD->nz - 1;
+    k_start = nz - 1;
     k_end = 0;
     for (size_t k = 0u; k < canopy_cell2D.size(); k++) {
       if (WGD->canopy->canopy_bot_index[canopy_cell2D[k]] < k_start)
@@ -157,7 +159,7 @@ void CanopyIsolatedTree::setCellFlags(const WINDSInputData *WID, WINDSGeneralDat
     exit(EXIT_FAILURE);
   }
 
-  if (ceil(1.5 * k_end) > WGD->nz - 1) {
+  if (ceil(1.5 * k_end) > nz - 1) {
     std::cerr << "ERROR domain too short for tree method" << std::endl;
     exit(EXIT_FAILURE);
   }
@@ -168,19 +170,20 @@ void CanopyIsolatedTree::setCellFlags(const WINDSInputData *WID, WINDSGeneralDat
 
 void CanopyIsolatedTree::canopyVegetation(WINDSGeneralData *WGD, int tree_id)
 {
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
 
   // apply canopy parameterization
   float avg_atten; /**< average attenuation of the canopy */
   float veg_vel_frac; /**< vegetation velocity fraction */
-  //int num_atten;
+  // int num_atten;
 
   for (size_t n = 0u; n < canopy_cell2D.size(); ++n) {
     int icell_2d = canopy_cell2D[n];
 
     if (WGD->canopy->canopy_top[icell_2d] > 0) {
-      int j = (int)((icell_2d) / (WGD->nx - 1));
-      int i = icell_2d - j * (WGD->nx - 1);
-      int icell_3d = icell_2d + (WGD->canopy->canopy_top_index[icell_2d] - 1) * (WGD->nx - 1) * (WGD->ny - 1);
+      auto [i, j, k] = WGD->domain.getCellIdx(icell_2d);
+      int icell_3d = WGD->domain.cellAdd(icell_2d, 0, 0, WGD->canopy->canopy_top_index[icell_2d] - 1);
 
       // Call the bisection method to find the root
       WGD->canopy->canopy_d[icell_2d] = canopyBisection(WGD->canopy->canopy_ustar[icell_2d],
@@ -204,21 +207,21 @@ void CanopyIsolatedTree::canopyVegetation(WINDSGeneralData *WGD, int tree_id)
       // std::cout << building_id << " "  << canopy_ustar[icell_2d] << " "  << canopy_d[icell_2d] << " "  << canopy_z0[icell_2d] << std::endl;
 
       /**< velocity at the height of the canopy */
-      // Local variable - not being used by anything... so
+      // Local variable - not being used by agrid.nything... so
       // commented out for now.
       //
       // float u_H = (WGD->canopy_ustar[id]/WGD->vk)*
       //  log((WGD->canopy_top[id]-WGD->canopy_d[id])/WGD->canopy_z0[id]);
 
-      for (auto k = 1; k < WGD->nz - 1; k++) {
-        int icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-        float z_rel = WGD->z[k] - WGD->canopy->canopy_base[icell_2d];
+      for (auto k = 1; k < nz - 1; k++) {
+        long icell_face = WGD->domain.face(i, j, k);
+        float z_rel = WGD->domain.z[k] - WGD->canopy->canopy_base[icell_2d];
 
-        if (WGD->z[k] < WGD->canopy->canopy_base[icell_2d]) {
+        if (WGD->domain.z[k] < WGD->canopy->canopy_base[icell_2d]) {
           // below the terrain or building
-        } else if (WGD->z[k] < WGD->canopy->canopy_top[icell_2d]) {
+        } else if (WGD->domain.z[k] < WGD->canopy->canopy_top[icell_2d]) {
           if (WGD->canopy->canopy_atten_coeff[icell_3d] > 0) {
-            icell_3d = icell_2d + k * (WGD->nx - 1) * (WGD->ny - 1);
+            icell_3d = WGD->domain.cellAdd(icell_2d, 0, 0, k);
             avg_atten = WGD->canopy->canopy_atten_coeff[icell_3d];
 
             // correction on the velocity within the canopy
@@ -234,18 +237,18 @@ void CanopyIsolatedTree::canopyVegetation(WINDSGeneralData *WGD, int tree_id)
 
             // at the edge of the canopy need to adjust velocity at the next face
             // use canopy_top to detect the edge (worke with level changes)
-            if (j < WGD->ny - 2) {
-              if (WGD->canopy->canopy_top[icell_2d + (WGD->nx - 1)] == 0.0) {
-                WGD->v0[icell_face + WGD->nx] *= veg_vel_frac;
+            if (j < ny - 2) {
+              if (WGD->canopy->canopy_top[WGD->domain.cellAdd(icell_2d, 0, 1, 0)] == 0.0) {
+                WGD->v0[WGD->domain.faceAdd(icell_face, 0, 1, 0)] *= veg_vel_frac;
               }
             }
-            if (i < WGD->nx - 2) {
-              if (WGD->canopy->canopy_top[icell_2d + 1] == 0.0) {
-                WGD->u0[icell_face + 1] *= veg_vel_frac;
+            if (i < nx - 2) {
+              if (WGD->canopy->canopy_top[WGD->domain.cellAdd(icell_2d, 1, 0, 0)] == 0.0) {
+                WGD->u0[WGD->domain.faceAdd(icell_face, 1, 0, 0)] *= veg_vel_frac;
               }
             }
           }
-        } else if (WGD->z[k] < 2.0 * WGD->canopy->canopy_top[icell_2d]) {
+        } else if (WGD->domain.z[k] < 2.0 * WGD->canopy->canopy_top[icell_2d]) {
           // correction on the velocity above the canopy
           float lam = pow((z_rel - WGD->canopy->canopy_height[icell_2d]) / (1.0 * WGD->canopy->canopy_height[icell_2d]), 1.0);
           veg_vel_frac = log((z_rel - WGD->canopy->canopy_d[icell_2d]) / WGD->canopy->canopy_z0[icell_2d])
@@ -262,16 +265,16 @@ void CanopyIsolatedTree::canopyVegetation(WINDSGeneralData *WGD, int tree_id)
 
           // at the edge of the canopy need to adjust velocity at the next face
           // use canopy_top to detect the edge (worke with level changes)
-          if (j < WGD->ny - 2) {
-            icell_3d = icell_2d + WGD->canopy->canopy_bot_index[icell_2d] * (WGD->nx - 1) * (WGD->ny - 1);
-            if (WGD->canopy->canopy_top[icell_2d + (WGD->nx - 1)] == 0.0) {
-              WGD->v0[icell_face + WGD->nx] *= veg_vel_frac;
+          if (j < ny - 2) {
+            icell_3d = WGD->domain.cellAdd(icell_2d, 0, 0, WGD->canopy->canopy_bot_index[icell_2d]);
+            if (WGD->canopy->canopy_top[WGD->domain.cellAdd(icell_2d, 0, 1, 0)] == 0.0) {
+              WGD->v0[WGD->domain.faceAdd(icell_face, 0, 1, 0)] *= veg_vel_frac;
             }
           }
-          if (i < WGD->nx - 2) {
-            icell_3d = icell_2d + WGD->canopy->canopy_bot_index[icell_2d] * (WGD->nx - 1) * (WGD->ny - 1);
-            if (WGD->canopy->canopy_top[icell_2d + 1] == 0.0) {
-              WGD->u0[icell_face + 1] *= veg_vel_frac;
+          if (i < nx - 2) {
+            icell_3d = WGD->domain.cellAdd(icell_2d, 0, 0, WGD->canopy->canopy_bot_index[icell_2d]);
+            if (WGD->canopy->canopy_top[WGD->domain.cellAdd(icell_2d, 1, 0, 0)] == 0.0) {
+              WGD->u0[WGD->domain.faceAdd(icell_face, 1, 0, 0)] *= veg_vel_frac;
             }
           }
         } else {
@@ -281,16 +284,13 @@ void CanopyIsolatedTree::canopyVegetation(WINDSGeneralData *WGD, int tree_id)
     }
   }
 
-  icell_face = i_building_cent + j_building_cent * WGD->nx + (k_end + 1) * WGD->nx * WGD->ny;
+  icell_face = WGD->domain.face(i_building_cent, j_building_cent, k_end + 1);
   u0_h = WGD->u0[icell_face];// u velocity at the height of building at the centroid
   v0_h = WGD->v0[icell_face];// v velocity at the height of building at the centroid
-
-  return;
 }
 
 void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
 {
-
   int u_vegwake_flag(0), v_vegwake_flag(0), w_vegwake_flag(0);
   const int wake_stream_coef = 11;
   const int wake_span_coef = 4;
@@ -305,7 +305,11 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
   float u_defect, u_c, r_center, theta, delta, B_h;
   float ustar_wake(0), ustar_us(0), mag_us(0);
 
-  int kk(0), k_bottom(1), k_top(WGD->nz - 2);
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
+  float dxy = WGD->domain.dxy();
+  
+  int kk(0), k_bottom(1), k_top(nz - 2);
   int icell_cent, icell_face, icell_2d;
 
   std::vector<float> u0_modified, v0_modified;
@@ -333,25 +337,25 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
 
   for (auto k = 1; k <= k_start; k++) {
     k_bottom = k;
-    if (base_height <= WGD->z[k])
+    if (base_height <= WGD->domain.z[k])
       break;
   }
 
-  for (auto k = k_start; k < WGD->nz - 2; k++) {
+  for (auto k = k_start; k < nz - 2; k++) {
     k_top = k;
-    if (1.5 * (H + base_height) < WGD->z[k + 1])
+    if (1.5 * (H + base_height) < WGD->domain.z[k + 1])
       break;
   }
   k_top++;
 
   for (auto k = k_start; k < k_end; k++) {
     kk = k;
-    if (0.75 * H + base_height <= WGD->z[k])
+    if (0.75 * H + base_height <= WGD->domain.z[k])
       break;
   }
 
   // if the whole tree (defined as center) is in a flow reversal region -> skip the wake
-  icell_cent = i_building_cent + j_building_cent * (WGD->nx - 1) + kk * (WGD->nx - 1) * (WGD->ny - 1);
+  icell_cent = WGD->domain.cell(i_building_cent, j_building_cent, kk);
   if (WGD->icellflag[icell_cent] == 3 || WGD->icellflag[icell_cent] == 4 || WGD->icellflag[icell_cent] == 6)
     return;
 
@@ -360,13 +364,13 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
   // mathod 1 -> location of upsteam data point (5% of 1/2 building length)
   // method 2 -> displaced log profile
   if (ustar_method == 1) {
-    int i = ceil(((-1.05 * Lt) * cos(upwind_dir) - 0.0 * sin(upwind_dir) + building_cent_x) / WGD->dx);
-    int j = ceil(((-1.05 * Lt) * sin(upwind_dir) + 0.0 * cos(upwind_dir) + building_cent_y) / WGD->dy);
+    int i = ceil(((-1.05 * Lt) * cos(upwind_dir) - 0.0 * sin(upwind_dir) + building_cent_x) / dx);
+    int j = ceil(((-1.05 * Lt) * sin(upwind_dir) + 0.0 * cos(upwind_dir) + building_cent_y) / dy);
     int k = k_end - 1;
 
     // linearized indexes
-    icell_2d = i + j * (WGD->nx);
-    icell_face = i + j * (WGD->nx) + k * (WGD->nx) * (WGD->ny);
+    icell_2d = WGD->domain.face2d(i, j);
+    icell_face = WGD->domain.face(i, j, k);
 
     z0 = WGD->z0_domain_u[icell_2d];
 
@@ -375,7 +379,7 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
     float vtmp = WGD->v0[icell_face];
     mag_us = sqrt(utmp * utmp + vtmp * vtmp);
     // height above ground
-    z_c = WGD->z[k] - base_height;
+    z_c = WGD->domain.z[k] - base_height;
     // friction velocity
     ustar_us = mag_us * WGD->vk / (log((z_c + z0) / z0));
     ustar_wake = ustar_us / mag_us;
@@ -385,14 +389,14 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
     int k = ceil(1.5 * k_end);
 
     // linearized indexes
-    icell_2d = i + j * (WGD->nx - 1);
-    icell_face = i + j * (WGD->nx) + k * (WGD->nx) * (WGD->ny);
+    icell_2d = WGD->domain.cell2d(i, j);
+    icell_face = WGD->domain.face(i, j, k);
 
     // velocity above the canopy
     float utmp = WGD->u0[icell_face];
     float vtmp = WGD->v0[icell_face];
     mag_us = sqrt(utmp * utmp + vtmp * vtmp);
-    z_c = WGD->z[k] - base_height;
+    z_c = WGD->domain.z[k] - base_height;
 
     ustar_us = mag_us * WGD->vk / (log((z_c + WGD->canopy->canopy_d[icell_2d]) / WGD->canopy->canopy_z0[icell_2d]));
     ustar_wake = ustar_us / mag_us;
@@ -407,14 +411,14 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
   for (auto k = k_top; k >= k_bottom; k--) {
 
     // absolute z-coord within building above ground
-    z_b = WGD->z[k] - base_height;
+    z_b = WGD->domain.z[k] - base_height;
     // z-coord relative to center of tree (zMaxLAI)
     z_c = z_b - zMaxLAI;
 
-    for (auto y_idx = 1; y_idx < 2 * ceil((yw1 - yw3) / WGD->dxy); ++y_idx) {
+    for (auto y_idx = 1; y_idx < 2 * ceil((yw1 - yw3) / dxy); ++y_idx) {
 
       // y-coord relative to center of tree (zMaxLAI)
-      y_c = 0.5 * float(y_idx) * WGD->dxy + yw3;
+      y_c = 0.5 * float(y_idx) * dxy + yw3;
 
       if (std::abs(y_c) > std::abs(y_norm)) {
         continue;
@@ -428,29 +432,29 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
       }
 
       int x_idx_min = -1;
-      for (auto x_idx = 0; x_idx <= 2.0 * ceil(wake_stream_coef * Lr / WGD->dxy); ++x_idx) {
+      for (auto x_idx = 0; x_idx <= 2.0 * ceil(wake_stream_coef * Lr / dxy); ++x_idx) {
         u_vegwake_flag = 1;
         v_vegwake_flag = 1;
         w_vegwake_flag = 1;
 
         // x-coord relative to center of tree (zMaxLAI)
-        x_c = 0.5 * float(x_idx) * WGD->dxy;
+        x_c = 0.5 * float(x_idx) * dxy;
 
-        int i = ceil(((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / WGD->dx) - 1;
-        int j = ceil(((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / WGD->dy) - 1;
+        int i = ceil(((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / dx) - 1;
+        int j = ceil(((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / dy) - 1;
 
-        //int i = ((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / WGD->dx;
-        //int j = ((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / WGD->dy;
-        // check if in the domain
-        if (i >= WGD->nx - 2 || i <= 0 || j >= WGD->ny - 2 || j <= 0)
+        // int i = ((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / WGD->dx;
+        // int j = ((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / WGD->dy;
+        //  check if in the domain
+        if (i >= nx - 2 || i <= 0 || j >= ny - 2 || j <= 0)
           break;
 
         // linearized indexes
-        icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+        icell_cent = WGD->domain.cell(i, j, k);
 
         // check if not in canopy/building set start (was x_idx_min < 0) to x_idx_min > 0
         /* old version - > canopy now
-	  if (WGD->icellflag[icell_cent] != 0
+          if (WGD->icellflag[icell_cent] != 0
             && WGD->icellflag[icell_cent] != 2
             && WGD->icellflag[icell_cent] != getCellFlagCanopy()
             && x_idx_min < 0)
@@ -477,7 +481,7 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
               break;
           }
         }
-	*/
+        */
 
         if (WGD->icellflag[icell_cent] != 0
             && WGD->icellflag[icell_cent] != 2
@@ -491,8 +495,8 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
           if (x_idx_min >= 0) {
             if (WGD->canopy->icanopy_flag[icell_cent] == tree_id) {
               x_idx_min = -1;
-            } else if (WGD->icellflag[i + j * (WGD->nx - 1) + kk * (WGD->nx - 1) * (WGD->ny - 1)] == 0
-                       || WGD->icellflag[i + j * (WGD->nx - 1) + kk * (WGD->nx - 1) * (WGD->ny - 1)] == 2) {
+            } else if (WGD->icellflag[WGD->domain.cell(i, j, kk)] == 0
+                       || WGD->icellflag[WGD->domain.cell(i, j, kk)] == 2) {
               break;
             } else if (WGD->icellflag[icell_cent] == 0
                        || WGD->icellflag[icell_cent] == 2) {
@@ -512,12 +516,12 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
 
           // wake u-values
           // ij coord of u-face
-          int i_u = std::round(((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / WGD->dx);
-          int j_u = ((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / WGD->dy;
-          if (i_u < WGD->nx - 1 && i_u > 0 && j_u < WGD->ny - 1 && j_u > 0) {
+          int i_u = std::round(((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / dx);
+          int j_u = ((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / dy;
+          if (i_u < nx - 1 && i_u > 0 && j_u < ny - 1 && j_u > 0) {
             // not rotated relative coordinate of u-face
-            x_p = i_u * WGD->dx - building_cent_x;
-            y_p = (j_u + 0.5) * WGD->dy - building_cent_y;
+            x_p = i_u * dx - building_cent_x;
+            y_p = (j_u + 0.5) * dy - building_cent_y;
             // rotated relative coordinate of u-face
             x_u = x_p * cos(upwind_dir) + y_p * sin(upwind_dir);
             y_u = -x_p * sin(upwind_dir) + y_p * cos(upwind_dir);
@@ -541,8 +545,8 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
               u_vegwake_flag = 0;
 
             // linearized indexes
-            icell_cent = i_u + j_u * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-            icell_face = i_u + j_u * WGD->nx + k * WGD->nx * WGD->ny;
+            icell_cent = WGD->domain.cell(i_u, j_u, k);
+            icell_face = WGD->domain.face(i_u, j_u, k);
 
             if (dn_u > 0.0 && u_vegwake_flag == 1 && WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
 
@@ -565,7 +569,7 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
 
                 // std::cout << r_center << " " << delta << " " << ustar_wake << " " << u_c << std::endl;
                 //  apply parametrization
-                //if (std::abs(WGD->u0[icell_face]) >= std::abs(0.2 * cos(upwind_dir) * mag_us)) {
+                // if (std::abs(WGD->u0[icell_face]) >= std::abs(0.2 * cos(upwind_dir) * mag_us)) {
                 //  u0_mod_id.push_back(icell_face);
                 //  u0_modified.push_back(WGD->u0[icell_face] * (1. - std::abs(u_defect)));
                 //}
@@ -575,12 +579,12 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
 
           // wake v-values
           // ij coord of v-face
-          int i_v = ((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / WGD->dx;
-          int j_v = std::round(((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / WGD->dy);
-          if (i_v < WGD->nx - 1 && i_v > 0 && j_v < WGD->ny - 1 && j_v > 0) {
+          int i_v = ((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / dx;
+          int j_v = std::round(((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / dy);
+          if (i_v < nx - 1 && i_v > 0 && j_v < ny - 1 && j_v > 0) {
             // not rotated relative coordinate of v-face
-            x_p = (i_v + 0.5) * WGD->dx - building_cent_x;
-            y_p = j_v * WGD->dy - building_cent_y;
+            x_p = (i_v + 0.5) * dx - building_cent_x;
+            y_p = j_v * dy - building_cent_y;
             // rotated relative coordinate of u-face
             x_v = x_p * cos(upwind_dir) + y_p * sin(upwind_dir);
             y_v = -x_p * sin(upwind_dir) + y_p * cos(upwind_dir);
@@ -604,8 +608,8 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
               v_vegwake_flag = 0;
 
             // linearized indexes
-            icell_cent = i_v + j_v * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-            icell_face = i_v + j_v * WGD->nx + k * WGD->nx * WGD->ny;
+            icell_cent = WGD->domain.cell(i_v, j_v, k);
+            icell_face = WGD->domain.face(i_v, j_v, k);
 
             if (dn_v > 0.0 && v_vegwake_flag == 1 && WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
 
@@ -627,23 +631,23 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
                 if (u_defect > WGD->canopy->wake_v_defect[icell_face])
                   WGD->canopy->wake_v_defect[icell_face] = u_defect;
 
-                //if (std::abs(WGD->v0[icell_face]) >= std::abs(0.2 * sin(upwind_dir) * mag_us)) {
-                //  v0_mod_id.push_back(icell_face);
-                //  v0_modified.push_back(WGD->v0[icell_face] * (1. - std::abs(u_defect)));
-                //}
+                // if (std::abs(WGD->v0[icell_face]) >= std::abs(0.2 * sin(upwind_dir) * mag_us)) {
+                //   v0_mod_id.push_back(icell_face);
+                //   v0_modified.push_back(WGD->v0[icell_face] * (1. - std::abs(u_defect)));
+                // }
               }// if (r_center<delta/1)
             }
           }
 
           // wake celltype w-values
           // ij coord of cell-center
-          int i_w = ceil(((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / WGD->dx) - 1;
-          int j_w = ceil(((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / WGD->dy) - 1;
+          int i_w = ceil(((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / dx) - 1;
+          int j_w = ceil(((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / dy) - 1;
 
-          if (i_w < WGD->nx - 1 && i_w > 0 && j_w < WGD->ny - 1 && j_w > 0) {
+          if (i_w < nx - 1 && i_w > 0 && j_w < ny - 1 && j_w > 0) {
             // not rotated relative coordinate of cell-center
-            x_p = (i_w + 0.5) * WGD->dx - building_cent_x;
-            y_p = (j_w + 0.5) * WGD->dy - building_cent_y;
+            x_p = (i_w + 0.5) * dx - building_cent_x;
+            y_p = (j_w + 0.5) * dy - building_cent_y;
             // rotated relative coordinate of cell-center
             x_w = x_p * cos(upwind_dir) + y_p * sin(upwind_dir);
             y_w = -x_p * sin(upwind_dir) + y_p * cos(upwind_dir);
@@ -667,8 +671,8 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
               w_vegwake_flag = 0;
 
             // linearized indexes
-            icell_cent = i_w + j_w * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-            // icell_face = i_v + j_v*WGD->nx+k*WGD->nx*WGD->ny;
+            icell_cent = WGD->domain.cell(i_w, j_w, k);
+            icell_face = WGD->domain.face(i_w, j_w, k);
 
             if (dn_w > 0.0 && w_vegwake_flag == 1 && WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
 
@@ -686,7 +690,7 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
                 u_c = ucfunc(x_w / H, ustar_wake);
                 u_defect = u_c * (exp(-(r_center * r_center) / (lambda_sq * delta * delta)));
                 // apply parametrization
-                //if (u_defect >= 0.01)
+                // if (u_defect >= 0.01)
                 WGD->icellflag[icell_cent] = getCellFlagWake();
               }// if (r_center<delta/1)
             }
@@ -712,6 +716,4 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
   v0_mod_id.clear();
   u0_modified.clear();
   v0_modified.clear();
-
-  return;
 }

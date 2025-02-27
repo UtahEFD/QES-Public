@@ -35,7 +35,7 @@
 #ifndef HR_H
 #define HR_H
 
-#include "Vector3.h"
+#include "Vector3Float.h"
 #include <limits>
 
 /**
@@ -44,7 +44,7 @@
  *
  * @note Can add other information about the BVH node it hits as needed.
  *
- * @sa Vector3
+ * @sa Vector3Float
  * @sa BVH
  */
 class HitRecord
@@ -54,8 +54,8 @@ public:
   void *hitNode; /**< Reference to BVH node that was hit */
   float hitDist; /**< Distance from ray origin to hit point */
   float t; /**< :document this: */
-  Vector3 endpt; /**< The intersection point */
-  Vector3 n; /**< The normal to surface at intersection point */
+  Vector3Float endpt; /**< The intersection point */
+  Vector3Float n; /**< The normal to surface at intersection point */
 
   HitRecord();
   HitRecord(void *hitNode, bool isHit);

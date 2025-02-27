@@ -42,7 +42,7 @@
 #include <limits>
 
 #include "util/ParseInterface.h"
-#include "util/Vector3.h"
+#include "util/Vector3Float.h"
 #include "util/QESout.h"
 
 /**
@@ -62,7 +62,7 @@ public:
 
   int mlSamplesPerAirCell;
 
-  Vector3 *sigConst;
+  Vector3Float *sigConst;
   bool flagNonLocalMixing;
   int buildingWallFlag, terrainWallFlag;
   float turbUpperBound;
@@ -136,7 +136,7 @@ public:
     parseElement<ParseVector<float>>(false, sig_in, "sigmaConst");
     if (sig_in) {
       if (sig_in->size() == 3) {
-        sigConst = new Vector3((*(sig_in))[0], (*(sig_in))[1], (*(sig_in))[2]);
+        sigConst = new Vector3Float((*(sig_in))[0], (*(sig_in))[1], (*(sig_in))[2]);
       } else {
         exit(EXIT_FAILURE);
       }

@@ -68,7 +68,8 @@ public:
     parseMultiPrimitives<float>(false, yVertex, "yVertex");
 
     if (W > 0.0 && L > 0.0) {
-      canopy_rotation *= M_PI / 180.0;
+      double pi = 3.14159265359;
+      canopy_rotation *= pi / 180.0;
       polygonVertices.resize(5);
       polygonVertices[0].x_poly = polygonVertices[4].x_poly = x_start;
       polygonVertices[0].y_poly = polygonVertices[4].y_poly = y_start;

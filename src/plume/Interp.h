@@ -41,16 +41,18 @@
 #include <string>
 #include <vector>
 
+#include "qes/Domain.h"
+
 #include "util/calcTime.h"
-#include "Random.h"
+#include "util/VectorMath.h"
 #include "util/Vector3Int.h"
-#include "util/Vector3.h"
+#include "util/Vector3Float.h"
 #include "util/Vector3Double.h"
 
-#include "PlumeInputData.hpp"
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
 
+#include "Random.h"
 
 class Interp
 {
@@ -59,66 +61,54 @@ public:
   // constructor
   // copies the turb grid values for nx, ny, nz, nt, dx, dy, and dz to the QES grid,
   // then calculates the tau gradients which are then used to calculate the flux_div grid values.
-  Interp(WINDSGeneralData *);
-  ~Interp()
-  {}
+  Interp(qes::Domain);
+  virtual ~Interp() = default;
 
-  // The Plume domain bounds.
-  double xStart, xEnd;
-  double yStart, yEnd;
-  double zStart, zEnd;
+  void getDomainBounds(float &, float &, float &, float &, float &, float &);
+  float getZstart() { return zStart; }
 
+  virtual void interpWindsValues(const WINDSGeneralData *WGD,
+                                 const vec3 &pos,
+                                 vec3 &vel_out) = 0;
 
-  virtual void interpValues(const double &xPos,
-                            const double &yPos,
-                            const double &zPos,
-                            const WINDSGeneralData *WGD,
-                            double &uMain_out,
-                            double &vMean_out,
-                            double &wMean_out,
-                            const TURBGeneralData *TGD,
-                            double &txx_out,
-                            double &txy_out,
-                            double &txz_out,
-                            double &tyy_out,
-                            double &tyz_out,
-                            double &tzz_out,
-                            double &flux_div_x_out,
-                            double &flux_div_y_out,
-                            double &flux_div_z_out,
-                            double &nuT_out,
-                            double &CoEps_out) = 0;
+  virtual void interpTurbValues(const TURBGeneralData *TGD,
+                                const vec3 &pos,
+                                mat3sym &tau_out,
+                                vec3 &flux_div_out,
+                                float &nuT_out,
+                                float &CoEps_out) = 0;
 
-  virtual void interpInitialValues(const double &xPos,
-                                   const double &yPos,
-                                   const double &zPos,
-                                   const TURBGeneralData *TGD,
-                                   double &sig_x_out,
-                                   double &sig_y_out,
-                                   double &sig_z_out,
-                                   double &txx_out,
-                                   double &txy_out,
-                                   double &txz_out,
-                                   double &tyy_out,
-                                   double &tyz_out,
-                                   double &tzz_out) = 0;
+  virtual void interpTurbInitialValues(const TURBGeneralData *TGD,
+                                       const vec3 &pos,
+                                       mat3sym &tau_out,
+                                       vec3 &sig_out) = 0;
 
-  int getCellId(const double &, const double &, const double &);
-  int getCellId(Vector3Double &);
-  int getCellId2d(const double &, const double &);
-  Vector3Int getCellIndex(const int &);
-  Vector3Int getCellIndex(const double &, const double &, const double &);
+  int getCellId(const float &, const float &, const float &);
+  int getCellId(Vector3Float &);
+  int getCellId(const vec3 &);
+  int getCellId2d(const float &, const float &);
+  std::tuple<int, int, int> getCellIndex(const long &);
+  std::tuple<int, int, int> getCellIndex(const float &, const float &, const float &);
+  std::tuple<int, int, int> getCellIndex(const vec3 &);
 
 protected:
+  // General QES Domain Data
+  qes::Domain domain;
+
+  // The Plume domain bounds.
+  float xStart, xEnd;
+  float yStart, yEnd;
+  float zStart, zEnd;
+
   // the QES data held in this class is on the WINDS grid,
   // a copy of the WINDS grid information.
   int nx;
   int ny;
   int nz;
   // a copy of the grid resolution.
-  double dx;
-  double dy;
-  double dz;
+  float dx;
+  float dy;
+  float dz;
 
   // index of domain bounds
   int iStart, iEnd;
@@ -131,20 +121,20 @@ protected:
   // copies of debug related information from the input arguments
   // bool debug;
 
-  Interp()
-  {}
+private:
+  Interp() : domain(0, 0, 0, 0.0f, 0.0f, 0.0f) {}
 };
 
-inline int Interp::getCellId(const double &xPos, const double &yPos, const double &zPos)
+inline int Interp::getCellId(const float &xPos, const float &yPos, const float &zPos)
 {
   int i = floor((xPos - 0.0 * dx) / (dx + 1e-9));
   int j = floor((yPos - 0.0 * dy) / (dy + 1e-9));
   int k = floor((zPos + 1.0 * dz) / (dz + 1e-9));
 
-  return i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
+  return domain.cell(i, j, k);
 }
 
-inline int Interp::getCellId(Vector3Double &X)
+inline int Interp::getCellId(Vector3Float &X)
 {
   // int i = floor((xPos - xStart + 0.5*dx)/(dx+1e-9));
   // int j = floor((yPos - yStart + 0.5*dy)/(dy+1e-9));
@@ -154,32 +144,41 @@ inline int Interp::getCellId(Vector3Double &X)
   int j = floor((X[1] - 0.0 * dy) / (dy + 1e-9));
   int k = floor((X[2] + 1.0 * dz) / (dz + 1e-9));
 
-  return i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
+  return domain.cell(i, j, k);
 }
 
-inline int Interp::getCellId2d(const double &xPos, const double &yPos)
+inline int Interp::getCellId(const vec3 &X)
+{
+  // int i = floor((xPos - xStart + 0.5*dx)/(dx+1e-9));
+  // int j = floor((yPos - yStart + 0.5*dy)/(dy+1e-9));
+  // int k = floor((zPos - zStart + dz)/(dz+1e-9));
+
+  int i = floor((X._1 - 0.0 * dx) / (dx + 1e-9));
+  int j = floor((X._2 - 0.0 * dy) / (dy + 1e-9));
+  int k = floor((X._3 + 1.0 * dz) / (dz + 1e-9));
+
+  return domain.cell(i, j, k);
+}
+
+inline int Interp::getCellId2d(const float &xPos, const float &yPos)
 {
   int i = floor((xPos - 0.0 * dx) / (dx + 1e-9));
   int j = floor((yPos - 0.0 * dy) / (dy + 1e-9));
 
-  return i + j * (nx - 1);
+  return domain.cell2d(i, j);
 }
 
-inline Vector3Int Interp::getCellIndex(const int &cellId)
+inline std::tuple<int, int, int> Interp::getCellIndex(const long &cellId)
 {
-  int k = (int)(cellId / ((nx - 1) * (ny - 1)));
-  int j = (int)((cellId - k * (nx - 1) * (ny - 1)) / (nx - 1));
-  int i = cellId - j * (nx - 1) - k * (nx - 1) * (ny - 1);
-
-  return { i, j, k };
+  return domain.getCellIdx(cellId);
 }
 
-inline Vector3Int Interp::getCellIndex(const double &xPos, const double &yPos, const double &zPos)
+inline std::tuple<int, int, int> Interp::getCellIndex(const float &xPos, const float &yPos, const float &zPos)
 {
-  int cellId = getCellId(xPos, yPos, zPos);
-  int k = (int)(cellId / ((nx - 1) * (ny - 1)));
-  int j = (int)((cellId - k * (nx - 1) * (ny - 1)) / (nx - 1));
-  int i = cellId - j * (nx - 1) - k * (nx - 1) * (ny - 1);
+  return domain.getCellIdx(getCellId(xPos, yPos, zPos));
+}
 
-  return { i, j, k };
+inline std::tuple<int, int, int> Interp::getCellIndex(const vec3 &X)
+{
+  return domain.getCellIdx(getCellId(X));
 }

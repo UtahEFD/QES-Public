@@ -32,7 +32,7 @@ endfunction()
 function(add_sanity_check_winds_GPU infile_prefix)
   add_test(NAME sanity_check::winds_GPU_${infile_prefix}
           COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds
-          -q ${CMAKE_SOURCE_DIR}/tests/runTestsFiles/winds_${infile_prefix}.xml -s 2
+          -q ${CMAKE_SOURCE_DIR}/tests/runTestsFiles/winds_${infile_prefix}.xml -s 3
           -o test_GPU_${infile_prefix} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 endfunction()
 
@@ -47,7 +47,7 @@ endfunction()
 function(add_sanity_check_qes_GPU infile_prefix)
   add_test(NAME sanity_check::qes_GPU_${infile_prefix}
           COMMAND ${CMAKE_BINARY_DIR}/qes/qes
-          -q ${CMAKE_SOURCE_DIR}/tests/runTestsFiles/winds_${infile_prefix}.xml -s 2
+          -q ${CMAKE_SOURCE_DIR}/tests/runTestsFiles/winds_${infile_prefix}.xml -s 3
           -p ${CMAKE_SOURCE_DIR}/tests/runTestsFiles/plume_${infile_prefix}.xml
           -o test_GPU_${infile_prefix} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 endfunction()
@@ -64,7 +64,7 @@ IF (TESTS_ENABLE_SANITY_CHECKS_CPU)
   add_sanity_check_qes_CPU(GaussianHill)
 ENDIF()
 
-IF (TESTS_ENABLE_SANITY_CHECKS_GPU AND $CACHE{HAS_OPTIX_SUPPORT})
+IF (TESTS_ENABLE_SANITY_CHECKS_GPU)
   # WINDS TESTS
   add_sanity_check_winds_GPU(FlatTerrain)
   add_sanity_check_winds_GPU(GaussianHill)
@@ -101,7 +101,7 @@ ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
-  CUDA_ADD_EXECUTABLE( compareWindsResults
+  ADD_EXECUTABLE( compareWindsResults
           handleCompareArgs.cpp
           compareWindsResults.cpp
           )
@@ -112,15 +112,15 @@ ELSE ($CACHE{HAS_CUDA_SUPPORT})
           )
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
-target_link_libraries(compareWindsResults qeswindscore)
+target_link_libraries(compareWindsResults PRIVATE qeswindscore)
 IF ($CACHE{HAS_CUDA_SUPPORT})
-  target_link_libraries(compareWindsResults qeswindsgpu)
+  target_link_libraries(compareWindsResults PRIVATE qeswindsgpu)
 ENDIF()
-target_link_libraries(compareWindsResults qeswindscore)
-target_link_libraries(compareWindsResults qesutil)
+target_link_libraries(compareWindsResults PRIVATE qeswindscore)
+target_link_libraries(compareWindsResults PRIVATE qesutil)
 
 IF ($CACHE{HAS_OPTIX_SUPPORT})
-  target_link_libraries(compareWindsResults qesOptix)
+  target_link_libraries(compareWindsResults PRIVATE qesOptix)
 ENDIF()
 
 link_external_libraries(compareWindsResults)

@@ -48,11 +48,11 @@ Cell::Cell()
   isAir = isCutCell = isTerrain = false;
   terrainPoints.clear();
   // terrainEdges.clear();
-  location = Vector3(0.0f, 0.0f, 0.0f);
-  dimensions = Vector3(1.0f, 1.0f, 1.0f);
+  location = Vector3Float(0.0f, 0.0f, 0.0f);
+  dimensions = Vector3Float(1.0f, 1.0f, 1.0f);
 }
 
-Cell::Cell(const int type_CT, const Vector3 locationN, const Vector3 dimensionsN)
+Cell::Cell(const int type_CT, const Vector3Float locationN, const Vector3Float dimensionsN)
 {
   isAir = isCutCell = isTerrain = false;
   terrainPoints.clear();
@@ -67,8 +67,8 @@ Cell::Cell(const int type_CT, const Vector3 locationN, const Vector3 dimensionsN
   dimensions = dimensionsN;
 }
 
-//Cell::Cell(std::vector<Vector3> &points, std::vector<Edge<int>> &edges, int intermed[4][4][2], Vector3 locationN, Vector3 dimensionsN)
-Cell::Cell(std::vector<Vector3> &points, int intermed[4][4][2], Vector3 locationN, Vector3 dimensionsN)
+//Cell::Cell(std::vector<Vector3Float> &points, std::vector<Edge<int>> &edges, int intermed[4][4][2], Vector3Float locationN, Vector3Float dimensionsN)
+Cell::Cell(std::vector<Vector3Float> &points, int intermed[4][4][2], Vector3Float locationN, Vector3Float dimensionsN)
 {
   isTerrain = isAir = isCutCell = true;
   terrainPoints.clear();
@@ -104,13 +104,13 @@ Cell::Cell(std::vector<Vector3> &points, int intermed[4][4][2], Vector3 location
     {
       if (points[firstC][2] < location[2] + dimensions[2]) {
         fluidFacePoints[i].push_back(points[firstC]);
-        fluidFacePoints[i].push_back(Vector3(points[firstC][0], points[firstC][1], location[2] + dimensions[2]));
+        fluidFacePoints[i].push_back(Vector3Float(points[firstC][0], points[firstC][1], location[2] + dimensions[2]));
       } else if (intermed[firstC][secondC][1] == -1)
-        fluidFacePoints[i].push_back(Vector3(points[firstC][0], points[firstC][1], location[2] + dimensions[2]));
+        fluidFacePoints[i].push_back(Vector3Float(points[firstC][0], points[firstC][1], location[2] + dimensions[2]));
 
       if (points[secondC][2] < location[2] + dimensions[2]) {
         fluidFacePoints[i].push_back(points[secondC]);
-        fluidFacePoints[i].push_back(Vector3(points[secondC][0], points[secondC][1], location[2] + dimensions[2]));
+        fluidFacePoints[i].push_back(Vector3Float(points[secondC][0], points[secondC][1], location[2] + dimensions[2]));
       }
 
       for (int j = 0; j < 2; j++)

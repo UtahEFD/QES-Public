@@ -45,7 +45,7 @@
 
 
 /**
- * @class Vector3
+ * @class Vector3Double
  * @brief Template class that holds 3 values.
  *
  * Values can be accessed as if this was an array.
@@ -89,7 +89,7 @@ public:
 
 
   /*
-   * returns if two Vector3 values of the same type are equal
+   * returns if two Vector3Float values of the same type are equal
    *
    * @param v -the vector3 to compare with this
    * @return if values at index 0,1,2 are all equal with their counterparts

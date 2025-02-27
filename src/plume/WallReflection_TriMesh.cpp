@@ -28,25 +28,17 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file WallReflection_StairStep.cpp 
+/** @file WallReflection_StairStep.cpp
  * @brief
  */
 
 #include "WallReflection_TriMesh.h"
-#include "Plume.hpp"
 
-
-bool WallReflection_TriMesh::reflect(const WINDSGeneralData *WGD,
-                                     const Plume *plume,
-                                     double &xPos,
-                                     double &yPos,
-                                     double &zPos,
-                                     double &disX,
-                                     double &disY,
-                                     double &disZ,
-                                     double &uFluct,
-                                     double &vFluct,
-                                     double &wFluct)
+void WallReflection_TriMesh::reflect(const WINDSGeneralData *WGD,
+                                     vec3 &pos,
+                                     vec3 &dist,
+                                     vec3 &fluct,
+                                     ParticleState &state)
 {
   /*
    * This function will return true if:
@@ -58,26 +50,26 @@ bool WallReflection_TriMesh::reflect(const WINDSGeneralData *WGD,
    *   => in this case, the particle will be place back ot the old position, new random move next step.
    *
    *
-   * This function will return false (leave xPos, yPos, zPos, uFluct, vFluct, wFluct unchanged) 
-   * - cell ID out of bound 
-   * - no valid surface for reflection 
+   * This function will return false (leave xPos, yPos, zPos, uFluct, vFluct, wFluct unchanged)
+   * - cell ID out of bound
+   * - no valid surface for reflection
    */
 
 
   // linearized cell ID for end of the trajectory of the particle
-  int cellIdNew = plume->interp->getCellId(xPos, yPos, zPos);
+  long cellIdNew = m_interp->getCellId(pos);
   int cellFlag(0);
   try {
     cellFlag = WGD->icellflag.at(cellIdNew);
   } catch (const std::out_of_range &oor) {
     // cell ID out of bound (assuming particle outside of domain)
-    if (zPos < plume->domainZstart) {
+    if (pos._3 < m_interp->getZstart()) {
       // assume in terrain icellflag
       cellFlag = 2;
     } else {
       // otherwise, outside domain -> set to false
-      //std::cerr << "Reflection problem: particle out of range before reflection" << std::endl;
-      return false;
+      // std::cerr << "Reflection problem: particle out of range before reflection" << std::endl;
+      state = INACTIVE;
     }
   }
 
@@ -85,41 +77,42 @@ bool WallReflection_TriMesh::reflect(const WINDSGeneralData *WGD,
     // particle end trajectory outside solide -> no need for reflection
   } else {
 
-    Vector3 X = { static_cast<float>(xPos - disX), static_cast<float>(yPos - disY), static_cast<float>(zPos - disZ) };
-    // vector of the trajectory
-    Vector3 U = { static_cast<float>(disX), static_cast<float>(disY), static_cast<float>(disZ) };
-    // postion of the particle end of trajectory
-    Vector3 Xnew = X + U;
+    Vector3Float X = { pos._1 - dist._1, pos._2 - dist._2, pos._3 - dist._3 };
 
-    Vector3 vecFluct = { static_cast<float>(uFluct), static_cast<float>(vFluct), static_cast<float>(wFluct) };
+    // vector of the trajectory
+    Vector3Float U = { dist._1, dist._2, dist._3 };
+    // postion of the particle end of trajectory
+    Vector3Float Xnew = X + U;
+    // vector of fluctuations
+    Vector3Float vecFluct = { fluct._1, fluct._2, fluct._3 };
 
     rayTraceReflect(WGD->mesh, X, Xnew, U, vecFluct);
 
-    xPos = Xnew[0];
-    yPos = Xnew[1];
-    zPos = Xnew[2];
+    pos._1 = Xnew[0];
+    pos._2 = Xnew[1];
+    pos._3 = Xnew[2];
     // update output variable: fluctuations
-    uFluct = vecFluct[0];
-    vFluct = vecFluct[1];
-    wFluct = vecFluct[2];
+    fluct._1 = vecFluct[0];
+    fluct._2 = vecFluct[1];
+    fluct._3 = vecFluct[2];
   }
-  return true;
+  state = ACTIVE;
 }
 
-void WallReflection_TriMesh::rayTraceReflect(Mesh *mesh, Vector3 &X, Vector3 &Xnew, Vector3 &U, Vector3 &vecFluct)
+void WallReflection_TriMesh::rayTraceReflect(Mesh *mesh, Vector3Float &X, Vector3Float &Xnew, Vector3Float &U, Vector3Float &vecFluct)
 {
   Ray test_ray(X, U);
   HitRecord hit;
   if (mesh->triangleBVH->rayHit(test_ray, hit)) {
     if (hit.getHitDist() <= U.length()) {
 
-      //std::cout << "----\n";
-      //std::cout << "hit the mesh at " << hit.endpt << " " << X << " " << Xnew << "\n";
-      //std::cout << "A\thit dist " << hit.getHitDist() << "/" << U.length() << "=" << hit.getHitDist() / U.length() << std::endl;
-      //std::cout << "hit normal " << hit.n << std::endl;
+      // std::cout << "----\n";
+      // std::cout << "hit the mesh at " << hit.endpt << " " << X << " " << Xnew << "\n";
+      // std::cout << "A\thit dist " << hit.getHitDist() << "/" << U.length() << "=" << hit.getHitDist() / U.length() << std::endl;
+      // std::cout << "hit normal " << hit.n << std::endl;
 
-      Vector3 P, S, V2;
-      Vector3 R, N;
+      Vector3Float P, S, V2;
+      Vector3Float R, N;
       float r;
 
       N = hit.n;
@@ -145,9 +138,9 @@ void WallReflection_TriMesh::rayTraceReflect(Mesh *mesh, Vector3 &X, Vector3 &Xn
       rayTraceReflect(mesh, X, Xnew, U, vecFluct);
     } else {
       // hit too far
-      //std::cout << "B\thit dist " << hit.getHitDist() << "/" << U.length() << "=" << hit.getHitDist() / U.length() << std::endl;
+      // std::cout << "B\thit dist " << hit.getHitDist() << "/" << U.length() << "=" << hit.getHitDist() / U.length() << std::endl;
     }
   } else {
-    //no hit
+    // no hit
   }
 }

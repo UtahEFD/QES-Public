@@ -32,7 +32,7 @@
 
 #pragma once
 
-#include "Vector3.h"
+#include "Vector3Float.h"
 #include "Ray.h"
 #include "HitRecord.h"
 #include <cmath>
@@ -48,8 +48,8 @@
 class Triangle
 {
 public:
-  Vector3 a, b, c;
-  Vector3 n;
+  Vector3Float a, b, c;
+  Vector3Float n;
 
   Triangle()
     : a(0.0, 0.0, 0.0),
@@ -59,11 +59,11 @@ public:
   {
   }
 
-  Triangle(const Vector3 &aN, const Vector3 &bN, const Vector3 &cN)
+  Triangle(const Vector3Float &aN, const Vector3Float &bN, const Vector3Float &cN)
     : a(aN), b(bN), c(cN)
   {
-    Vector3 v(bN - aN);
-    Vector3 w(cN - aN);
+    Vector3Float v(bN - aN);
+    Vector3Float w(cN - aN);
     n = v.cross(w);
     n = n / n.length();
   }

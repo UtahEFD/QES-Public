@@ -51,8 +51,12 @@
  */
 void PolyBuilding::sideWall(const WINDSInputData *WID, WINDSGeneralData *WGD)
 {
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
+  float dxy = WGD->domain.dxy();
+
   float tol = 10 * M_PI / 180.0;// Sidewall is applied if outward normal of the face is in +/-10 degree perpendicular
-    // to the local wind
+                                // to the local wind
   int side_wall_flag = 0;// If 1, indicates that there are faces that are nominally parallel with the wind
   std::vector<float> face_rel_dir; /**< Face relative angle to the perpendicular direction of the local wind */
   face_rel_dir.resize(polygonVertices.size(), 0.0);
@@ -77,8 +81,9 @@ void PolyBuilding::sideWall(const WINDSInputData *WID, WINDSGeneralData *WGD)
   float xp_u, xp_v, xp_c, yp_u, yp_v, yp_c;
   float internal_BL_width;
   int x_id_max, y_id_max;
+  long icell_face, icell_cent;
 
-  int index_building_face = i_building_cent + j_building_cent * WGD->nx + (k_end)*WGD->nx * WGD->ny;
+  long index_building_face = WGD->domain.face(i_building_cent, j_building_cent, k_end);
   u0_h = WGD->u0[index_building_face];// u velocity at the height of building at the centroid
   v0_h = WGD->v0[index_building_face];// v velocity at the height of building at the centroid
 
@@ -151,12 +156,12 @@ void PolyBuilding::sideWall(const WINDSInputData *WID, WINDSGeneralData *WGD)
           if (right_flag == 1)// If the right face is eligible for the parameterization
           {
             // i and j indices for start of the right section of building
-            i_start_right = ceil(x_start_right / WGD->dx) - 1;
-            j_start_right = ceil(y_start_right / WGD->dy) - 1;
-            for (auto j = MAX_S(0, j_start_right - 1); j <= MIN_S(WGD->ny - 2, j_start_right + 1); j++) {
-              for (auto i = MAX_S(0, i_start_right - 1); i <= MIN_S(WGD->nx - 2, i_start_right + 1); i++) {
-                icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-                icell_face = i + j * (WGD->nx) + k * (WGD->nx) * (WGD->ny);
+            i_start_right = ceil(x_start_right / dx) - 1;
+            j_start_right = ceil(y_start_right / dy) - 1;
+            for (auto j = MAX_S(0, j_start_right - 1); j <= MIN_S(ny - 2, j_start_right + 1); j++) {
+              for (auto i = MAX_S(0, i_start_right - 1); i <= MIN_S(nx - 2, i_start_right + 1); i++) {
+                icell_cent = WGD->domain.cell(i, j, k);
+                icell_face = WGD->domain.face(i, j, k);
                 // If the cell is building
                 if (WGD->icellflag[icell_cent] == 0 || WGD->icellflag[icell_cent] == 7) {
                   u0_right = WGD->u0[icell_face];
@@ -174,25 +179,25 @@ void PolyBuilding::sideWall(const WINDSInputData *WID, WINDSGeneralData *WGD)
             if (right_flag == 1)// If the right face is eligible for the parameterization
             {
               // Finding id of the last cell eligible for sidewall from the upwind face of the buildin in x direction
-              x_id_max = ceil(MAX_S(face_length, R_cx_side) / (0.5 * WGD->dxy));
+              x_id_max = ceil(MAX_S(face_length, R_cx_side) / (0.5 * dxy));
               for (auto x_id = 1; x_id <= x_id_max; x_id++) {
-                x_p = 0.5 * x_id * WGD->dxy;// x location of the point beng examined for parameterization in local coordinates
+                x_p = 0.5 * x_id * dxy;// x location of the point beng examined for parameterization in local coordinates
                 // Width of the shell shape area on the sidewall of the building
                 shell_width = y_pref * sqrt(x_p);
-                y_id_max = (ceil(shell_width / (0.5 * WGD->dxy)) + 2);
+                y_id_max = (ceil(shell_width / (0.5 * dxy)) + 2);
                 for (auto y_id = 1; y_id <= y_id_max; y_id++) {
-                  y_p = -0.5 * y_id * WGD->dxy;// y location of the point beng examined for parameterization in local coordinates
+                  y_p = -0.5 * y_id * dxy;// y location of the point beng examined for parameterization in local coordinates
                   x = x_start_right + x_p * cos(face_dir) - y_p * sin(face_dir);// x location in QUIC domain
                   y = y_start_right + x_p * sin(face_dir) + y_p * cos(face_dir);// y location in QUIC domain
                   // i and j indices of the point
-                  int i = ceil(x / WGD->dx) - 1;
-                  int j = ceil(y / WGD->dy) - 1;
-                  icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-                  icell_face = i + j * (WGD->nx) + k * (WGD->nx) * (WGD->ny);
+                  int i = ceil(x / dx) - 1;
+                  int j = ceil(y / dy) - 1;
+                  icell_cent = WGD->domain.cell(i, j, k);
+                  icell_face = WGD->domain.face(i, j, k);
                   if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2)// No solid cell
                   {
-                    x_u = i * WGD->dx;// x location of u component
-                    y_u = (j + 0.5) * WGD->dy;// y location of u component
+                    x_u = i * dx;// x location of u component
+                    y_u = (j + 0.5) * dy;// y location of u component
                     // x location of u component in local coordinates
                     xp_u = (x_u - x_start_right) * cos(face_dir) + (y_u - y_start_right) * sin(face_dir);
                     // y location of u component in local coordinates
@@ -211,8 +216,8 @@ void PolyBuilding::sideWall(const WINDSInputData *WID, WINDSGeneralData *WGD)
                       WGD->u0[icell_face] = u0_right * log((abs(yp_u) + WGD->z0) / WGD->z0) / log((internal_BL_width + WGD->z0) / WGD->z0);
                     }
 
-                    x_v = (i + 0.5) * WGD->dx;// x location of v component
-                    y_v = j * WGD->dy;// y location of v component
+                    x_v = (i + 0.5) * dx;// x location of v component
+                    y_v = j * dy;// y location of v component
                     // x location of v component in local coordinates
                     xp_v = (x_v - x_start_right) * cos(face_dir) + (y_v - y_start_right) * sin(face_dir);
                     // y location of v component in local coordinates
@@ -248,12 +253,12 @@ void PolyBuilding::sideWall(const WINDSInputData *WID, WINDSGeneralData *WGD)
           if (left_flag == 1)// If the left face is eligible for the parameterization
           {
             // i and j indices for start of the left section of building
-            i_start_left = ceil(x_start_left / WGD->dx) - 1;
-            j_start_left = ceil(y_start_left / WGD->dy) - 1;
-            for (auto j = MAX_S(0, j_start_left - 1); j <= MIN_S(WGD->ny - 2, j_start_left + 1); j++) {
-              for (auto i = MAX_S(0, i_start_left - 1); i <= MIN_S(WGD->nx - 2, i_start_left + 1); i++) {
-                icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-                icell_face = i + j * (WGD->nx) + k * (WGD->nx) * (WGD->ny);
+            i_start_left = ceil(x_start_left / dx) - 1;
+            j_start_left = ceil(y_start_left / dy) - 1;
+            for (auto j = MAX_S(0, j_start_left - 1); j <= MIN_S(ny - 2, j_start_left + 1); j++) {
+              for (auto i = MAX_S(0, i_start_left - 1); i <= MIN_S(nx - 2, i_start_left + 1); i++) {
+                icell_cent = WGD->domain.cell(i, j, k);
+                icell_face = WGD->domain.face(i, j, k);
                 // If the cell is solid (building or terrain)
                 if (WGD->icellflag[icell_cent] == 0 || WGD->icellflag[icell_cent] == 7) {
                   u0_left = WGD->u0[icell_face];
@@ -271,25 +276,25 @@ void PolyBuilding::sideWall(const WINDSInputData *WID, WINDSGeneralData *WGD)
             if (left_flag == 1)// If the left face is eligible for the parameterization
             {
               // Finding id of the last cell eligible for sidewall from the upwind face of the buildin in x direction
-              x_id_max = ceil(MAX_S(face_length, R_cx_side) / (0.5 * WGD->dxy));
+              x_id_max = ceil(MAX_S(face_length, R_cx_side) / (0.5 * dxy));
               for (auto x_id = 1; x_id <= x_id_max; x_id++) {
-                x_p = 0.5 * x_id * WGD->dxy;// x location of the point beng examined for parameterization in local coordinates
+                x_p = 0.5 * x_id * dxy;// x location of the point beng examined for parameterization in local coordinates
                 // Width of the shell shape area on the sidewall of the building
                 shell_width = y_pref * sqrt(x_p);
-                y_id_max = (ceil(shell_width / (0.5 * WGD->dxy)) + 2);
+                y_id_max = (ceil(shell_width / (0.5 * dxy)) + 2);
                 for (auto y_id = 1; y_id <= y_id_max; y_id++) {
-                  y_p = 0.5 * y_id * WGD->dxy;// y location of the point beng examined for parameterization in local coordinates
+                  y_p = 0.5 * y_id * dxy;// y location of the point beng examined for parameterization in local coordinates
                   x = x_start_left + x_p * cos(face_dir) - y_p * sin(face_dir);// x location in QUIC domain
                   y = y_start_left + x_p * sin(face_dir) + y_p * cos(face_dir);// y location in QUIC domain
                   // i and j indices of the point
-                  int i = ceil(x / WGD->dx) - 1;
-                  int j = ceil(y / WGD->dy) - 1;
-                  icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-                  icell_face = i + j * (WGD->nx) + k * (WGD->nx) * (WGD->ny);
+                  int i = ceil(x / dx) - 1;
+                  int j = ceil(y / dy) - 1;
+                  icell_cent = WGD->domain.cell(i, j, k);
+                  icell_face = WGD->domain.face(i, j, k);
                   if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2)// No solid cell
                   {
-                    x_u = i * WGD->dx;// x location of u component
-                    y_u = (j + 0.5) * WGD->dy;// y location of u component
+                    x_u = i * dx;// x location of u component
+                    y_u = (j + 0.5) * dy;// y location of u component
                     // x location of u component in local coordinates
                     xp_u = (x_u - x_start_left) * cos(face_dir) + (y_u - y_start_left) * sin(face_dir);
                     // y location of u component in local coordinates
@@ -308,8 +313,8 @@ void PolyBuilding::sideWall(const WINDSInputData *WID, WINDSGeneralData *WGD)
                       WGD->u0[icell_face] = u0_left * log((abs(yp_u) + WGD->z0) / WGD->z0) / log((internal_BL_width + WGD->z0) / WGD->z0);
                     }
 
-                    x_v = (i + 0.5) * WGD->dx;// x location of v component
-                    y_v = j * WGD->dy;// y location of v component
+                    x_v = (i + 0.5) * dx;// x location of v component
+                    y_v = j * dy;// y location of v component
                     // x location of v component in local coordinates
                     xp_v = (x_v - x_start_left) * cos(face_dir) + (y_v - y_start_left) * sin(face_dir);
                     // y location of v component in local coordinates

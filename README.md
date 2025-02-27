@@ -36,9 +36,11 @@ QES-Fire is a microscale wildfire model coupling the fire front to microscale wi
 
 ## Package Requirements
 
-***QES requires the CUDA library and a NVIDIA GPU with Compute Capability of 7.0 (or higher).***
+***QES requires C++17.***
 
-**Note:** a compliation option for configuration without GPU will be added in the future.
+***QES requires the CUDA library and a NVIDIA GPU with Compute Capability of 7.0 (or higher) for GPU acceleration.***
+
+**Note:** the code can be compiled without Cuda.
 
 On a general Linux system, such as Ubuntu 18.04 or 20.04, the following packages need to be installed:
 * libgdal-dev
@@ -55,7 +57,7 @@ If the system uses ```apt```, the packages can be installed using the following 
 apt install libgdal-dev libnetcdf-c++4-dev  libnetcdf-cxx-legacy-dev libnetcdf-dev netcdf-bin libboost-all-dev cmake cmake-curses-gui
 ```
 
-To build the code and to use the GPU system, you will need a NVIDIA GPU with the CUDA library installed.  The code has been tested with CUDA 8.0, 10.0, 10.1, and 10.2. If your version of CUDA is installed in a non-uniform location, you will need to remember the path to the cuda install directory.
+To build the code and to use the GPU system, you will need a NVIDIA GPU with the CUDA library installed.  The code has been tested with CUDA 11.8. If your version of CUDA is installed in a non-uniform location, you will need to remember the path to the cuda install directory.
 
 Additionally, the code can use NVIDIA's OptiX to accelerate various computations. Our OptiX code has been built to use version 7.0 or higher.
 
@@ -85,28 +87,23 @@ make
 
 ### Building on CHPC Cluster (University of Utah)
 
-The code does run on the CHPC cluster. You need to make sure the correct set of modules are loaded.  Currently, we have tested a few configurations that use
-- GCC 5.4.0 and CUDA 8.0
-- CCC 8.1.0 and CUDA 10.1 (10.2)
-- GCC 8.5.0 and CUDA 11.4
-If you build with OptiX support, you will need to use CUDA 10.2 or newer configuration. Any builds (with or without OptiX) with CUDA 11.4 are preferred if you don't know which to use. Older configurations are provided in `CHPC/oldBuilds.md`.
+The code does run on the CHPC cluster. You need to make sure the correct set of modules are loaded.  Currently, we have tested recommanding the following configurations:
+- GCC 11.2 and CUDA 11.8
 
 After logging into your CHPC account, you will need to load specific modules. In the following sections, we outline the modules that need to be loaded along with the various cmake command-line calls that specify the exact locations of module installs on the CHPC system.  
 
-#### CUDA 11.4 Based Builds with NVIDIA OptiX Support
+#### CUDA 11.4 Based Builds without NVIDIA OptiX Support
 
 *This is the preferred build setup on CHPC*
 
-To build with GCC 8.5.0, CUDA 11.4, and OptiX 7.1.0 on CHPC.
 Please use the following modules:
 ```
-module load cuda/11.4
+module load cuda/11.8
 module load cmake/3.21.4
-module load gcc/8.5.0
-module load boost/1.77.0
-module load intel-oneapi-mpi/2021.4.0
-module load gdal/3.3.3
-module load netcdf-c/4.8.1
+module load gcc/11.2.0
+module load boost/1.83.0
+module load gdal/3.8.5
+module load netcdf-c/4.9.2
 module load netcdf-cxx/4.2
 ```
 Or use the provided load script.
@@ -116,14 +113,15 @@ source CHPC/loadmodules_QES.sh
 After completing the above module loads, the following modules are reported from `module list`:
 ```
 Currently Loaded Modules:
-  1) cuda/11.4    (g)   3) gcc/8.5.0      5) intel-oneapi-mpi/2021.4.0   7) netcdf-c/4.8.1
-  2) cmake/3.21.4       4) boost/1.77.0   6) gdal/3.3.3                  8) netcdf-cxx/4.2
+  1) cuda/11.8.0  (g)   4) zlib/1.2.13    7) netcdf-c/4.9.2
+  2) cmake/3.21.4       5) boost/1.83.0   8) netcdf-cxx/4.2
+  3) gcc/11.2.0         6) hdf5/1.14.3    9) gdal/3.8.5
 ```
 After the modules are loaded, you can create the Makefiles with cmake.  We keep our builds separate from the source and contain our builds within their own folders.  For example, 
 ```
 mkdir build
 cd build
-cmake -DCUDA_TOOLKIT_DIR=/uufs/chpc.utah.edu/sys/installdir/cuda/11.4.0 -DCUDA_SDK_ROOT_DIR=/uufs/chpc.utah.edu/sys/installdir/cuda/11.4.0 -DOptiX_INSTALL_DIR=/uufs/chpc.utah.edu/sys/installdir/optix/7.1.0 -DCMAKE_C_COMPILER=gcc -DNETCDF_CXX_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-cxx/4.3.0-5.4.0g/include ..
+cmake -DNETCDF_CXX_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-cxx/4.3.0-5.4.0g/include ..
 ```
 Upon completion of the above commands, you can go about editing and building mostly as normal, and issue the `make` command in your build folder to compile the source.
 

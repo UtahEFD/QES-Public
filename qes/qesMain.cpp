@@ -30,14 +30,13 @@
 
 #include <iostream>
 
-#include "util/ParseException.h"
-#include "util/ParseInterface.h"
-
 #include "util/QESout.h"
 
 #include "util/QESNetCDFOutput.h"
 
 #include "handleQESArgs.h"
+
+#include "qes/Domain.h"
 
 #include "winds/WINDSInputData.h"
 #include "winds/WINDSGeneralData.h"
@@ -48,21 +47,19 @@
 #include "winds/TURBOutput.h"
 
 #include "winds/Solver.h"
-#include "winds/CPUSolver.h"
+#include "winds/Solver_CPU.h"
 #include "winds/Solver_CPU_RB.h"
 #ifdef HAS_CUDA
-#include "winds/DynamicParallelism.h"
-#include "winds/GlobalMemory.h"
-#include "winds/SharedMemory.h"
+#include "winds/Solver_GPU_DynamicParallelism.h"
+#include "winds/Solver_GPU_GlobalMemory.h"
+#include "winds/Solver_GPU_SharedMemory.h"
 #endif
 
 #include "winds/Sensor.h"
 
 // #include "Args.hpp"
-#include "plume/PlumeInputData.hpp"
-#include "plume/Plume.hpp"
-#include "plume/PlumeOutput.h"
-#include "plume/PlumeOutputParticleData.h"
+#include "plume/PLUMEInputData.h"
+#include "plume/PLUMEGeneralData.h"
 
 
 Solver *setSolver(const int, WINDSInputData *, WINDSGeneralData *);
@@ -102,29 +99,29 @@ int main(int argc, char *argv[])
                   + arguments.qesWindsParamFile);
   }
 
-
   if (arguments.terrainOut) {
     if (WID->simParams->DTE_heightField) {
       std::cout << "Creating terrain OBJ....\n";
-      WID->simParams->DTE_heightField->outputOBJ(arguments.filenameTerrain);
+      WID->simParams->DTE_heightField->outputOBJ(arguments.outputFileBasename + "_terrainOut.obj");
       std::cout << "OBJ created....\n";
     } else {
       QESout::error("No dem file specified as input");
     }
   }
+  qes::Domain domain(WID->simParams->domain[0],
+                     WID->simParams->domain[1], WID->simParams->domain[2], WID->simParams->grid[0], WID->simParams->grid[1], WID->simParams->grid[2]);
 
   // Generate the general WINDS data from all inputs
-  WINDSGeneralData *WGD = new WINDSGeneralData(WID, arguments.solveType);
+  WINDSGeneralData *WGD = new WINDSGeneralData(WID, domain, arguments.solveType);
 
   // create WINDS output classes
   std::vector<QESNetCDFOutput *> outputVec;
   if (arguments.visuOutput) {
-    outputVec.push_back(new WINDSOutputVisualization(WGD, WID, arguments.netCDFFileVisu));
+    outputVec.push_back(new WINDSOutputVisualization(WGD, WID, arguments.outputFileBasename + "_windsOut.nc"));
   }
   if (arguments.wkspOutput) {
-    outputVec.push_back(new WINDSOutputWorkspace(WGD, arguments.netCDFFileWksp));
+    outputVec.push_back(new WINDSOutputWorkspace(WGD, arguments.outputFileBasename + "_windsWk.nc"));
   }
-
 
   // Generate the general TURB data from WINDS data
   // based on if the turbulence output file is defined
@@ -133,30 +130,18 @@ int main(int argc, char *argv[])
     TGD = new TURBGeneralData(WID, WGD);
   }
   if (arguments.compTurb && arguments.turbOutput) {
-    outputVec.push_back(new TURBOutput(TGD, arguments.netCDFFileTurb));
+    outputVec.push_back(new TURBOutput(TGD, arguments.outputFileBasename + "_turbOut.nc"));
   }
 
-  Plume *plume = nullptr;
-  // create output instance
-  std::vector<QESNetCDFOutput *> outputPlume;
-
+  PLUMEGeneralData *PGD = nullptr;
   if (arguments.compPlume) {
     // Create instance of Plume model class
-    plume = new Plume(PID, WGD, TGD);
-
-    // always supposed to output lagrToEulOutput data
-    outputPlume.push_back(new PlumeOutput(PID, plume, arguments.outputPlumeFile));
-    if (arguments.doParticleDataOutput) {
-      outputPlume.push_back(new PlumeOutputParticleData(PID, plume, arguments.outputParticleDataFile));
-    }
+    PGD = new PLUMEGeneralData(arguments.plumeParameters, PID, WGD, TGD);
   }
 
-  // //////////////////////////////////////////
-  //
-  // Run the QES-Winds Solver
-  //
-  // //////////////////////////////////////////
+  // Set the QES-Winds Solver
   Solver *solver = setSolver(arguments.solveType, WID, WGD);
+  if (!solver) { QESout::error("Invalid solver"); }
 
   for (int index = 0; index < WGD->totalTimeIncrements; index++) {
     // print time progress (time stamp and percentage)
@@ -172,7 +157,7 @@ int main(int argc, char *argv[])
     WGD->applyParametrizations(WID);
 
     // Run WINDS simulation code
-    solver->solve(WID, WGD, arguments.solveWind);
+    solver->solve(WGD, WID->simParams->maxIterations);
 
     // Run turbulence
     if (TGD != nullptr) {
@@ -183,27 +168,30 @@ int main(int argc, char *argv[])
     // Output the various files requested from the simulation run
     // (netcdf wind velocity, icell values, etc...
     // /////////////////////////////
-    for (auto outItr = outputVec.begin(); outItr != outputVec.end(); ++outItr) {
-      (*outItr)->save(WGD->timestamp[index]);
+    for (auto &out : outputVec) {
+      out->save(WGD->timestamp[index]);
     }
 
     // Run plume advection model
-    if (plume != nullptr) {
-      QEStime endtime;
-      if (WGD->totalTimeIncrements == 1) {
-        endtime = WGD->timestamp[index] + PID->plumeParams->simDur;
-      } else if (index == WGD->totalTimeIncrements - 1) {
-        endtime = WGD->timestamp[index] + (WGD->timestamp[index] - WGD->timestamp[index - 1]);
-      } else {
-        endtime = WGD->timestamp[index + 1];
-      }
-      plume->run(endtime, WGD, TGD, outputPlume);
+    if (PGD != nullptr) {
+      QEStime endTime = WGD->nextTimeInstance(index, PID->plumeParams->simDur);
+      PGD->run(endTime, WGD, TGD);
     }
   }
 
-  if (plume != nullptr) {
-    plume->showCurrentStatus();
+  if (PGD != nullptr) {
+    PGD->showCurrentStatus();
   }
+
+  delete WID;
+  delete WGD;
+  delete TGD;
+  for (auto p : outputVec) {
+    delete p;
+  }
+
+  delete PID;
+  delete PGD;
 
   exit(EXIT_SUCCESS);
 }
@@ -213,21 +201,21 @@ Solver *setSolver(const int solveType, WINDSInputData *WID, WINDSGeneralData *WG
   Solver *solver = nullptr;
   if (solveType == CPU_Type) {
 #ifdef _OPENMP
-    solver = new Solver_CPU_RB(WID, WGD);
+    solver = new Solver_CPU_RB(WGD->domain, WID->simParams->tolerance);
 #else
-    solver = new CPUSolver(WID, WGD);
+    solver = new Solver_CPU(WGD->domain, WID->simParams->tolerance);
 #endif
 
 #ifdef HAS_CUDA
   } else if (solveType == DYNAMIC_P) {
-    solver = new DynamicParallelism(WID, WGD);
+    solver = new Solver_GPU_DynamicParallelism(WGD->domain, WID->simParams->tolerance);
   } else if (solveType == Global_M) {
-    solver = new GlobalMemory(WID, WGD);
+    solver = new Solver_GPU_GlobalMemory(WGD->domain, WID->simParams->tolerance);
   } else if (solveType == Shared_M) {
-    solver = new SharedMemory(WID, WGD);
+    solver = new Solver_GPU_SharedMemory(WGD->domain, WID->simParams->tolerance);
 #endif
   } else {
-    QESout::error("Invalid solve type");
+    QESout::error("Invalid solver type");
   }
   return solver;
 }

@@ -15,10 +15,10 @@ CMAKE_POLICY(SET CMP0074 NEW)
 # This creates a variable we could use for tacking on to various folders
 # or install locations based on the version info.  It pulls the Verson information
 # from CMake based on the Version number provided in the PROJECT command.
-PROJECT(QES VERSION 2.2.0)
-SET(QES_VERSION_INFO v${QES_VERSION_MAJOR}.${QES_VERSION_MINOR}.${QES_VERSION_PATCH})
+PROJECT(QES VERSION 2.2.0 LANGUAGES CXX)
 
 # The following will pass the version into the code as a preprocessor variable
+SET(QES_VERSION_INFO v${QES_VERSION_MAJOR}.${QES_VERSION_MINOR}.${QES_VERSION_PATCH})
 ADD_DEFINITIONS(-DQES_VERSION_INFO="${QES_VERSION_INFO}")
 MESSAGE(STATUS "Building QES ${QES_VERSION_INFO}")
 
@@ -57,24 +57,27 @@ endif()
 # ----------------------------------------------------------
 include(CheckCXXCompilerFlag)
 MESSAGE(STATUS "Compiling with ${CMAKE_CXX_COMPILER_ID}, Version: ${CMAKE_CXX_COMPILER_VERSION}")
-CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
-CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
 
-if(COMPILER_SUPPORTS_CXX11)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+#if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+#   MESSAGE(STATUS "MSVC")
+#   CHECK_CXX_COMPILER_FLAG("/std:c++17" COMPILER_SUPPORTS_CXX17)
+#else()
+#   CHECK_CXX_COMPILER_FLAG("--std=c++17" COMPILER_SUPPORTS_CXX17)
+#endif()
+
+#if(COMPILER_SUPPORTS_CXX17)
+#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
   #
-  # This code used C++ 11 and 14 features so enable these on CXX Flags
+  # This code used C++ 17 features so enable these on CXX Flags
   #
-  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD 17)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   set(CMAKE_CXX_EXTENSIONS OFF)
-  
-elseif(COMPILER_SUPPORTS_CXX0X)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-else()
-  message(FATAL_ERROR "Compiler ${CMAKE_CXX_COMPILER} has no C++11 support.")
-endif()
+
+#else()
+#  message(FATAL_ERROR "Compiler ${CMAKE_CXX_COMPILER} has no C++17 support.")
+#endif()
 
 # ----------------------------------------------------------
 # OPENMP
@@ -152,11 +155,11 @@ if (ENABLE_DEV_MODE)
     # Sanitizer options
     # The following will turn on Debugging (-g flag) and the Address Sanitizer
     # which is turned on with the -fsanitize=address option to the compiler.
-    add_compile_options(-g -fsanitize=address,undefined)
+#    add_compile_options(-g -fsanitize=address,undefined)
 
     # When we turn on the sanitizer, you also need to instruct the linker that it
     # will be used which happens with the following link option command.
-    add_link_options(-g -fsanitize=address,undefined)
+#    add_link_options(-g -fsanitize=address,undefined)
     
   elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
     # using Intel C++
@@ -164,8 +167,8 @@ if (ENABLE_DEV_MODE)
   elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # using Visual Studio C++
     # MSVC uses a different warning flags
-    add_compile_options(/W4 /WX)
-    add_compile_options(/fsanitize=address /MTd)
+#    add_compile_options(/W4 /WX)
+#    add_compile_options(/fsanitize=address /MTd)
   endif()
   
 ELSE (ENABLE_DEV_MODE)
@@ -190,19 +193,18 @@ ENDIF (ENABLE_DEV_MODE)
 # ----------------------------------------------------------
 # SET (Boost_MULTITHREADED TRUE)
 
+#set(Boost_USE_STATIC_LIBS        ON)  # only find static libs
+#set(Boost_USE_DEBUG_LIBS        OFF)  # ignore debug libs and
+#set(Boost_USE_RELEASE_LIBS       ON)  # only find release libs
+#set(Boost_USE_MULTITHREADED      ON)
+#set(Boost_USE_STATIC_RUNTIME     ON)  # link Boost Static libraries
+
 if(DEFINED ENV{BOOST_DIR})
   message(STATUS "Setting BOOST_DIR to $ENV{BOOST_DIR}")
   SET(BOOST_ROOT $ENV{BOOST_DIR})
 endif()
 
-# If you want to get more info on what the Find Boost macro is
-# doing...  
-# SET(Boost_DEBUG 1)
-
-# May be necessary to get Win32 version to work
-# SET(Boost_USE_STATIC_LIBS TRUE)
-
-FIND_PACKAGE(Boost REQUIRED filesystem date_time program_options system thread unit_test_framework chrono timer)
+FIND_PACKAGE(Boost REQUIRED COMPONENTS program_options date_time) # property_tree)
 IF(${Boost_FOUND})
   INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
   MESSAGE(STATUS "Found Boost Libraries in ${Boost_LIBRARIES}, Version ${Boost_VERSION}")
@@ -211,13 +213,41 @@ ENDIF()
 # ----------------------------------------------------------
 # NetCDF
 # ----------------------------------------------------------
-SET(NETCDF_CXX "YES")
-FIND_PACKAGE(NetCDF REQUIRED)
-IF(NetCDF_FOUND)
-  MESSAGE(STATUS "Found NetCDF: ${NETCDF_INCLUDES}: ${NETCDF_LIBRARIES}, ${NETCDF_INCLUDES_CXX}, ${NETCDF_LIBRARIES_CXX}")
-  INCLUDE_DIRECTORIES(${NETCDF_INCLUDES})
-  INCLUDE_DIRECTORIES(${NETCDF_INCLUDES_CXX})
-ENDIF(NetCDF_FOUND)
+if (WIN32 OR CMAKE_TOOLCHAIN_FILE) # MATCHES "vcpkg.cmake$"))
+
+  # clear the module path as the findnetcdf.cmake that we need on
+  # unix at the moment causes major issues finding netcdf here.
+  set(CMAKE_MODULE_PATH "")
+
+  SET(NETCDF_CXX "YES")
+  FIND_PACKAGE(netCDFCxx CONFIG REQUIRED)
+  IF(netCDFCxx_FOUND)
+    MESSAGE(STATUS "Found NetCDF CXX: ${NETCDF_C_INCLUDE_DIR} ${NETCDF_C_LIBRARY}")
+    INCLUDE_DIRECTORIES(${NETCDF_C_INCLUDE_DIR})
+  ENDIF(netCDFCxx_FOUND)
+
+  FIND_PACKAGE(netCDF CONFIG REQUIRED)
+  IF(netCDF_FOUND)
+    MESSAGE(STATUS "Found NetCDF - Version: ${NetCDFVersion}, ${netCDF_INCLUDE_DIR}, ${netCDF_LIB_DIR}, ${netCDF_LIBRARIES}, ${netCDF_LDFLAGS}, ${netCDF_C_CPP_FLAGS}")
+    #  ADD_LINK_OPTIONS("${netCDF_LDFLAGS}")
+    INCLUDE_DIRECTORIES(${netCDF_INCLUDE_DIR})
+    LINK_DIRECTORIES(${netCDF_LIB_DIR})
+  ENDIF(netCDF_FOUND)
+
+  # reset the module path...
+  LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+  MESSAGE(STATUS "CMake Module Path: ${CMAKE_MODULE_PATH}")
+else()
+  # What we had before - but doesn't work so well with vcpkg or Windows
+  # NetCDF is odd in how it gets installed...
+  SET(NETCDF_CXX "YES")
+  FIND_PACKAGE(NetCDF REQUIRED)
+  IF(NetCDF_FOUND)
+    MESSAGE(STATUS "Found NetCDF: ${NETCDF_INCLUDES}: ${NETCDF_LIBRARIES}, ${NETCDF_INCLUDES_CXX}, ${NETCDF_LIBRARIES_CXX}")
+    INCLUDE_DIRECTORIES(${NETCDF_INCLUDES})
+    INCLUDE_DIRECTORIES(${NETCDF_INCLUDES_CXX})
+  ENDIF(NetCDF_FOUND)
+endif()
 
 # ----------------------------------------------------------
 # GDAL
@@ -234,21 +264,46 @@ ENDIF(${GDAL_FOUND})
 # CUDA
 # - check if CUDA is available
 # ----------------------------------------------------------
-SET(CUDA_SEPARABLE_COMPILATION ON)
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_52;-rdc=true;" )
+INCLUDE(CheckLanguage)
+CHECK_LANGUAGE(CUDA)
+
+FIND_PACKAGE(CUDAToolkit)
+
+If (CMAKE_CUDA_COMPILER)
+
+   MESSAGE(STATUS "CUDA is available; CUDA_COMPILER=${CMAKE_CUDA_COMPILER}, Version=${CMAKE_CUDA_COMPILER_VERSION}")
+   ENABLE_LANGUAGE( CUDA )
+
+   IF(NOT DEFINED CMAKE_CUDA_STANDARD)
+      set(CMAKE_CUDA_STANDARD 17)
+      set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+   ENDIF()
+   
+ELSE()
+  MESSAGE(STATUS "CUDA is not available.")
+ENDIF()
+
+# SET(CUDA_SEPARABLE_COMPILATION ON)
+# set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_52;-rdc=true;" )
 
 #use fast math option is required for OptiX
 # set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-dlink;-rdc=true;--use_fast_math;--keep-device-functions")
 
 # Attempt to find CUDA
-FIND_PACKAGE(CUDA)
-IF(CUDA_FOUND)
+IF(CMAKE_CUDA_COMPILER)
   MESSAGE(STATUS "CUDA Libraries: ${CUDA_LIBRARIES}")
   SET(HAS_CUDA_SUPPORT ON CACHE BOOL "Determines if CUDA/GPU functionality is compiled into the code base" )
+
+  if(NOT DEFINED CMAKE_CUDA_STANDARD)
+    set(CMAKE_CUDA_STANDARD 17)
+    set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+  endif()
   
-  INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
+  INCLUDE_DIRECTORIES(${CUDAToolkit_INCLUDE_DIRS})
   #INCLUDE_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/samples/common/inc)
   LINK_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/lib64)
+
+
 ELSE(CUDA_FOUND)
   #
   # CUDA was not found, so disable CUDA/GPU support
@@ -258,7 +313,7 @@ ELSE(CUDA_FOUND)
   
   MESSAGE(WARNING "CUDA is required for compiling GPU accelerated computations into this project.  Please install CUDA or re-run cmake with -i to specify the CUDA directories if you need these features.")
   MESSAGE(WARNING "GPU and related accelerations will be disable for this build.")
-ENDIF(CUDA_FOUND)
+ENDIF()
 
 # ----------------------------------------------------------
 # CUDA and OPTIX
@@ -268,8 +323,17 @@ if(HAS_CUDA_SUPPORT)
 
   ADD_DEFINITIONS(-DHAS_CUDA)
 
-  MESSAGE(STATUS "Using CUDA Version: ${CUDA_VERSION}")
-  if (${CUDA_VERSION} VERSION_GREATER_EQUAL 10.2)
+  # May need this only on Windows to get around an odd error from
+  # Boost where __builtin_FUNCSIG is undefined
+  ADD_DEFINITIONS(-DBOOST_DISABLE_CURRENT_LOCATION)
+
+  if(NOT DEFINED CMAKE_CUDA_STANDARD)
+      set(CMAKE_CUDA_STANDARD 17)
+      set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+   endif()
+   
+  MESSAGE(STATUS "Using CUDA Version: ${CMAKE_CUDA_COMPILER_VERSION}")
+  if (${CMAKE_CUDA_COMPILER_VERSION} VERSION_GREATER_EQUAL 10.2)
     MESSAGE(STATUS "Found CUDA 10.2 or higher! Now searching for OptiX support...")
     
     #
@@ -380,19 +444,24 @@ endif (DOXYGEN_FOUND)
 #   build the code
 # ----------------------------------------------------------
 function(link_external_libraries exec)
-  target_link_libraries(${exec} ${Boost_PROGRAM_OPTIONS_LIBRARIES})
-  target_link_libraries(${exec} ${Boost_DATE_TIME_LIBRARIES})
-  target_link_libraries(${exec} ${Boost_FILESYSTEM_LIBRARIES})
-  target_link_libraries(${exec} ${GDAL_LIBRARY})
-  target_link_libraries(${exec} ${NETCDF_LIBRARIES_CXX})
-  target_link_libraries(${exec} ${NETCDF_LIBRARIES_C})
+  target_link_libraries(${exec} PRIVATE ${Boost_LIBRARIES})
+#  target_link_libraries(${exec} PRIVATE ${Boost_DATE_TIME_LIBRARIES})
+  #target_link_libraries(${exec} PRIVATE ${Boost_FILESYSTEM_LIBRARIES})
+  target_link_libraries(${exec} PRIVATE ${GDAL_LIBRARY})
+  # want to clean this up!!! - Pete
+  if (WIN32 OR CMAKE_TOOLCHAIN_FILE) # MATCHES "vcpkg.cmake$"))
+    target_link_libraries(${exec} PRIVATE "netCDF::netcdf-cxx4")
+  else()
+    target_link_libraries(${exec} PRIVATE ${NETCDF_LIBRARIES_CXX})
+  endif()
+  target_link_libraries(${exec} PRIVATE ${NETCDF_C_LIBRARY})
   IF ($CACHE{HAS_CUDA_SUPPORT})
     # target_link_libraries(${exec} cudadevrt)
-    target_link_libraries(${exec} ${CUDA_LIBRARIES})
+    target_link_libraries(${exec} PRIVATE ${CUDA_LIBRARIES})
   ENDIF()
 
   IF (ENABLE_OPENMP AND ${OpenMP_FOUND})
-    target_link_libraries(${exec} ${OpenMP_CXX_LIBRARIES})    
+    target_link_libraries(${exec} PRIVATE ${OpenMP_CXX_LIBRARIES})    
   ENDIF()
 endfunction()
 
@@ -404,7 +473,8 @@ add_subdirectory(src/winds)
 add_subdirectory(src/plume)
 add_subdirectory(src/fire)
 
-add_subdirectory(scratch)
+# add_subdirectory(scratch)
+add_subdirectory(examples)
 
 add_subdirectory(qesWinds)
 add_subdirectory(qesPlume)

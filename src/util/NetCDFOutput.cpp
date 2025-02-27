@@ -41,12 +41,16 @@ using namespace netCDF;
 using namespace netCDF::exceptions;
 
 // constructor, linked to NetCDF file, replace mode only
-NetCDFOutput ::NetCDFOutput(const std::string &output_file)
+NetCDFOutput ::NetCDFOutput(const std::string &output_file) : filename(output_file)
 {
-  std::cout << "[NetCDFOutput] \t Writing to " << output_file << std::endl;
+  std::cout << "[NetCDFOutput] \t create new file: " << output_file << std::endl;
   outfile = new NcFile(output_file, NcFile::replace);
 }
-
+NetCDFOutput::~NetCDFOutput()
+{
+  std::cout << "[NetCDFOutput] \t closing file: " << filename << std::endl;
+  delete outfile;
+}
 
 NcDim NetCDFOutput ::addDimension(const std::string &name, int size)
 {

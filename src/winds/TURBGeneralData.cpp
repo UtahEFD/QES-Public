@@ -36,28 +36,31 @@
 #include "TURBGeneralData.h"
 
 // TURBGeneralData::TURBGeneralData(Args* arguments, URBGeneralData* WGD){
-TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WGDin)
+TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WGD)
+  : domain(WGD->domain)
 {
 
   auto StartTime = std::chrono::high_resolution_clock::now();
   std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "[QES-TURB]\t Initialization of turbulence model...\n";
-  m_WGD = WGDin;
+  m_WGD = WGD;
+
+  allocateMemory();
 
   // local copies of trubulence parameters
   turbUpperBound = WID->turbParams->turbUpperBound;
 
   if (WID->turbParams->sigConst) {
-    Vector3 sigConst;
+    Vector3Float sigConst;
     sigConst = *(WID->turbParams->sigConst);
 
     sigUOrg = sigConst[0];
     sigVOrg = sigConst[1];
     sigWOrg = sigConst[2];
 
-    sigUConst = 1.5 * sigUOrg * sigUOrg * cPope * cPope;
-    sigVConst = 1.5 * sigVOrg * sigVOrg * cPope * cPope;
-    sigWConst = 1.5 * sigWOrg * sigWOrg * cPope * cPope;
+    sigUConst = 1.5f * sigUOrg * sigUOrg * cPope * cPope;
+    sigVConst = 1.5f * sigVOrg * sigVOrg * cPope * cPope;
+    sigWConst = 1.5f * sigWOrg * sigWOrg * cPope * cPope;
   }
 
   flagNonLocalMixing = WID->turbParams->flagNonLocalMixing;
@@ -71,40 +74,6 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
 
   backgroundMixing = WID->turbParams->backgroundMixing;
 
-  // make local copy of grid information
-  // nx,ny,nz consitant with WINDS (face-center)
-  // WINDS->grid correspond to face-center grid
-  nz = m_WGD->nz;
-  ny = m_WGD->ny;
-  nx = m_WGD->nx;
-
-  numcell_cent = m_WGD->numcell_cent;
-
-  dz = m_WGD->dz;
-  dy = m_WGD->dy;
-  dx = m_WGD->dx;
-
-  // x-grid (cell-center)
-  x.resize(nx - 1, 0);
-  x = m_WGD->x;
-
-  // y-grid (cell-center)
-  y.resize(ny - 1, 0);
-  y = m_WGD->y;
-
-  // z-grid (face-center & cell-center)
-  // z cell-center
-  z.resize(nz - 1, 0);
-  z = m_WGD->z;
-  // z face-center (no ghost cell under the ground)
-  z_face.resize(nz, 0);
-  z_face = m_WGD->z_face;
-  // dz_array
-  dz_array.resize(nz - 1, 0);
-  dz_array = m_WGD->dz_array;
-
-  iturbflag.resize(numcell_cent, 0);
-
   /*
      vector containing cell id of fluid cell
      do not include 1 cell shell around the domain
@@ -112,10 +81,11 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
      do not include 1 cell layer at the top of the domain
      => k=1...nz-2
   */
-  for (int k = 1; k < nz - 2; k++) {
-    for (int j = 1; j < ny - 2; j++) {
-      for (int i = 1; i < nx - 2; i++) {
-        int id = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
+  for (int k = 1; k < domain.nz() - 2; k++) {
+    for (int j = 1; j < domain.ny() - 2; j++) {
+      for (int i = 1; i < domain.nx() - 2; i++) {
+        // int id = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
+        long id = domain.cell(i, j, k);
         if (m_WGD->icellflag[id] != 0 && m_WGD->icellflag[id] != 2) {
           icellfluid.push_back(id);
           iturbflag.at(id) = 1;
@@ -156,11 +126,9 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
 
   localMixing->defineMixingLength(WID, m_WGD);
 
-  Lm.resize(numcell_cent, 0.0);
-  // make a copy as mixing length will be modifiy by non local
+  // make a copy as mixing length will be modify by non-local
   // (need to be reset at each time instances)
-  for (auto id = 0u; id < icellfluid.size(); id++) {
-    int cellId = icellfluid[id];
+  for (int cellId : icellfluid) {
     Lm[cellId] = vonKar * m_WGD->mixingLengths[cellId];
   }
 
@@ -187,7 +155,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
   // std::cout << "\t\t max terrain height = "<< terrainH_max << std::endl;
 
   // calculate the mean building h
-  if (m_WGD->allBuildingsV.size() > 0) {
+  if (!m_WGD->allBuildingsV.empty()) {
     float heffmax = 0.0;
     for (size_t i = 0; i < m_WGD->allBuildingsV.size(); i++) {
       bldgH_mean += m_WGD->allBuildingsV[m_WGD->building_id[i]]->H;
@@ -218,7 +186,113 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
   std::cout << "[QES-TURB]\t Computing friction velocity..." << std::endl;
   frictionVelocity();
 
-  std::cout << "[QES-TURB]\t Allocating memory...\n";
+  auto EndTime = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> Elapsed = EndTime - StartTime;
+
+  std::cout << "[QES-TURB]\t Initialization of turbulence model completed.\n";
+  std::cout << "\t\t elapsed time: " << Elapsed.count() << " s" << endl;
+}
+
+TURBGeneralData::TURBGeneralData(const std::string inputFile, WINDSGeneralData *WGD)
+  : domain(WGD->domain)
+{
+  std::cout << "-------------------------------------------------------------------" << std::endl;
+  std::cout << "[QES-TURB]\t Initialization of turbulence model...\n";
+  std::cout << "[TURB Data] \t Loading QES-turb fields " << std::endl;
+
+  m_WGD = WGD;
+
+  // fullname passed to WINDSGeneralData
+  input = new NetCDFInput(inputFile);
+
+  // nx,ny - face centered value (consistant with QES-Winds)
+  int nx, ny, nz;
+  input->getDimensionSize("x", nx);
+  input->getDimensionSize("y", ny);
+  // nz - face centered value + bottom ghost (consistant with QES-Winds)
+  input->getDimensionSize("z", nz);
+  // nt - number of time instance in data
+  input->getDimensionSize("t", nt);
+
+  if ((nx != domain.nx() - 1) || (ny != domain.ny() - 1) || (nz != domain.nz() - 1)) {
+    std::cerr << "[ERROR] \t data size incompatible " << std::endl;
+    exit(1);
+  }
+
+  allocateMemory();
+
+  // get time variables
+  t.resize(nt);
+  input->getVariableData("t", t);
+
+  // check if times is in the NetCDF file
+  NcVar NcVar_timestamp;
+  input->getVariable("timestamp", NcVar_timestamp);
+
+  if (NcVar_timestamp.isNull()) {
+    QESout::warning("No timestamp in NetCDF file");
+  }
+
+  /*
+     vector containing cell id of fluid cell
+     do not include 1 cell shell around the domain
+     => i=1...nx-2 j=1...ny-2
+     do not include 1 cell layer at the top of the domain
+     => k=1...nz-2
+  */
+  for (int k = 1; k < domain.nz() - 2; k++) {
+    for (int j = 1; j < domain.ny() - 2; j++) {
+      for (int i = 1; i < domain.nx() - 2; i++) {
+        // int id = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
+        long id = domain.cell(i, j, k);
+        if (m_WGD->icellflag[id] != 0 && m_WGD->icellflag[id] != 2) {
+          icellfluid.push_back(id);
+        }
+      }
+    }
+  }
+}
+
+TURBGeneralData::TURBGeneralData(WINDSGeneralData *WGD)
+  : domain(WGD->domain)
+{
+  std::cout << "-------------------------------------------------------------------" << std::endl;
+  std::cout << "[QES-TURB]\t Initialization of turbulence model...\n";
+  m_WGD = WGD;
+
+  allocateMemory();
+
+  /*
+     vector containing cell id of fluid cell
+     do not include 1 cell shell around the domain
+     => i=1...nx-2 j=1...ny-2
+     do not include 1 cell layer at the top of the domain
+     => k=1...nz-2
+  */
+  for (int k = 1; k < domain.nz() - 2; k++) {
+    for (int j = 1; j < domain.ny() - 2; j++) {
+      for (int i = 1; i < domain.nx() - 2; i++) {
+        // int id = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
+        long id = domain.cell(i, j, k);
+        if (m_WGD->icellflag[id] != 0 && m_WGD->icellflag[id] != 2) {
+          icellfluid.push_back(id);
+        }
+      }
+    }
+  }
+}
+
+void TURBGeneralData::allocateMemory()
+{
+  std::cout << "[QES-TURB]\t Allocating memory..." << std::flush;
+
+  long numcell_cent = domain.numCellCentered();
+
+  // logic variable
+  iturbflag.resize(numcell_cent, 0);
+
+  // local mixing length
+  Lm.resize(numcell_cent, 0.0);
 
   // comp. of the velocity gradient tensor
   Gxx.resize(numcell_cent, 0);
@@ -245,128 +319,6 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
   nuT.resize(numcell_cent, 0);
   // std::cout << "\t\t Memory allocation completed.\n";
 
-  if (flagCompDivStress) {
-    // comp of the divergence of the stress tensor
-    tmp_dtoxdx.resize(numcell_cent, 0);
-    tmp_dtoydy.resize(numcell_cent, 0);
-    tmp_dtozdz.resize(numcell_cent, 0);
-
-    // comp of the divergence of the stress tensor
-    div_tau_x.resize(numcell_cent, 0);
-    div_tau_y.resize(numcell_cent, 0);
-    div_tau_z.resize(numcell_cent, 0);
-  }
-
-  auto EndTime = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> Elapsed = EndTime - StartTime;
-
-  std::cout << "[QES-TURB]\t Initialization of turbulence model completed.\n";
-  std::cout << "\t\t elapsed time: " << Elapsed.count() << " s" << endl;
-}
-
-TURBGeneralData::TURBGeneralData(const std::string inputFile, WINDSGeneralData *WGDin)
-{
-  std::cout << "-------------------------------------------------------------------" << std::endl;
-  std::cout << "[TURB Data] \t Loading QES-turb fields " << std::endl;
-
-  m_WGD = WGDin;
-
-  // fullname passed to WINDSGeneralData
-  input = new NetCDFInput(inputFile);
-
-  // nx,ny - face centered value (consistant with QES-Winds)
-  input->getDimensionSize("x", nx);
-  input->getDimensionSize("y", ny);
-  // nz - face centered value + bottom ghost (consistant with QES-Winds)
-  input->getDimensionSize("z", nz);
-  // nt - number of time instance in data
-  input->getDimensionSize("t", nt);
-
-  // get time variables
-  t.resize(nt);
-  input->getVariableData("t", t);
-
-  // check if times is in the NetCDF file
-  NcVar NcVar_timestamp;
-  input->getVariable("timestamp", NcVar_timestamp);
-
-  if (NcVar_timestamp.isNull()) {
-    QESout::warning("No timestamp in NetCDF file");
-  }
-
-  // make local copy of grid information
-  // nx,ny,nz consitant with QES-Winds (face-center)
-  nx = m_WGD->nx;
-  ny = m_WGD->ny;
-  nz = m_WGD->nz;
-
-  numcell_cent = m_WGD->numcell_cent;
-  numcell_face = m_WGD->numcell_face;
-
-  dx = m_WGD->dx;
-  dy = m_WGD->dy;
-  dz = m_WGD->dz;
-
-  // x-grid (cell-center)
-  x.resize(nx - 1, 0);
-  x = m_WGD->x;
-
-  // y-grid (cell-center)
-  y.resize(ny - 1, 0);
-  y = m_WGD->y;
-
-  // z-grid (face-center & cell-center)
-  // z cell-center
-  z.resize(nz - 1, 0);
-  z = m_WGD->z;
-  // z face-center (no ghost cell under the ground)
-  z_face.resize(nz, 0);
-  z_face = m_WGD->z_face;
-  // dz_array
-  dz_array.resize(nz - 1, 0);
-  dz_array = m_WGD->dz_array;
-
-  /*
-     vector containing cell id of fluid cell
-     do not include 1 cell shell around the domain
-     => i=1...nx-2 j=1...ny-2
-     do not include 1 cell layer at the top of the domain
-     => k=1...nz-2
-  */
-  for (int k = 1; k < nz - 2; k++) {
-    for (int j = 1; j < ny - 2; j++) {
-      for (int i = 1; i < nx - 2; i++) {
-        int id = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
-        if (m_WGD->icellflag[id] != 0 && m_WGD->icellflag[id] != 2) {
-          icellfluid.push_back(id);
-        }
-      }
-    }
-  }
-  // comp. of the velocity gradient tensor
-  Gxx.resize(numcell_cent, 0);
-  Gxy.resize(numcell_cent, 0);
-  Gxz.resize(numcell_cent, 0);
-  Gyx.resize(numcell_cent, 0);
-  Gyy.resize(numcell_cent, 0);
-  Gyz.resize(numcell_cent, 0);
-  Gzx.resize(numcell_cent, 0);
-  Gzy.resize(numcell_cent, 0);
-  Gzz.resize(numcell_cent, 0);
-
-  // comp of the stress tensor
-  txx.resize(numcell_cent, 0);
-  txy.resize(numcell_cent, 0);
-  txz.resize(numcell_cent, 0);
-  tyy.resize(numcell_cent, 0);
-  tyz.resize(numcell_cent, 0);
-  tzz.resize(numcell_cent, 0);
-
-  // derived turbulence quantities
-  tke.resize(numcell_cent, 0);
-  CoEps.resize(numcell_cent, 0);
-  nuT.resize(numcell_cent, 0);
-
   // comp of the divergence of the stress tensor
   tmp_dtoxdx.resize(numcell_cent, 0);
   tmp_dtoydy.resize(numcell_cent, 0);
@@ -376,111 +328,13 @@ TURBGeneralData::TURBGeneralData(const std::string inputFile, WINDSGeneralData *
   div_tau_x.resize(numcell_cent, 0);
   div_tau_y.resize(numcell_cent, 0);
   div_tau_z.resize(numcell_cent, 0);
+
+  std::cout << "\r[QES-TURB]\t Allocating memory... [DONE]\n";
 }
-
-TURBGeneralData::TURBGeneralData(WINDSGeneralData *WGDin)
-{
-  std::cout << "-------------------------------------------------------------------" << std::endl;
-  std::cout << "[QES-TURB]\t Initialization of turbulence model...\n";
-  m_WGD = WGDin;
-  // make local copy of grid information
-  // nx,ny,nz consitant with WINDS (face-center)
-  // WINDS->grid correspond to face-center grid
-  nz = m_WGD->nz;
-  ny = m_WGD->ny;
-  nx = m_WGD->nx;
-
-  numcell_cent = m_WGD->numcell_cent;
-  numcell_face = m_WGD->numcell_face;
-
-  dz = m_WGD->dz;
-  dy = m_WGD->dy;
-  dx = m_WGD->dx;
-
-  // x-grid (cell-center)
-  x.resize(nx - 1, 0);
-  x = m_WGD->x;
-
-  // y-grid (cell-center)
-  y.resize(ny - 1, 0);
-  y = m_WGD->y;
-
-  // z-grid (face-center & cell-center)
-  // z cell-center
-  z.resize(nz - 1, 0);
-  z = m_WGD->z;
-  // z face-center (no ghost cell under the ground)
-  z_face.resize(nz - 1, 0);
-  z_face = m_WGD->z_face;
-
-  /*
-     vector containing cell id of fluid cell
-     do not include 1 cell shell around the domain
-     => i=1...nx-2 j=1...ny-2
-     do not include 1 cell layer at the top of the domain
-     => k=1...nz-2
-
-  */
-  /*
-  for (int k = 1; k < nz - 2; k++) {
-    for (int j = 1; j < ny - 2; j++) {
-      for (int i = 1; i < nx - 2; i++) {
-        int id = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
-        if (m_WGD->icellflag[id] != 0 && m_WGD->icellflag[id] != 2) {
-          icellfluid.push_back(id);
-        }
-      }
-    }
-  }
-  */
-  for (int k = 1; k < nz - 2; k++) {
-    for (int j = 1; j < ny - 2; j++) {
-      for (int i = 1; i < nx - 2; i++) {
-        int id = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
-        if (m_WGD->icellflag[id] != 0 && m_WGD->icellflag[id] != 2) {
-          icellfluid.push_back(id);
-        }
-      }
-    }
-  }
-  // comp. of the velocity gradient tensor
-  Gxx.resize(numcell_cent, 0);
-  Gxy.resize(numcell_cent, 0);
-  Gxz.resize(numcell_cent, 0);
-  Gyx.resize(numcell_cent, 0);
-  Gyy.resize(numcell_cent, 0);
-  Gyz.resize(numcell_cent, 0);
-  Gzx.resize(numcell_cent, 0);
-  Gzy.resize(numcell_cent, 0);
-  Gzz.resize(numcell_cent, 0);
-
-  // comp of the stress tensor
-  txx.resize(numcell_cent, 0);
-  txy.resize(numcell_cent, 0);
-  txz.resize(numcell_cent, 0);
-  tyy.resize(numcell_cent, 0);
-  tyz.resize(numcell_cent, 0);
-  tzz.resize(numcell_cent, 0);
-
-  // derived turbulence quantities
-  tke.resize(numcell_cent, 0);
-  CoEps.resize(numcell_cent, 0);
-  nuT.resize(numcell_cent, 0);
-
-  // comp of the divergence of the stress tensor
-  tmp_dtoxdx.resize(numcell_cent, 0);
-  tmp_dtoydy.resize(numcell_cent, 0);
-  tmp_dtozdz.resize(numcell_cent, 0);
-
-  // comp of the divergence of the stress tensor
-  div_tau_x.resize(numcell_cent, 0);
-  div_tau_y.resize(numcell_cent, 0);
-  div_tau_z.resize(numcell_cent, 0);
-}
-
 void TURBGeneralData::loadNetCDFData(int stepin)
 {
-  std::cout << "[QES-TURB]\t loading data at step " << stepin << std::endl;
+  std::cout << "[QES-TURB]\t Loading data at step " << stepin
+            << " (" << m_WGD->timestamp[stepin] << ")" << std::endl;
 
   // netCDF variables
   std::vector<size_t> start;
@@ -489,9 +343,9 @@ void TURBGeneralData::loadNetCDFData(int stepin)
 
   start = { static_cast<unsigned long>(stepin), 0, 0, 0 };
   count_cc = { 1,
-               static_cast<unsigned long>(nz - 1),
-               static_cast<unsigned long>(ny - 1),
-               static_cast<unsigned long>(nx - 1) };
+               static_cast<unsigned long>(domain.nz() - 1),
+               static_cast<unsigned long>(domain.ny() - 1),
+               static_cast<unsigned long>(domain.nx() - 1) };
 
   // stress tensor
   input->getVariableData("txx", start, count_cc, txx);
@@ -501,11 +355,14 @@ void TURBGeneralData::loadNetCDFData(int stepin)
   input->getVariableData("tyz", start, count_cc, tyz);
   input->getVariableData("tzz", start, count_cc, tzz);
 
-  // face-center variables
   input->getVariableData("tke", start, count_cc, tke);
   input->getVariableData("CoEps", start, count_cc, CoEps);
 
-  divergenceStress();
+  input->getVariableData("div_tau_x", start, count_cc, div_tau_x);
+  input->getVariableData("div_tau_y", start, count_cc, div_tau_y);
+  input->getVariableData("div_tau_z", start, count_cc, div_tau_z);
+
+  // divergenceStress();
 
   return;
   // std::cout << "\t\t Memory allocation completed.\n";
@@ -578,13 +435,13 @@ void TURBGeneralData::run()
 void TURBGeneralData::frictionVelocity()
 {
   float nVal = 0.0, uSum = 0.0;
-  for (int j = 0; j < ny - 1; j++) {
-    for (int i = 0; i < nx - 1; i++) {
+  for (int j = 0; j < domain.ny() - 1; j++) {
+    for (int i = 0; i < domain.nx() - 1; i++) {
       // search the vector for the first element with value 42
-      std::vector<float>::iterator itr = std::lower_bound(z_face.begin(), z_face.end(), zRef);
+      std::vector<float>::iterator itr = std::lower_bound(domain.z_face.begin(), domain.z_face.end(), zRef);
       int k;
-      if (itr != z_face.end()) {
-        k = itr - z_face.begin();
+      if (itr != domain.z_face.end()) {
+        k = itr - domain.z_face.begin();
         // std::cout << "\t\t\t ref height = "<< zRef << " kRef = "<< kRef << std::endl;
       } else {
         std::cerr << "[ERROR] Turbulence model : reference height is outside the domain" << std::endl;
@@ -592,12 +449,17 @@ void TURBGeneralData::frictionVelocity()
         exit(EXIT_FAILURE);
       }
 
-      int cellID = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
-      int faceID = i + j * (nx) + k * (nx) * (ny);
+      // int cellID = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
+      // int faceID = i + j * (nx) + k * (nx) * (ny);
+      long cellID = domain.cell(i, j, k);
+      long faceID = domain.face(i, j, k);
       if (m_WGD->icellflag[cellID] != 0 && m_WGD->icellflag[cellID] != 2) {
-        uSum += sqrt(pow(0.5 * (m_WGD->u[faceID] + m_WGD->u[faceID + 1]), 2)
+        /*uSum += sqrt(pow(0.5 * (m_WGD->u[faceID] + m_WGD->u[faceID + 1]), 2)
                      + pow(0.5 * (m_WGD->v[faceID] + m_WGD->v[faceID + nx]), 2)
-                     + pow(0.5 * (m_WGD->w[faceID] + m_WGD->w[faceID + nx * ny]), 2));
+                     + pow(0.5 * (m_WGD->w[faceID] + m_WGD->w[faceID + nx * ny]), 2));*/
+        uSum += sqrt(pow(0.5 * (m_WGD->u[domain.face(i, j, k)] + m_WGD->u[domain.face(i + 1, j, k)]), 2)
+                     + pow(0.5 * (m_WGD->v[domain.face(i, j, k)] + m_WGD->v[domain.face(i, j + 1, k)]), 2)
+                     + pow(0.5 * (m_WGD->w[domain.face(i, j, k)] + m_WGD->w[domain.face(i, j, k + 1)]), 2));
         nVal++;
       }
     }
@@ -611,16 +473,16 @@ void TURBGeneralData::frictionVelocity()
 
 void TURBGeneralData::derivativeVelocity()
 {
-  for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
-    int cellID = *it;
-
+  std::cout << "[QES-TURB]\t Computing Velocity Derivatives..." << std::endl;
+  for (int cellID : icellfluid) {
     // linearized index: cellID = i + j*(nx-1) + k*(nx-1)*(ny-1);
     //  i,j,k -> inverted linearized index
-    int k = (int)(cellID / ((nx - 1) * (ny - 1)));
-    int j = (int)((cellID - k * (nx - 1) * (ny - 1)) / (nx - 1));
-    int i = cellID - j * (nx - 1) - k * (nx - 1) * (ny - 1);
-    int faceID = i + j * nx + k * nx * ny;
-
+    // int k = (int)(cellID / ((nx - 1) * (ny - 1)));
+    // int j = (int)((cellID - k * (nx - 1) * (ny - 1)) / (nx - 1));
+    // int i = cellID - j * (nx - 1) - k * (nx - 1) * (ny - 1);
+    // int faceID = i + j * nx + k * nx * ny;
+    auto [i, j, k] = domain.getCellIdx(cellID);
+    // long faceID = domain.face(i, j, k);
 
     // - Diagonal componants of the velocity gradient tensor naturally fall at the cell-center
     // - Off-diagonal componants of the  velocity gradient tensor require extra interpolation
@@ -629,77 +491,73 @@ void TURBGeneralData::derivativeVelocity()
 
 
     // Gxx = dudx
-    Gxx[cellID] = (m_WGD->u[faceID + 1] - m_WGD->u[faceID]) / (m_WGD->dx);
+    Gxx[cellID] = (m_WGD->u[domain.face(i + 1, j, k)] - m_WGD->u[domain.face(i, j, k)]) / (domain.dx());
     // Gyx = dvdx
-    Gyx[cellID] = ((m_WGD->v[faceID + 1] + m_WGD->v[faceID + 1 + nx])
-                   - (m_WGD->v[faceID - 1] + m_WGD->v[faceID - 1 + nx]))
-                  / (4.0 * m_WGD->dx);
+    Gyx[cellID] = ((m_WGD->v[domain.face(i + 1, j, k)] + m_WGD->v[domain.face(i + 1, j + 1, k)])
+                   - (m_WGD->v[domain.face(i - 1, j, k)] + m_WGD->v[domain.face(i - 1, j + 1, k)]))
+                  / (4.0f * domain.dx());
     // Gzx = dwdx
-    Gzx[cellID] = ((m_WGD->w[faceID + 1] + m_WGD->w[faceID + 1 + nx * ny])
-                   - (m_WGD->w[faceID - 1] + m_WGD->w[faceID - 1 + nx * ny]))
-                  / (4.0 * m_WGD->dx);
+    Gzx[cellID] = ((m_WGD->w[domain.face(i + 1, j, k)] + m_WGD->w[domain.face(i + 1, j, k + 1)])
+                   - (m_WGD->w[domain.face(i - 1, j, k)] + m_WGD->w[domain.face(i - 1, j, k + 1)]))
+                  / (4.0f * domain.dx());
 
     // Gxy = dudy
-    Gxy[cellID] = ((m_WGD->u[faceID + nx] + m_WGD->u[faceID + 1 + nx])
-                   - (m_WGD->u[faceID - nx] + m_WGD->u[faceID + 1 - nx]))
-                  / (4.0 * m_WGD->dy);
+    Gxy[cellID] = ((m_WGD->u[domain.face(i, j + 1, k)] + m_WGD->u[domain.face(i + 1, j + 1, k)])
+                   - (m_WGD->u[domain.face(i, j - 1, k)] + m_WGD->u[domain.face(i + 1, j - 1, k)]))
+                  / (4.0f * domain.dy());
     // Gyy = dvdy
-    Gyy[cellID] = (m_WGD->v[faceID + nx] - m_WGD->v[faceID]) / (m_WGD->dy);
+    Gyy[cellID] = (m_WGD->v[domain.face(i, j + 1, k)] - m_WGD->v[domain.face(i, j, k)]) / (domain.dy());
     // Gzy = dwdy
-    Gzy[cellID] = ((m_WGD->w[faceID + nx] + m_WGD->w[faceID + nx + nx * ny])
-                   - (m_WGD->w[faceID - nx] + m_WGD->w[faceID - nx + nx * ny]))
-                  / (4.0 * m_WGD->dy);
+    Gzy[cellID] = ((m_WGD->w[domain.face(i, j + 1, k)] + m_WGD->w[domain.face(i, j + 1, k + 1)])
+                   - (m_WGD->w[domain.face(i, j - 1, k)] + m_WGD->w[domain.face(i, j - 1, k + 1)]))
+                  / (4.0f * domain.dy());
 
 
     if (flagUniformZGrid) {
       // Gxz = dudz
-      Gxz[cellID] = ((m_WGD->u[faceID + nx * ny] + m_WGD->u[faceID + 1 + nx * ny])
-                     - (m_WGD->u[faceID - nx * ny] + m_WGD->u[faceID + 1 - nx * ny]))
-                    / (4.0 * m_WGD->dz);
+      Gxz[cellID] = ((m_WGD->u[domain.face(i, j, k + 1)] + m_WGD->u[domain.face(i + 1, j, k + 1)])
+                     - (m_WGD->u[domain.face(i, j, k - 1)] + m_WGD->u[domain.face(i + 1, j, k - 1)]))
+                    / (4.0f * domain.dz());
       // Gyz = dvdz
-      Gyz[cellID] = ((m_WGD->v[faceID + nx * ny] + m_WGD->v[faceID + nx + nx * ny])
-                     - (m_WGD->v[faceID - nx * ny] + m_WGD->v[faceID + nx - nx * ny]))
-                    / (4.0 * m_WGD->dz);
+      Gyz[cellID] = ((m_WGD->v[domain.face(i, j, k + 1)] + m_WGD->v[domain.face(i, j + 1, k + 1)])
+                     - (m_WGD->v[domain.face(i, j, k - 1)] + m_WGD->v[domain.face(i, j + 1, k - 1)]))
+                    / (4.0f * domain.dz());
       // Gzz = dwdz
-      Gzz[cellID] = (m_WGD->w[faceID + nx * ny] - m_WGD->w[faceID]) / (m_WGD->dz);
+      Gzz[cellID] = (m_WGD->w[domain.face(i, j, k + 1)] - m_WGD->w[domain.face(i, j, k)]) / (domain.dz());
     } else {
       // Gxz = dudz
-      Gxz[cellID] = (0.5 * (m_WGD->z[k] - m_WGD->z[k - 1]) / (m_WGD->z[k + 1] - m_WGD->z[k])
-                       * ((m_WGD->u[faceID + nx * ny] + m_WGD->u[faceID + 1 + nx * ny])
-                          - (m_WGD->u[faceID] + m_WGD->u[faceID + 1]))
-                     + 0.5 * (m_WGD->z[k + 1] - m_WGD->z[k]) / (m_WGD->z[k] - m_WGD->z[k - 1])
-                         * ((m_WGD->u[faceID] + m_WGD->u[faceID + 1])
-                            - (m_WGD->u[faceID - nx * ny] + m_WGD->u[faceID + 1 - nx * ny])))
-                    / (m_WGD->z[k + 1] - m_WGD->z[k - 1]);
+      Gxz[cellID] = (0.5f * (domain.z[k] - domain.z[k - 1]) / (domain.z[k + 1] - domain.z[k])
+                       * ((m_WGD->u[domain.face(i, j, k + 1)] + m_WGD->u[domain.face(i + 1, j, k + 1)])
+                          - (m_WGD->u[domain.face(i, j, k)] + m_WGD->u[domain.face(i + 1, j, k)]))
+                     + 0.5f * (domain.z[k + 1] - domain.z[k]) / (domain.z[k] - domain.z[k - 1])
+                         * ((m_WGD->u[domain.face(i, j, k)] + m_WGD->u[domain.face(i + 1, j, k)])
+                            - (m_WGD->u[domain.face(i, j, k - 1)] + m_WGD->u[domain.face(i + 1, j, k - 1)])))
+                    / (domain.z[k + 1] - domain.z[k - 1]);
       // Gyz = dvdz
-      Gyz[cellID] = (0.5 * (m_WGD->z[k] - m_WGD->z[k - 1]) / (m_WGD->z[k + 1] - m_WGD->z[k])
-                       * ((m_WGD->v[faceID + nx * ny] + m_WGD->v[faceID + nx + nx * ny])
-                          - (m_WGD->v[faceID] + m_WGD->v[faceID + nx]))
-                     + 0.5 * (m_WGD->z[k + 1] - m_WGD->z[k]) / (m_WGD->z[k] - m_WGD->z[k - 1])
-                         * ((m_WGD->v[faceID] + m_WGD->v[faceID + nx])
-                            - (m_WGD->v[faceID - nx * ny] + m_WGD->v[faceID + nx - nx * ny])))
-                    / (m_WGD->z[k + 1] - m_WGD->z[k - 1]);
+      Gyz[cellID] = (0.5f * (domain.z[k] - domain.z[k - 1]) / (domain.z[k + 1] - domain.z[k])
+                       * ((m_WGD->v[domain.face(i, j, k + 1)] + m_WGD->v[domain.face(i, j + 1, k + 1)])
+                          - (m_WGD->v[domain.face(i, j, k)] + m_WGD->v[domain.face(i, j + 1, k)]))
+                     + 0.5f * (domain.z[k + 1] - domain.z[k]) / (domain.z[k] - domain.z[k - 1])
+                         * ((m_WGD->v[domain.face(i, j, k)] + m_WGD->v[domain.face(i, j + 1, k)])
+                            - (m_WGD->v[domain.face(i, j, k - 1)] + m_WGD->v[domain.face(i, j + 1, k - 1)])))
+                    / (domain.z[k + 1] - domain.z[k - 1]);
       // Gzz = dwdz
-      Gzz[cellID] = (m_WGD->w[faceID + nx * ny] - m_WGD->w[faceID]) / (m_WGD->dz_array[k]);
+      Gzz[cellID] = (m_WGD->w[domain.face(i, j, k + 1)] - m_WGD->w[domain.face(i, j, k)]) / (domain.dz_array[k]);
     }
   }
 
-  std::cout << "[QES-TURB]\t Imposing Wall BC (log law)..." << std::endl;
-  for (auto i = 0u; i < wallVec.size(); i++) {
-    wallVec.at(i)->setWallsVelocityDeriv(m_WGD, this);
+  // std::cout << "[QES-TURB]\t Imposing Wall BC (log law)..." << std::endl;
+  for (auto &wall : wallVec) {
+    wall->setWallsVelocityDeriv(m_WGD, this);
   }
   // std::cout<<"\t\t Wall BC done."<<std::endl;
-
-  return;
 }
 
 void TURBGeneralData::getTurbulentViscosity()
 {
   float tkeBound = turbUpperBound * uStar * uStar;
 
-  for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
-
-    int cellID = *it;
+  for (int cellID : icellfluid) {
 
     float Sxx = Gxx[cellID];
     float Syy = Gyy[cellID];
@@ -725,7 +583,6 @@ void TURBGeneralData::getTurbulentViscosity()
     CoEps[cellID] = 5.7 * pow(sqrt(TKE) * cPope, 3.0) / (LM);
     tke[cellID] = TKE;
   }
-  return;
 }
 
 void TURBGeneralData::stressTensor()
@@ -736,12 +593,13 @@ void TURBGeneralData::stressTensor()
   double I11, I12, I13, I21, I22, I23, I31, I32, I33;// inverse of rotation matrix
   double P11, P12, P13, P21, P22, P23, P31, P32, P33;// P = tau*inv(R)
 
-  for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
-    int cellID = *it;
-    int k = (int)(cellID / ((nx - 1) * (ny - 1)));
-    int j = (int)((cellID - k * (nx - 1) * (ny - 1)) / (nx - 1));
-    int i = cellID - j * (nx - 1) - k * (nx - 1) * (ny - 1);
-    int faceID = i + j * nx + k * nx * ny;
+  for (int cellID : icellfluid) {
+    // int k = (int)(cellID / ((nx - 1) * (ny - 1)));
+    // int j = (int)((cellID - k * (nx - 1) * (ny - 1)) / (nx - 1));
+    // int i = cellID - j * (nx - 1) - k * (nx - 1) * (ny - 1);
+    // int faceID = i + j * nx + k * nx * ny;
+    auto [i, j, k] = domain.getCellIdx(cellID);
+    long faceID = domain.face(i, j, k);
 
     float Sxx = Gxx[cellID];
     float Syy = Gyy[cellID];
@@ -781,11 +639,12 @@ void TURBGeneralData::stressTensor()
 
     int k_ref = 0;
     float refHeight = 15.0;// reference height for rotation wind direction is arbitrarily set to 15m above terrain
-    while (m_WGD->z_face[k_ref] < (refHeight + m_WGD->terrain[i + j * (m_WGD->nx - 1)])) {
+    while (domain.z_face[k_ref] < (refHeight + m_WGD->terrain[domain.cell2d(i, j)])) {
       k_ref += 1;
     }
 
-    int localRef = i + j * nx + k_ref * nx * ny;
+    // int localRef = i + j * nx + k_ref * nx * ny;
+    long localRef = domain.face(i, j, k_ref);
     float dirRot = atan2(m_WGD->v[localRef], m_WGD->u[localRef]);// radians on the unit circle
 
     // Rotation matrix
@@ -947,14 +806,11 @@ void TURBGeneralData::matMult(const double &A11,
 
 void TURBGeneralData::addBackgroundMixing()
 {
-  for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
-    int cellID = *it;
-
+  for (int cellID : icellfluid) {
     txx[cellID] += backgroundMixing * backgroundMixing;
     tyy[cellID] += backgroundMixing * backgroundMixing;
     tzz[cellID] += backgroundMixing * backgroundMixing;
   }
-  return;
 }
 
 void TURBGeneralData::divergenceStress()
@@ -972,8 +828,6 @@ void TURBGeneralData::divergenceStress()
   // z-comp of the divergence of the stress tensor
   // div(tau)_z = dtxzdx + dtyzdy + dtzzdz
   derivativeStress(txz, tyz, tzz, div_tau_z);
-
-  return;
 }
 
 void TURBGeneralData::derivativeStress(const std::vector<float> &tox,
@@ -982,71 +836,68 @@ void TURBGeneralData::derivativeStress(const std::vector<float> &tox,
                                        std::vector<float> &div_tau_o)
 {
   // o-comp of the divergence of the stress tensor
-  for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
-    int cellID = *it;
+  for (int cellID : icellfluid) {
+    // linearized index
+    auto [i, j, k] = domain.getCellIdx(cellID);
 
-    // linearized index: cellID = i + j*(nx-1) + k*(nx-1)*(ny-1);
-    //  i,j,k -> inverted linearized index
-    int k = (int)(cellID / ((nx - 1) * (ny - 1)));
-
-    tmp_dtoxdx[cellID] = (tox[cellID + 1] - tox[cellID - 1]) / (2.0 * m_WGD->dx);
-    tmp_dtoydy[cellID] = (toy[cellID + (nx - 1)] - toy[cellID - (nx - 1)]) / (2.0 * m_WGD->dy);
+    tmp_dtoxdx[cellID] = (tox[domain.cellAdd(cellID, 1, 0, 0)] - tox[domain.cellAdd(cellID, -1, 0, 0)]) / (2.0f * domain.dx());
+    tmp_dtoydy[cellID] = (toy[domain.cellAdd(cellID, 0, 1, 0)] - toy[domain.cellAdd(cellID, 0, -1, 0)]) / (2.0f * domain.dy());
 
     if (flagUniformZGrid) {
-      tmp_dtozdz[cellID] = (toz[cellID + (nx - 1) * (ny - 1)] - toz[cellID - (nx - 1) * (ny - 1)])
-                           / (2.0 * m_WGD->dz);
+      tmp_dtozdz[cellID] = (toz[domain.cellAdd(cellID, 0, 0, 1)] - toz[domain.cellAdd(cellID, 0, 0, -1)])
+                           / (2.0f * domain.dz());
     } else {
-      tmp_dtozdz[cellID] = ((m_WGD->z[k] - m_WGD->z[k - 1]) / (m_WGD->z[k + 1] - m_WGD->z[k])
-                              * (toz[cellID + (nx - 1) * (ny - 1)] - toz[cellID])
-                            + (m_WGD->z[k + 1] - m_WGD->z[k]) / (m_WGD->z[k] - m_WGD->z[k - 1])
-                                * (toz[cellID] - toz[cellID - (nx - 1) * (ny - 1)]))
-                           / (m_WGD->z[k + 1] - m_WGD->z[k - 1]);
+      tmp_dtozdz[cellID] = ((domain.z[k] - domain.z[k - 1]) / (domain.z[k + 1] - domain.z[k])
+                              * (toz[domain.cellAdd(cellID, 0, 0, 1)] - toz[cellID])
+                            + (domain.z[k + 1] - domain.z[k]) / (domain.z[k] - domain.z[k - 1])
+                                * (toz[cellID] - toz[domain.cellAdd(cellID, 0, 0, -1)]))
+                           / (domain.z[k + 1] - domain.z[k - 1]);
     }
   }
   // correction at the wall
-  for (auto i = 0u; i < wallVec.size(); i++) {
-    wallVec.at(i)->setWallsStressDeriv(m_WGD, this, tox, toy, toz);
+  for (auto &wall : wallVec) {
+    wall->setWallsStressDeriv(m_WGD, this, tox, toy, toz);
   }
-  // compute the the divergence
-  for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
-    int cellID = *it;
+  // compute the divergence
+  for (int cellID : icellfluid) {
     div_tau_o[cellID] = tmp_dtoxdx[cellID] + tmp_dtoydy[cellID] + tmp_dtozdz[cellID];
   }
-
-  return;
 }
 
 void TURBGeneralData::boundTurbFields()
 {
   float stressBound = turbUpperBound * uStar * uStar;
-  for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
-    int cellID = *it;
-
+  for (int cellID : icellfluid) {
     if (txx[cellID] < -stressBound)
       txx[cellID] = -stressBound;
     if (txx[cellID] > stressBound)
       txx[cellID] = stressBound;
-
+  }
+  for (int cellID : icellfluid) {
     if (txy[cellID] < -stressBound)
       txy[cellID] = -stressBound;
     if (txy[cellID] > stressBound)
       txy[cellID] = stressBound;
-
+  }
+  for (int cellID : icellfluid) {
     if (txz[cellID] < -stressBound)
       txz[cellID] = -stressBound;
     if (txz[cellID] > stressBound)
       txz[cellID] = stressBound;
-
+  }
+  for (int cellID : icellfluid) {
     if (tyy[cellID] < -stressBound)
       tyy[cellID] = -stressBound;
     if (tyy[cellID] > stressBound)
       tyy[cellID] = stressBound;
-
+  }
+  for (int cellID : icellfluid) {
     if (tyz[cellID] < -stressBound)
       tyz[cellID] = -stressBound;
     if (tyz[cellID] > stressBound)
       tyz[cellID] = stressBound;
-
+  }
+  for (int cellID : icellfluid) {
     if (tzz[cellID] < -stressBound)
       tzz[cellID] = -stressBound;
     if (tzz[cellID] > stressBound)

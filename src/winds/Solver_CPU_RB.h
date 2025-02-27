@@ -37,6 +37,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <cmath>
+#include <utility>
 #include <vector>
 #include <chrono>
 
@@ -44,7 +45,6 @@
 #include <omp.h>
 #endif
 
-#include "WINDSInputData.h"
 #include "Solver.h"
 
 /**
@@ -55,23 +55,19 @@
 class Solver_CPU_RB : public Solver
 {
 public:
-  Solver_CPU_RB(const WINDSInputData *WID, WINDSGeneralData *WGD)
-    : Solver(WID, WGD)
+  Solver_CPU_RB(qes::Domain domain_in, const float &tolerance)
+    : Solver(std::move(domain_in), tolerance)
   {
     std::cout << "-------------------------------------------------------------------" << std::endl;
     std::cout << "[Solver]\t Initializing Red/Black Solver (CPU) ..." << std::endl;
   }
 
 protected:
-  /** :document this:
-   * Start by writing a one sentence description here
+  /**
+   * :document this:
    *
-   * Document the implementation details in the .cpp file, not here.
-   * (remove the placeholder comments and :document this: tag when done)
-   *
-   * @param WID :document this:
    * @param WGD :document this:
-   * @param solveWind :document this:
+   * @param itermax :document this:
    */
-  void solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind) override;
+  virtual void solve(WINDSGeneralData *, const int &) override;
 };

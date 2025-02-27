@@ -43,6 +43,8 @@
 
 #include "WINDSInputData.h"
 
+#include "qes/Domain.h"
+
 #include "WindProfilerType.h"
 #include "WindProfilerWRF.h"
 #include "WindProfilerBarnCPU.h"
@@ -72,6 +74,13 @@
 using namespace netCDF;
 using namespace netCDF::exceptions;
 
+struct WINDSDeviceData
+{
+  float *u;
+  float *v;
+  float *w;
+};
+
 class WINDSInputData;
 
 /**
@@ -80,13 +89,15 @@ class WINDSInputData;
  */
 class WINDSGeneralData
 {
+private:
+  WINDSGeneralData() : domain(1, 1, 1, 1, 1, 1) {}// do not allow empty domain to be created
+
 public:
-  WINDSGeneralData()
-  {}
-  WINDSGeneralData(const WINDSInputData *WID, int solverType);
-  WINDSGeneralData(const std::string inputFile);
-  virtual ~WINDSGeneralData()
-  {}
+  explicit WINDSGeneralData(qes::Domain domain_in);
+  WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain_in, int solverType);
+  explicit WINDSGeneralData(const std::string &inputFile);
+
+  virtual ~WINDSGeneralData() = default;
 
   void mergeSort(std::vector<float> &effective_height,
                  std::vector<int> &building_id);
@@ -98,6 +109,8 @@ public:
 
   void applyParametrizations(const WINDSInputData *);
   // void applyParametrizations(const WINDSInputData*);
+
+  QEStime nextTimeInstance(const int &, const float &);
 
   void printTimeProgress(int);
 
@@ -136,30 +149,32 @@ public:
   float cavity_factor = 1.0; /**< :document this: */
   float wake_factor = 0.0; /**< :document this: */
   float lengthf_coeff = 1.5; /**< :document this: */
-  float theta; /**< :document this: */
-  int icell_face;
-  int icell_cent;
+  float theta{}; /**< :document this: */
+  // int icell_face;
+  // int icell_cent;
 
-  // General QES Domain Data
+  // General QES Domain Data -- winds does not create this... provide const & in constructor of WINDS...
+  qes::Domain domain;
+
   ///@{
   /** Number of cells */
-  int nx, ny, nz;
+  // int nx, ny, nz;
   ///@}
   ///@{
   /** Grid resolution */
-  float dx, dy, dz;
+  // float dx, dy, dz;
   ///@}
-  float dxy; /**< Minimum value between dx and dy */
+  // float dxy; /**< Minimum value between dx and dy */
 
-  int wrf_nx, wrf_ny;
+  int wrf_nx{}, wrf_ny{};
 
-  float halo_x, halo_y;
-  int halo_index_x, halo_index_y;
+  float halo_x{}, halo_y{};
+  int halo_index_x{}, halo_index_y{};
 
-  long numcell_cout; /**< :document this: */
-  long numcell_cout_2d; /**< :document this: */
-  long numcell_cent; /**< Total number of cell-centered values in domain */
-  long numcell_face; /**< Total number of face-centered values in domain */
+  // long numcell_cout{}; /**< :document this: */
+  // long numcell_cout_2d; /**< :document this: */
+  // long numcell_cent; /**< Total number of cell-centered values in domain */
+  // long numcell_face; /**< Total number of face-centered values in domain */
 
   // std::vector<size_t> start; /**< :document this: */
   // std::vector<size_t> count; /**< :document this: */
@@ -173,14 +188,14 @@ public:
   std::vector<int> building_id; /**< :Building ID: */
   std::vector<Building *> allBuildingsV; /**< :Vector contains all of the building elements: */
 
-  float z0; /**< In wallLogBC */
+  float z0{}; /**< In wallLogBC */
 
-  std::vector<float> dz_array; /**< :Array contain dz values: */
+  // std::vector<float> dz_array; /**< :Array contain dz values: */
   ///@{
   /** :Location of center of cell in x,y and z directions: */
-  std::vector<float> x, y, z;
+  // std::vector<float> x, y, z;
   ///@}
-  std::vector<float> z_face; /**< :Location of the bottom face of the cell in z-direction: */
+  // std::vector<float> z_face; /**< :Location of the bottom face of the cell in z-direction: */
 
   std::vector<QEStime> sensortime; /**< :document this: */
   std::vector<int> sensortime_id;
@@ -188,8 +203,8 @@ public:
   std::vector<int> time_id;
 
   // time variables
-  int nt; /**< :document this: */
-  int totalTimeIncrements; /**< :document this: */
+  int nt{}; /**< :document this: */
+  int totalTimeIncrements{}; /**< :document this: */
   std::vector<float> dt_array; /**< :document this: */
   std::vector<QEStime> timestamp; /**< :document this: */
 
@@ -234,29 +249,32 @@ public:
   ///@{
   /** Declaration of initial wind components (u0,v0,w0) */
   std::vector<float> u0, v0, w0;
+  // maintain a separate QESWindData for u0,v0,w0
   ///@}
 
   ///@{
   /** Declaration of final velocity field components (u,v,w) */
   std::vector<float> u, v, w;
+
+  /// it really needs to use SimDataAccess.windData for the u, v, w....
   ///@}
 
   // local Mixing class and data
-  LocalMixing *localMixing; /**< :document this: */
+  LocalMixing *localMixing{}; /**< :document this: */
   std::vector<double> mixingLengths; /**< :document this: */
 
   // Sensor* sensor;      may not need this now
 
   // wind profiler class
-  WindProfilerType *windProfiler; /**< pointer to the wind profiler class, used to interp wind */
+  WindProfilerType *windProfiler{}; /**< pointer to the wind profiler class, used to interp wind */
 
-  int id; /**< :document this: */
+  int id{}; /**< :document this: */
 
   // [FM Feb.28.2020] there 2 variables are not used anywhere
   // std::vector<float> site_canopy_H;
   // std::vector<float> site_atten_coeff;
 
-  float convergence; /**< :document this: */
+  float convergence{}; /**< :document this: */
 
   // Canopy functions
   // std::vector<float> canopy_atten;   /**< Canopy attenuation coefficient */
@@ -266,10 +284,10 @@ public:
   // std::vector<float> canopy_ustar;   /**< Velocity gradient at the top of canopy */
   // std::vector<float> canopy_d;	   /**< Canopy displacement length */
 
-  Canopy *canopy; /**< :document this: */
+  Canopy *canopy{}; /**< :document this: */
 
 
-  float max_velmag; /**< In polygonWake */
+  float max_velmag{}; /**< In polygonWake */
 
   // In getWallIndices and wallLogBC
   std::vector<int> wall_right_indices; /**< Indices of the cells with wall to right boundary condition */
@@ -280,9 +298,9 @@ public:
   std::vector<int> wall_front_indices; /**< Indices of the cells with wall in front boundary condition */
   std::vector<int> wall_indices; /**< Indices of the cells with wall on at least one side */
 
-  Mesh *mesh; /**< In Terrain functions */
+  Mesh *mesh{}; /**< In Terrain functions */
 
-  Cell *cells; /**< :document this: */
+  Cell *cells{}; /**< :document this: */
   // bool DTEHFExists = false;
   CutCell *cut_cell; /**< :document this: */
   Wall *wall; /**< :document this: */
@@ -302,15 +320,21 @@ public:
   std::vector<std::vector<float>> coeff;
   ///@}
 
+  WINDSDeviceData d_data;
+  void allocateDevice();
+  void freeDevice();
+  void copyDataToDevice();
+  void copyDataFromDevice();
+
 private:
   // input: store here for multiple time instance.
-  NetCDFInput *input; /**< :document this: */
+  NetCDFInput *input{}; /**< :document this: */
 
 protected:
-  void defineHorizontalGrid();
-  void defineVerticalGrid();
-  void defineVerticalStretching(const float &);
-  void defineVerticalStretching(const std::vector<float> &);
+  // void defineHorizontalGrid();
+  // void defineVerticalGrid();
+  // void defineVerticalStretching(const float &);
+  // void defineVerticalStretching(const std::vector<float> &);
 
   void allocateMemory();
 };

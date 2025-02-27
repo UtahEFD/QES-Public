@@ -33,6 +33,7 @@
  */
 
 #include "RandomSingleton.h"
+#include <ctime>
 
 RandomSingleton *RandomSingleton::m_the_instance = nullptr;
 
@@ -45,21 +46,20 @@ RandomSingleton *RandomSingleton::getInstance()
 }
 
 RandomSingleton::RandomSingleton()
+  : m_normal_value(false), m_remaining_value(0.0),
+    prng(), distribution(0.0, 1.0)
 {
   m_normal_value = false;
-  // std::cout << "Set  RANDOM seed " << std::endl;
-  // std::srand(1);
-  // std::srand(std::time(0));
-  srand48(std::time(nullptr));
+
+  prng.seed(std::time(nullptr));
 }
 
-double RandomSingleton::uniRan()
+float RandomSingleton::uniRan()
 {
-  // return std::rand() / (double)RAND_MAX;
-  return drand48();
+  return distribution(prng);
 }
 
-double RandomSingleton::norRan()
+float RandomSingleton::norRan()
 {
   float rsq, v1, v2;
   if (!m_normal_value) {

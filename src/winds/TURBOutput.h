@@ -60,7 +60,7 @@ protected:
   /**
    * :document this:
    */
-  void setAllOutputFields();
+  void setAllOutputFields() {}
 
 private:
   TURBGeneralData *m_TGD;

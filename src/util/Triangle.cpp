@@ -137,8 +137,8 @@ bool Triangle::rayTriangleIntersect(const Ray &ray, HitRecord &rec, float t0, fl
 /*
 void Triangle::parseValues()
 {
-  parseElement<Vector3>(true, a, "a");
-  parseElement<Vector3>(true, b, "b");
-  parseElement<Vector3>(true, c, "c");
+  parseElement<Vector3Float>(true, a, "a");
+  parseElement<Vector3Float>(true, b, "b");
+  parseElement<Vector3Float>(true, c, "c");
 }
 */

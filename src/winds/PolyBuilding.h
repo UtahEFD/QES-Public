@@ -56,7 +56,7 @@ using std::cout;
  *
  * It's an inheritance of the building class (has all the features defined in that class).
  * In this class, first, the polygon buildings will be defined and then different
- * parameterizations related to each building will be applied. For now, 
+ * parameterizations related to each building will be applied. For now,
  *
  * @sa Building
  * @sa ParseInterface
@@ -92,11 +92,6 @@ protected:
 
   ///@{
   /** :document this: */
-  int icell_cent, icell_face;
-  ///@}
-
-  ///@{
-  /** :document this: */
   float x1, x2, y1, y2;
   ///@}
 
@@ -116,7 +111,7 @@ public:
   {
   }
 
-  //friend class CutBuilding;
+  // friend class CutBuilding;
 
   /**
    * Creates a polygon type building.
@@ -212,8 +207,8 @@ public:
    * features of the building defined in the class constructor and setCellsFlag function. It defines
    * cells qualified in the space between buildings and applies the approperiate parameterization to them.
    * More information: "Improvements to a fast-response WINDSan wind model, M. Nelson et al. (2008)"
-   * New model base on "Evaluation of the QUIC-URB fast response urban wind model for a cubical building 
-   * array and wide building street canyon" Singh et al. (2008) 
+   * New model base on "Evaluation of the QUIC-URB fast response urban wind model for a cubical building
+   * array and wide building street canyon" Singh et al. (2008)
    *
    * @param WGD :document this:
    */

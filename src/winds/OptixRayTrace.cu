@@ -111,22 +111,22 @@ extern "C" __global__ void __raygen__from_cell()
       }
 
       optixTrace(params.handle,
-        origin,
-        dir,
-        0.0f,
-        1e16f,
-        0.0f,
-        // OptixVisibilityMask(1),
-        OptixVisibilityMask(255),
-        OPTIX_RAY_FLAG_NONE,
-        RAY_TYPE_RADIENCE,
-        RAY_TYPE_COUNT,
-        RAY_TYPE_RADIENCE,
-        t);
+                 origin,
+                 dir,
+                 0.0f,
+                 1e16f,
+                 0.0f,
+                 // OptixVisibilityMask(1),
+                 OptixVisibilityMask(255),
+                 OPTIX_RAY_FLAG_NONE,
+                 RAY_TYPE_RADIENCE,
+                 RAY_TYPE_COUNT,
+                 RAY_TYPE_RADIENCE,
+                 t);
 
 
-      if (int_as_float(t) < lowestLen) {
-        lowestLen = int_as_float(t);
+      if (__int_as_float(t) < lowestLen) {
+        lowestLen = __int_as_float(t);
       }
 
     }// end of for loop
@@ -143,7 +143,7 @@ extern "C" __global__ void __raygen__from_cell()
 extern "C" __global__ void __miss__miss()
 {
 
-  optixSetPayload_0(float_as_int(FLT_MAX));// set to a large number
+  optixSetPayload_0(__float_as_int(FLT_MAX));// set to a large number
 }
 
 extern "C" __global__ void __closesthit__mixlength()
@@ -151,5 +151,5 @@ extern "C" __global__ void __closesthit__mixlength()
 
   const float t = optixGetRayTmax();// get t value from OptiX function
 
-  optixSetPayload_0(float_as_int(t));// assign payload
+  optixSetPayload_0(__float_as_int(t));// assign payload
 }

@@ -1,10 +1,15 @@
 #pragma once
 
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
+// #include <boost/filesystem/operations.hpp>
+// #include <boost/filesystem/path.hpp>
 #include <iostream>
 
-namespace fs = boost::filesystem;
+#include <filesystem>
+#include <iostream>
+#include <system_error>
+
+// namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 class QESfs
 {

@@ -1,7 +1,8 @@
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-SET( qesWindCoreSources
+SET(qesWindCoreSources
+  ../qes/Domain.cpp ../qes/Domain.h
   Canopy.cpp
   CanopyElement.cpp
   CanopyHomogeneous.cpp
@@ -9,7 +10,6 @@ SET( qesWindCoreSources
   CanopyWindbreak.cpp
   CanopyROC.cpp
   Cell.cpp
-  CPUSolver.cpp
   CutCell.cpp
   CutBuilding.cpp
   DTEHeightField.cpp
@@ -21,6 +21,7 @@ SET( qesWindCoreSources
   PolyBuilding.cpp PolyBuilding.h
   Sensor.cpp
   Solver.cpp
+  Solver_CPU.cpp
   Solver_CPU_RB.cpp
   TURBParams.h
   TURBGeneralData.cpp
@@ -47,27 +48,22 @@ SET( qesWindCoreSources
   Sidewall.cpp
   Rooftop.cpp
   StreetIntersection.cpp
-  TimeSeries.h
-  )
+  TimeSeries.h)
+
+ADD_LIBRARY(qeswindscore ${qesWindCoreSources})
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
-   CUDA_ADD_LIBRARY( qeswindscore
-      ${qesWindCoreSources}
-   )
-ELSE ($CACHE{HAS_CUDA_SUPPORT})
-   ADD_LIBRARY( qeswindscore
-      ${qesWindCoreSources}
-   )
-ENDIF ($CACHE{HAS_CUDA_SUPPORT})
- 
-
-IF ($CACHE{HAS_CUDA_SUPPORT})
-  CUDA_ADD_LIBRARY(qeswindsgpu
-    DynamicParallelism.cu
-    GlobalMemory.cu GlobalMemory.h
-    SharedMemory.cu SharedMemory.h    
+  MESSAGE(STATUS "CUDA Toolkit Include Directories: ${CUDAToolkit_INCLUDE_DIRS}")
+  SET(qesWindGPUSources
+    Solver_GPU_DynamicParallelism.cu
+    Solver_GPU_GlobalMemory.cu
+    Solver_GPU_SharedMemory.cu
+    WINDSGeneralData.cu
     TURBGeneralData.cu
     WindProfilerBarnGPU.cu)
+  ADD_LIBRARY(qeswindsgpu ${qesWindGPUSources})
+  TARGET_INCLUDE_DIRECTORIES(qeswindsgpu PRIVATE {CUDAToolkit_INCLUDE_DIRS})
+  set_target_properties(qeswindsgpu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
   
 
@@ -75,10 +71,9 @@ IF ($CACHE{HAS_OPTIX_SUPPORT})
   cuda_compile_and_embed(embedded_ptx_code OptixRayTrace.cu)
  
   add_library(qesOptix
-    ${embedded_ptx_code}
-    OptixRayTrace.h
-    OptixRayTrace.cpp
-    )  
+          ${embedded_ptx_code}
+          OptixRayTrace.h
+          OptixRayTrace.cpp)
 ENDIF ($CACHE{HAS_OPTIX_SUPPORT})
 
 

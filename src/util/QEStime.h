@@ -74,8 +74,8 @@ public:
   QEStime &operator=(const std::string &);
 
 
-  std::string getTimestamp();
-  void getTimestamp(std::string &);
+  std::string getTimestamp() const;
+  void getTimestamp(std::string &) const;
   time_t getEpochTime();
 
 
@@ -85,19 +85,19 @@ public:
 
   double operator-(const QEStime &);
 
-  bool operator==(const std::string &);
-  bool operator==(const QEStime &);
-  bool operator!=(const QEStime &);
+  bool operator==(const std::string &) const;
+  bool operator==(const QEStime &) const;
+  bool operator!=(const QEStime &) const;
 
-  bool operator<=(const QEStime &);
-  bool operator<(const QEStime &);
+  bool operator<=(const QEStime &) const;
+  bool operator<(const QEStime &) const;
 
-  bool operator>=(const QEStime &);
-  bool operator>(const QEStime &);
+  bool operator>=(const QEStime &) const;
+  bool operator>(const QEStime &) const;
 
   double operator%(const double &);
 
-  friend std::ostream &operator<<(std::ostream &, QEStime &);
+  friend std::ostream &operator<<(std::ostream &, const QEStime &);
 
 private:
   btime::ptime m_ptime;

@@ -1,0 +1,87 @@
+{
+    "version": 3,
+    "configurePresets": [
+	{
+	    "name": "default",
+	    "binaryDir": "${sourceDir}/buildVCPkg",
+	    "cacheVariables": {
+		"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+	    }
+	},
+	{
+	    "name": "windowsDev",
+	    "binaryDir": "${sourceDir}/buildWindowsDev",
+	    "cacheVariables": {
+		"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+		"CMAKE_CUDA_COMPILER": "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.8/bin/nvcc.exe",
+		"CUDACXX": "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.8/bin/nvcc.exe",
+		"CMAKE_CUDA_FLAGS": " --allow-unsupported-compiler",
+		"CMAKE_CUDA_ARCHITECTURES": "native",
+		"ENABLE_DEV_MODE": "ON",
+		"ENABLE_TESTS": "ON",
+		"TESTS_ENABLE_UNIT_TESTS": "ON"
+	    }
+	},
+	{
+	    "name": "macOSDev",
+	    "binaryDir": "${sourceDir}/buildMacOSDev",
+	    "cacheVariables": {
+		"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+		"DCMAKE_PREFIX_PATH": "/opt/homebrew/Cellar/libomp/19.1.4",
+		"NETCDF_LIBRARIES_CXX": "/opt/homebrew/lib/libnetcdf-cxx4.dylib",
+		"ENABLE_OPENMP": "ON",
+		"ENABLE_DEV_MODE": "ON",
+		"ENABLE_TESTS": "ON",
+		"TESTS_ENABLE_UNIT_TESTS": "ON"
+	    }
+	},
+	{
+	    "name": "unixDev",
+	    "binaryDir": "${sourceDir}/buildUnixDev",
+	    "cacheVariables": {
+		"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+		"ENABLE_OPENMP": "ON",
+		"ENABLE_DEV_MODE": "ON",
+		"ENABLE_TESTS": "ON",
+		"TESTS_ENABLE_UNIT_TESTS": "ON"
+	    }
+	},
+	{
+	    "name": "unixDevNoCUDA",
+	    "binaryDir": "${sourceDir}/buildUnixDevNoCUDA",
+	    "cacheVariables": {
+		"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+		"ENABLE_OPENMP": "ON",
+		"HAS_CUDA_SUPPORT": "OFF",
+		"HAS_OPTIX_SUPPORT": "OFF",
+		"ENABLE_DEV_MODE": "ON",
+		"ENABLE_TESTS": "ON",
+		"TESTS_ENABLE_UNIT_TESTS": "ON"
+	    }
+	},
+	{
+	    "name": "clangdev",
+	    "binaryDir": "${sourceDir}/buildClangDev",
+	    "cacheVariables": {
+		"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+		"CMAKE_CUDA_COMPILER": "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.8/bin/nvcc.exe",
+		"CUDACXX": "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.8/bin/nvcc.exe",
+		"CMAKE_CUDA_FLAGS": " --allow-unsupported-compiler",
+		"CMAKE_CUDA_ARCHITECTURES": "native",
+		"CMAKE_CXX_COMPILER": "clang++",
+		"ENABLE_DEV_MODE": "ON",
+		"ENABLE_TESTS": "ON",
+		"TESTS_ENABLE_UNIT_TESTS": "ON"
+	    }
+	},
+	{
+	    "name": "Release",
+	    "binaryDir": "${sourceDir}/buildRelease",
+	    "cacheVariables": {
+		"CMAKE_BUILD_TYPE": "Release",
+		"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+		"ENABLE_OPENMP": "ON"
+	    }
+	}
+    ]
+}

@@ -80,7 +80,7 @@
   <numSources> 1 </numSources>
   <SourcePoint>
     <ReleaseType_continuous>
-      <parPerTimestep>200</parPerTimestep>
+      <particlePerTimestep>200</particlePerTimestep>
     </ReleaseType_continuous>
     <posX> 20.0 </posX>
     <posY> 50.0 </posY>

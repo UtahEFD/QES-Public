@@ -34,7 +34,7 @@
  *
  * @note Can add other information about the BVH node it hits as needed.
  *
- * @sa Vector3
+ * @sa Vector3Float
  * @sa BVH
  */
 

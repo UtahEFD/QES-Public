@@ -41,12 +41,11 @@
 
 WINDSArgs::WINDSArgs()
   : verbose(false),
-    qesWindsParamFile(""), netCDFFileBasename(""),
-    compTurb(false), solveType(1),
+    compTurb(false), solveWind(true), solveType(1),
     visuOutput(true), wkspOutput(false), turbOutput(false), terrainOut(false),
     fireMode(false)
 {
-  reg("help", "help/usage information", ArgumentParsing::NONE, '?');
+  reg("help", "help/usage information", ArgumentParsing::NONE, 'h');
   reg("verbose", "turn on verbose output", ArgumentParsing::NONE, 'v');
 
   reg("windsolveroff", "Turns off the wind solver and wind output", ArgumentParsing::NONE, 'x');
@@ -59,7 +58,7 @@ WINDSArgs::WINDSArgs()
   reg("wkout", "Turns on the netcdf file to write wroking file", ArgumentParsing::NONE, 'w');
   // [FM] the output of turbulence field linked to the flag compTurb
   // reg("turbout", "Turns on the netcdf file to write turbulence file", ArgumentParsing::NONE, 'r');
-  reg("terrainout", "Turn on the output of the triangle mesh for the terrain", ArgumentParsing::NONE, 'h');
+  reg("terrainout", "Turn on the output of the triangle mesh for the terrain", ArgumentParsing::NONE, 'm');
 
   reg("turbcomp", "Turns on the computation of turbulent fields", ArgumentParsing::NONE, 't');
   reg("firemode", "Enable writing of wind data back to WRF Input file.", ArgumentParsing::NONE, 'f');
@@ -117,17 +116,8 @@ void WINDSArgs::processArguments(int argc, char *argv[])
       std::cout << "[WARNING]\t the wind fields are not being calculated" << std::endl;
   }
 
-  if (compTurb) {
-    std::cout << "Turbulence model:\t ON" << std::endl;
-  } else {
-    std::cout << "Turbulence model:\t OFF" << std::endl;
-  }
-
-  if (verbose) {
-    std::cout << "Verbose:\t\t ON" << std::endl;
-  } else {
-    std::cout << "Verbose:\t\t OFF" << std::endl;
-  }
+  std::cout << "Turbulence model:\t " << (compTurb ? "ON" : "OFF") << std::endl;
+  std::cout << "Verbose:\t\t " << (verbose ? "ON" : "OFF") << std::endl;
 
   std::cout << "----------------------------" << std::endl;
 

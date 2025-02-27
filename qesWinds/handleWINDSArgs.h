@@ -54,7 +54,7 @@ class WINDSArgs : public ArgumentParsing
 public:
   WINDSArgs();
 
-  ~WINDSArgs() {}
+  ~WINDSArgs() = default;
 
   /**
    * Takes in the commandline arguments and places
@@ -69,9 +69,9 @@ public:
   bool verbose;
 
 
-  std::string qesWindsParamFile = ""; /**< Input files (from cmd line) */
+  std::string qesWindsParamFile; /**< Input files (from cmd line) */
 
-  std::string netCDFFileBasename = ""; /**< Base name for all NetCDF output files */
+  std::string netCDFFileBasename; /**< Base name for all NetCDF output files */
 
   ///@{
   /** Flag to turn on/off different modules */

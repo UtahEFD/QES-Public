@@ -38,9 +38,7 @@
 
 void TURBWall::get_stairstep_wall_id(WINDSGeneralData *WGD, int cellflag)
 {
-  int nx = WGD->nx;
-  int ny = WGD->ny;
-  int nz = WGD->nz;
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
 
   // container for cell above terrain (needed to remove dublicate for the wall law)
   // -> need to treat the wall all at once because of strain-rate tensor
@@ -86,8 +84,8 @@ void TURBWall::get_stairstep_wall_id(WINDSGeneralData *WGD, int cellflag)
   for (auto i = 1; i < nx - 1; i++) {
     for (auto j = 1; j < ny - 1; j++) {
       for (auto k = 1; k < nz - 2; k++) {
-        int cellID = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
-        int faceID = i + j * nx + k * nx * ny;
+        int cellID = WGD->domain.cell(i, j, k);
+        int faceID = WGD->domain.face(i, j, k);
 
         if (WGD->icellflag[cellID] != 0 && WGD->icellflag[cellID] != 2) {
 
@@ -169,14 +167,12 @@ void TURBWall::set_stairstep_wall_flag(TURBGeneralData *TGD, int cellflag)
 
 void TURBWall::get_cutcell_wall_id(WINDSGeneralData *WGD, int cellflag)
 {
-  int nx = WGD->nx;
-  int ny = WGD->ny;
-  int nz = WGD->nz;
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
 
   for (int k = 0; k < nz - 2; k++) {
     for (int j = 1; j < ny - 2; j++) {
       for (int i = 1; i < nx - 2; i++) {
-        int id = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
+        int id = WGD->domain.cell(i, j, k);
         if (WGD->icellflag[id] == cellflag) {
           cutcell_wall_id.push_back(id);
         }
@@ -209,8 +205,8 @@ void TURBWall::set_loglaw_stairstep_at_id_cc(WINDSGeneralData *WGD,
 
 void TURBWall::comp_velocity_deriv_finitediff_stairstep(WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
-  int nx = WGD->nx;
-  int ny = WGD->ny;
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
 
   // ## HORIZONTAL WALL
   // set BC for horizontal wall below the cell
@@ -222,12 +218,12 @@ void TURBWall::comp_velocity_deriv_finitediff_stairstep(WINDSGeneralData *WGD, T
     // Gxz = dudz
     TGD->Gxz[it->cellID] = (0.5 * (WGD->u[it->faceID + nx * ny] + WGD->u[it->faceID + 1 + nx * ny])
                             - 0.5 * (WGD->u[it->faceID] + WGD->u[it->faceID + 1]))
-                           / (WGD->z[k + 1] - WGD->z[k]);
+                           / (WGD->domain.z[k + 1] - WGD->domain.z[k]);
 
     // Gyz = dvdz
     TGD->Gyz[it->cellID] = (0.5 * (WGD->v[it->faceID + nx * ny] + WGD->v[it->faceID + nx + nx * ny])
                             - 0.5 * (WGD->v[it->faceID] + WGD->v[it->faceID + nx]))
-                           / (WGD->z[k + 1] - WGD->z[k]);
+                           / (WGD->domain.z[k + 1] - WGD->domain.z[k]);
   }
   // set BC for horizontal wall above the cell
   for (std::vector<pairCellFaceID>::iterator it = wall_above_indices.begin();
@@ -238,11 +234,11 @@ void TURBWall::comp_velocity_deriv_finitediff_stairstep(WINDSGeneralData *WGD, T
     // Gxz = dudz
     TGD->Gxz[it->cellID] = (0.5 * (WGD->u[it->faceID] + WGD->u[it->faceID + 1])
                             - 0.5 * (WGD->u[it->faceID - nx * ny] + WGD->u[it->faceID + 1 - nx * ny]))
-                           / (WGD->z[k] - WGD->z[k - 1]);
+                           / (WGD->domain.z[k] - WGD->domain.z[k - 1]);
     // Gyz = dvdz
     TGD->Gyz[it->cellID] = (0.5 * (WGD->v[it->faceID] + WGD->v[it->faceID + nx])
                             - 0.5 * (WGD->v[it->faceID - nx * ny] + WGD->v[it->faceID + nx - nx * ny]))
-                           / (WGD->z[k] - WGD->z[k - 1]);
+                           / (WGD->domain.z[k] - WGD->domain.z[k - 1]);
   }
 
   // ## VERTICAL WALL ALONG X (front/back)
@@ -253,11 +249,11 @@ void TURBWall::comp_velocity_deriv_finitediff_stairstep(WINDSGeneralData *WGD, T
     // Gyx = dvdx
     TGD->Gyx[it->cellID] = (0.5 * (WGD->v[it->faceID + 1] + WGD->v[it->faceID + 1 + nx])
                             - 0.5 * (WGD->v[it->faceID] + WGD->v[it->faceID + nx]))
-                           / WGD->dx;
+                           / dx;
     // Gzx = dwdx
     TGD->Gzx[it->cellID] = (0.5 * (WGD->w[it->faceID + 1] + WGD->w[it->faceID + 1 + nx * ny])
                             - 0.5 * (WGD->w[it->faceID] + WGD->w[it->faceID + nx * ny]))
-                           / WGD->dx;
+                           / dx;
   }
   // set BC for vertical wall in front of the cell
   for (std::vector<pairCellFaceID>::iterator it = wall_front_indices.begin();
@@ -266,11 +262,11 @@ void TURBWall::comp_velocity_deriv_finitediff_stairstep(WINDSGeneralData *WGD, T
     // Gyx = dvdx
     TGD->Gyx[it->cellID] = (0.5 * (WGD->v[it->faceID] + WGD->v[it->faceID + nx])
                             - 0.5 * (WGD->v[it->faceID - 1] + WGD->v[it->faceID - 1 + nx]))
-                           / WGD->dx;
+                           / dx;
     // Gzx = dwdx
     TGD->Gzx[it->cellID] = (0.5 * (WGD->w[it->faceID] + WGD->w[it->faceID + nx * ny])
                             - 0.5 * (WGD->w[it->faceID - 1] + WGD->w[it->faceID - 1 + nx * ny]))
-                           / WGD->dx;
+                           / dx;
   }
 
   // ## VERTICAL WALL ALONG Y (right/left)
@@ -281,11 +277,11 @@ void TURBWall::comp_velocity_deriv_finitediff_stairstep(WINDSGeneralData *WGD, T
     // Gxy = dudy
     TGD->Gxy[it->cellID] = (0.5 * (WGD->u[it->faceID + nx] + WGD->u[it->faceID + 1 + nx])
                             - 0.5 * (WGD->u[it->faceID] + WGD->u[it->faceID + 1]))
-                           / WGD->dy;
+                           / dy;
     // Gzy = dwdy
     TGD->Gzy[it->cellID] = (0.5 * (WGD->w[it->faceID + nx] + WGD->w[it->faceID + nx + nx * ny])
                             - 0.5 * (WGD->w[it->faceID] + WGD->w[it->faceID + nx * ny]))
-                           / WGD->dy;
+                           / dy;
   }
   // set BC for vertical wall left of the cell
   for (std::vector<pairCellFaceID>::iterator it = wall_left_indices.begin();
@@ -294,11 +290,11 @@ void TURBWall::comp_velocity_deriv_finitediff_stairstep(WINDSGeneralData *WGD, T
     // Gxy = dudy
     TGD->Gxy[it->cellID] = (0.5 * (WGD->u[it->faceID] + WGD->u[it->faceID + 1])
                             - 0.5 * (WGD->u[it->faceID - nx] + WGD->u[it->faceID + 1 - nx]))
-                           / WGD->dy;
+                           / dy;
     // Gzy = dwdy
     TGD->Gzy[it->cellID] = (0.5 * (WGD->w[it->faceID] + WGD->w[it->faceID + nx * ny])
                             - 0.5 * (WGD->w[it->faceID - nx] + WGD->w[it->faceID - nx + nx * ny]))
-                           / WGD->dy;
+                           / dy;
   }
 
   return;
@@ -310,8 +306,8 @@ void TURBWall::comp_stress_deriv_finitediff_stairstep(WINDSGeneralData *WGD,
                                                       const std::vector<float> &toy,
                                                       const std::vector<float> &toz)
 {
-  int nx = WGD->nx;
-  int ny = WGD->ny;
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
 
   // ## HORIZONTAL WALL
   // set BC for horizontal wall below the cell
@@ -321,7 +317,7 @@ void TURBWall::comp_stress_deriv_finitediff_stairstep(WINDSGeneralData *WGD,
     int k = (int)(it->cellID / ((nx - 1) * (ny - 1)));
     // dtozdz
     TGD->tmp_dtozdz[it->cellID] = (toz[it->cellID + (nx - 1) * (ny - 1)] - toz[it->cellID])
-                                  / (WGD->z[k + 1] - WGD->z[k]);
+                                  / (WGD->domain.z[k + 1] - WGD->domain.z[k]);
   }
   // set BC for horizontal wall above the cell
   for (std::vector<pairCellFaceID>::iterator it = wall_above_indices.begin();
@@ -330,7 +326,7 @@ void TURBWall::comp_stress_deriv_finitediff_stairstep(WINDSGeneralData *WGD,
     int k = (int)(it->cellID / ((nx - 1) * (ny - 1)));
     // dtozdz
     TGD->tmp_dtozdz[it->cellID] = (toz[it->cellID] - toz[it->cellID - (nx - 1) * (ny - 1)])
-                                  / (WGD->z[k + 1] - WGD->z[k]);
+                                  / (WGD->domain.z[k + 1] - WGD->domain.z[k]);
   }
 
   // ## VERTICAL WALL ALONG X (front/back)
@@ -339,14 +335,14 @@ void TURBWall::comp_stress_deriv_finitediff_stairstep(WINDSGeneralData *WGD,
        it != wall_back_indices.end();
        ++it) {
     // dtoxdx
-    TGD->tmp_dtoxdx[it->cellID] = (tox[it->cellID + 1] - tox[it->cellID]) / WGD->dx;
+    TGD->tmp_dtoxdx[it->cellID] = (tox[it->cellID + 1] - tox[it->cellID]) / dx;
   }
   // set BC for vertical wall in front of the cell
   for (std::vector<pairCellFaceID>::iterator it = wall_front_indices.begin();
        it != wall_front_indices.end();
        ++it) {
     // dtoxdx
-    TGD->tmp_dtoxdx[it->cellID] = (toy[it->cellID] - tox[it->cellID - 1]) / WGD->dx;
+    TGD->tmp_dtoxdx[it->cellID] = (toy[it->cellID] - tox[it->cellID - 1]) / dx;
   }
 
   // ## VERTICAL WALL ALONG Y (right/left)
@@ -355,14 +351,14 @@ void TURBWall::comp_stress_deriv_finitediff_stairstep(WINDSGeneralData *WGD,
        it != wall_right_indices.end();
        ++it) {
     // dtoydy
-    TGD->tmp_dtoydy[it->cellID] = (toy[it->cellID + (nx - 1)] - toy[it->cellID]) / WGD->dy;
+    TGD->tmp_dtoydy[it->cellID] = (toy[it->cellID + (nx - 1)] - toy[it->cellID]) / dy;
   }
   // set BC for vertical wall left of the cell
   for (std::vector<pairCellFaceID>::iterator it = wall_left_indices.begin();
        it != wall_left_indices.end();
        ++it) {
     // dtoydy
-    TGD->tmp_dtoydy[it->cellID] = (toy[it->cellID] - toy[it->cellID - (nx - 1)]) / WGD->dy;
+    TGD->tmp_dtoydy[it->cellID] = (toy[it->cellID] - toy[it->cellID - (nx - 1)]) / dy;
   }
 
   return;

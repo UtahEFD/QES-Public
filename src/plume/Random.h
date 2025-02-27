@@ -34,37 +34,25 @@
 
 #pragma once
 
-#include <iostream>
-#include <cstdlib>
-#include <ctime>
-#include <math.h>
+#include <random>
 
 class Random
 {
 private:
   bool m_normal_value;
-  double m_remaining_value;
+  float m_remaining_value;
 
+  std::default_random_engine prng;
+
+  // We must also create a distribution from which to pull the random numbers
+  // we want.  In this case, I would like random integers to be generated
+  // uniformly from betwen -10000000 and 10000000
+  std::uniform_real_distribution<float> distribution;
 
 public:
   Random();
   Random(long);
 
-  double uniRan();
-  double norRan();
+  float uniRan();
+  float norRan();
 };
-
-
-// class random
-//{
-// public:
-//   random();
-//   static double uniRan();
-//   static double norRan();
-//   static double rangen();
-//
-//
-// private:
-//   static bool m_normal_value;
-//   static double m_remaining_value;
-// };

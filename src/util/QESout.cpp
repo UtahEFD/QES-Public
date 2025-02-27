@@ -45,18 +45,93 @@ void splashScreen()
   std::cout << "###################################################################" << std::endl;
   std::cout << "Version: " << QES_VERSION_INFO << std::endl;// QES_VERSION_INFO comes from CMakeLists.txt
 #ifdef HAS_CUDA
-  std::cout << "\t* CUDA support available!" << std::endl;
+  std::cout << "* CUDA support available!" << std::endl;
 #else
-  std::cout << "\t* No CUDA support - CPU Only Computations!" << std::endl;
+  std::cout << "* No CUDA support - CPU Only Computations!" << std::endl;
 #endif
 
 #ifdef HAS_OPTIX
-  std::cout << "\t* OptiX is available!" << std::endl;
+  std::cout << "* OptiX is available!" << std::endl;
 #endif
 
 #ifdef _OPENMP
-  std::cout << "\t* OpenMP is available!" << std::endl;
+  std::cout << "* OpenMP is available!" << std::endl;
 #endif
+
+
+#ifdef HAS_CUDA
+  std::cout << "------------------------------------------------------------------" << std::endl;
+  int deviceCount = 0;
+  cudaError_t error_id = cudaGetDeviceCount(&deviceCount);
+
+  if (error_id != cudaSuccess) {
+    std::cerr << "\n===================================================================" << std::endl;
+    std::cerr << "[ERROR]\t cudaGetDeviceCount returned "
+              << static_cast<int>(error_id) << "\n\t-> "
+              << cudaGetErrorString(error_id) << std::endl;
+    std::cerr << "===================================================================" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
+  // This function call returns 0 if there are no CUDA capable devices.
+  if (deviceCount == 0) {
+    std::cerr << "[!! WARNING !!]\t There are no available device(s) that support CUDA\n";
+  } else {
+    std::cout << "[CUDA]\t Detected " << deviceCount << " CUDA Capable device(s)" << std::endl;
+    int dev, driverVersion = 0, runtimeVersion = 0;
+
+    for (dev = 0; dev < deviceCount; ++dev) {
+
+      cudaSetDevice(dev);
+
+      cudaDeviceProp deviceProp;
+      cudaGetDeviceProperties(&deviceProp, dev);
+
+      std::cout << "\t Device " << dev << ": " << deviceProp.name << std::endl;
+
+      // Console log
+      cudaDriverGetVersion(&driverVersion);
+      cudaRuntimeGetVersion(&runtimeVersion);
+      std::cout << "\t | CUDA Driver Version / Runtime Version: "
+                << driverVersion / 1000 << "." << (driverVersion % 100) / 10 << " / "
+                << runtimeVersion / 1000 << "." << (runtimeVersion % 100) / 10 << std::endl;
+
+      std::cout << "\t | CUDA Capability Major/Minor version number: "
+                << deviceProp.major << "." << deviceProp.minor << std::endl;
+
+      char msg[256];
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+      sprintf_s(msg, sizeof(msg),
+                "\t | Total amount of global memory: %.0f MBytes "
+                "(%llu bytes)\n",
+                static_cast<float>(deviceProp.totalGlobalMem / 1048576.0f),
+                (unsigned long long)deviceProp.totalGlobalMem);
+#else
+      snprintf(msg, sizeof(msg),
+               "\t | Total amount of global memory: %.0f MBytes "
+               "(%llu bytes)\n",
+               static_cast<float>(deviceProp.totalGlobalMem / 1048576.0f),
+               (unsigned long long)deviceProp.totalGlobalMem);
+#endif
+      std::cout << msg;
+
+      //    printf("  (%2d) Multiprocessors, (%3d) CUDA Cores/MP:     %d CUDA Cores\n",
+      //           deviceProp.multiProcessorCount,
+      //           _ConvertSMVer2Cores(deviceProp.major, deviceProp.minor),
+      //           _ConvertSMVer2Cores(deviceProp.major, deviceProp.minor) *
+      //           deviceProp.multiProcessorCount);
+
+      std::cout << "\t | GPU Max Clock rate:  "
+                << deviceProp.clockRate * 1e-3f << " MHz ("
+                << deviceProp.clockRate * 1e-6f << " GHz)" << std::endl;
+
+      std::cout << "\t | PCI: BusID=" << deviceProp.pciBusID << ", "
+                << "DeviceID=" << deviceProp.pciDeviceID << ", "
+                << "DomainID=" << deviceProp.pciDomainID << std::endl;
+    }
+  }
+#endif
+
   std::cout << "###################################################################" << std::endl;
 }
 

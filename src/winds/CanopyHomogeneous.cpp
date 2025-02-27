@@ -55,6 +55,8 @@ void CanopyHomogeneous::setCellFlags(const WINDSInputData *WID, WINDSGeneralData
   // following:
   // readCanopy(nx, ny, nz, landuse_flag, num_canopies, lu_canopy_flag,
   // canopy_atten, canopy_top);
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
 
   // this function need to be called to defined the boundary of the canopy and the icellflags
   float ray_intersect;
@@ -65,9 +67,9 @@ void CanopyHomogeneous::setCellFlags(const WINDSInputData *WID, WINDSGeneralData
   // Check the center of each cell, if it's inside, set that cell to building
   for (auto j = j_start; j < j_end; j++) {
     // Center of cell y coordinate
-    float y_cent = (j + 0.5) * WGD->dy;
+    float y_cent = (j + 0.5) * dy;
     for (auto i = i_start; i < i_end; i++) {
-      float x_cent = (i + 0.5) * WGD->dx;
+      float x_cent = (i + 0.5) * dx;
       // Node index
       vert_id = 0;
       start_poly = vert_id;
@@ -91,7 +93,7 @@ void CanopyHomogeneous::setCellFlags(const WINDSInputData *WID, WINDSGeneralData
       // if num_crossing is odd = cell is oustside of the polygon
       // if num_crossing is even = cell is inside of the polygon
       if ((num_crossing % 2) != 0) {
-        int icell_2d = i + j * (WGD->nx - 1);
+        int icell_2d = WGD->domain.cell2d(i, j);
 
         if (WGD->icellflag_footprint[icell_2d] == 0) {
           // a  building exist here -> skip
@@ -102,18 +104,18 @@ void CanopyHomogeneous::setCellFlags(const WINDSInputData *WID, WINDSGeneralData
           WGD->icellflag_footprint[icell_2d] = getCellFlagCanopy();
 
           // Define start index of the canopy in z-direction
-          for (size_t k = 1u; k < WGD->z.size(); k++) {
-            if (WGD->terrain[icell_2d] + base_height <= WGD->z[k]) {
+          for (size_t k = 1u; k < WGD->domain.z.size(); k++) {
+            if (WGD->terrain[icell_2d] + base_height <= WGD->domain.z[k]) {
               WGD->canopy->canopy_bot_index[icell_2d] = k;
               WGD->canopy->canopy_bot[icell_2d] = WGD->terrain[icell_2d] + base_height;
-              WGD->canopy->canopy_base[icell_2d] = WGD->z_face[k];
+              WGD->canopy->canopy_base[icell_2d] = WGD->domain.z_face[k];
               break;
             }
           }
 
           // Define end index of the canopy in z-direction
-          for (size_t k = 0u; k < WGD->z.size(); k++) {
-            if (WGD->terrain[icell_2d] + H < WGD->z[k + 1]) {
+          for (size_t k = 0u; k < WGD->domain.z.size(); k++) {
+            if (WGD->terrain[icell_2d] + H < WGD->domain.z[k + 1]) {
               WGD->canopy->canopy_top_index[icell_2d] = k + 1;
               WGD->canopy->canopy_top[icell_2d] = WGD->terrain[icell_2d] + H;
               break;
@@ -125,7 +127,7 @@ void CanopyHomogeneous::setCellFlags(const WINDSInputData *WID, WINDSGeneralData
 
           // define icellflag @ (x,y) for all z(k) in [k_start...k_end]
           for (auto k = WGD->canopy->canopy_bot_index[icell_2d]; k < WGD->canopy->canopy_top_index[icell_2d]; k++) {
-            int icell_3d = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+            long icell_3d = WGD->domain.cell(i, j, k);
             if (WGD->icellflag[icell_3d] != 0 && WGD->icellflag[icell_3d] != 2) {
               // Canopy cell
               WGD->icellflag[icell_3d] = getCellFlagCanopy();
@@ -144,7 +146,7 @@ void CanopyHomogeneous::setCellFlags(const WINDSInputData *WID, WINDSGeneralData
     k_start = 0;
     k_end = 0;
   } else {
-    k_start = WGD->nz - 1;
+    k_start = nz - 1;
     k_end = 0;
     for (size_t k = 0u; k < canopy_cell2D.size(); k++) {
       if (WGD->canopy->canopy_bot_index[canopy_cell2D[k]] < k_start)
@@ -165,6 +167,9 @@ void CanopyHomogeneous::setCellFlags(const WINDSInputData *WID, WINDSGeneralData
 
 void CanopyHomogeneous::canopyVegetation(WINDSGeneralData *WGD, int canopy_id)
 {
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
+
   // Apply canopy parameterization
   float avg_atten; /**< average attenuation of the canopy */
   float veg_vel_frac; /**< vegetation velocity fraction */
@@ -173,9 +178,8 @@ void CanopyHomogeneous::canopyVegetation(WINDSGeneralData *WGD, int canopy_id)
   for (auto icell_2d : canopy_cell2D) {
 
     if (WGD->canopy->canopy_top[icell_2d] > 0) {
-      int j = (int)((icell_2d) / (WGD->nx - 1));
-      int i = icell_2d - j * (WGD->nx - 1);
-      int icell_cent_top = icell_2d + (WGD->canopy->canopy_top_index[icell_2d] - 1) * (WGD->nx - 1) * (WGD->ny - 1);
+      auto [i, j, k] = WGD->domain.getCellIdx(icell_2d);
+      int icell_cent_top = WGD->domain.cellAdd(icell_2d, 0, 0, WGD->canopy->canopy_top_index[icell_2d] - 1);
 
       // NEED REWORK !!!!!
 
@@ -208,13 +212,13 @@ void CanopyHomogeneous::canopyVegetation(WINDSGeneralData *WGD, int canopy_id)
       // float u_H = (WGD->canopy_ustar[id]/WGD->vk)*
       //  log((WGD->canopy_top[id]-WGD->canopy_d[id])/WGD->canopy_z0[id]);
 
-      for (auto k = 1; k < WGD->nz - 1; k++) {
+      for (auto k = 1; k < nz - 1; k++) {
         // linear index of current face
-        int icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+        long icell_face = WGD->domain.face(i, j, k);
         // linear index of the current cell
-        int icell_cent = icell_2d + k * (WGD->nx - 1) * (WGD->ny - 1);
+        long icell_cent = WGD->domain.cellAdd(icell_2d, 0, 0, k);
         // relative to the terrain
-        float z_rel = WGD->z[k] - WGD->z[WGD->terrain_id[icell_2d]];
+        float z_rel = WGD->domain.z[k] - WGD->domain.z[WGD->terrain_id[icell_2d]];
 
         if (z_rel < 0) {
           // below the terrain -> skip
@@ -224,15 +228,15 @@ void CanopyHomogeneous::canopyVegetation(WINDSGeneralData *WGD, int canopy_id)
 
           // FM -> calculate averaged attenuation coef. (TO BE TESTE)
           // check if attenuation below or above is different
-          if (WGD->canopy->canopy_atten_coeff[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)] != WGD->canopy->canopy_atten_coeff[icell_cent]
-              || WGD->canopy->canopy_atten_coeff[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] != WGD->canopy->canopy_atten_coeff[icell_cent]) {
+          if (WGD->canopy->canopy_atten_coeff[WGD->domain.cellAdd(icell_cent, 0, 0, 1)] != WGD->canopy->canopy_atten_coeff[icell_cent]
+              || WGD->canopy->canopy_atten_coeff[WGD->domain.cellAdd(icell_cent, 0, 0, -1)] != WGD->canopy->canopy_atten_coeff[icell_cent]) {
             num_atten = 1;
-            if (WGD->canopy->canopy_atten_coeff[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)] > 0) {
-              avg_atten += WGD->canopy->canopy_atten_coeff[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)];
+            if (WGD->canopy->canopy_atten_coeff[WGD->domain.cellAdd(icell_cent, 0, 0, 1)] > 0) {
+              avg_atten += WGD->canopy->canopy_atten_coeff[WGD->domain.cellAdd(icell_cent, 0, 0, 1)];
               num_atten += 1;
             }
-            if (WGD->canopy->canopy_atten_coeff[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] > 0) {
-              avg_atten += WGD->canopy->canopy_atten_coeff[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)];
+            if (WGD->canopy->canopy_atten_coeff[WGD->domain.cellAdd(icell_cent, 0, 0, -1)] > 0) {
+              avg_atten += WGD->canopy->canopy_atten_coeff[WGD->domain.cellAdd(icell_cent, 0, 0, -1)];
               num_atten += 1;
             }
             avg_atten /= num_atten;
@@ -253,14 +257,14 @@ void CanopyHomogeneous::canopyVegetation(WINDSGeneralData *WGD, int canopy_id)
 
           // at the edge of the canopy need to adjust velocity at the next face
           // use canopy_top to detect the edge (worke with level changes)
-          if (i < WGD->nx - 2) {
-            if (WGD->canopy->canopy_top[icell_2d + 1] == 0.0) {
-              WGD->u0[icell_face + 1] *= veg_vel_frac;
+          if (i < nx - 2) {
+            if (WGD->canopy->canopy_top[WGD->domain.cellAdd(icell_2d, 1, 0, 0)] == 0.0) {
+              WGD->u0[WGD->domain.faceAdd(icell_face, 1, 0, 0)] *= veg_vel_frac;
             }
           }
-          if (j < WGD->ny - 2) {
-            if (WGD->canopy->canopy_top[icell_2d + (WGD->nx - 1)] == 0.0) {
-              WGD->v0[icell_face + WGD->nx] *= veg_vel_frac;
+          if (j < ny - 2) {
+            if (WGD->canopy->canopy_top[WGD->domain.cellAdd(icell_2d, 0, 1, 0)] == 0.0) {
+              WGD->v0[WGD->domain.faceAdd(icell_face, 0, 1, 0)] *= veg_vel_frac;
             }
           }
         } else {
@@ -280,20 +284,18 @@ void CanopyHomogeneous::canopyVegetation(WINDSGeneralData *WGD, int canopy_id)
 
           // at the edge of the canopy need to adjust velocity at the next face
           // use canopy_top to detect the edge (worke with level changes)
-          if (i < WGD->nx - 2) {
-            if (WGD->canopy->canopy_top[icell_2d + 1] == 0.0) {
-              WGD->u0[icell_face + 1] *= veg_vel_frac;
+          if (i < nx - 2) {
+            if (WGD->canopy->canopy_top[WGD->domain.cellAdd(icell_2d, 1, 0, 0)] == 0.0) {
+              WGD->u0[WGD->domain.faceAdd(icell_face, 1, 0, 0)] *= veg_vel_frac;
             }
           }
-          if (j < WGD->ny - 2) {
-            if (WGD->canopy->canopy_top[icell_2d + (WGD->nx - 1)] == 0.0) {
-              WGD->v0[icell_face + WGD->nx] *= veg_vel_frac;
+          if (j < ny - 2) {
+            if (WGD->canopy->canopy_top[WGD->domain.cellAdd(icell_2d, 0, 1, 0)] == 0.0) {
+              WGD->v0[WGD->domain.cellAdd(icell_face, 0, 1, 0)] *= veg_vel_frac;
             }
           }
         }
       }// end of for(auto k=1; k < WGD->nz-1; k++)
     }
   }
-
-  return;
 }

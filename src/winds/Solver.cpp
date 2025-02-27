@@ -79,17 +79,18 @@ void Solver::printProgress(float percentage)
  * @param WID :document this:
  * @param WGD :document this:
  */
-Solver::Solver(const WINDSInputData *WID, WINDSGeneralData *WGD)
-  : alpha1(1),
+Solver::Solver(qes::Domain domain_in, const float &tolerance)
+  : domain(std::move(domain_in)),
+    alpha1(1),
     alpha2(1),
     eta(pow((alpha1 / alpha2), 2.0)),
-    A(pow((WGD->dx / WGD->dy), 2.0)),
-    B(eta * pow((WGD->dx / WGD->dz), 2.0))
+    A(pow((domain.dx() / domain.dy()), 2.0)),
+    B(eta * pow((domain.dx() / domain.dz()), 2.0))
 
 {
-  tol = WID->simParams->tolerance;
+  tol = tolerance;
 
-  lambda.resize(WGD->numcell_cent, 0.0);
-  lambda_old.resize(WGD->numcell_cent, 0.0);
-  R.resize(WGD->numcell_cent, 0.0);
+  lambda.resize(domain.numCellCentered(), 0.0);
+  lambda_old.resize(domain.numCellCentered(), 0.0);
+  R.resize(domain.numCellCentered(), 0.0);
 }

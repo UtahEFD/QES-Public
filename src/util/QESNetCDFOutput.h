@@ -38,6 +38,7 @@
 #include <map>
 #include <netcdf>
 
+#include "QESFileOutput.h"
 #include "NetCDFOutput.h"
 #include "QEStime.h"
 
@@ -115,6 +116,7 @@ struct AttVectorChar
  */
 
 class QESNetCDFOutput : public NetCDFOutput
+  , public QESFileOutput
 {
 public:
   explicit QESNetCDFOutput(const std::string &);
@@ -126,11 +128,27 @@ public:
    *
    * @note Can be called outside.
    */
-  virtual void save(QEStime) = 0;
-  virtual void save(float) {}
+  virtual void save(QEStime) override {}
+  virtual void save(float) override {}
+
+  void createDimension(const std::string &, const std::string &, const std::string &, std::vector<int> *) override;
+  void createDimension(const std::string &, const std::string &, const std::string &, std::vector<float> *) override;
+  void createDimension(const std::string &, const std::string &, const std::string &, std::vector<double> *) override;
+
+  void createDimensionSet(const std::string &, const std::vector<std::string> &) override;
+
+  // create attribute scalar based on type of data
+  void createField(const std::string &, const std::string &, const std::string &, const std::string &, int *) override;
+  void createField(const std::string &, const std::string &, const std::string &, const std::string &, float *) override;
+  void createField(const std::string &, const std::string &, const std::string &, const std::string &, double *) override;
+
+  // create attribute vector based on type of data
+  void createField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<int> *) override;
+  void createField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<float> *) override;
+  void createField(const std::string &, const std::string &, const std::string &, const std::string &, std::vector<double> *) override;
 
 protected:
-  QESNetCDFOutput() {}
+  QESNetCDFOutput() = default;
 
   // create attribute scalar based on type of data
   void createAttScalar(const std::string &, const std::string &, const std::string &, const std::vector<NcDim> &, int *);
@@ -143,10 +161,12 @@ protected:
   void createAttVector(const std::string &, const std::string &, const std::string &, const std::vector<NcDim> &, std::vector<double> *);
   void createAttVector(const std::string &, const std::string &, const std::string &, const std::vector<NcDim> &, std::vector<char> *);
 
-  void setStartTime(QEStime);
+  void setStartTime(const QEStime &) override;
+  void setOutputTime(const QEStime &) override;
 
   // add fields based on output_fields
   void addOutputFields();
+  void addOutputFields(const std::set<std::string> &);
   // removed field
   void rmOutputField(const std::string &);
   void rmTimeIndepFields();
@@ -165,6 +185,11 @@ protected:
   bool flagStartTimeSet = false;
   double time = 0; /**< :document this: */
 
+  std::map<std::string, NcDim> output_dimensions;
+  std::map<std::string, std::vector<NcDim>> output_dimension_sets;
+
+  std::set<std::string> set_all_output_fields;
+
   std::vector<std::string> all_output_fields;
   std::vector<std::string> output_fields;
   /**< Vector containing fields to add to the NetCDF file
@@ -172,6 +197,7 @@ protected:
        (i.e. by the CTOR &add function) NOT to save them
        (i.e. by the function save) */
 
+private:
   ///@{
   /**
    * Output field in the NetCDF file for scalar/vector for each type.
@@ -201,8 +227,8 @@ protected:
   std::vector<AttVectorDbl> output_vector_dbl;
   std::vector<AttVectorChar> output_vector_char;
   ///@}
-private:
+
   std::string timestamp;
   std::vector<char> timestamp_out; /**< :document this: */
-  int output_counter = 0; /**< :document this: */
+  // int output_counter = 0; /**< :document this: */
 };
