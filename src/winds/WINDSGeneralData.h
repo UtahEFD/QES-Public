@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -58,7 +58,7 @@
 #include "LocalMixingSerial.h"
 
 #include "DTEHeightField.h"
-#include "Cut_cell.h"
+#include "CutCell.h"
 #include "Wall.h"
 
 // #include "util/Mesh.h"
@@ -284,7 +284,7 @@ public:
 
   Cell *cells; /**< :document this: */
   // bool DTEHFExists = false;
-  Cut_cell *cut_cell; /**< :document this: */
+  CutCell *cut_cell; /**< :document this: */
   Wall *wall; /**< :document this: */
 
   // NetCDFInput* NCDFInput;     /**< :document this: */
