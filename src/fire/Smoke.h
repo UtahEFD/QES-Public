@@ -36,8 +36,6 @@
 #include "Fire.h"
 #include "winds/WINDSInputData.h"
 #include "winds/WINDSGeneralData.h"
-#include "util/Vector3.h"
-#include "util/Vector3Int.h"
 #include "winds/DTEHeightField.h"
 #include <fstream>
 #include <iostream>
@@ -45,7 +43,7 @@
 #include <math.h>
 #include <cmath>
 #include "SourceFire.h"
-#include "plume/Plume.hpp"
+#include "plume/PLUMEGeneralData.h"
 
 using namespace std;
 class Fire;
@@ -56,15 +54,14 @@ public:
   Smoke();
   void genSmoke(WINDSGeneralData *, Fire *, Plume *);
 
-  
+
   void source();
 
- private:
-  int nx,ny,nz;
-  float dx,dy,dz;
-  float x_pos,y_pos,z_pos;
+private:
+  int nx, ny, nz;
+  float dx, dy, dz;
+  float x_pos, y_pos, z_pos;
   float ppt;
 };
 
 #endif
-

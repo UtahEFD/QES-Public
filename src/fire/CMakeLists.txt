@@ -28,20 +28,14 @@ SET( qesFireCoreSources
   SourceFire.h
   )
 
-IF ($CACHE{HAS_CUDA_SUPPORT})
-    CUDA_ADD_LIBRARY( qesfirecore
-            ${qesFireCoreSources}
-            )
-ELSE ($CACHE{HAS_CUDA_SUPPORT})
-    ADD_LIBRARY( qesfirecore
-            ${qesFireCoreSources}
-            )
-ENDIF ($CACHE{HAS_CUDA_SUPPORT})
+ADD_LIBRARY( qesfirecore ${qesFireCoreSources})
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
-  CUDA_ADD_LIBRARY(qesfiregpu
+  ADD_LIBRARY(qesfiregpu
     CUDA/LSinitGlob.cu
     CUDA/LSinitGlob.h
     CUDA/PotentialGlobal.cu
     CUDA/PotentialGlobal.h)
+  TARGET_INCLUDE_DIRECTORIES(qesfiregpu PRIVATE {CUDAToolkit_INCLUDE_DIRS})
+  set_target_properties(qesfiregpu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})

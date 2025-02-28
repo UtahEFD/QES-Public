@@ -35,8 +35,6 @@
 #include <string>
 #include "util/ParseInterface.h"
 #include "util/ParseVector.h"
-#include "util/Vector3.h"
-#include "util/Vector3Int.h"
 #include "winds/DTEHeightField.h"
 #include "ignition.h"
 
@@ -61,11 +59,11 @@ public:
     fuelFile = "";
     igFile = "";
     parsePrimitive<std::string>(false, fuelFile, "fuelMap");
-    if (fuelFile != ""){
+    if (fuelFile != "") {
       fuelFile = QESfs::get_absolute_path(fuelFile);
     }
     parsePrimitive<std::string>(false, igFile, "igTimes");
-    if (igFile != ""){
+    if (igFile != "") {
       igFile = QESfs::get_absolute_path(igFile);
     }
   }

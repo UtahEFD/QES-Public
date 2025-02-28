@@ -37,11 +37,12 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "util/calcTime.h"
-#include "plume/PlumeInputData.hpp"
+#include "plume/PLUMEInputData.h"
 #include "util/NetCDFInput.h"
-#include "plume/Plume.hpp"
-#include "plume/PlumeOutput.h"
-#include "plume/PlumeOutputParticleData.h"
+#include "plume/PLUMEGeneralData.h"
+// #include "plume/PlumeOutput.h"
+// #include "plume/PlumeOutputParticleData.h"
+#include "plume/ParticleOutput.h"
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
 #include "util/QESout.h"
@@ -54,12 +55,12 @@
 #include "winds/TURBGeneralData.h"
 #include "winds/TURBOutput.h"
 #include "winds/Solver.h"
-#include "winds/CPUSolver.h"
+#include "winds/Solver_CPU.h"
 #include "winds/Solver_CPU_RB.h"
 #ifdef HAS_CUDA
-#include "winds/DynamicParallelism.h"
-#include "winds/GlobalMemory.h"
-#include "winds/SharedMemory.h"
+#include "winds/Solver_GPU_DynamicParallelism.h"
+#include "winds/Solver_GPU_GlobalMemory.h"
+#include "winds/Solver_GPU_SharedMemory.h"
 #endif
 #include "winds/Sensor.h"
 #include "fire/Fire.h"
@@ -72,13 +73,13 @@ namespace pt = boost::property_tree;
 
 using namespace boost::gregorian;
 using namespace boost::posix_time;
-using namespace netCDF;             //plume
-using namespace netCDF::exceptions; //plume
+using namespace netCDF;// plume
+using namespace netCDF::exceptions;// plume
 
 int main(int argc, char *argv[])
 {
   QESout::splashScreen();
-  
+
   // ///////////////////////////////////
   // Parse Command Line arguments
   // ///////////////////////////////////
@@ -102,14 +103,14 @@ int main(int argc, char *argv[])
   // Checking if
   if (arguments.compTurb && !WID->turbParams) {
     QESout::error("Turbulence model is turned on without turbParams in QES Intput file "
-                   + arguments.qesWindsParamFile);
+                  + arguments.qesWindsParamFile);
   }
   // Generate the general WINDS data from all inputs
   WINDSGeneralData *WGD = new WINDSGeneralData(WID, arguments.solveType);
 
   // Generate fire general data
   Fire *fire = new Fire(WID, WGD);
-  
+
   // Create FIREOutput manager
   std::vector<QESNetCDFOutput *> outFire;
   outFire.push_back(new FIREOutput(WGD, fire, arguments.netCDFFileFireOut));
@@ -120,27 +121,27 @@ int main(int argc, char *argv[])
   // Run the QES-Winds Solver
   //
   // //////////////////////////////////////////
-    Solver *solver = nullptr;
+  Solver *solver = nullptr;
   if (arguments.solveType == CPU_Type) {
 #ifdef _OPENMP
     std::cout << "Run Red/Black Solver (CPU) ..." << std::endl;
-    solver = new Solver_CPU_RB(WID, WGD);
+    solver = new Solver_CPU_RB(WGD->domain, WID->simParams->tolerance);
 #else
     std::cout << "Run Serial Solver (CPU) ..." << std::endl;
-    solver = new CPUSolver(WID, WGD);
+    solver = new Solver_CPU(WGD->domain, WID->simParams->tolerance);
 #endif
 
 #ifdef HAS_CUDA
   } else if (arguments.solveType == DYNAMIC_P) {
     std::cout << "Run Dynamic Parallel Solver (GPU) ..." << std::endl;
-    solver = new DynamicParallelism(WID, WGD);
+    solver = new Solver_GPU_DynamicParallelism(WGD->domain, WID->simParams->tolerance);
   } else if (arguments.solveType == Global_M) {
     std::cout << "Run Global Memory Solver (GPU) ..." << std::endl;
-    solver = new GlobalMemory(WID, WGD);
+    solver = new Solver_GPU_GlobalMemory(WGD->domain, WID->simParams->tolerance);
     potFLAG = 1;
   } else if (arguments.solveType == Shared_M) {
     std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
-    solver = new SharedMemory(WID, WGD);
+    solver = new Solver_GPU_SharedMemory(WGD->domain, WID->simParams->tolerance);
 #endif
   } else {
     QESout::error("Invalid solve type");
@@ -166,14 +167,14 @@ int main(int argc, char *argv[])
   /**
    * Temporay velocity arrays to hold initial wind field data per sensor time series
    **/
-  std::vector<float> Fu0((WGD->nx)*(WGD->ny)*(WGD->nz),0.0);
-  std::vector<float> Fv0((WGD->nx)*(WGD->ny)*(WGD->nz),0.0);
-  std::vector<float> Fw0((WGD->nx)*(WGD->ny)*(WGD->nz),0.0);
+  std::vector<float> Fu0((WGD->nx) * (WGD->ny) * (WGD->nz), 0.0);
+  std::vector<float> Fv0((WGD->nx) * (WGD->ny) * (WGD->nz), 0.0);
+  std::vector<float> Fw0((WGD->nx) * (WGD->ny) * (WGD->nz), 0.0);
 
   // Generate the general TURB data from WINDS data
   // based on if the turbulence output file is defined
   TURBGeneralData *TGD = nullptr;
-  
+
   if (arguments.compTurb) {
     TGD = new TURBGeneralData(WID, WGD);
   }
@@ -187,24 +188,24 @@ int main(int argc, char *argv[])
   Smoke *smoke = nullptr;
   // create output instance
   std::vector<QESNetCDFOutput *> PoutputVec;
-  if(arguments.compPlume){
+  if (arguments.compPlume) {
     PID = new PlumeInputData(arguments.qesPlumeParamFile);
     if (!PID)
       QESout::error("QES-Plume input file: " + arguments.qesPlumeParamFile + " not able to be read successfully.");
     // Create instance of Plume model class
-    plume = new Plume(PID, WGD, TGD);
+    // plume = new Plume(PID, WGD, TGD);
     smoke = new Smoke();
-    
+
     // always supposed to output lagrToEulOutput data
-    PoutputVec.push_back(new PlumeOutput(PID, plume, arguments.outputPlumeFile));
+    // PoutputVec.push_back(new PlumeOutput(PID, plume, arguments.outputPlumeFile));
     if (arguments.doParticleDataOutput == true) {
-      PoutputVec.push_back(new PlumeOutputParticleData(PID, plume, arguments.outputParticleDataFile));
+      // PoutputVec.push_back(new PlumeOutputParticleData(PID, plume, arguments.outputParticleDataFile));
     }
   }
 
   /**
-	 * Loop  for sensor time data
-	 **/
+   * Loop  for sensor time data
+   **/
 
   for (int index = 0; index < WGD->totalTimeIncrements; index++) {
     std::cout << "----------------------------------------" << std::endl;
@@ -222,7 +223,7 @@ int main(int argc, char *argv[])
      **/
     WGD->applyWindProfile(WID, index, arguments.solveType);
 
-    /** 
+    /**
      * Apply parametrizations
      **/
     WGD->applyParametrizations(WID);
@@ -230,19 +231,20 @@ int main(int argc, char *argv[])
     /**
      * Run WINDS simulation code
      **/
-    solver->solve(WID, WGD, !arguments.solveWind);
+    solver->solve(WGD, WID->simParams->maxIterations);
+
 
     std::cout << "Solver done!\n";
 
     /**
      * Run turbulence if specified
      **/
-   
+
     if (TGD != nullptr) {
       TGD->run();
       std::cout << "Turbulance calculated\n";
     }
-   
+
     /**
      * Save initial fields from sensor time to reset after each time+fire loop
      **/
@@ -257,7 +259,7 @@ int main(int argc, char *argv[])
     } else if (index == WGD->totalTimeIncrements - 1) {
       endtime = simTimeStart + WID->fires->fireDur;
     } else {
-      endtime = WGD->timestamp[index+1];
+      endtime = WGD->timestamp[index + 1];
     }
 
     /**
@@ -266,7 +268,7 @@ int main(int argc, char *argv[])
 
     while (simTimeCurr < endtime) {
 
-      /** 
+      /**
        * load initial velocity for current sensor series
        */
       WGD->u0 = Fu0;
@@ -274,17 +276,17 @@ int main(int argc, char *argv[])
       WGD->w0 = Fw0;
 
       // Run fire induced winds (default) if flag is not set in command line
-      if(!arguments.fireWindsFlag){
+      if (!arguments.fireWindsFlag) {
         /**
-        * Run ROS model to get initial spread rate and fire properties
-        */
+         * Run ROS model to get initial spread rate and fire properties
+         */
 
         fire->LevelSetNB(WGD);
-    
+
         /**
-        * Calculate fire-induced winds from burning cells
-        */
-        if (potFLAG == 1){
+         * Calculate fire-induced winds from burning cells
+         */
+        if (potFLAG == 1) {
           std::cout << "GPU POTENTIAL" << std::endl;
           fire->potentialGlobal(WGD);
         } else {
@@ -292,7 +294,7 @@ int main(int argc, char *argv[])
           fire->potential(WGD);
         }
       }
-      /** 
+      /**
        * Apply parameterizations
        */
       WGD->applyParametrizations(WID);
@@ -300,9 +302,9 @@ int main(int argc, char *argv[])
       /**
        * Run run wind solver to calculate mass conserved velocity field including fire-induced winds
        */
-      solver->solve(WID, WGD, !arguments.solveWind);
+      solver->solve(WGD, WID->simParams->maxIterations);
       if (TGD != nullptr) {
-	      TGD->run();
+        TGD->run();
       }
 
       /**
@@ -316,44 +318,44 @@ int main(int argc, char *argv[])
       fire->move(WGD);
 
       /**
-	     * Advance fire time from variable fire timestep
-	     */
+       * Advance fire time from variable fire timestep
+       */
       simTimeCurr += fire->dt;
-      
+
       std::cout << "time = " << simTimeCurr << endl;
 
-      if (plume != nullptr){
-	      std::cout << "------Running Plume------" << std::endl;
+      if (plume != nullptr) {
+        std::cout << "------Running Plume------" << std::endl;
         // Loop through domain to find new smoke sources
-	      for (int j=1;j<WGD->ny-2;j++){
-	        for (int i=1;i<WGD->nx-2;i++){
-	          int idx = i+j*(WGD->nx-1);
-	          // If smoke flag set in fire program, get x, y, z location and set source
-	          if (fire->smoke_flag[idx] == 1){
-	            float x_pos = i*WGD->dx;
-	            float y_pos = j*WGD->dy;
-	            float z_pos = WGD->terrain[idx]+1;
-	            float ppt = 20;
-	            SourceFire *source = new SourceFire(x_pos, y_pos, z_pos, ppt);
-	            source->setSource(); 
-	            std::vector<Source *> sourceList;
-	            sourceList.push_back(dynamic_cast<Source*>(source));
-	            // Add source to plume
-	            plume->addSources(sourceList);
-	            // Clear smoke flag in fire program so no duplicate source set next time step
-	            fire->smoke_flag[idx] = 0;
-	          }
-	        }	  
-	      }
-	      std::cout<<"Plume run"<<std::endl;
-	      QEStime pendtime;///< End time for fire time loop
-	      pendtime = simTimeCurr; //run until end of fire timestep
-	      plume->run(pendtime, WGD, TGD, PoutputVec);
-	      std::cout << "------Plume Finished------" << std::endl;
+        for (int j = 1; j < WGD->ny - 2; j++) {
+          for (int i = 1; i < WGD->nx - 2; i++) {
+            int idx = i + j * (WGD->nx - 1);
+            // If smoke flag set in fire program, get x, y, z location and set source
+            if (fire->smoke_flag[idx] == 1) {
+              float x_pos = i * WGD->dx;
+              float y_pos = j * WGD->dy;
+              float z_pos = WGD->terrain[idx] + 1;
+              float ppt = 20;
+              /*SourceFire *source = new SourceFire(x_pos, y_pos, z_pos, ppt);
+              source->setSource();
+              std::vector<Source *> sourceList;
+              sourceList.push_back(dynamic_cast<Source *>(source));
+              // Add source to plume
+              plume->addSources(sourceList);*/
+              // Clear smoke flag in fire program so no duplicate source set next time step
+              fire->smoke_flag[idx] = 0;
+            }
+          }
+        }
+        std::cout << "Plume run" << std::endl;
+        QEStime pendtime;///< End time for fire time loop
+        pendtime = simTimeCurr;// run until end of fire timestep
+        // plume->run(pendtime, WGD, TGD, PoutputVec);
+        std::cout << "------Plume Finished------" << std::endl;
       }
       /**
-	    * Save fire data to netCDF file
-	    */
+       * Save fire data to netCDF file
+       */
       for (auto outItr = outFire.begin(); outItr != outFire.end(); ++outItr) {
         (*outItr)->save(simTimeCurr);
       }

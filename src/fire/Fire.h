@@ -35,7 +35,7 @@
 #include "winds/WINDSInputData.h"
 #include "winds/WINDSGeneralData.h"
 #include "FuelProperties.hpp"
-#include "util/Vector3.h"
+#include "util/Vector3Float.h"
 #include "util/Vector3Int.h"
 #include "winds/Solver.h"
 #include "FuelRead.h"
@@ -55,14 +55,13 @@ using namespace std::chrono;
 using namespace std;
 
 class FuelProperties;
-//class Smoke;
+// class Smoke;
 
 class Fire
 {
 
 
 public:
-
   Fire(WINDSInputData *, WINDSGeneralData *);
 
 
@@ -158,7 +157,7 @@ private:
   float rothermel(FuelProperties *, float, float, float);
 
   FireProperties balbi(FuelProperties *, float, float, float, float, float, float, float);
-  
+
   FireProperties runFire(float, float, int);
 };
 

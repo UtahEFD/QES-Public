@@ -36,23 +36,23 @@ using namespace std;
 Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
 {
   // get domain information
-  nx = WGD->nx;
-  ny = WGD->ny;
-  nz = WGD->nz;
-  dx = WGD->dx;
-  dy = WGD->dy;
-  dz = WGD->dz;
+  nx = WGD->domain.nx();
+  ny = WGD->domain.ny();
+  nz = WGD->domain.nz();
+  dx = WGD->domain.dx();
+  dy = WGD->domain.dy();
+  dz = WGD->domain.dz();
   FFII_flag = 0;
   fmc = WID->fires->fmc;
   cure = WID->fires->cure;
-  if (cure < .30){
+  if (cure < .30) {
     cure = .30;
-  } else if (cure > 1.20){
+  } else if (cure > 1.20) {
     cure = 1.20;
   }
   /**
-	* Set-up the mapper array - cell centered
-	**/
+   * Set-up the mapper array - cell centered
+   **/
   fire_cells.resize((nx - 1) * (ny - 1));
   fuel_map.resize((nx - 1) * (ny - 1));
   burn_flag.resize((nx - 1) * (ny - 1));
@@ -67,16 +67,16 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
   Force.resize((nx - 1) * (ny - 1));
   z_mix.resize((nx - 1) * (ny - 1));
   z_mix_old.resize((nx - 1) * (ny - 1));
-  smoke_flag.resize((nx -1) * (ny - 1));
+  smoke_flag.resize((nx - 1) * (ny - 1));
   H0.resize((nx - 1) * (ny - 1));
   /**
-	* Read Potential Field
-	**/
+   * Read Potential Field
+   **/
   // set-up potential field array - cell centered
   Pot_u.resize((nx - 1) * (ny - 1) * (nz - 2));
   Pot_v.resize((nx - 1) * (ny - 1) * (nz - 2));
   Pot_w.resize((nx - 1) * (ny - 1) * (nz - 2));
-  
+
   // Open netCDF for Potential Field as read only
   NcFile Potential("../data/FireFiles/HeatPot.nc", NcFile::read);
 
@@ -106,8 +106,8 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
   Potential.getVar("rStar").getVar({ 0 }, { pot_rStar }, rStar.data());
   Potential.getVar("zStar").getVar({ 0 }, { pot_zStar }, zStar.data());
   /**
-	* Set initial fire info
-	*/
+   * Set initial fire info
+   */
   std::string igFile = WID->fires->igFile;
   if (igFile != "") {
     FFII_flag = 1;
@@ -146,8 +146,8 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
     k_end = std::round((H + baseHeight) / dz) + 1;
 
     /**
-	  * Set-up initial fire state
-	  */
+     * Set-up initial fire state
+     */
     for (int j = j_start; j < j_end; j++) {
       for (int i = i_start; i < i_end; i++) {
         int idx = i + j * (nx - 1);
@@ -156,9 +156,9 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
       }
     }
   }
-  /** 
-	* Set up burn flag field and smoke flag field
-	*/
+  /**
+   * Set up burn flag field and smoke flag field
+   */
   for (int j = 0; j < ny - 1; j++) {
     for (int i = 0; i < nx - 1; i++) {
       int idx = i + j * (nx - 1);
@@ -167,12 +167,12 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
     }
   }
   std::cout << "burn initialized" << std::endl;
-  if (potFlag == 1){
+  if (potFlag == 1) {
     LSinitGlob();
   } else {
     LSinit();
   }
- 
+
   /**
    * Calculate slope at each terrain cell
    */

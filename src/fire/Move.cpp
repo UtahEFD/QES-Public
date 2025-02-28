@@ -34,26 +34,26 @@
 void Fire ::move(WINDSGeneralData *WGD)
 {
   auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
-  int nx = WGD->nx;
-  int ny = WGD->ny;
-  int nz = WGD->nz;
+
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+
   // compute time step
   dt = computeTimeStep();
 
   if (FFII_flag == 1) {
     int FT_idx1 = 0;
-    float currTime = time; // calculate simTimeCurrent
+    float currTime = time;// calculate simTimeCurrent
     float nextTime = currTime + dt;
     // Find all ignition times during current timestep and ignite in domain if not burned
     for (int it = 0; it < FT_time.size(); it++) {
       if (FT_time[it] >= currTime && FT_time[it] <= nextTime) {
         int nx1 = round(FT_x1[it] / dx);
-        if (nx1 > nx-1){
-          nx1 = nx-1;    
+        if (nx1 > nx - 1) {
+          nx1 = nx - 1;
         }
         int ny1 = round((750 - FT_y1[it]) / dy);
-        if (ny1 > ny-1){
-          ny1 = ny-1;    
+        if (ny1 > ny - 1) {
+          ny1 = ny - 1;
         }
         FT_idx1 = nx1 + ny1 * (nx - 1);
         if (burn_flag[FT_idx1] < 2) {
@@ -98,12 +98,12 @@ void Fire ::move(WINDSGeneralData *WGD)
         fire_cells[idx].state.burn_flag = 2;
         Force[idx] = 0;
         H0[idx] = 0;
-        for (int k = TID; k <= maxkh; k++){
+        for (int k = TID; k <= maxkh; k++) {
           int icell_cent = i + j * (nx - 1) + (k) * (nx - 1) * (ny - 1);
-	        WGD->icellflag[icell_cent] = 1;
+          WGD->icellflag[icell_cent] = 1;
         }
         // Need to fix where z0 is reset MM
-        //WGD->z0_domain[idx] = 0.01;
+        // WGD->z0_domain[idx] = 0.01;
       }
       // advance level set
       front_map[idx] = front_map[idx] - dt * (fmax(Force[idx], 0) * del_plus[idx] + fmin(Force[idx], 0) * del_min[idx]);
@@ -114,18 +114,17 @@ void Fire ::move(WINDSGeneralData *WGD)
       // if level set < threshold, set burn flag to 1 and start smoke flag
       if (front_map[idx] <= 0.1 && burn_flag[idx] < 1) {
         fire_cells[idx].state.burn_flag = 1;
-	      smoke_flag[idx] = 1;
+        smoke_flag[idx] = 1;
       }
       // update burn flag field
       burn_flag[idx] = fire_cells[idx].state.burn_flag;
       burn_out[idx] = burn_flag[idx];
-      
     }
   }
-  
+
   // advance time
   time += dt;
   auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
-    std::chrono::duration<float> elapsed = finish - start;
-    std::cout << "[QES-Fire] LS move elapsed time:\t" << elapsed.count() << " s\n";// Print out elapsed execution time
+  std::chrono::duration<float> elapsed = finish - start;
+  std::cout << "[QES-Fire] LS move elapsed time:\t" << elapsed.count() << " s\n";// Print out elapsed execution time
 }

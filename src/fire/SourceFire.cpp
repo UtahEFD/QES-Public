@@ -32,7 +32,7 @@
 
 #include "SourceFire.h"
 
-int SourceFire::emitParticles(const float &dt,
+/*int SourceFire::emitParticles(const float &dt,
                               const float &currTime,
                               std::list<Particle *> &emittedParticles)
 {
@@ -53,5 +53,5 @@ int SourceFire::emitParticles(const float &dt,
     }
   }
 
-  return (int)emittedParticles.size();
-}
+  return 0;//(int)emittedParticles.size();
+  }*/

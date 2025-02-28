@@ -33,9 +33,9 @@
 #ifndef QES_SOURCEFIRE_H
 #define QES_SOURCEFIRE_H
 
-#include "plume/Source.hpp"
+#include "plume/Source.h"
 
-class SourceFire : public Source
+/*class SourceFire : public Source
 {
 private:
   SourceFire() : Source()
@@ -60,7 +60,7 @@ public:
   virtual int emitParticles(const float &dt,
                             const float &currTime,
                             std::list<Particle *> &emittedParticles);
-};
+                            };*/
 
 
 #endif// QES_SOURCEFIRE_H

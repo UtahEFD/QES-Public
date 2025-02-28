@@ -41,7 +41,7 @@ void Fire ::FuelMap(WINDSInputData *WID, WINDSGeneralData *WGD)
   FuelRead *Fuel_read = nullptr;
 
   Vector3Int domain;
-  Vector3 grid;
+  Vector3Float grid;
   domain = WID->simParams->domain;
   grid = WID->simParams->grid;
   float halo_x = WID->simParams->halo_x;

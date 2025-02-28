@@ -33,7 +33,7 @@
 #define __FUEL_READ_HPP__ 1
 
 #include <string>
-#include "util/Vector3.h"
+#include "util/Vector3Float.h"
 #include "util/Vector3Int.h"
 
 #include "gdal_priv.h"
@@ -49,8 +49,8 @@
 #include <chrono>
 #include <vector>
 
-//class WINDSGeneralData;
-//class WINDSInputData;
+// class WINDSGeneralData;
+// class WINDSInputData;
 
 /**
  * @class FuelRead

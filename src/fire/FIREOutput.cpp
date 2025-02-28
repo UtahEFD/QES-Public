@@ -43,26 +43,26 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd, Fire *fire, std::string output_fil
   wgd_ = wgd;
   fire_ = fire;
 
-  int nx = wgd_->nx;
-  int ny = wgd_->ny;
-  int nz = wgd_->nz;
+  int nx = wgd_->domain.nx();
+  int ny = wgd_->domain.ny();
+  int nz = wgd_->domain.nz();
 
   long numcell_cout = (nx - 1) * (ny - 1) * (nz - 2);
 
   // Location of face centers in z-dir (without ghost cell)
   z_out.resize(nz - 2);
   for (auto k = 1; k < nz - 1; k++) {
-    z_out[k - 1] = wgd_->z[k];
+    z_out[k - 1] = wgd_->domain.z[k];
   }
 
   x_out.resize(nx - 1);
   for (auto i = 0; i < nx - 1; i++) {
-    x_out[i] = (i + 0.5) * wgd_->dx;// Location of face centers in x-dir
+    x_out[i] = (i + 0.5) * wgd_->domain.dx();// Location of face centers in x-dir
   }
 
   y_out.resize(ny - 1);
   for (auto j = 0; j < ny - 1; j++) {
-    y_out[j] = (j + 0.5) * wgd_->dy;// Location of face centers in y-dir
+    y_out[j] = (j + 0.5) * wgd_->domain.dy();// Location of face centers in y-dir
   }
 
   // Output data container
@@ -70,12 +70,12 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd, Fire *fire, std::string output_fil
   v_out.resize(numcell_cout, 0.0);
   w_out.resize(numcell_cout, 0.0);
   icellflag_out.resize(numcell_cout, 0.0);
-  
+
   // set cell-centered data dimensions
   // space dimensions
-  NcDim NcDim_x = addDimension("xdim", wgd_->nx - 1);
-  NcDim NcDim_y = addDimension("ydim", wgd_->ny - 1);
-  NcDim NcDim_z = addDimension("zdim", wgd_->nz - 2);
+  NcDim NcDim_x = addDimension("xdim", nx - 1);
+  NcDim NcDim_y = addDimension("ydim", ny - 1);
+  NcDim NcDim_z = addDimension("zdim", nz - 2);
 
   std::cout << "dimensions added" << std::endl;
 
@@ -130,9 +130,9 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd, Fire *fire, std::string output_fil
 void FIREOutput::save(QEStime timeOut)
 {
   // get grid size (not output var size)
-  int nx = wgd_->nx;
-  int ny = wgd_->ny;
-  int nz = wgd_->nz;
+  int nx = wgd_->domain.nx();
+  int ny = wgd_->domain.ny();
+  int nz = wgd_->domain.nz();
 
   // set time
   timeCurrent = timeOut;
