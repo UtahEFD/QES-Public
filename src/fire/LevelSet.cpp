@@ -31,7 +31,7 @@
  */
 #include "Fire.h"
 
-void Fire ::LevelSet(WINDSGeneralData *WGD)
+void Fire::LevelSet(WINDSGeneralData *WGD)
 {
   /**
     * Calculate level set gradient and norm (Chapter 6, Sethian 2008)
@@ -102,7 +102,7 @@ void Fire ::LevelSet(WINDSGeneralData *WGD)
   // indices for burning cells
   std::vector<int> cells_burning;
   // search predicate for burn state
-  struct find_burn : std::unary_function<FireCell, bool>
+  struct find_burn //: std::__unary_function<FireCell, bool>
   {
     float burn;
     find_burn(int burn) : burn(burn) {}

@@ -32,6 +32,29 @@
 
 #include "SourceFire.h"
 
+void FireSourceBuilder::setSourceParam(const vec3& x,const QEStime& start,const QEStime& end, const int&ppt)
+{
+  m_x = x;
+  m_start_time = start;
+  m_end_time = end;
+  m_ppt = ppt;
+}
+
+Source *FireSourceBuilder::create(QESDataTransport &)
+{
+  return nullptr;
+}
+
+Source* FireSourceBuilder::create()
+{
+
+  auto* source = new Source(new SourceReleaseController_base(m_start_time,m_end_time,m_ppt,0.0));
+  source->addComponent(new SourceGeometryPoint(m_x));
+  // source->addComponent(new SetPhysicalProperties(d, rho));
+  // source->addComponent(...);
+  return source;
+}
+
 /*int SourceFire::emitParticles(const float &dt,
                               const float &currTime,
                               std::list<Particle *> &emittedParticles)

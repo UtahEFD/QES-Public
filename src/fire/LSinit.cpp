@@ -34,7 +34,7 @@
 
 using namespace std;
 
-void Fire ::LSinit()
+void Fire::LSinit()
 {
     auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
     float sdf, sdf_min;

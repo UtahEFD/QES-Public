@@ -40,7 +40,7 @@ float Fire ::computeTimeStep()
   // indices for burning cells
   std::vector<int> cells_burning;
   // search predicate for burn state
-  struct find_burn : std::unary_function<FireCell, bool>
+  struct find_burn //: std::__unary_function<FireCell, bool>
   {
     float burn;
     find_burn(int burn) : burn(burn) {}

@@ -34,6 +34,24 @@
 #define QES_SOURCEFIRE_H
 
 #include "plume/Source.h"
+#include "plume/SourceReleaseController.h"
+#include "plume/SourceGeometryPoint.h"
+
+class FireSourceBuilder : public SourceBuilderInterface
+{
+public:
+  FireSourceBuilder() = default;
+
+  void setSourceParam(const vec3&,const QEStime&,const QEStime&, const int&);
+
+  Source *create(QESDataTransport &) override;
+  Source *create();
+
+private:
+  vec3 m_x;
+  QEStime m_start_time,m_end_time;
+  int m_ppt;
+};
 
 /*class SourceFire : public Source
 {

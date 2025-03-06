@@ -31,7 +31,7 @@
  */
 #include "Fire.h"
 
-void Fire ::LevelSetNB(WINDSGeneralData *WGD)
+void Fire::LevelSetNB(WINDSGeneralData *WGD)
 {
   auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
   /**
@@ -42,13 +42,13 @@ void Fire ::LevelSetNB(WINDSGeneralData *WGD)
   // indices for burning cells
   std::vector<int> cells_burning;
   // search predicate for burn state
-  struct find_burn : std::unary_function<FireCell, bool>
+  struct find_burn //: std::__unary_function<FireCell, bool>
   {
-    float burn;
-    find_burn(int burn) : burn(burn) {}
+    float m_burn;
+    find_burn(int burn) : m_burn(burn) {}
     bool operator()(FireCell const &f) const
     {
-      return f.state.burn_flag == burn;
+      return f.state.burn_flag == m_burn;
     }
   };
 

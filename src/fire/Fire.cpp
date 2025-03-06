@@ -33,7 +33,7 @@
 
 using namespace std;
 
-Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
+Fire::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
 {
   // get domain information
   nx = WGD->domain.nx();
@@ -101,10 +101,10 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
   // Get variables from netCDF file
   Potential.getVar("u_r").getVar(startIdxField, countsField, u_r.data());
   Potential.getVar("u_z").getVar(startIdxField, countsField, u_z.data());
-  Potential.getVar("G").getVar({ 0 }, { pot_G }, G.data());
-  Potential.getVar("Gprime").getVar({ 0 }, { pot_G }, Gprime.data());
-  Potential.getVar("rStar").getVar({ 0 }, { pot_rStar }, rStar.data());
-  Potential.getVar("zStar").getVar({ 0 }, { pot_zStar }, zStar.data());
+  Potential.getVar("G").getVar({ 0 }, { static_cast<unsigned long>(pot_G) }, G.data());
+  Potential.getVar("Gprime").getVar({ 0 }, { static_cast<unsigned long>(pot_G) }, Gprime.data());
+  Potential.getVar("rStar").getVar({ 0 }, { static_cast<unsigned long>(pot_rStar) }, rStar.data());
+  Potential.getVar("zStar").getVar({ 0 }, { static_cast<unsigned long>(pot_zStar) }, zStar.data());
   /**
    * Set initial fire info
    */
@@ -121,9 +121,9 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
     FT_y1.resize(SFT_time);
 
     // Get variables from netCDF
-    FireTime.getVar("time").getVar({ 0 }, { SFT_time }, FT_time.data());
-    FireTime.getVar("y1").getVar({ 0 }, { SFT_time }, FT_x1.data());
-    FireTime.getVar("x1").getVar({ 0 }, { SFT_time }, FT_y1.data());
+    FireTime.getVar("time").getVar({ 0 }, { static_cast<unsigned long>(SFT_time) }, FT_time.data());
+    FireTime.getVar("y1").getVar({ 0 }, { static_cast<unsigned long>(SFT_time) }, FT_x1.data());
+    FireTime.getVar("x1").getVar({ 0 }, { static_cast<unsigned long>(SFT_time) }, FT_y1.data());
 
     std::cout << "Ignition file " << igFile << " read succesfully" << std::endl;
   }
@@ -167,12 +167,15 @@ Fire ::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
     }
   }
   std::cout << "burn initialized" << std::endl;
+#ifdef HAS_CUDA
   if (potFlag == 1) {
     LSinitGlob();
   } else {
     LSinit();
   }
-
+#else
+  LSinit();
+#endif
   /**
    * Calculate slope at each terrain cell
    */
