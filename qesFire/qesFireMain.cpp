@@ -364,7 +364,7 @@ int main(int argc, char *argv[])
               float y_pos = j * domain.dy();
               float z_pos = WGD->terrain[idx] + 1;
               int ppt = 20;
-              FSB.setSourceParam({x_pos, y_pos, z_pos}, simTimeCurr, simTimeCurr, ppt);
+              FSB.setSourceParam({x_pos, y_pos, z_pos}, simTimeCurr, simTimeCurr + fire->fire_cells[idx].properties.tau, ppt);
               // Add source to plume
               PGD->models["smoke"]->addSource(FSB.create());
               // Clear smoke flag in fire program so no duplicate source set next time step
