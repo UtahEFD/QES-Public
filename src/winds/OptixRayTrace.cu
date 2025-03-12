@@ -97,9 +97,10 @@ extern "C" __global__ void __raygen__from_cell()
       } else {
 
         // Trignometric-Polar Method
+	double pi = 3.141592653589793;
 
-        float theta = (curand_uniform(&state) * M_PI);
-        float phi = (curand_uniform(&state) * 2 * M_PI);
+        float theta = (curand_uniform(&state) * pi);
+        float phi = (curand_uniform(&state) * 2 * pi);
 
         float x = std::cos(phi) * std::sin(theta);
         float y = std::sin(theta) * std::sin(phi);

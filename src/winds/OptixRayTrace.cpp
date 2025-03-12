@@ -33,6 +33,7 @@
  * @brief :document this:
  */
 
+#include <array>
 #include <cstring>
 
 #include "OptixRayTrace.h"
