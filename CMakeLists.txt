@@ -25,6 +25,11 @@ MESSAGE(STATUS "Building QES ${QES_VERSION_INFO}")
 LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 MESSAGE(STATUS "CMake Module Path: ${CMAKE_MODULE_PATH}")
 
+
+# use some variables to acquire lists of install targets
+set(QES_INSTALL_EXECUTABLES "")
+
+
 # ----------------------------------------------------------
 # BUILD OPTIONS
 # ----------------------------------------------------------
@@ -459,6 +464,8 @@ add_subdirectory(src/plume)
 add_subdirectory(examples)
 
 add_subdirectory(qesWinds)
+list(APPEND QES_INSTALL_EXECUTABLES qesWinds)
+
 add_subdirectory(qesPlume)
 add_subdirectory(qes)
 
@@ -488,3 +495,40 @@ IF (ENABLE_TESTS)
   #option(TESTS_ENABLE_LONG_COMPARISON_TESTS "Enables longer comparison tests on all other comparison test options (adds around 5 minutes)" OFF)
   #option(TESTS_ENABLE_RIDICULOUSLY_LONG_COMPARISON_TESTS "Enables the longest comparison tests (adds around 15 minutes)." OFF)
 ENDIF()
+
+
+set(CPACK_PACKAGE_NAME "${CMAKE_PROJECT_NAME}")
+set(CPACK_PACKAGE_VENDOR "UtahEFD")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "QES - Quick Environmental Simulation")
+set(CPACK_PACKAGE_DESCRIPTION "The Quick Environmental Simulation (QES) code is a low-computational-cost framework designed to compute high-resolution wind and concentration fields in complex atmospheric-boundary-layer environments. It contains the following modules: QES-Winds, QES-TURB, QES-Plume and QES-Fire.")
+set(CPACK_PACKAGE_VERSION ${QES_VERSION_INFO})
+set(CPACK_PACKAGE_CONTACT "https://qes-documentation.readthedocs.io/en/latest")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/UtahEFD")
+
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
+
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}")
+
+install(FILES "${CMAKE_SOURCE_DIR}/README.md" DESTINATION "${CPACK_PACKAGE_INSTALL_DIRECTORY}")
+install(FILES "${CMAKE_SOURCE_DIR}/LICENSE" DESTINATION "${CPACK_PACKAGE_INSTALL_DIRECTORY}")
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/data" DESTINATION "${CPACK_PACKAGE_INSTALL_DIRECTORY}")
+install(TARGETS ${QES_INSTALL_EXECUTABLES} RUNTIME DESTINATION ${CPACK_PACKAGE_INSTALL_DIRECTORY}/bin)
+
+if(WIN32)
+    set(CPACK_GENERATOR "NSIS")  # Windows Installer
+    set(CPACK_NSIS_EXECUTABLES_DIRECTORY bin)
+    set(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_NAME} ${CPACK_PACKAGE_VERSION}")
+    set(CPACK_NSIS_CONTACT "${CPACK_PACKAGE_CONTACT}")
+    set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
+elseif(APPLE)
+    set(CPACK_GENERATOR "DragNDrop")  # macOS DMG package
+    set(CPACK_DMG_BACKGROUND_IMAGE "${CMAKE_SOURCE_DIR}/data/qesBackground.png")
+elseif(UNIX)
+    set(CPACK_GENERATOR "DEB;RPM")  # Linux: Deb for Debian/Ubuntu, RPM for Fedora/RHEL
+    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "UtahEFD <s@utah.edu>")
+    # set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.28), libstdc++6 (>= 8)")
+    set(CPACK_RPM_PACKAGE_LICENSE "MIT")
+endif()
+
+include( CPack )
