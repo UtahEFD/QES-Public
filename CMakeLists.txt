@@ -83,8 +83,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # ----------------------------------------------------------
 # OPENMP
 # ----------------------------------------------------------
+FIND_PACKAGE(OpenMP)
 if (ENABLE_OPENMP)
-  FIND_PACKAGE(OpenMP)
   MESSAGE(STATUS "OpenMP Found: ${OpenMP_FOUND}, ${OpenMP_CXX_FLAGS}, ${OpenMP_CXX_LIBRARIES}")
 
   If (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
