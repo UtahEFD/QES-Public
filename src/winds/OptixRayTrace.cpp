@@ -33,8 +33,18 @@
  * @brief :document this:
  */
 
+#include <cstring>
+
 #include "OptixRayTrace.h"
 #include <optix_function_table_definition.h>
+
+// Header needed due to modifications to how we processed the
+// OptixKernels.
+// - The Optix .cu file is compiled into a PTX file.
+// - Then, that is converted to C++ header where the PTX instructions
+//   are converted into a binary character string
+// - This header is included and then used to load into the optix module.
+#include "OptixRayTrace_embedded.h"
 
 #define TEST 0// Set to true for ground-only AS
 #define GEN_FILE 0// Generate mixing length output file for testing
@@ -456,8 +466,6 @@ void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy,
 }
 
 
-extern "C" char embedded_ptx_code[];// The generated ptx file
-
 void OptixRayTrace::createModule()
 {
 
@@ -487,8 +495,9 @@ void OptixRayTrace::createModule()
 
   // Grab the ptx string from the generated ptx file
   // This should be located at compile time in the "ptx" folder
-  ptx = embedded_ptx_code;
-
+  // ptx = (const char *) OptixRayTrace_ptx; // embedded_ptx_code;
+  size_t ptxSize = std::strlen(reinterpret_cast<const char *>(OptixRayTrace_ptx));
+  ptx.assign(reinterpret_cast<const char *>(OptixRayTrace_ptx), ptxSize);
 
   OPTIX_CHECK(optixModuleCreateFromPTX(
     state.context,
