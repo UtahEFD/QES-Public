@@ -40,7 +40,7 @@ QES-Fire is a microscale wildfire model coupling the fire front to microscale wi
 
 ***QES requires the CUDA library and a NVIDIA GPU with Compute Capability of 7.0 (or higher) for GPU acceleration.***
 
-**Note:** the code can be compiled without Cuda.
+**Note:** the code can be compiled without CUDA.
 
 On a general Linux system, such as Ubuntu 18.04 or 20.04, the following packages need to be installed:
 * libgdal-dev
@@ -57,9 +57,9 @@ If the system uses ```apt```, the packages can be installed using the following 
 apt install libgdal-dev libnetcdf-c++4-dev  libnetcdf-cxx-legacy-dev libnetcdf-dev netcdf-bin libboost-all-dev cmake cmake-curses-gui
 ```
 
-To build the code and to use the GPU system, you will need a NVIDIA GPU with the CUDA library installed.  The code has been tested with CUDA 11.8. If your version of CUDA is installed in a non-uniform location, you will need to remember the path to the cuda install directory.
+To build the code and to use the GPU system, you will need a NVIDIA GPU with the CUDA library installed.  The code has been tested with CUDA 11.8. If your version of CUDA is installed in a non-uniform location, you will need to remember the path to the CUDA install directory.
 
-Additionally, the code can use NVIDIA's OptiX to accelerate various computations. Our OptiX code has been built to use version 7.0 or higher.
+Additionally, the code can use NVIDIA's OptiX to accelerate various computations. Our OptiX code has been built and tested up to OptiX version 7.5.
 
 ## Building the Code
 
@@ -87,7 +87,7 @@ make
 
 ### Building on CHPC Cluster (University of Utah)
 
-The code does run on the CHPC cluster. You need to make sure the correct set of modules are loaded.  Currently, we have tested recommanding the following configurations:
+The code does run on the CHPC cluster. You need to make sure the correct set of modules are loaded.  Currently, we have tested recommending the following configurations:
 - GCC 11.2 and CUDA 11.8
 
 After logging into your CHPC account, you will need to load specific modules. In the following sections, we outline the modules that need to be loaded along with the various cmake command-line calls that specify the exact locations of module installs on the CHPC system.  
@@ -137,7 +137,48 @@ The code support several build types: *Debug*, *Release*, *RelWithDebInfo*, *Min
 ```
 cmake -DCMAKE_BUILD_TYPE=Release ..
 ```
-- *Release* is recommanded for production
+- *Release* is recommended for production
+
+### vcpkg - Generalized Build Instructions for Windows, macos and Linux
+
+We support a more generalized build system using vcpkg (https://vcpkg.io/en/) and CMake build presets. Vcpkg is a C++ package manager used to pull the dependencies needed to build QES. When used in this way, the cmake build will pull the needed requirements and not rely on installed system dependencies (as described above). This can result in the initial build being a little slower as the required dependencies are pulled and compiled, but it does mean that you do not have to manually install our dependencies.
+
+#### Setting up VCPKG
+
+To setup vcpkg, you will need to clone the vcpkg repository and setup environment variables that CMake can use to locate your vcpkg install.  More information on vcpkg and specific details for setting it up on different systems (Windows vs. Linux-based systems) can be found here: [https://learn.microsoft.com/en-us/vcpkg/get_started/overview](https://learn.microsoft.com/en-us/vcpkg/get_started/overview). The instructions below will reflect a Windows-based, Powershell setup to facilitate building QES on Windows:
+
+Determine a location where you want vcpkg installed. It can be in system location for all users or cloned into your own user account. After cloning, be sure to run the bootstrap batch file in the vcpkg folder.
+
+```
+git clone https://github.com/microsoft/vcpkg.git
+cd vcpkg
+bootstrap-vcpkg.bat
+```
+
+Next, you will need to create the VCPKG_ROOT environment variable to point to the location of the vcpkg local repository on your system. You should also add the vcpkg root to your PATH variable. The best way to do this on Windows so it is more permanent is to set them using the Windows System Environment Variables panel from Settings.
+
+```
+VCPKG_ROOT = "C:\path\to\vcpkg"
+PATH = "$env:VCPKG_ROOT;$env:PATH"
+```
+
+#### Building QES Using CMake Presets
+
+We have several CMake Build Presets that are outlined in the CMakePresets.json file in QES. Some are for building on Linux, macos, or without CUDA. The main build preset for Windows is the __windowsDev__ preset. For building on macOS, you can use __macOSDev__.  To setup the build environment using a preset, you first need to be in the main QES source folder and issue the cmake command:
+
+```
+cd <path/to/local QES repo>
+cmake --preset=windowsDev
+```
+
+Each preset defines its own build directory and various build variables that are important on that system. You may need to tweak some of these variables for your own system setup to locate the NVIDIA CUDA and OptiX install paths. Most other settings can be left alone, typically.
+
+__Windows-Specfic Instructions__
+
+On Windows, you will need a C++ compiler.  We have tested all Windows builds using the Community Edition of Microsoft's Visual Studio development environment [https://visualstudio.microsoft.com/vs/community/](https://visualstudio.microsoft.com/vs/community/). This is different than the Visual Studio Code editor -- make sure you get the full Visual Studio Community IDE, which includes the MSVC C++ compiler.
+
+
+
 
 ## Running QES
 
