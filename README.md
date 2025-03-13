@@ -92,7 +92,7 @@ The code does run on the CHPC cluster. You need to make sure the correct set of 
 
 After logging into your CHPC account, you will need to load specific modules. In the following sections, we outline the modules that need to be loaded along with the various cmake command-line calls that specify the exact locations of module installs on the CHPC system.  
 
-#### CUDA 11.4 Based Builds without NVIDIA OptiX Support
+#### CUDA 11.8 Based Builds without NVIDIA OptiX Support
 
 *This is the preferred build setup on CHPC*
 
@@ -130,6 +130,15 @@ After you've created the Makefiles with the cmake commands above, the code can b
 make
 ```
 Note you *may* need to type make a second time due to a build bug, especially on the CUDA 8.0 build.
+
+#### CUDA 11.8 Based Builds that use NVIDIA OptiX Support
+
+Enabling OptiX support does work on CHPC and have tested it with OptiX 7.6.0.  Enabling this accelerates mixing length calculations. To enable it, follow the instructions above, and make sure to add
+
+```
+-DOptiX_INSTALL_DIR=/uufs/chpc.utah.edu/sys/installdir/optix/7.6.0
+```
+
 
 ### Build Types
 
