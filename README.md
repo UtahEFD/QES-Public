@@ -141,9 +141,9 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 
 ### vcpkg - Generalized Build Instructions for Windows, macos and Linux
 
-We support a more generalized build system using vcpkg (https://vcpkg.io/en/) and CMake build presets. Vcpkg is a C++ package manager used to pull the dependencies needed to build QES. When used in this way, the cmake build will pull the needed requirements and not rely on installed system dependencies (as described above). This can result in the initial build being a little slower as the required dependencies are pulled and compiled, but it does mean that you do not have to manually install our dependencies.
+We support a more generalized build system using vcpkg [https://learn.microsoft.com/en-us/vcpkg/get_started/overview](https://learn.microsoft.com/en-us/vcpkg/get_started/overview) and CMake build presets. Vcpkg is a C++ package manager used to pull the dependencies needed to build QES. When used in this way, the cmake build will pull the needed requirements and not rely on installed system dependencies (as described above). This can result in the initial build being a little slower as the required dependencies are pulled and compiled, but it does mean that you do not have to manually install our dependencies.
 
-#### Setting up VCPKG
+#### Setting up vcpkg
 
 To setup vcpkg, you will need to clone the vcpkg repository and setup environment variables that CMake can use to locate your vcpkg install.  More information on vcpkg and specific details for setting it up on different systems (Windows vs. Linux-based systems) can be found here: [https://learn.microsoft.com/en-us/vcpkg/get_started/overview](https://learn.microsoft.com/en-us/vcpkg/get_started/overview). The instructions below will reflect a Windows-based, Powershell setup to facilitate building QES on Windows:
 
@@ -155,7 +155,7 @@ cd vcpkg
 bootstrap-vcpkg.bat
 ```
 
-Next, you will need to create the VCPKG_ROOT environment variable to point to the location of the vcpkg local repository on your system. You should also add the vcpkg root to your PATH variable. The best way to do this on Windows so it is more permanent is to set them using the Windows System Environment Variables panel from Settings.
+Next, you will need to create the VCPKG_ROOT environment variable to point to the location of the vcpkg local repository on your system. You should also add the vcpkg root to your PATH variable. The following focuses on Windows, but the same ideas are needed on Unix systems and your shell's environment variables. On Windows, the ideal way to do this so that it is permanent is to set the variables using the Windows System Environment Variables panel from Settings. You will need something like the following:
 
 ```
 VCPKG_ROOT = "C:\path\to\vcpkg"
@@ -175,9 +175,14 @@ Each preset defines its own build directory and various build variables that are
 
 __Windows-Specfic Instructions__
 
-On Windows, you will need a C++ compiler.  We have tested all Windows builds using the Community Edition of Microsoft's Visual Studio development environment [https://visualstudio.microsoft.com/vs/community/](https://visualstudio.microsoft.com/vs/community/). This is different than the Visual Studio Code editor -- make sure you get the full Visual Studio Community IDE, which includes the MSVC C++ compiler.
+On Windows, you will need a C++ compiler. We have tested all Windows builds using the Community Edition of Microsoft's Visual Studio development environment [https://visualstudio.microsoft.com/vs/community/](https://visualstudio.microsoft.com/vs/community/). This is different than the Visual Studio Code editor -- make sure you get the full Visual Studio Community IDE, which includes the MSVC C++ compiler. Specifically, our current build environment for Windows is the following:
 
+- Windows 11 (Version 24H2, OS build 26100.3194)
+- Microsoft Visual Studio Community 2022 (64-bit), Version 17.0.4
 
+Microsoft's Visual Studio Community Edition (and related) IDEs understand CMake and can configure a CMake project using the presets. Simply open the Local Folder containing your copy of QES into the IDE. Then, from the "Configuration" drop-down, select windowsDev.  You can trigger a full Reconfigure of the project from the "Project" menu's "Delete Cache and Reconfigure".  Once CMake is configured, you can build the project through the Build > Build All menu items.
+
+You will then need to access the built executables in the buildWindowsDev build folder using either Powershell or other command line shells on Windows.
 
 
 ## Running QES
