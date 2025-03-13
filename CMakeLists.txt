@@ -516,19 +516,26 @@ install(DIRECTORY "${CMAKE_SOURCE_DIR}/data" DESTINATION "${CPACK_PACKAGE_INSTAL
 install(TARGETS ${QES_INSTALL_EXECUTABLES} RUNTIME DESTINATION ${CPACK_PACKAGE_INSTALL_DIRECTORY}/bin)
 
 if(WIN32)
-    set(CPACK_GENERATOR "NSIS")  # Windows Installer
-    set(CPACK_NSIS_EXECUTABLES_DIRECTORY bin)
-    set(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_NAME} ${CPACK_PACKAGE_VERSION}")
-    set(CPACK_NSIS_CONTACT "${CPACK_PACKAGE_CONTACT}")
-    set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
+
+  # need to include some DLLs for Windows to work correctly: gdal and boost and others
+  # - this copies the DLLs from the build location into the bin of the package
+  install(DIRECTORY "${CMAKE_BINARY_DIR}/qesWinds/" DESTINATION ${CPACK_PACKAGE_INSTALL_DIRECTORY}/bin FILES_MATCHING PATTERN "*.dll")
+  
+  set(CPACK_GENERATOR "NSIS")  # Windows Installer
+  set(CPACK_NSIS_EXECUTABLES_DIRECTORY bin)
+  set(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_NAME} ${CPACK_PACKAGE_VERSION}")
+  set(CPACK_NSIS_CONTACT "${CPACK_PACKAGE_CONTACT}")
+  set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
+  
 elseif(APPLE)
-    set(CPACK_GENERATOR "DragNDrop")  # macOS DMG package
-    set(CPACK_DMG_BACKGROUND_IMAGE "${CMAKE_SOURCE_DIR}/data/qesBackground.png")
+  set(CPACK_GENERATOR "DragNDrop")  # macOS DMG package
+  set(CPACK_DMG_BACKGROUND_IMAGE "${CMAKE_SOURCE_DIR}/data/qesBackground.png")
 elseif(UNIX)
-    set(CPACK_GENERATOR "DEB;RPM")  # Linux: Deb for Debian/Ubuntu, RPM for Fedora/RHEL
-    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "UtahEFD <s@utah.edu>")
-    # set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.28), libstdc++6 (>= 8)")
-    set(CPACK_RPM_PACKAGE_LICENSE "MIT")
+  # unix package gen has not been tested
+  set(CPACK_GENERATOR "DEB;RPM")  # Linux: Deb for Debian/Ubuntu, RPM for Fedora/RHEL
+  set(CPACK_DEBIAN_PACKAGE_MAINTAINER "UtahEFD <s@utah.edu>")
+  # set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.28), libstdc++6 (>= 8)")
+  set(CPACK_RPM_PACKAGE_LICENSE "MIT")
 endif()
 
 include( CPack )
