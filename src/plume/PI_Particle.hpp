@@ -105,7 +105,7 @@ public:
   virtual ParticleModel *create(QESDataTransport &data)
   {
 
-    auto *model = new ParticleModel(data, tag);
+    auto *model = new ParticleModel(tag);
     for (auto s : sources) {
       // add source into the vector of sources
       model->addSource(s->create(data));

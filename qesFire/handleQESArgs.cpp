@@ -43,7 +43,7 @@ QESArgs::QESArgs()
     solveType(1),
     visuOutput(true), wkspOutput(false), terrainOut(false),
     turbOutput(false),
-    doParticleDataOutput(false),
+    plumeOutput(false), particleOutput(false),
     fireOutput(false)
 {
   reg("help", "help/usage information", ArgumentParsing::NONE, '?');
@@ -85,82 +85,70 @@ void QESArgs::processArguments(int argc, char *argv[])
   }
 
   verbose = isSet("verbose");
-  if (verbose) std::cout << "Verbose Output: ON" << std::endl;
+  if (verbose) {
+    QESout::setVerbose();
+  }
 
   isSet("qesWindsParamFile", qesWindsParamFile);
-  if (qesWindsParamFile != "") std::cout << "qesWindsParamFile set to " << qesWindsParamFile << std::endl;
 
-  solveWind = isSet("windsolveroff");
-  if (solveWind) std::cout << "the wind fields are not being calculated" << std::endl;
-
+  solveWind = !isSet("windsolveroff");
   isSet("solvetype", solveType);
-  if (solveType == CPU_Type)
-    std::cout << "Solving with: Serial solver (CPU)" << std::endl;
-  else if (solveType == DYNAMIC_P)
-    std::cout << "Solving with: Dynamic Parallel solver (GPU)" << std::endl;
-  else if (solveType == Global_M)
-    std::cout << "Solving with: Global memory solver (GPU)" << std::endl;
-  else if (solveType == Shared_M)
-    std::cout << "Solving with: Shared memory solver (GPU)" << std::endl;
+#ifndef HAS_CUDA
+  // if CUDA is not supported, force the solveType to be CPU no matter
+  solveType = CPU_Type;
+#endif
 
   compTurb = isSet("turbcomp");
-
-  isSet("qesPlumeParamFile", qesPlumeParamFile);
-
-  if (qesPlumeParamFile != "") {
-    std::cout << "qesPlumeParamFile set to " << qesPlumeParamFile << std::endl;
-    compTurb = true;
-    std::cout << "Turbulence model: ON" << std::endl;
-    compPlume = true;
-    std::cout << "Plume model: ON" << std::endl;
-  } else if (compTurb) {
-    std::cout << "Turbulence model: ON" << std::endl;
+  compPlume = isSet("qesPlumeParamFile", qesPlumeParamFile);
+  if (compPlume) {
+    if (compTurb) {
+      compTurb = true;
+      turbOutput = true;
+    } else {
+      compTurb = true;
+      turbOutput = false;
+    }
+    plumeOutput = true;
+  } else {
+    turbOutput = compTurb;
   }
-  
+  particleOutput = isSet("particleOutput");
+
   fireWindsFlag = isSet("fireWindsOff");
+  fireOutput = isSet("fireout");
 
   isSet("outbasename", netCDFFileBasename);
-  if (netCDFFileBasename != "") {
-    //visuOutput = isSet("visuout");
+  if (!netCDFFileBasename.empty()) {
+    // visuOutput = isSet("visuout");
     if (visuOutput) {
       netCDFFileVisu = netCDFFileBasename;
       netCDFFileVisu.append("_windsOut.nc");
-      std::cout << "Visualization NetCDF output file set to " << netCDFFileVisu << std::endl;
     }
 
     wkspOutput = isSet("wkout");
     if (wkspOutput) {
       netCDFFileWksp = netCDFFileBasename;
       netCDFFileWksp.append("_windsWk.nc");
-      std::cout << "Workspace NetCDF output file set to " << netCDFFileWksp << std::endl;
     }
 
-    // [FM] the output of turbulence field linked to the flag compTurb
-    // -> subject to change
-    turbOutput = compTurb;//isSet("turbout");
     if (turbOutput) {
       netCDFFileTurb = netCDFFileBasename;
       netCDFFileTurb.append("_turbOut.nc");
-      std::cout << "Turbulence NetCDF output file set to " << netCDFFileTurb << std::endl;
     }
 
     terrainOut = isSet("terrainout");
     if (terrainOut) {
       filenameTerrain = netCDFFileBasename;
       filenameTerrain.append("_terrainOut.obj");
-      std::cout << "Terrain triangle mesh WILL be output to " << filenameTerrain << std::endl;
     }
 
-    //doEulDataOutput     = isSet( "doEulDataOutput" );
-    //if (terrainOut) {
-    //    outputEulerianFile = outputFolder + caseBaseName + "_eulerianData.nc";
-    //}
+    // doEulDataOutput     = isSet( "doEulDataOutput" );
+    // if (terrainOut) {
+    //     outputEulerianFile = outputFolder + caseBaseName + "_eulerianData.nc";
+    // }
     if (compPlume) {
       outputPlumeFile = netCDFFileBasename + "_plumeOut.nc";
-
-      doParticleDataOutput = isSet("doParticleDataOutput");
-
-      if (doParticleDataOutput) {
+      if (particleOutput) {
         outputParticleDataFile = netCDFFileBasename + "_particleInfo.nc";
       }
     }
@@ -169,17 +157,71 @@ void QESArgs::processArguments(int argc, char *argv[])
     if (fireOutput) {
       netCDFFileFireOut = netCDFFileBasename;
       netCDFFileFireOut.append("_fireOutput.nc");
-      std::cout << "Fire NetCDF output file set to " << netCDFFileFireOut << std::endl;
     }
 
   } else {
-    std::cout << "No output basename set -> output turned off " << std::endl;
+    QESout::warning("No output basename set -> output turned off");
     visuOutput = false;
     wkspOutput = false;
     turbOutput = false;
     terrainOut = false;
 
-    //doEulDataOutput = false;
-    doParticleDataOutput = false;
+    plumeOutput = false;
+    particleOutput = false;
+
+    fireOutput = false;
   }
+
+  plumeParameters.outputFileBasename = netCDFFileBasename;
+  plumeParameters.plumeOutput = plumeOutput;
+  plumeParameters.particleOutput = particleOutput;
+
+  std::cout << "Summary of QES options: " << std::endl;
+  std::cout << "----------------------------" << std::endl;
+  // parameter files:
+  std::cout << "qesWindsParamFile: " << qesWindsParamFile << std::endl;
+  if (compPlume) {
+    std::cout << "qesPlumeParamFile: " << qesPlumeParamFile << std::endl;
+  }
+
+  std::cout << "----------------------------" << std::endl;
+
+  // code options:
+  if (solveWind) {
+    if (solveType == CPU_Type)
+#ifdef _OPENMP
+      std::cout << "Wind Solver:\t\t ON\t [Red/Black Solver (CPU)]" << std::endl;
+#else
+      std::cout << "Wind Solver:\t\t ON\t [Serial solver (CPU)]" << std::endl;
+#endif
+    else if (solveType == DYNAMIC_P)
+      std::cout << "Wind Solver:\t\t ON\t [Dynamic Parallel solver (GPU)]" << std::endl;
+    else if (solveType == Global_M)
+      std::cout << "Wind Solver:\t\t ON\t [Global memory solver (GPU)]" << std::endl;
+    else if (solveType == Shared_M)
+      std::cout << "Wind Solver:\t\t ON\t [Shared memory solver (GPU)]" << std::endl;
+    else
+      std::cout << "[WARNING]\t the wind fields are not being calculated" << std::endl;
+  }
+  std::cout << "Turbulence model:\t " << (compTurb ? "ON" : "OFF") << std::endl;
+  std::cout << "Plume model:\t\t " << (compPlume ? "ON" : "OFF") << std::endl;
+  std::cout << "Fire model:\t\t ON" << std::endl;
+  std::cout << "Fire induced winds: \t " << (!fireWindsFlag ? "ON" : "OFF") << std::endl;
+  std::cout << "Verbose:\t\t " << (verbose ? "ON" : "OFF") << std::endl;
+
+  // output files:
+  if (!netCDFFileBasename.empty()) {
+    std::cout << "----------------------------" << std::endl;
+    std::cout << "Output file basename:        " << netCDFFileBasename << std::endl;
+    std::cout << "Winds visualization output:  " << (visuOutput ? "ON" : "OFF") << std::endl;
+    std::cout << "Winds workspace output:      " << (wkspOutput ? "ON" : "OFF") << std::endl;
+    std::cout << "Winds terrain mesh output:   " << (terrainOut ? "ON" : "OFF") << std::endl;
+    std::cout << "Turbulence output:           " << (turbOutput ? "ON" : "OFF") << std::endl;
+    std::cout << "Plume output:                " << (plumeOutput ? "ON" : "OFF") << std::endl;
+    std::cout << "Plume particle output:       " << (particleOutput ? "ON" : "OFF") << std::endl;
+    std::cout << "Fire output:                 " << (fireOutput ? "ON" : "OFF") << std::endl;
+  }
+
+  std::cout << "###################################################################" << std::endl;
+
 }

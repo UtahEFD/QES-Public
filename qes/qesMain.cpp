@@ -62,7 +62,7 @@
 #include "plume/PLUMEGeneralData.h"
 
 
-Solver *setSolver(const int, WINDSInputData *, WINDSGeneralData *);
+Solver *setSolver(const int& , WINDSInputData *, WINDSGeneralData *);
 
 int main(int argc, char *argv[])
 {
@@ -164,9 +164,7 @@ int main(int argc, char *argv[])
     solver->solve(WGD, WID->simParams->maxIterations);
 
     // Run turbulence
-    if (TGD != nullptr) {
-      TGD->run();
-    }
+    if (TGD != nullptr) TGD->run();
 
     // /////////////////////////////
     // Output the various files requested from the simulation run
@@ -200,7 +198,7 @@ int main(int argc, char *argv[])
   exit(EXIT_SUCCESS);
 }
 
-Solver *setSolver(const int solveType, WINDSInputData *WID, WINDSGeneralData *WGD)
+Solver *setSolver(const int &solveType, WINDSInputData *WID, WINDSGeneralData *WGD)
 {
   Solver *solver = nullptr;
   if (solveType == CPU_Type) {

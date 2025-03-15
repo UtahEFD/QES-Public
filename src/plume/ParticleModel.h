@@ -67,7 +67,7 @@ public:
 class ParticleModel
 {
 public:
-  ParticleModel(QESDataTransport &, string);
+  ParticleModel(std::string);
 
   virtual ~ParticleModel();
 

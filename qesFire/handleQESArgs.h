@@ -38,6 +38,10 @@
 #include <iostream>
 #include "util/ArgumentParsing.h"
 
+#include "util/QESout.h"
+#include "winds/WINDSGeneralData.h"
+#include "plume/PLUMEGeneralData.h"
+
 enum solverTypes : int { CPU_Type = 1,
                          DYNAMIC_P = 2,
                          Global_M = 3,
@@ -88,10 +92,9 @@ public:
   std::string netCDFFileTurb = "";
 
   // QES-Plume output files
+  PlumeParameters plumeParameters;
   // going to assume concentration is always output. So these next options are like choices for additional debug output
-  //bool doEulDataOutput;
-  bool doParticleDataOutput;
-  //bool doSimInfoFileOutput;
+  bool plumeOutput, particleOutput;
 
   // output file variables created from the outputFolder and caseBaseName
   //std::string outputEulerianFile;

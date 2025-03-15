@@ -46,6 +46,11 @@ void QESArgs::processArguments(int argc, char *argv[])
     exit(EXIT_SUCCESS);
   }
 
+  verbose = isSet("verbose");
+  if (verbose) {
+    QESout::setVerbose();
+  }
+
   isSet("qesWindsParamFile", qesWindsParamFile);
   if (qesWindsParamFile.empty()) {
     QESout::error("qesWindsParamFile not specified");
@@ -71,11 +76,6 @@ void QESArgs::processArguments(int argc, char *argv[])
     plumeOutput = true;
   } else {
     turbOutput = compTurb;
-  }
-
-  verbose = isSet("verbose");
-  if (verbose) {
-    QESout::setVerbose();
   }
 
   particleOutput = isSet("particleOutput");

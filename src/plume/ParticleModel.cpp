@@ -41,7 +41,7 @@
 #include "PLUMEGeneralData.h"
 
 
-ParticleModel::ParticleModel(QESDataTransport &data, std::string tag_in)
+ParticleModel::ParticleModel(std::string tag_in)
   : particleType(base), tag(std::move(tag_in)), particles_control()
 {
   std::cout << "[QES-Plume]\t Model: Base Particle - Tag: " << tag << std::endl;

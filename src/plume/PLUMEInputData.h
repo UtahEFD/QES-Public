@@ -66,8 +66,12 @@ public:
     parseElement<PI_ParticleParameters>(false, particleParams, "particleParameters");
     parseElement<PI_BoundaryConditions>(true, BCs, "boundaryConditions");
 
-    for (auto pp : particleParams->particles) {
-      pp->initialize(plumeParams);
+    // check if particle parameters are in the XML
+    if(particleParams) {
+      for (auto pp : particleParams->particles) {
+        // calling initialize to propagate parameters
+        pp->initialize(plumeParams);
+      }
     }
   }
 

@@ -72,12 +72,14 @@
 #include <chrono>
 #include "fire/Smoke.h"
 
-namespace pt = boost::property_tree;
+//namespace pt = boost::property_tree;
 
-using namespace boost::gregorian;
-using namespace boost::posix_time;
-using namespace netCDF;// plume
-using namespace netCDF::exceptions;// plume
+//using namespace boost::gregorian;
+//using namespace boost::posix_time;
+//using namespace netCDF;// plume
+//using namespace netCDF::exceptions;// plume
+
+Solver *setSolver(const int& , WINDSInputData *, WINDSGeneralData *);
 
 int main(int argc, char *argv[])
 {
@@ -127,36 +129,21 @@ int main(int argc, char *argv[])
   outFire.push_back(new FIREOutput(WGD, fire, arguments.netCDFFileFireOut));
 
   int potFLAG = 0;
+#ifdef HAS_CUDA
+  if (arguments.solveType == DYNAMIC_P ||
+      arguments.solveType == Global_M ||
+      arguments.solveType == Shared_M) {
+    potFLAG = 1;
+  }
+#endif
+
   // //////////////////////////////////////////
   //
   // Run the QES-Winds Solver
   //
   // //////////////////////////////////////////
-  Solver *solver = nullptr;
-  if (arguments.solveType == CPU_Type) {
-#ifdef _OPENMP
-    std::cout << "Run Red/Black Solver (CPU) ..." << std::endl;
-    solver = new Solver_CPU_RB(WGD->domain, WID->simParams->tolerance);
-#else
-    std::cout << "Run Serial Solver (CPU) ..." << std::endl;
-    solver = new Solver_CPU(WGD->domain, WID->simParams->tolerance);
-#endif
-
-#ifdef HAS_CUDA
-  } else if (arguments.solveType == DYNAMIC_P) {
-    std::cout << "Run Dynamic Parallel Solver (GPU) ..." << std::endl;
-    solver = new Solver_GPU_DynamicParallelism(WGD->domain, WID->simParams->tolerance);
-  } else if (arguments.solveType == Global_M) {
-    std::cout << "Run Global Memory Solver (GPU) ..." << std::endl;
-    solver = new Solver_GPU_GlobalMemory(WGD->domain, WID->simParams->tolerance);
-    potFLAG = 1;
-  } else if (arguments.solveType == Shared_M) {
-    std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
-    solver = new Solver_GPU_SharedMemory(WGD->domain, WID->simParams->tolerance);
-#endif
-  } else {
-    QESout::error("Invalid solve type");
-  }
+  Solver *solver = setSolver(arguments.solveType, WID, WGD);
+  if (!solver) { QESout::error("Invalid solver"); }
 
   // /////////////////////////////
   //
@@ -190,48 +177,20 @@ int main(int argc, char *argv[])
     TGD = new TURBGeneralData(WID, WGD);
   }
   if (arguments.compTurb && arguments.turbOutput) {
-    std::vector<QESNetCDFOutput *> outputVec;
-    outputVec.push_back(new TURBOutput(TGD, arguments.netCDFFileTurb));
+    outFire.push_back(new TURBOutput(TGD, arguments.netCDFFileTurb));
   }
-  // parse Plume xml settings
-  PlumeInputData *PID = nullptr;
+
+  // PLUME
   PLUMEGeneralData *PGD = nullptr;
-  Smoke *smoke = nullptr;
-  // create output instance
-  std::vector<QESNetCDFOutput *> PoutputVec;
-  if (arguments.compPlume) {
-    PID = new PlumeInputData(arguments.qesPlumeParamFile);
+  //Smoke *smoke = nullptr;
+  if (arguments.compPlume){
+    auto PID = new PlumeInputData(arguments.qesPlumeParamFile);
     if (!PID)
       QESout::error("QES-Plume input file: " + arguments.qesPlumeParamFile + " not able to be read successfully.");
-    // Create instance of Plume model class (need the PlumeParameters class)
-    PlumeParameters plumeParameters;
-    plumeParameters.outputFileBasename = arguments.outputPlumeFile;
-    plumeParameters.plumeOutput = true;
-    plumeParameters.particleOutput = arguments.doParticleDataOutput;
-    PGD = new PLUMEGeneralData(plumeParameters, PID, WGD, TGD);
-    // plume = new Plume(PID, WGD, TGD);
-    //smoke = new Smoke();
-    QESDataTransport tmp;
-    PGD->models["smoke"] = new ParticleModel(tmp,"smoke");
-    // this is a temporary fix to add the concentration calculation here. (needs to be cleaned)
-    QESFileOutput_Interface *outfile;
-    if (plumeParameters.plumeOutput) {
-      outfile = new QESNetCDFOutput_v2(plumeParameters.outputFileBasename + "_" + "smoke" + "_plumeOut.nc");
-    } else {
-      outfile = new QESNullOutput(plumeParameters.outputFileBasename + "_" + "smoke" + "_plumeOut.nc");
-    }
-    outfile->setStartTime(simTimeStart);
-
-    auto *stats = new StatisticsDirector(simTimeStart + PID->colParams->averagingStartTime,
-                                         PID->colParams->averagingPeriod,
-                                         outfile);
-    if (PID->colParams) {
-      stats->attach("concentration",
-                    new Concentration(PID->colParams,
-                                      PGD->models["smoke"]->particles_control,
-                                      PGD->models["smoke"]->particles_core));
-    }
-    PGD->models["smoke"]->setStats(stats);
+    // Create instance of Plume model class
+    PGD = new PLUMEGeneralData(arguments.plumeParameters, PID, WGD, TGD);
+    //Create the particle model for smoke
+    PGD->addParticleModel(new ParticleModel("smoke"));
   }
 
   /**
@@ -264,17 +223,11 @@ int main(int argc, char *argv[])
      **/
     solver->solve(WGD, WID->simParams->maxIterations);
 
-
-    std::cout << "Solver done!\n";
-
     /**
      * Run turbulence if specified
      **/
 
-    if (TGD != nullptr) {
-      TGD->run();
-      std::cout << "Turbulance calculated\n";
-    }
+    if (TGD != nullptr) TGD->run();
 
     /**
      * Save initial fields from sensor time to reset after each time+fire loop
@@ -297,7 +250,11 @@ int main(int argc, char *argv[])
      * Fire time loop for current sensor time
      **/
 
+    std::cout << "-------------------------------------------------------------------" << std::endl;
+    std::cout << "[QES-Fire]\t Fire simulation stating from " << simTimeCurr << " to " << endtime << "." << std::endl;
     while (simTimeCurr < endtime) {
+
+      auto startTimeFire = std::chrono::high_resolution_clock::now();
 
       /**
        * load initial velocity for current sensor series
@@ -311,20 +268,20 @@ int main(int argc, char *argv[])
         /**
          * Run ROS model to get initial spread rate and fire properties
          */
-
         fire->LevelSetNB(WGD);
 
         /**
          * Calculate fire-induced winds from burning cells
          */
         if (potFLAG == 1) {
-          std::cout << "GPU POTENTIAL" << std::endl;
+          //std::cout << "GPU POTENTIAL" << std::endl;
           fire->potentialGlobal(WGD);
         } else {
-          std::cout << "Serial POTENTIAL" << std::endl;
+          //std::cout << "Serial POTENTIAL" << std::endl;
           fire->potential(WGD);
         }
       }
+      std::cout << "-------------------------------------------------------------------" << std::endl;
       /**
        * Apply parameterizations
        */
@@ -334,9 +291,7 @@ int main(int argc, char *argv[])
        * Run run wind solver to calculate mass conserved velocity field including fire-induced winds
        */
       solver->solve(WGD, WID->simParams->maxIterations);
-      if (TGD != nullptr) {
-        TGD->run();
-      }
+      if (TGD != nullptr) TGD->run();
 
       /**
        * Run ROS model to calculate spread rates with updated winds
@@ -348,13 +303,9 @@ int main(int argc, char *argv[])
        */
       fire->move(WGD);
 
-      std::cout << "time = " << simTimeCurr << endl;
-
       if (PGD != nullptr) {
-        std::cout << "------Running Plume------" << std::endl;
+        //std::cout << "------Running Plume------" << std::endl;
         // Loop through domain to find new smoke sources
-        FireSourceBuilder FSB;
-
         for (int j = 1; j < domain.ny() - 2; j++) {
           for (int i = 1; i < domain.nx() - 2; i++) {
             int idx = i + j * (domain.nx() - 1);
@@ -364,6 +315,7 @@ int main(int argc, char *argv[])
               float y_pos = j * domain.dy();
               float z_pos = WGD->terrain[idx] + 1;
               int ppt = 20;
+              FireSourceBuilder FSB;
               FSB.setSourceParam({x_pos, y_pos, z_pos}, simTimeCurr, simTimeCurr + fire->fire_cells[idx].properties.tau, ppt);
               // Add source to plume
               PGD->models["smoke"]->addSource(FSB.create());
@@ -372,11 +324,10 @@ int main(int argc, char *argv[])
             }
           }
         }
-        std::cout << "Plume run" << std::endl;
+        //std::cout << "Plume run" << std::endl;
         QEStime pendtime = simTimeCurr + fire->dt;///< End time for fire time loop run until end of fire timestep
-
-        // plume->run(pendtime, WGD, TGD, PoutputVec);
-        std::cout << "------Plume Finished------" << std::endl;
+        PGD->run(pendtime, WGD, TGD);
+        //std::cout << "------Plume Finished------" << std::endl;
       }
 
       /**
@@ -384,14 +335,46 @@ int main(int argc, char *argv[])
        */
       simTimeCurr += fire->dt;
 
+      auto endTimerFire = std::chrono::high_resolution_clock::now();
+      std::chrono::duration<double> elapsed = endTimerFire - startTimeFire;
+
+      std::cout << "-------------------------------------------------------------------" << std::endl;
+      std::cout << "[QES-Fire]\t Fire simulation current time = " << simTimeCurr << endl;
+      std::cout << "\t\t elapsed time: " << elapsed.count() << " s" << std::endl;
+      std::cout << "-------------------------------------------------------------------" << std::endl;
+
       /**
        * Save fire data to netCDF file
        */
-      for (auto outItr = outFire.begin(); outItr != outFire.end(); ++outItr) {
-        (*outItr)->save(simTimeCurr);
+      for (auto & out : outFire) {
+        out->save(simTimeCurr);
       }
     }
   }
   std::cout << "Simulation finished" << std::endl;
   exit(EXIT_SUCCESS);
+}
+
+Solver *setSolver(const int &solveType, WINDSInputData *WID, WINDSGeneralData *WGD)
+{
+  Solver *solver = nullptr;
+  if (solveType == CPU_Type) {
+#ifdef _OPENMP
+    solver = new Solver_CPU_RB(WGD->domain, WID->simParams->tolerance);
+#else
+    solver = new Solver_CPU(WGD->domain, WID->simParams->tolerance);
+#endif
+
+#ifdef HAS_CUDA
+  } else if (solveType == DYNAMIC_P) {
+    solver = new Solver_GPU_DynamicParallelism(WGD->domain, WID->simParams->tolerance);
+  } else if (solveType == Global_M) {
+    solver = new Solver_GPU_GlobalMemory(WGD->domain, WID->simParams->tolerance);
+  } else if (solveType == Shared_M) {
+    solver = new Solver_GPU_SharedMemory(WGD->domain, WID->simParams->tolerance);
+#endif
+  } else {
+    QESout::error("Invalid solver type");
+  }
+  return solver;
 }

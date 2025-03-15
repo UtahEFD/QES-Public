@@ -52,7 +52,7 @@ PLUMEGeneralData::PLUMEGeneralData(const PlumeParameters &PP,
                                    PlumeInputData *PID,
                                    WINDSGeneralData *WGD,
                                    TURBGeneralData *TGD)
-  : plumeParameters(PP)
+  : plumeParameters(PP),m_PID(PID)
 {
   std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "[QES-Plume]\t Initialization of plume model...\n";
@@ -173,32 +173,15 @@ PLUMEGeneralData::PLUMEGeneralData(const PlumeParameters &PP,
   // nParsReleased = 0;
 
   std::cout << "[QES-Plume]\t Initializing Particle Models: " << std::endl;
-  QESDataTransport data;
-  data.put("WGD", WGD);
-  data.put("TGD", TGD);
-  data.put("PGD", this);
+  if(PID->particleParams) {
+    QESDataTransport data;
+    data.put("WGD", WGD);
+    data.put("TGD", TGD);
+    data.put("PGD", this);
 
-  for (auto p : PID->particleParams->particles) {
-    models[p->tag] = p->create(data);
-
-    QESFileOutput_Interface *outfile;
-    if (plumeParameters.plumeOutput) {
-      outfile = new QESNetCDFOutput_v2(plumeParameters.outputFileBasename + "_" + p->tag + "_plumeOut.nc");
-    } else {
-      outfile = new QESNullOutput(plumeParameters.outputFileBasename + "_" + p->tag + "_plumeOut.nc");
+    for (auto p : PID->particleParams->particles) {
+      addParticleModel(p->create(data));
     }
-    outfile->setStartTime(simTimeStart);
-
-    auto *stats = new StatisticsDirector(simTimeStart + PID->colParams->averagingStartTime,
-                                         PID->colParams->averagingPeriod,
-                                         outfile);
-    if (PID->colParams) {
-      stats->attach("concentration",
-                    new Concentration(PID->colParams,
-                                      models[p->tag]->particles_control,
-                                      models[p->tag]->particles_core));
-    }
-    models[p->tag]->setStats(stats);
   }
 
   /* FM - NOTE ON MODEL INITIALIZATION
@@ -337,10 +320,33 @@ void PLUMEGeneralData::run(QEStime loopTimeEnd,
   auto endTimerAdvec = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> Elapsed = endTimerAdvec - startTimeAdvec;
 
-  std::cout << "[QES-Plume]\t Advection.\n";
+  std::cout << "[QES-Plume]\t Advection completed.\n";
   std::cout << "\t\t elapsed time: " << Elapsed.count() << " s" << std::endl;
 }
 
+void PLUMEGeneralData::addParticleModel(ParticleModel *pm)
+{
+  models[pm->get_tag()] = pm;
+
+  QESFileOutput_Interface *outfile;
+  if (plumeParameters.plumeOutput) {
+    outfile = new QESNetCDFOutput_v2(plumeParameters.outputFileBasename + "_" + pm->get_tag() + "_plumeOut.nc");
+  } else {
+    outfile = new QESNullOutput(plumeParameters.outputFileBasename + "_" + pm->get_tag() + "_plumeOut.nc");
+  }
+  outfile->setStartTime(simTimeStart);
+
+  auto *stats = new StatisticsDirector(simTimeStart + m_PID->colParams->averagingStartTime,
+                                       m_PID->colParams->averagingPeriod,
+                                       outfile);
+  if (m_PID->colParams) {
+    stats->attach("concentration",
+                  new Concentration(m_PID->colParams,
+                                    models[pm->get_tag()]->particles_control,
+                                    models[pm->get_tag()]->particles_core));
+  }
+  models[pm->get_tag()]->setStats(stats);
+}
 /*void PLUMEGeneralData::applyBC(Particle *p)
 {
   // now apply boundary conditions

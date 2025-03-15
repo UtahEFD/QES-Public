@@ -192,6 +192,8 @@ __global__ void PotSuperposition(
 // Main function
 void Fire ::potentialGlobal(WINDSGeneralData *WGD)
 {
+  std::cout << "[QES-Fire]\t GPU POTENTIAL" << std::endl;
+
   auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
   const int gridSize = (nx - 1) * (ny - 1) * (nz - 1);///< 3D grid size
   // const int faceSize = nx * ny * nz;
@@ -381,5 +383,5 @@ void Fire ::potentialGlobal(WINDSGeneralData *WGD)
 
   auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
   std::chrono::duration<float> elapsed = finish - start;
-  std::cout << "[QES-Fire] Pot\t Elapsed time: " << elapsed.count() << " s\n";// Print out elapsed execution time
+  std::cout << "\t\t elapsed time: " << elapsed.count() << " s\n";// Print out elapsed execution time
 }

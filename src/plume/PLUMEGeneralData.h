@@ -139,6 +139,8 @@ public:
   void printProgress(const double &);
   void showCurrentStatus();
 
+  void addParticleModel(ParticleModel *);
+
   std::map<std::string, ParticleModel *> models;
 
   GLE_Solver *GLE_solver;
@@ -160,6 +162,9 @@ public:
 
 
 private:
+
+  // temporary fix: adding copy of PID here:
+  PlumeInputData *m_PID;
 
   // these values are calculated from the urb and turb grids by dispersion
   // they are used for applying boundary conditions at the walls of the domain
