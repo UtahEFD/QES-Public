@@ -73,18 +73,18 @@ float Fire ::computeTimeStep()
     r_max = r > r_max ? r : r_max;
   }
   
-  std::cout << "max ROS = " << r_max << "[ms^-1]" << std::endl;
+  std::cout << "[QES-Fire]\t max ROS = " << r_max << "[ms^-1]" << std::endl;
   
   if (r_max < 0.05) {
     r_max = 0.05;
   }
   else if (isnan(r_max)){
     r_max = 0.05;
-    std::cout<<"r_max is NaN, setting to 0.3"<<std::endl;
+    std::cout << "[QES-Fire]\t r_max is NaN, setting to 0.3"<<std::endl;
   }
   
   float dt = courant * dx / r_max;
  
-  std::cout << "dt = " << dt << " s" << std::endl;
+  std::cout << "[QES-Fire]\t dt = " << dt << " s" << std::endl;
   return courant * dx / r_max;
 }

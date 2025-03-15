@@ -33,6 +33,8 @@
 
 void Fire::LevelSetNB(WINDSGeneralData *WGD)
 {
+  std::cout << "[QES-Fire]\t Computing level set... " << std::endl;
+
   auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
   /**
    * Reset forcing function for level set
@@ -165,5 +167,5 @@ void Fire::LevelSetNB(WINDSGeneralData *WGD)
   std::vector<int>().swap(cells_burning);
   auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
   std::chrono::duration<float> elapsed = finish - start;
-  std::cout << "[QES-Fire] Level Set elapsed time:\t" << elapsed.count() << " s\n";// Print out elapsed execution time
+  std::cout << "\t\t elapsed time: " << elapsed.count() << " s" << std::endl;// Print out elapsed execution time
 }

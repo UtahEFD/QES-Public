@@ -35,9 +35,8 @@
 FIREOutput::FIREOutput(WINDSGeneralData *wgd, Fire *fire, std::string output_file)
   : QESNetCDFOutput(output_file)
 {
-
-  std::cout << "[FireOutput] set up NetCDF file " << output_file << std::endl;
-  output_fields = { "t", "x", "y", "z", "u", "v", "w", "icell", "terrain", "burn", "fuel", "Force", "LS" };
+  //std::cout << "[FireOutput] set up NetCDF file " << output_file << std::endl;
+  output_fields = { "x", "y", "z", "u", "v", "w", "icell", "terrain", "burn", "fuel", "Force", "LS" };
 
   // copy of wgd pointer
   wgd_ = wgd;
@@ -77,7 +76,7 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd, Fire *fire, std::string output_fil
   NcDim NcDim_y = addDimension("ydim", ny - 1);
   NcDim NcDim_z = addDimension("zdim", nz - 2);
 
-  std::cout << "dimensions added" << std::endl;
+  //std::cout << "dimensions added" << std::endl;
 
   // create attributes space dimensions
   std::vector<NcDim> dim_vect_x;
@@ -107,7 +106,7 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd, Fire *fire, std::string output_fil
   createAttVector("burn", "burn flag value", "--", dim_vect_3d, &(fire_->burn_out));
   createAttVector("Force", "ROS Forcing", "m/s", dim_vect_3d, &(fire_->Force));
   createAttVector("LS", "Level Set Value", "--", dim_vect_3d, &(fire_->front_map));
-  std::cout << "burn added" << std::endl;
+  //std::cout << "burn added" << std::endl;
 
   // create 4D vector (x,y,z,t)
   std::vector<NcDim> dim_vect_4d;

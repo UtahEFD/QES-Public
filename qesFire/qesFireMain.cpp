@@ -121,8 +121,18 @@ int main(int argc, char *argv[])
   // Generate the general WINDS data from all inputs
   WINDSGeneralData *WGD = new WINDSGeneralData(WID, domain, arguments.solveType);
 
+  // /////////////////////////////
+  //
+  // Run Fire Code
+  //
+  // /////////////////////////////
+
   // Generate fire general data
   Fire *fire = new Fire(WID, WGD);
+  /**
+   * Set fuel map
+   **/
+  fire->FuelMap(WID, WGD);
 
   // Create FIREOutput manager
   std::vector<QESNetCDFOutput *> outFire;
@@ -145,16 +155,6 @@ int main(int argc, char *argv[])
   Solver *solver = setSolver(arguments.solveType, WID, WGD);
   if (!solver) { QESout::error("Invalid solver"); }
 
-  // /////////////////////////////
-  //
-  // Run Fire Code
-  //
-  // /////////////////////////////
-
-  /**
-   * Set fuel map
-   **/
-  fire->FuelMap(WID, WGD);
 
   /**
    * Time variables to track fire time and sensor timesteps
@@ -170,9 +170,7 @@ int main(int argc, char *argv[])
   std::vector<float> Fw0(domain.numFaceCentered(), 0.0);
 
   // Generate the general TURB data from WINDS data
-  // based on if the turbulence output file is defined
   TURBGeneralData *TGD = nullptr;
-
   if (arguments.compTurb) {
     TGD = new TURBGeneralData(WID, WGD);
   }
@@ -181,10 +179,11 @@ int main(int argc, char *argv[])
   }
 
   // PLUME
+  PlumeInputData *PID = nullptr;
   PLUMEGeneralData *PGD = nullptr;
   //Smoke *smoke = nullptr;
   if (arguments.compPlume){
-    auto PID = new PlumeInputData(arguments.qesPlumeParamFile);
+    PID = new PlumeInputData(arguments.qesPlumeParamFile);
     if (!PID)
       QESout::error("QES-Plume input file: " + arguments.qesPlumeParamFile + " not able to be read successfully.");
     // Create instance of Plume model class
@@ -253,7 +252,6 @@ int main(int argc, char *argv[])
     std::cout << "-------------------------------------------------------------------" << std::endl;
     std::cout << "[QES-Fire]\t Fire simulation stating from " << simTimeCurr << " to " << endtime << "." << std::endl;
     while (simTimeCurr < endtime) {
-
       auto startTimeFire = std::chrono::high_resolution_clock::now();
 
       /**
@@ -265,6 +263,7 @@ int main(int argc, char *argv[])
 
       // Run fire induced winds (default) if flag is not set in command line
       if (!arguments.fireWindsFlag) {
+        std::cout << "-------------------------------------------------------------------" << std::endl;
         /**
          * Run ROS model to get initial spread rate and fire properties
          */
@@ -293,6 +292,7 @@ int main(int argc, char *argv[])
       solver->solve(WGD, WID->simParams->maxIterations);
       if (TGD != nullptr) TGD->run();
 
+      std::cout << "-------------------------------------------------------------------" << std::endl;
       /**
        * Run ROS model to calculate spread rates with updated winds
        */
@@ -338,10 +338,10 @@ int main(int argc, char *argv[])
       auto endTimerFire = std::chrono::high_resolution_clock::now();
       std::chrono::duration<double> elapsed = endTimerFire - startTimeFire;
 
-      std::cout << "-------------------------------------------------------------------" << std::endl;
-      std::cout << "[QES-Fire]\t Fire simulation current time = " << simTimeCurr << endl;
-      std::cout << "\t\t elapsed time: " << elapsed.count() << " s" << std::endl;
-      std::cout << "-------------------------------------------------------------------" << std::endl;
+      std::cout << "-------------------------------------------------------------------\n"
+                << "[QES-Fire]\t Fire step completed.\n"
+                << "[QES-Fire]\t Current time = " << simTimeCurr << "\n"
+                << "\t\t elapsed time: " << elapsed.count() << " s" << std::endl;
 
       /**
        * Save fire data to netCDF file
@@ -352,6 +352,17 @@ int main(int argc, char *argv[])
     }
   }
   std::cout << "Simulation finished" << std::endl;
+
+  delete WID;
+  delete WGD;
+  delete TGD;
+  delete PID;
+  delete PGD;
+  for (auto p : outFire) {
+    delete p;
+  }
+
+
   exit(EXIT_SUCCESS);
 }
 

@@ -181,7 +181,7 @@ void Fire ::FuelMap(WINDSInputData *WID, WINDSGeneralData *WGD)
           fire_cells[idx].fuel = new SB4();
       }
     }
-    std::cout << "Fuel set" << std::endl;
+    std::cout << "[QES-Fire]\t Fuel set" << std::endl;
   } else {
     for (int j = 0; j < ny - 1; j++) {
       for (int i = 0; i < nx - 1; i++) {
@@ -247,6 +247,6 @@ void Fire ::FuelMap(WINDSInputData *WID, WINDSGeneralData *WGD)
         if (fuel_type == 204) fire_cells[idx].fuel = new SB4();
       }
     }
-    std::cout << "fuel set constant = " << fuel_type << std::endl;
+    std::cout << "[QES-Fire]\t Fuel set constant = " << fuel_type << std::endl;
   }
 }

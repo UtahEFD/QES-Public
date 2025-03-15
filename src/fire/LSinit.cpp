@@ -36,6 +36,8 @@ using namespace std;
 
 void Fire::LSinit()
 {
+  std::cout << "[QES-Fire]\t Initializing level set... " << std::endl;
+
     auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
     float sdf, sdf_min;
     /**
@@ -65,5 +67,5 @@ void Fire::LSinit()
     }
     auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
     std::chrono::duration<float> elapsed = finish - start;
-    std::cout << "[QES-Fire] LS init elapsed time:\t" << elapsed.count() << " s\n";// Print out elapsed execution time
+    std::cout << "\t\t elapsed time:\t" << elapsed.count() << " s" << std::endl;// Print out elapsed execution time
 }

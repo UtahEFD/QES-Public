@@ -35,6 +35,9 @@ using namespace std;
 
 Fire::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
 {
+  std::cout << "-------------------------------------------------------------------" << std::endl;
+  std::cout << "[QES-Fire]\t Initialization of fire model...\n";
+
   // get domain information
   nx = WGD->domain.nx();
   ny = WGD->domain.ny();
@@ -125,7 +128,7 @@ Fire::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
     FireTime.getVar("y1").getVar({ 0 }, { static_cast<unsigned long>(SFT_time) }, FT_x1.data());
     FireTime.getVar("x1").getVar({ 0 }, { static_cast<unsigned long>(SFT_time) }, FT_y1.data());
 
-    std::cout << "Ignition file " << igFile << " read succesfully" << std::endl;
+    std::cout << "[QES-Fire]\t Ignition file " << igFile << " read succesfully" << std::endl;
   }
 
   courant = WID->fires->courant;
@@ -166,7 +169,8 @@ Fire::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
       smoke_flag[idx] = fire_cells[idx].state.burn_flag;
     }
   }
-  std::cout << "burn initialized" << std::endl;
+  std::cout << "[QES-Fire]\t Burn initialized" << std::endl;
+
 #ifdef HAS_CUDA
   if (potFlag == 1) {
     LSinitGlob();
@@ -192,5 +196,5 @@ Fire::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
       slope_y[id] = (delzy / (2 * dy)) / sqrt(delzy * delzy + 2 * dy * 2 * dy);
     }
   }
-  std::cout << "Slope Calculated" << std::endl;
+  std::cout << "[QES-Fire]\t Slope Calculated" << std::endl;
 }

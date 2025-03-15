@@ -33,6 +33,7 @@
 
 void Fire ::move(WINDSGeneralData *WGD)
 {
+  std::cout << "[QES-Fire]\t Advancing level set..." << std::endl;
   auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
 
   auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
@@ -126,5 +127,5 @@ void Fire ::move(WINDSGeneralData *WGD)
   time += dt;
   auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
   std::chrono::duration<float> elapsed = finish - start;
-  std::cout << "[QES-Fire] LS move elapsed time:\t" << elapsed.count() << " s\n";// Print out elapsed execution time
+  std::cout << "\t\t elapsed time:\t" << elapsed.count() << " s" << std::endl;// Print out elapsed execution time
 }
