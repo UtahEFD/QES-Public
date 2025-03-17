@@ -90,6 +90,7 @@ void PlumeArgs::processArguments(int argc, char *argv[])
     isSet("outputbasename", outputFileBasename);
     if (!outputFileBasename.empty()) {
       // setup specific output file variables for netcdf output
+      plumeOutput = true;
       outputPlumeFile = outputFileBasename + "_plumeOut.nc";
       outputParticleDataFile = outputFileBasename + "_particleInfo.nc";
     } else {

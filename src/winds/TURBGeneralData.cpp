@@ -358,11 +358,16 @@ void TURBGeneralData::loadNetCDFData(int stepin)
   input->getVariableData("tke", start, count_cc, tke);
   input->getVariableData("CoEps", start, count_cc, CoEps);
 
-  input->getVariableData("div_tau_x", start, count_cc, div_tau_x);
-  input->getVariableData("div_tau_y", start, count_cc, div_tau_y);
-  input->getVariableData("div_tau_z", start, count_cc, div_tau_z);
+  NcVar NcVar_timestamp;
+  input->getVariable("div_tau_x", NcVar_timestamp);
 
-  // divergenceStress();
+  if (!NcVar_timestamp.isNull()) {
+    input->getVariableData("div_tau_x", start, count_cc, div_tau_x);
+    input->getVariableData("div_tau_y", start, count_cc, div_tau_y);
+    input->getVariableData("div_tau_z", start, count_cc, div_tau_z);
+  } else {
+    divergenceStress();
+  }
 
   return;
   // std::cout << "\t\t Memory allocation completed.\n";

@@ -182,7 +182,7 @@ void WallReflection_StairStep::oneReflection(const WINDSGeneralData *WGD,
                                              bool &isActive)
 {
   // some constants
-  const float eps_S = 0.001;
+  const float eps_S = 0.01;
   const int maxCount = 10;
 
   // QES-winds grid information
@@ -321,7 +321,7 @@ void WallReflection_StairStep::oneReflection(const WINDSGeneralData *WGD,
     // check if more than one surface is valid
     if (validSurface == 0) {
       // if 0 valid surface
-      std::cerr << "[WARNING]\tReflection problem: no valid surface" << std::endl;
+      //std::cerr << "[WARNING]\t Reflection problem: no valid surface" << std::endl;
       // std::cerr << "\tReflection problem: no valid surface\n"
       //           << "\t" << count << " " << U.length() << "->"
       //           << "[" << l1 << "," << l2 << "," << l3 << "]"
@@ -378,22 +378,29 @@ void WallReflection_StairStep::oneReflection(const WINDSGeneralData *WGD,
       //          << "[" << vl[0] << "," << vl[1] << "," << vl[2] << "] " << std::endl;
 
       // check if surface is valid (ie, next cell is solid)
-      if ((WGD->icellflag.at(cellIdOld + vn[idx[0]]) == 0)
-          || (WGD->icellflag.at(cellIdOld + vn[idx[0]]) == 2)) {
-        s = vl[idx[0]];
-        N = vN[idx[0]];
-      } else if ((WGD->icellflag.at(cellIdOld + vn[idx[0]] + vn[idx[1]]) == 0)
-                 || (WGD->icellflag.at(cellIdOld + vn[idx[0]] + vn[idx[1]]) == 2)) {
-        s = vl[idx[1]];
-        N = vN[idx[1]];
-      } else if ((WGD->icellflag.at(cellIdOld + vn[idx[0]] + vn[idx[1]] + vn[idx[2]]) == 0)
-                 || (WGD->icellflag.at(cellIdOld + vn[idx[0]] + vn[idx[1]] + vn[idx[2]]) == 2)) {
-        s = vl[idx[2]];
-        N = vN[idx[2]];
-      } else {
-        // this should happend only if particle traj. more than 1 cell in each direction,
-        // -> should have been skipped at the beginning of the function
-        // std::cerr << "Reflection problem: no valid surface" << std::endl;
+      try {
+        if ((WGD->icellflag.at(cellIdOld + vn[idx[0]]) == 0)
+            || (WGD->icellflag.at(cellIdOld + vn[idx[0]]) == 2)) {
+          s = vl[idx[0]];
+          N = vN[idx[0]];
+        } else if ((WGD->icellflag.at(cellIdOld + vn[idx[0]] + vn[idx[1]]) == 0)
+                   || (WGD->icellflag.at(cellIdOld + vn[idx[0]] + vn[idx[1]]) == 2)) {
+          s = vl[idx[1]];
+          N = vN[idx[1]];
+        } else if ((WGD->icellflag.at(cellIdOld + vn[idx[0]] + vn[idx[1]] + vn[idx[2]]) == 0)
+                   || (WGD->icellflag.at(cellIdOld + vn[idx[0]] + vn[idx[1]] + vn[idx[2]]) == 2)) {
+          s = vl[idx[2]];
+          N = vN[idx[2]];
+        } else {
+          // this should happend only if particle traj. more than 1 cell in each direction,
+          // -> should have been skipped at the beginning of the function
+          // std::cerr << "Reflection problem: no valid surface" << std::endl;
+          isActive = false;
+          return;
+        }
+      } catch (const std::out_of_range &oor) {
+        // cell ID out of bound
+        // std::cerr << "Reflection problem: particle out of range after reflection" << std::endl;
         isActive = false;
         return;
       }
