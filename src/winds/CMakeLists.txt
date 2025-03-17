@@ -68,13 +68,18 @@ ENDIF ($CACHE{HAS_CUDA_SUPPORT})
   
 
 IF ($CACHE{HAS_OPTIX_SUPPORT})
-  cuda_compile_and_embed(embedded_ptx_code OptixRayTrace.cu)
- 
+  MESSAGE(STATUS "Compiling in OptiX support.")
+
+  INCLUDE_DIRECTORIES(${OptiX_INCLUDE})
+
+  cuda_compile_and_embed(EMBEDDED_OPTIX ${CMAKE_CURRENT_SOURCE_DIR}/OptixRayTrace.cu OptixRayTrace)
+
+  # Add the generated header file to your target's include directories
+  include_directories(${CMAKE_BINARY_DIR}/ptx)
+
+  MESSAGE(STATUS "Info about ptx embedded CPP file:  ${EMBEDDED_OPTIX}")
   add_library(qesOptix
-          ${embedded_ptx_code}
-          OptixRayTrace.h
-          OptixRayTrace.cpp)
+    OptixRayTrace.cpp OptixRayTrace.h
+    ${EMBEDDED_OPTIX})
+
 ENDIF ($CACHE{HAS_OPTIX_SUPPORT})
-
-
-

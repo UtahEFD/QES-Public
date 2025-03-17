@@ -68,6 +68,16 @@
 #include "util/QEStime.h"
 
 #ifdef HAS_OPTIX
+
+// Needed to ensure that std::max and std::min are available
+// since the optix.h headers eventually include windows.h on WIN32
+// systems.  Windows overrides max and min and the following will
+// force that off and thus allow std::max and std::min to work as
+// desired.
+#ifdef WIN32
+#define NOMINMAX
+#endif
+
 #include "OptixRayTrace.h"
 #endif
 

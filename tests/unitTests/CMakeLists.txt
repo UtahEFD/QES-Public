@@ -44,6 +44,10 @@ list(APPEND UNITTESTS util_qesDataTransporter)
 IF ($CACHE{HAS_CUDA_SUPPORT})
   
   add_executable(test_GPU test_GPU.cpp)
+  TARGET_INCLUDE_DIRECTORIES(test_GPU PRIVATE ${CUDAToolkit_INCLUDE_DIRS})
+  SET_TARGET_PROPERTIES(test_GPU PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+  target_link_libraries(test_GPU PRIVATE qesutilgpu)
+  target_link_libraries(test_GPU PRIVATE ${CUDA_LIBRARIES})
   list(APPEND UNITTESTS test_GPU)
   
   add_executable(test_CUDARandomGen
@@ -118,15 +122,37 @@ IF ($CACHE{HAS_CUDA_SUPPORT})
   #target_link_libraries(test_plume_GPU PRIVATE ${CUDA_curand_LIBRARY})
   #list(APPEND UNITTESTS util_vector_classes_GPU)
 
+#  add_executable(util_buffer_GPU
+#    CUDA_buffer_testkernel.cu
+#    util_buffer_GPU.cpp)
+#  list(APPEND UNITTESTS util_buffer_GPU)
+
+  #
+  # test OptiX compilation
+  #
+  IF ($CACHE{HAS_OPTIX_SUPPORT})
+
+    # Main executable (host-side)
+    # add_executable(test_optix test_optix.cpp)
+
+    # Include directories
+    # target_include_directories(test_optix PRIVATE ${CUDAToolkit_INCLUDE_DIRS})
+    # target_include_directories(test_optix PRIVATE ${OptiX_INCLUDE})
+
+    # Link CUDA and if necessary the OptiX library
+    # target_link_libraries(test_optix PRIVATE ${CUDA_LIBRARIES})
+    
+  ENDIF ($CACHE{HAS_OPTIX_SUPPORT})
+
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
 foreach (unittest ${UNITTESTS})
  
   IF ($CACHE{HAS_CUDA_SUPPORT})
-    target_link_libraries(${unittest} PRIVATE ${CUDA_LIBRARIES})
-    target_link_libraries(${unittest} PRIVATE ${CUDA_curand_LIBRARY})
     target_link_libraries(${unittest} PRIVATE qesplumegpu)
     target_link_libraries(${unittest} PRIVATE qeswindsgpu)
+    target_link_libraries(${unittest} PRIVATE ${CUDA_LIBRARIES})
+    target_link_libraries(${unittest} PRIVATE ${CUDA_curand_LIBRARY})
   ENDIF()
   target_link_libraries(${unittest} PRIVATE qesplumecore)
   target_link_libraries(${unittest} PRIVATE qeswindscore)
