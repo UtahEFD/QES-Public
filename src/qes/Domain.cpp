@@ -20,7 +20,33 @@ Domain::Domain(const int &nx, const int &ny, const int &nz, const float &dx, con
 
   // Definition of the grid
   // ??? how to define the vertical grid with the different option
-  defineVerticalStretching(dz);
+  defineVerticalStretching(domainData.dz);
+  /*if (WID->simParams->verticalStretching == 0) {// Uniform vertical grid
+    defineVerticalStretching(dz);
+  } else if (WID->simParams->verticalStretching == 1) {// Stretched vertical grid
+    defineVerticalStretching(WID->simParams->dz_value);// Read in custom dz values and set them to dz_array
+  }*/
+  defineVerticalGrid();
+  defineHorizontalGrid();
+}
+
+Domain::Domain(const Vector3Int& domain, const Vector3Float& grid)
+{
+  // Internally this information is converted to the staggered grid
+  // representation, which adds 1 to nx and ny and 2 to nz (to
+  // account for staggered grid and ghost cell).
+  domainData.nx = domain[0] + 1;
+  domainData.ny = domain[1] + 1;
+  domainData.nz = domain[2] + 2;
+
+  domainData.dx = grid[0];
+  domainData.dy = grid[1];
+  domainData.dz = grid[2];
+  domainData.dxy = std::min(domainData.dx, domainData.dy);
+
+  // Definition of the grid
+  // ??? how to define the vertical grid with the different option
+  defineVerticalStretching(domainData.dz);
   /*if (WID->simParams->verticalStretching == 0) {// Uniform vertical grid
     defineVerticalStretching(dz);
   } else if (WID->simParams->verticalStretching == 1) {// Stretched vertical grid

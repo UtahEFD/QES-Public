@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
   // Somehere... we initialize the QESDomain... some class that holds ifo for
   // Singleton????
   //
-  qes::Domain domain(WID->simParams->domain[0], WID->simParams->domain[1], WID->simParams->domain[2], WID->simParams->grid[0], WID->simParams->grid[1], WID->simParams->grid[2]);
+  qes::Domain domain(WID->simParams->domain, WID->simParams->grid);
 
   // Generate the general WINDS data from all inputs
   WINDSGeneralData *WGD = new WINDSGeneralData(WID, domain, arguments.solveType);

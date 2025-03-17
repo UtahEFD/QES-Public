@@ -4,6 +4,8 @@
 #include <vector>
 
 #include "util/NetCDFInput.h"
+#include "util/Vector3Int.h"
+#include "util/Vector3Float.h"
 
 /**
  * \brief Namespace for core components within the QES framework.
@@ -52,6 +54,22 @@ public:
    * @param dz Size of cells in the Z dimension
    */
   Domain(const int &nx, const int &ny, const int &nz, const float &dx, const float &dy, const float &dz);
+
+  /**
+   * /brief Standard domain constructor.
+   *
+   * The standard domain constructor takes the base level
+   * description for the domain in terms of number of cell in the X,
+   * Y and Z dimensions as arguments (nx, ny, nz). It also takes the
+   * discretization in X, Y and Z dimensions as arguments (dx, dy,
+   * dz).
+   *
+   * Internally, the class will manage this information as a staggered grid.
+   *
+   * @param domain Number of cells in the each dimensions
+   * @param grid Size of cells in the each dimension
+   */
+  Domain(const Vector3Int&, const Vector3Float&);
 
   /**
    * /brief Standard domain constructor.

@@ -112,7 +112,6 @@ ELSE ($CACHE{HAS_CUDA_SUPPORT})
           )
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
-target_link_libraries(compareWindsResults PRIVATE qeswindscore)
 IF ($CACHE{HAS_CUDA_SUPPORT})
   target_link_libraries(compareWindsResults PRIVATE qeswindsgpu)
 ENDIF()
