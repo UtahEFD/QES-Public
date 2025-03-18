@@ -34,9 +34,10 @@
 		"CMAKE_PREFIX_PATH": "/opt/homebrew/Cellar/libomp/20.1.0",
 		"NETCDF_LIBRARIES_CXX": "/opt/homebrew/lib/libnetcdf-cxx4.dylib",
 		"ENABLE_OPENMP": "ON",
-		"ENABLE_DEV_MODE": "ON",
-		"ENABLE_TESTS": "ON",
-		"TESTS_ENABLE_UNIT_TESTS": "ON"
+		"CMAKE_BUILD_TYPE": "Release",
+		"__comment__ENABLE_DEV_MODE": "ON",
+		"__comment__ENABLE_TESTS": "ON",
+		"__comment__TESTS_ENABLE_UNIT_TESTS": "ON"
 	    }
 	},
 	{
@@ -44,10 +45,11 @@
 	    "binaryDir": "${sourceDir}/buildUnixDev",
 	    "cacheVariables": {
 		"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+		"CMAKE_BUILD_TYPE": "Release",
 		"ENABLE_OPENMP": "ON",
-		"ENABLE_DEV_MODE": "ON",
-		"ENABLE_TESTS": "ON",
-		"TESTS_ENABLE_UNIT_TESTS": "ON"
+		"__comment__ENABLE_DEV_MODE": "ON",
+		"__comment__ENABLE_TESTS": "ON",
+		"__comment__TESTS_ENABLE_UNIT_TESTS": "ON"
 	    }
 	},
 	{
@@ -58,24 +60,9 @@
 		"ENABLE_OPENMP": "ON",
 		"HAS_CUDA_SUPPORT": "OFF",
 		"HAS_OPTIX_SUPPORT": "OFF",
-		"ENABLE_DEV_MODE": "ON",
-		"ENABLE_TESTS": "ON",
-		"TESTS_ENABLE_UNIT_TESTS": "ON"
-	    }
-	},
-	{
-	    "name": "clangdev",
-	    "binaryDir": "${sourceDir}/buildClangDev",
-	    "cacheVariables": {
-		"CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-		"CMAKE_CUDA_COMPILER": "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.8/bin/nvcc.exe",
-		"CUDACXX": "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.8/bin/nvcc.exe",
-		"CMAKE_CUDA_FLAGS": " --allow-unsupported-compiler",
-		"CMAKE_CUDA_ARCHITECTURES": "native",
-		"CMAKE_CXX_COMPILER": "clang++",
-		"ENABLE_DEV_MODE": "ON",
-		"ENABLE_TESTS": "ON",
-		"TESTS_ENABLE_UNIT_TESTS": "ON"
+		"__comment__ENABLE_DEV_MODE": "ON",
+		"__comment__ENABLE_TESTS": "ON",
+		"__comment__TESTS_ENABLE_UNIT_TESTS": "ON"
 	    }
 	},
 	{
