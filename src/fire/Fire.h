@@ -62,7 +62,7 @@ class Fire
 
 
 public:
-  Fire(WINDSInputData *, WINDSGeneralData *);
+  Fire(WINDSInputData *, WINDSGeneralData *,bool);
 
 
   struct FireProperties
@@ -135,11 +135,16 @@ public:
   void LevelSet(WINDSGeneralData *);
   void LevelSetNB(WINDSGeneralData *);
   void move(WINDSGeneralData *);
-  void potential(WINDSGeneralData *);
   void FuelMap(WINDSInputData *, WINDSGeneralData *);
   float computeTimeStep();
+
+  void potential(WINDSGeneralData *);
+  void potentialSerial(WINDSGeneralData *);
+
+#ifdef HAS_CUDA
   void potentialGlobal(WINDSGeneralData *);
   void LSinitGlob();
+#endif
 
 private:
   // grid information
@@ -153,12 +158,29 @@ private:
   float x_start, y_start;
   float L, W, H, baseHeight, courant;
   int i_start, i_end, j_start, j_end, k_end, k_start;
-  int potFlag;
+
+  bool GPUFlag = false;
+
   float rothermel(FuelProperties *, float, float, float);
 
   FireProperties balbi(FuelProperties *, float, float, float, float, float, float, float);
 
   FireProperties runFire(float, float, int);
 };
+
+inline void Fire::potential(WINDSGeneralData *WGD)
+{
+#ifdef HAS_CUDA
+  if (GPUFlag == 1) {
+    // std::cout << "GPU POTENTIAL" << std::endl;
+    potentialGlobal(WGD);
+  } else {
+    // std::cout << "Serial POTENTIAL" << std::endl;
+    potentialSerial(WGD);
+  }
+#else
+  potentialSerial(WGD);
+#endif
+}
 
 #endif

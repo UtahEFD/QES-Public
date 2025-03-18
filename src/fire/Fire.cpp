@@ -33,7 +33,8 @@
 
 using namespace std;
 
-Fire::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
+Fire::Fire(WINDSInputData *WID, WINDSGeneralData *WGD, bool flag)
+  : GPUFlag(flag)
 {
   std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "[QES-Fire]\t Initialization of fire model...\n";
@@ -172,7 +173,7 @@ Fire::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
   std::cout << "[QES-Fire]\t Burn initialized" << std::endl;
 
 #ifdef HAS_CUDA
-  if (potFlag == 1) {
+  if (GPUFlag == 1) {
     LSinitGlob();
   } else {
     LSinit();
@@ -180,6 +181,7 @@ Fire::Fire(WINDSInputData *WID, WINDSGeneralData *WGD)
 #else
   LSinit();
 #endif
+
   /**
    * Calculate slope at each terrain cell
    */

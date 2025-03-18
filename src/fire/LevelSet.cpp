@@ -34,8 +34,8 @@
 void Fire::LevelSet(WINDSGeneralData *WGD)
 {
   /**
-    * Calculate level set gradient and norm (Chapter 6, Sethian 2008)
-    */
+   * Calculate level set gradient and norm (Chapter 6, Sethian 2008)
+   */
   float dmx, dpx, dmy, dpy, n_star_x, n_star_y;
   float sdmx, sdpx, sdmy, sdpy, sn_star_x, sn_star_y;
   for (int j = 1; j < ny - 2; j++) {
@@ -51,26 +51,26 @@ void Fire::LevelSet(WINDSGeneralData *WGD)
       del_min[idx] = sqrt(fmax(dpx, 0) * fmax(dpx, 0) + fmin(dmx, 0) * fmin(dmx, 0) + fmax(dpy, 0) * fmax(dpy, 0) + fmin(dmy, 0) * fmin(dmy, 0));
       n_star_x = dpx / sqrt(dpx * dpx + dpy * dpy) + dmx / sqrt(dmx * dmx + dpy * dpy) + dpx / sqrt(dpx * dpx + dmy * dmy) + dmx / sqrt(dmx * dmx + dmy * dmy);
       n_star_y = dpy / sqrt(dpx * dpx + dpy * dpy) + dpy / sqrt(dmx * dmx + dpy * dpy) + dmy / sqrt(dpx * dpx + dmy * dmy) + dmy / sqrt(dmx * dmx + dmy * dmy);
-      if (n_star_x == 0){
-	      xNorm[idx] = 0;
+      if (n_star_x == 0) {
+        xNorm[idx] = 0;
       } else {
-	      xNorm[idx] = n_star_x / sqrt(n_star_x * n_star_x + n_star_y * n_star_y);
+        xNorm[idx] = n_star_x / sqrt(n_star_x * n_star_x + n_star_y * n_star_y);
       }
-      if (n_star_y == 0){
-	      yNorm[idx] = 0;
+      if (n_star_y == 0) {
+        yNorm[idx] = 0;
       } else {
-	      yNorm[idx] = n_star_y / sqrt(n_star_x * n_star_x + n_star_y * n_star_y);
+        yNorm[idx] = n_star_y / sqrt(n_star_x * n_star_x + n_star_y * n_star_y);
       }
     }
   }
 
   /**
-	* Reset forcing function for level set
-	*/
+   * Reset forcing function for level set
+   */
   std::fill(Force.begin(), Force.end(), 0);
   /**
-	* Calculate Forcing Function (Balbi model at mid-flame height or first vertical grid cell if no fire)
-	*/
+   * Calculate Forcing Function (Balbi model at mid-flame height or first vertical grid cell if no fire)
+   */
   for (int j = 1; j < ny - 2; j++) {
     for (int i = 1; i < nx - 2; i++) {
       int idx = i + j * (nx - 1);
@@ -102,7 +102,7 @@ void Fire::LevelSet(WINDSGeneralData *WGD)
   // indices for burning cells
   std::vector<int> cells_burning;
   // search predicate for burn state
-  struct find_burn //: std::__unary_function<FireCell, bool>
+  struct find_burn//: std::__unary_function<FireCell, bool>
   {
     float burn;
     find_burn(int burn) : burn(burn) {}
@@ -130,14 +130,14 @@ void Fire::LevelSet(WINDSGeneralData *WGD)
     // get vertical index of mid-flame height
     int kh = 0;///< mid-flame height
     int maxkh = 0;///< max flame height
-    //modify flame height by time on fire (assume linear functionality)
+    // modify flame height by time on fire (assume linear functionality)
     float H = fire_cells[id].properties.h * (1 - (fire_cells[id].state.burn_time / fire_cells[id].properties.tau));
     float maxH = fire_cells[id].properties.h;
 
     // convert flat index to i, j at cell center
     int ii = id % (nx - 1);
     int jj = (id / (nx - 1)) % (ny - 1);
-    int idx = ii + jj * (nx-1);
+    int idx = ii + jj * (nx - 1);
     float T = WGD->terrain[idx];
     float D = fuel->fuelDepth * 0.3048;
     int TID = std::round(T / dz);
@@ -155,7 +155,7 @@ void Fire::LevelSet(WINDSGeneralData *WGD)
     }
 
     // get horizontal wind at flame height
-    int cell_face = ii + jj * nx + (kh) * ny * nx;
+    int cell_face = ii + jj * nx + (kh)*ny * nx;
     float u = 0.5 * (WGD->u[cell_face] + WGD->u[cell_face + 1]);
     float v = 0.5 * (WGD->v[cell_face] + WGD->v[cell_face + nx]);
     // run Balbi model

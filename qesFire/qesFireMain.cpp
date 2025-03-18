@@ -121,9 +121,18 @@ int main(int argc, char *argv[])
   // Run Fire Code
   //
   // /////////////////////////////
+  bool GPUFLAG = false;
+#ifdef HAS_CUDA
+  if (arguments.solveType == DYNAMIC_P ||
+      arguments.solveType == Global_M ||
+      arguments.solveType == Shared_M) {
+    potFLAG = true;
+  }
+#endif
 
   // Generate fire general data
-  Fire *fire = new Fire(WID, WGD);
+  Fire *fire = new Fire(WID, WGD, GPUFLAG);
+
   /**
    * Set fuel map
    **/
@@ -133,14 +142,7 @@ int main(int argc, char *argv[])
   std::vector<QESNetCDFOutput *> outFire;
   outFire.push_back(new FIREOutput(WGD, fire, arguments.netCDFFileFireOut));
 
-  int potFLAG = 0;
-#ifdef HAS_CUDA
-  if (arguments.solveType == DYNAMIC_P ||
-      arguments.solveType == Global_M ||
-      arguments.solveType == Shared_M) {
-    potFLAG = 1;
-  }
-#endif
+
 
   // //////////////////////////////////////////
   //
@@ -267,13 +269,7 @@ int main(int argc, char *argv[])
         /**
          * Calculate fire-induced winds from burning cells
          */
-        if (potFLAG == 1) {
-          //std::cout << "GPU POTENTIAL" << std::endl;
-          fire->potentialGlobal(WGD);
-        } else {
-          //std::cout << "Serial POTENTIAL" << std::endl;
-          fire->potential(WGD);
-        }
+        fire->potential(WGD);
       }
       std::cout << "-------------------------------------------------------------------" << std::endl;
       /**
