@@ -72,14 +72,14 @@
 #include <chrono>
 #include "fire/Smoke.h"
 
-//namespace pt = boost::property_tree;
+// namespace pt = boost::property_tree;
 
-//using namespace boost::gregorian;
-//using namespace boost::posix_time;
-//using namespace netCDF;// plume
-//using namespace netCDF::exceptions;// plume
+// using namespace boost::gregorian;
+// using namespace boost::posix_time;
+// using namespace netCDF;// plume
+// using namespace netCDF::exceptions;// plume
 
-Solver *setSolver(const int& , WINDSInputData *, WINDSGeneralData *);
+Solver *setSolver(const int &, WINDSInputData *, WINDSGeneralData *);
 
 int main(int argc, char *argv[])
 {
@@ -123,10 +123,8 @@ int main(int argc, char *argv[])
   // /////////////////////////////
   bool GPUFLAG = false;
 #ifdef HAS_CUDA
-  if (arguments.solveType == DYNAMIC_P ||
-      arguments.solveType == Global_M ||
-      arguments.solveType == Shared_M) {
-    potFLAG = true;
+  if (arguments.solveType == DYNAMIC_P || arguments.solveType == Global_M || arguments.solveType == Shared_M) {
+    GPUFLAG = true;
   }
 #endif
 
@@ -141,7 +139,6 @@ int main(int argc, char *argv[])
   // Create FIREOutput manager
   std::vector<QESNetCDFOutput *> outFire;
   outFire.push_back(new FIREOutput(WGD, fire, arguments.netCDFFileFireOut));
-
 
 
   // //////////////////////////////////////////
@@ -178,14 +175,14 @@ int main(int argc, char *argv[])
   // PLUME
   PlumeInputData *PID = nullptr;
   PLUMEGeneralData *PGD = nullptr;
-  //Smoke *smoke = nullptr;
-  if (arguments.compPlume){
+  // Smoke *smoke = nullptr;
+  if (arguments.compPlume) {
     PID = new PlumeInputData(arguments.qesPlumeParamFile);
     if (!PID)
       QESout::error("QES-Plume input file: " + arguments.qesPlumeParamFile + " not able to be read successfully.");
     // Create instance of Plume model class
     PGD = new PLUMEGeneralData(arguments.plumeParameters, PID, WGD, TGD);
-    //Create the particle model for smoke
+    // Create the particle model for smoke
     PGD->addParticleModel(new ParticleModel("smoke"));
   }
 
@@ -295,8 +292,8 @@ int main(int argc, char *argv[])
       fire->move(WGD);
 
       if (PGD != nullptr) {
-        //std::cout << "------Running Plume------" << std::endl;
-        // Loop through domain to find new smoke sources
+        // std::cout << "------Running Plume------" << std::endl;
+        //  Loop through domain to find new smoke sources
         for (int j = 1; j < domain.ny() - 2; j++) {
           for (int i = 1; i < domain.nx() - 2; i++) {
             int idx = i + j * (domain.nx() - 1);
@@ -307,7 +304,7 @@ int main(int argc, char *argv[])
               float z_pos = WGD->terrain[idx] + 1;
               int ppt = 20;
               FireSourceBuilder FSB;
-              FSB.setSourceParam({x_pos, y_pos, z_pos}, simTimeCurr, simTimeCurr + fire->fire_cells[idx].properties.tau, ppt);
+              FSB.setSourceParam({ x_pos, y_pos, z_pos }, simTimeCurr, simTimeCurr + fire->fire_cells[idx].properties.tau, ppt);
               // Add source to plume
               PGD->models["smoke"]->addSource(FSB.create());
               // Clear smoke flag in fire program so no duplicate source set next time step
@@ -315,10 +312,10 @@ int main(int argc, char *argv[])
             }
           }
         }
-        //std::cout << "Plume run" << std::endl;
+        // std::cout << "Plume run" << std::endl;
         QEStime pendtime = simTimeCurr + fire->dt;///< End time for fire time loop run until end of fire timestep
         PGD->run(pendtime, WGD, TGD);
-        //std::cout << "------Plume Finished------" << std::endl;
+        // std::cout << "------Plume Finished------" << std::endl;
       }
 
       /**
@@ -337,7 +334,7 @@ int main(int argc, char *argv[])
       /**
        * Save fire data to netCDF file
        */
-      for (auto & out : outFire) {
+      for (auto &out : outFire) {
         out->save(simTimeCurr);
       }
     }
