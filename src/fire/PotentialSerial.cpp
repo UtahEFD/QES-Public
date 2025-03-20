@@ -229,7 +229,7 @@ void Fire::potentialSerial(WINDSGeneralData *WGD)
       for (int iadd = 1; iadd < nx - 1; iadd++) {
         int cell_face = iadd + jadd * nx + (kadd - 1) * nx * ny;
         int cell_cent = iadd + jadd * (nx - 1) + (kadd - 1) * (nx - 1) * (ny - 1);
-        if (WGD->icellflag[cell_cent] == 12 or WGD->icellflag[cell_cent] == 1) {
+        if (WGD->icellflag[cell_cent] == 12 || WGD->icellflag[cell_cent] == 1) {
           WGD->u0[cell_face] = WGD->u0[cell_face] + 0.5 * (Pot_u[cell_cent] + Pot_u[cell_cent + 1]);
           WGD->v0[cell_face] = WGD->v0[cell_face] + 0.5 * (Pot_v[cell_cent] + Pot_v[cell_cent + (nx - 1)]);
           WGD->w0[cell_face] = WGD->w0[cell_face] + 0.5 * (Pot_w[cell_cent] + Pot_w[cell_cent + (nx - 1) * (ny - 1)]);

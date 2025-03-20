@@ -103,16 +103,16 @@ struct Fire::FireProperties Fire ::balbi(FuelProperties *fuel, float u_mid, floa
         int s_c = 0;
         int n_c = 0;
         int v_c = 0;
-        if (abs(x_slope) < 0.001 and abs(y_slope) < 0.001) {
+        if (abs(x_slope) < 0.001 && abs(y_slope) < 0.001) {
             s_c = 1;
         }
-        if (abs(x_norm) < 0.001 and abs(y_norm) < 0.001) {
+        if (abs(x_norm) < 0.001 && abs(y_norm) < 0.001) {
             n_c = 1;
         }
-        if (abs(u_mid) < 0.001 and abs(v_mid) < 0.001) {
+        if (abs(u_mid) < 0.001 && abs(v_mid) < 0.001) {
             v_c = 1;
         }
-        if (s_c == 1 or n_c == 1) {
+        if (s_c == 1 || n_c == 1) {
             phi = 0;
         } else {
             phi = acos((x_slope * x_norm + y_slope * y_norm) / (sqrt(x_slope * x_slope + y_slope * y_slope) * sqrt(x_norm * x_norm + y_norm * y_norm)));
@@ -120,7 +120,7 @@ struct Fire::FireProperties Fire ::balbi(FuelProperties *fuel, float u_mid, floa
 	      phi = 0;
 	    }
         }
-        if (v_c == 1 or n_c == 1) {
+        if (v_c == 1 || n_c == 1) {
             psi = 0;
         } else {
             psi = acos((u_mid * x_norm + v_mid * y_norm) / (sqrt(u_mid * u_mid + v_mid * v_mid) * sqrt(x_norm * x_norm + y_norm * y_norm)));
