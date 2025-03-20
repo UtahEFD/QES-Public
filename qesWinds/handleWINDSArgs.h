@@ -36,10 +36,7 @@
 #include "util/ArgumentParsing.h"
 #include "util/QESout.h"
 
-enum solverTypes : int { CPU_Type = 1,
-                         DYNAMIC_P = 2,
-                         Global_M = 3,
-                         Shared_M = 4 };
+#include "winds/SolverFactory.h"
 
 /**
  * @class WINDSArgs
@@ -84,7 +81,7 @@ public:
   std::string netCDFFileWksp = ""; /**< netCDFFile for working field used by Plume */
   std::string netCDFFileTurb = ""; /**< netCDFFile for turbulence field used by Plume */
   std::string filenameTerrain = ""; /**< Filename for terrain output */
-  
+
   std::string netCDFFileFire = ""; /**< netCDFFile for fire output */
 
   bool fireMode; /**< Boolean to treat WRF input in fire mode */

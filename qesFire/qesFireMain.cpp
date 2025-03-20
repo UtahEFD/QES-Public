@@ -32,25 +32,17 @@
 #include <cstdlib>
 #include <cstdio>
 #include <algorithm>
-// #include <boost/foreach.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
+#include <chrono>
+
 #include "util/calcTime.h"
-#include "plume/PLUMEInputData.h"
 #include "util/NetCDFInput.h"
-#include "plume/PLUMEGeneralData.h"
-
-#include "qes/Domain.h"
-
-// #include "plume/PlumeOutput.h"
-// #include "plume/PlumeOutputParticleData.h"
-#include "plume/ParticleOutput.h"
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
 #include "util/QESout.h"
 #include "util/QESNetCDFOutput.h"
-#include "handleQESArgs.h"
+
+#include "qes/Domain.h"
+
 #include "winds/WINDSInputData.h"
 #include "winds/WINDSGeneralData.h"
 #include "winds/WINDSOutputVisualization.h"
@@ -58,30 +50,19 @@
 #include "winds/TURBGeneralData.h"
 #include "winds/TURBOutput.h"
 #include "winds/Solver.h"
-#include "winds/Solver_CPU.h"
-#include "winds/Solver_CPU_RB.h"
-#ifdef HAS_CUDA
-// While we get this verified on CUDA 12.8, we will
-// replace use of it with the GlobalMemory solver.
-// #include "winds/Solver_GPU_DynamicParallelism.h"
-#include "winds/Solver_GPU_GlobalMemory.h"
-#include "winds/Solver_GPU_SharedMemory.h"
-#endif
+#include "winds/SolverFactory.h"
 #include "winds/Sensor.h"
+
+#include "plume/PLUMEInputData.h"
+#include "plume/PLUMEGeneralData.h"
+#include "plume/ParticleOutput.h"
+
 #include "fire/Fire.h"
 #include "fire/FIREOutput.h"
 #include "fire/SourceFire.h"
-#include <chrono>
 #include "fire/Smoke.h"
 
-// namespace pt = boost::property_tree;
-
-// using namespace boost::gregorian;
-// using namespace boost::posix_time;
-// using namespace netCDF;// plume
-// using namespace netCDF::exceptions;// plume
-
-Solver *setSolver(const int &, WINDSInputData *, WINDSGeneralData *);
+#include "handleQESArgs.h"
 
 int main(int argc, char *argv[])
 {
@@ -144,13 +125,9 @@ int main(int argc, char *argv[])
 
 
   // //////////////////////////////////////////
-  //
-  // Run the QES-Winds Solver
-  //
-  // //////////////////////////////////////////
-  Solver *solver = setSolver(arguments.solveType, WID, WGD);
-  if (!solver) { QESout::error("Invalid solver"); }
-
+  // Set the QES-Winds Solver
+  SolverFactory solverFactory;
+  Solver *solver = solverFactory.create(arguments.solveType, WGD->domain, WID->simParams->tolerance);
 
   /**
    * Time variables to track fire time and sensor timesteps
@@ -354,33 +331,4 @@ int main(int argc, char *argv[])
 
 
   exit(EXIT_SUCCESS);
-}
-
-Solver *setSolver(const int &solveType, WINDSInputData *WID, WINDSGeneralData *WGD)
-{
-  Solver *solver = nullptr;
-  if (solveType == CPU_Type) {
-#ifdef _OPENMP
-    solver = new Solver_CPU_RB(WGD->domain, WID->simParams->tolerance);
-#else
-    solver = new Solver_CPU(WGD->domain, WID->simParams->tolerance);
-#endif
-
-#ifdef HAS_CUDA
-  } else if (solveType == DYNAMIC_P) {
-      // While we get this verified on CUDA 12.8, we will
-      // replace use of it with the GlobalMemory solver.
-      // solver = new Solver_GPU_DynamicParallelism(WGD->domain,
-      // WID->simParams->tolerance);
-      std::cout << "The Global Memory GPU solver will be used in place of the Dynamic Parallelism GPU Solver for the time being." << std::endl;
-    solver = new Solver_GPU_GlobalMemory(WGD->domain, WID->simParams->tolerance);      
-  } else if (solveType == Global_M) {
-    solver = new Solver_GPU_GlobalMemory(WGD->domain, WID->simParams->tolerance);
-  } else if (solveType == Shared_M) {
-    solver = new Solver_GPU_SharedMemory(WGD->domain, WID->simParams->tolerance);
-#endif
-  } else {
-    QESout::error("Invalid solver type");
-  }
-  return solver;
 }

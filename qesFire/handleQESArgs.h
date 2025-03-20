@@ -25,7 +25,7 @@
  * You should have received a copy of the GNU General Public License
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
-/** 
+/**
  * @file handleQESArgs.h
  * @class QESArgs
  * @brief This class handles different commandline options and arguments
@@ -37,15 +37,12 @@
 
 #include <iostream>
 #include "util/ArgumentParsing.h"
-
 #include "util/QESout.h"
-#include "winds/WINDSGeneralData.h"
-#include "plume/PLUMEGeneralData.h"
 
-enum solverTypes : int { CPU_Type = 1,
-                         DYNAMIC_P = 2,
-                         Global_M = 3,
-                         Shared_M = 4 };
+#include "winds/SolverFactory.h"
+#include "winds/WINDSGeneralData.h"
+
+#include "plume/PLUMEGeneralData.h"
 
 class QESArgs : public ArgumentParsing
 {
@@ -55,12 +52,12 @@ public:
   ~QESArgs() {}
 
   /*
-     * Takes in the commandline arguments and places
-     * them into variables.
-     *
-     * @param argc -number of commandline options/arguments
-     * @param argv -array of strings for arguments
-     */
+   * Takes in the commandline arguments and places
+   * them into variables.
+   *
+   * @param argc -number of commandline options/arguments
+   * @param argv -array of strings for arguments
+   */
   void processArguments(int argc, char *argv[]);
 
 
@@ -97,7 +94,7 @@ public:
   bool plumeOutput, particleOutput;
 
   // output file variables created from the outputFolder and caseBaseName
-  //std::string outputEulerianFile;
+  // std::string outputEulerianFile;
   std::string outputPlumeFile;
   std::string outputParticleDataFile;
 

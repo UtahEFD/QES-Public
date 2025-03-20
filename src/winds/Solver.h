@@ -44,8 +44,6 @@
 
 #include "WINDSGeneralData.h"
 
-using namespace std;
-
 /**
  * @class Solver
  * @brief Declares and defines variables required for both solvers.

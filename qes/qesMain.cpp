@@ -47,24 +47,13 @@
 #include "winds/TURBOutput.h"
 
 #include "winds/Solver.h"
-#include "winds/Solver_CPU.h"
-#include "winds/Solver_CPU_RB.h"
-#ifdef HAS_CUDA
-// While we get this verified on CUDA 12.8, we will
-// replace use of it with the GlobalMemory solver.
-// #include "winds/Solver_GPU_DynamicParallelism.h"
-#include "winds/Solver_GPU_GlobalMemory.h"
-#include "winds/Solver_GPU_SharedMemory.h"
-#endif
+#include "winds/SolverFactory.h"
 
 #include "winds/Sensor.h"
 
 // #include "Args.hpp"
 #include "plume/PLUMEInputData.h"
 #include "plume/PLUMEGeneralData.h"
-
-
-Solver *setSolver(const int& , WINDSInputData *, WINDSGeneralData *);
 
 int main(int argc, char *argv[])
 {
@@ -141,8 +130,8 @@ int main(int argc, char *argv[])
   }
 
   // Set the QES-Winds Solver
-  Solver *solver = setSolver(arguments.solveType, WID, WGD);
-  if (!solver) { QESout::error("Invalid solver"); }
+  SolverFactory solverFactory;
+  Solver *solver = solverFactory.create(arguments.solveType, WGD->domain, WID->simParams->tolerance);
 
   for (int index = 0; index < WGD->totalTimeIncrements; index++) {
     // print time progress (time stamp and percentage)
@@ -193,33 +182,4 @@ int main(int argc, char *argv[])
   delete PGD;
 
   exit(EXIT_SUCCESS);
-}
-
-Solver *setSolver(const int &solveType, WINDSInputData *WID, WINDSGeneralData *WGD)
-{
-  Solver *solver = nullptr;
-  if (solveType == CPU_Type) {
-#ifdef _OPENMP
-    solver = new Solver_CPU_RB(WGD->domain, WID->simParams->tolerance);
-#else
-    solver = new Solver_CPU(WGD->domain, WID->simParams->tolerance);
-#endif
-
-#ifdef HAS_CUDA
-  } else if (solveType == DYNAMIC_P) {
-      // While we get this verified on CUDA 12.8, we will
-      // replace use of it with the GlobalMemory solver.
-      // solver = new Solver_GPU_DynamicParallelism(WGD->domain,
-      // WID->simParams->tolerance);
-      std::cout << "The Global Memory GPU solver will be used in place of the Dynamic Parallelism GPU Solver for the time being." << std::endl;
-      solver = new Solver_GPU_GlobalMemory(WGD->domain, WID->simParams->tolerance);      
-  } else if (solveType == Global_M) {
-    solver = new Solver_GPU_GlobalMemory(WGD->domain, WID->simParams->tolerance);
-  } else if (solveType == Shared_M) {
-    solver = new Solver_GPU_SharedMemory(WGD->domain, WID->simParams->tolerance);
-#endif
-  } else {
-    QESout::error("Invalid solver type");
-  }
-  return solver;
 }

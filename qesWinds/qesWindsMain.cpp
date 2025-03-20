@@ -49,15 +49,8 @@
 #include "winds/TURBOutput.h"
 
 #include "winds/Solver.h"
-#include "winds/Solver_CPU.h"
-#include "winds/Solver_CPU_RB.h"
-#ifdef HAS_CUDA
-// While we get this verified on CUDA 12.8, we will
-// replace use of it with the GlobalMemory solver.
-// #include "winds/Solver_GPU_DynamicParallelism.h"
-#include "winds/Solver_GPU_GlobalMemory.h"
-#include "winds/Solver_GPU_SharedMemory.h"
-#endif
+#include "winds/SolverFactory.h"
+
 #include "winds/Sensor.h"
 
 int main(int argc, char *argv[])
@@ -137,35 +130,9 @@ int main(int argc, char *argv[])
     outputVec.push_back(new TURBOutput(TGD, arguments.netCDFFileTurb));
   }
 
-  // //////////////////////////////////////////
-  //
-  // Run the QES-Winds Solver
-  //
-  // //////////////////////////////////////////
-  Solver *solver = nullptr;
-  if (arguments.solveType == CPU_Type) {
-#ifdef _OPENMP
-    solver = new Solver_CPU_RB(WGD->domain, WID->simParams->tolerance);
-#else
-    solver = new Solver_CPU(WGD->domain, WID->simParams->tolerance);
-#endif
-
-#ifdef HAS_CUDA
-  } else if (arguments.solveType == DYNAMIC_P) {
-      // While we get this verified on CUDA 12.8, we will
-      // replace use of it with the GlobalMemory solver.
-      // solver = new Solver_GPU_DynamicParallelism(WGD->domain,
-      // WID->simParams->tolerance);
-      std::cout << "The Global Memory GPU solver will be used in place of the Dynamic Parallelism GPU Solver for the time being." << std::endl;
-    solver = new Solver_GPU_GlobalMemory(WGD->domain, WID->simParams->tolerance);      
-  } else if (arguments.solveType == Global_M) {
-    solver = new Solver_GPU_GlobalMemory(WGD->domain, WID->simParams->tolerance);
-  } else if (arguments.solveType == Shared_M) {
-    solver = new Solver_GPU_SharedMemory(WGD->domain, WID->simParams->tolerance);
-#endif
-  } else {
-    QESout::error("Invalid solver type");
-  }
+  // Set the QES-Winds Solver
+  SolverFactory solverFactory;
+  Solver *solver = solverFactory.create(arguments.solveType, WGD->domain, WID->simParams->tolerance);
 
   int numIterations = 1;
   int tempMaxIter = WID->simParams->maxIterations;

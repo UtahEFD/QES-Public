@@ -45,11 +45,6 @@
 
 #include "Solver.h"
 
-using std::cerr;
-using std::endl;
-using std::vector;
-using std::cout;
-
 // duplication of this macro
 #define CELL(i, j, k, w) ((i) + (j) * (nx + (w)) + (k) * (nx + (w)) * (ny + (w)))
 

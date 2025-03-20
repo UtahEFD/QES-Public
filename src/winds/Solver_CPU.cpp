@@ -32,11 +32,6 @@
 
 #include "Solver_CPU.h"
 
-using std::cerr;
-using std::endl;
-using std::vector;
-using std::cout;
-
 
 /** :document this:
  * Start by writing a one sentence description here
