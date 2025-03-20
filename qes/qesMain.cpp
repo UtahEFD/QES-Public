@@ -50,7 +50,9 @@
 #include "winds/Solver_CPU.h"
 #include "winds/Solver_CPU_RB.h"
 #ifdef HAS_CUDA
-#include "winds/Solver_GPU_DynamicParallelism.h"
+// While we get this verified on CUDA 12.8, we will
+// replace use of it with the GlobalMemory solver.
+// #include "winds/Solver_GPU_DynamicParallelism.h"
 #include "winds/Solver_GPU_GlobalMemory.h"
 #include "winds/Solver_GPU_SharedMemory.h"
 #endif
@@ -205,7 +207,12 @@ Solver *setSolver(const int &solveType, WINDSInputData *WID, WINDSGeneralData *W
 
 #ifdef HAS_CUDA
   } else if (solveType == DYNAMIC_P) {
-    solver = new Solver_GPU_DynamicParallelism(WGD->domain, WID->simParams->tolerance);
+      // While we get this verified on CUDA 12.8, we will
+      // replace use of it with the GlobalMemory solver.
+      // solver = new Solver_GPU_DynamicParallelism(WGD->domain,
+      // WID->simParams->tolerance);
+      std::cout << "The Global Memory GPU solver will be used in place of the Dynamic Parallelism GPU Solver for the time being." << std::endl;
+      solver = new Solver_GPU_GlobalMemory(WGD->domain, WID->simParams->tolerance);      
   } else if (solveType == Global_M) {
     solver = new Solver_GPU_GlobalMemory(WGD->domain, WID->simParams->tolerance);
   } else if (solveType == Shared_M) {

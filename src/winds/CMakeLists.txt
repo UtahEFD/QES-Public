@@ -55,7 +55,9 @@ ADD_LIBRARY(qeswindscore ${qesWindCoreSources})
 IF ($CACHE{HAS_CUDA_SUPPORT})
   MESSAGE(STATUS "CUDA Toolkit Include Directories: ${CUDAToolkit_INCLUDE_DIRS}")
   SET(qesWindGPUSources
-    Solver_GPU_DynamicParallelism.cu
+    # While we get this verified on CUDA 12.8, we will
+    # replace use of it with the GlobalMemory solver.
+    #    Solver_GPU_DynamicParallelism.cu
     Solver_GPU_GlobalMemory.cu
     Solver_GPU_SharedMemory.cu
     WINDSGeneralData.cu
