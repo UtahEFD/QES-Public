@@ -118,9 +118,10 @@ FuelRead::FuelRead(const std::string &filename,
         // of count array will be
         // equal to (max + 1).
         int t = max + 1;
-        int *count = new int[t];
-        for (int m = 0; m < t; m++)
-          count[m] = 0;
+	std::vector<int> count(t, 0);
+        // int *count = new int[t];
+        // for (int m = 0; m < t; m++)
+	// count[m] = 0;
 
         // Store count of each element
         // of input array
@@ -136,9 +137,6 @@ FuelRead::FuelRead(const std::string &filename,
             mode = p;
           }
         }
-
-	// free that count array
-	delete [] count;
 
         rasterData = mode;
       } else {
