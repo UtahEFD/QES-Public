@@ -37,6 +37,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+#include <cstdint>
 #include <vector>
 #include <math.h>
 
