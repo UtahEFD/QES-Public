@@ -9,7 +9,7 @@
   <cellSize> 100.0 100.0 5.0 </cellSize> 				<!-- Mesh resolution (meters)-->
   <verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-costum grid)-->
   
-  <totalTimeIncrements> 2 </totalTimeIncrements> 			<!-- Number of time steps-->
+  <totalTimeIncrements> 233 </totalTimeIncrements> 			<!-- Number of time steps-->
   <rooftopFlag> 0 </rooftopFlag> 					<!-- Rooftop flag (0-none, 1-log profile (default), 2-vortex) -->
   <upwindCavityFlag> 0 </upwindCavityFlag> 			<!-- Upwind cavity flag (0-none, 1-Rockle, 2-MVP (default), 3-HMVP) -->
   <streetCanyonFlag> 0 </streetCanyonFlag> 			<!-- Street canyon flag (0-none, 1-Roeckle w/ Fackrel (default)) -->
