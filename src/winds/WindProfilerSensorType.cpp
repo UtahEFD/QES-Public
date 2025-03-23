@@ -45,10 +45,10 @@
 #include <chrono>
 #include <limits>
 
-#include "winds/WINDSInputData.h"
-#include "winds/WINDSGeneralData.h"
+#include "WINDSInputData.h"
+#include "WINDSGeneralData.h"
 #include "WindProfilerBarnCPU.h"
-#include "winds/WindProfilerBarnGPU.h"
+#include "WindProfilerBarnGPU.h"
 #include "WindProfilerHRRR.h"
 
 
@@ -78,25 +78,38 @@ void WindProfilerSensorType::sensorsProfiles(const WINDSInputData *WID, WINDSGen
   // FM TEMPORARY!!!!!!!!!!!!!
   time_id = WGD->time_id;
 
-
-  if (WID->hrrrInput->interpolationScheme != 2){
-    // loop to adjust the number of sensors have information for the running timestep of the code
-    for (auto i = 0u; i < WID->metParams->sensors.size(); i++) {
-      if (time_id[i] == -1 || WGD->hrrrInputData->hrrrSensorUTMx[i] < WID->simParams->UTMx ||
-	  WGD->hrrrInputData->hrrrSensorUTMx[i] > WID->simParams->UTMx + (WGD->nx-1)*WGD->dx ||
-	  WGD->hrrrInputData->hrrrSensorUTMy[i] < WID->simParams->UTMy || WGD->hrrrInputData->hrrrSensorUTMy[i] > WID->simParams->UTMy + (WGD->ny-1)*WGD->dy)     {
-	num_sites -= 1;
+  if (WID->hrrrInput){
+    if (WID->hrrrInput->interpolationScheme != 2){
+      // loop to adjust the number of sensors have information for the running timestep of the code
+      for (auto i = 0u; i < WID->metParams->sensors.size(); i++) {
+	if (time_id[i] == -1 || WGD->hrrrInputData->hrrrSensorUTMx[i] < WID->simParams->UTMx ||
+	    WGD->hrrrInputData->hrrrSensorUTMx[i] > WID->simParams->UTMx + (WGD->nx-1)*WGD->dx ||
+	    WGD->hrrrInputData->hrrrSensorUTMy[i] < WID->simParams->UTMy || WGD->hrrrInputData->hrrrSensorUTMy[i] > WID->simParams->UTMy + (WGD->ny-1)*WGD->dy)     {
+	  num_sites -= 1;
+	}
       }
-    }
 
-    //std::vector<int> available_sensor_id;
-    available_sensor_id.clear();
-    for (auto i = 0u; i < WID->metParams->sensors.size(); i++) {
-      if (time_id[i] != -1 && WGD->hrrrInputData->hrrrSensorUTMx[i] >= WID->simParams->UTMx &&
-	  WGD->hrrrInputData->hrrrSensorUTMx[i] <= WID->simParams->UTMx + (WGD->nx-1)*WGD->dx &&
-	  WGD->hrrrInputData->hrrrSensorUTMy[i] >= WID->simParams->UTMy && WGD->hrrrInputData->hrrrSensorUTMy[i] <= WID->simParams->UTMy + (WGD->ny-1)*WGD->dy)   {
-	available_sensor_id.push_back(i);
+      available_sensor_id.clear();
+      for (auto i = 0u; i < WID->metParams->sensors.size(); i++) {
+	if (time_id[i] != -1 && WGD->hrrrInputData->hrrrSensorUTMx[i] >= WID->simParams->UTMx &&
+	    WGD->hrrrInputData->hrrrSensorUTMx[i] <= WID->simParams->UTMx + (WGD->nx-1)*WGD->dx &&
+	    WGD->hrrrInputData->hrrrSensorUTMy[i] >= WID->simParams->UTMy && WGD->hrrrInputData->hrrrSensorUTMy[i] <= WID->simParams->UTMy + (WGD->ny-1)*WGD->dy)   {
+	  available_sensor_id.push_back(i);
+	}
       }
+    }else{
+      // loop to adjust the number of sensors have information for the running timestep of the code
+      for (auto i = 0u; i < WID->metParams->sensors.size(); i++) {
+	if (time_id[i] == -1){
+	  num_sites -= 1;
+	}
+      }
+      available_sensor_id.clear();
+      for (auto i = 0u; i < WID->metParams->sensors.size(); i++) {
+	if (time_id[i] != -1){
+	  available_sensor_id.push_back(i);
+	}
+      } 
     }
   }else{
     // loop to adjust the number of sensors have information for the running timestep of the code
@@ -114,7 +127,9 @@ void WindProfilerSensorType::sensorsProfiles(const WINDSInputData *WID, WINDSGen
   }
   
   if (available_sensor_id.size() != 0){
-    WGD->hrrrInputData->readAloftData(time_id[available_sensor_id[0]]);
+    if (WID->hrrrInput){
+      WGD->hrrrInputData->readAloftData(time_id[available_sensor_id[0]]);
+    }
   }else{
     std::cout << "Warning!!!! There is no available data for sensor at this timestep" << std::endl;
     return;
@@ -146,11 +161,13 @@ void WindProfilerSensorType::sensorsProfiles(const WINDSInputData *WID, WINDSGen
       continue;
     }
 
-    if (WID->hrrrInput->interpolationScheme != 2){
-      if (WGD->hrrrInputData->hrrrSensorUTMx[i] < WID->simParams->UTMx || WGD->hrrrInputData->hrrrSensorUTMx[i] > WID->simParams->UTMx + (WGD->nx-1)*WGD->dx ||
-	  WGD->hrrrInputData->hrrrSensorUTMy[i] < WID->simParams->UTMy || WGD->hrrrInputData->hrrrSensorUTMy[i] > WID->simParams->UTMy + (WGD->ny-1)*WGD->dy) {
-	count += 1;
-	continue;
+    if (WID->hrrrInput){
+      if (WID->hrrrInput->interpolationScheme != 2){
+	if (WGD->hrrrInputData->hrrrSensorUTMx[i] < WID->simParams->UTMx || WGD->hrrrInputData->hrrrSensorUTMx[i] > WID->simParams->UTMx + (WGD->nx-1)*WGD->dx ||
+	    WGD->hrrrInputData->hrrrSensorUTMy[i] < WID->simParams->UTMy || WGD->hrrrInputData->hrrrSensorUTMy[i] > WID->simParams->UTMy + (WGD->ny-1)*WGD->dy) {
+	  count += 1;
+	  continue;
+	}
       }
     }
     
@@ -205,26 +222,29 @@ void WindProfilerSensorType::sensorsProfiles(const WINDSInputData *WID, WINDSGen
     site_j[idx] = WID->metParams->sensors[i]->site_ycoord / WGD->dy;
     site_id[idx] = site_i[idx] + site_j[idx] * WGD->nx;
 
-    if ( site_i[idx] >= 0 && site_i[idx] < WGD->nx-1 && site_j[idx] >= 0 && site_j[idx] < WGD->ny-1){
-      site_id[idx] = site_id[idx];
-    }else if (site_i[idx] < 0 && site_j[idx] >= 0 && site_j[idx] < WGD->ny-1 ){
-      site_id[idx] = site_j[idx] * WGD->nx;
-    }else if (site_i[idx] < 0 && site_j[idx] < 0 ){
-      site_id[idx] = 0;
-    }else if (site_i[idx] < 0 && site_j[idx] >= WGD->ny-1 ){
-      site_id[idx] = (WGD->ny - 2) * WGD->nx;
-    }else if (site_i[idx] >= WGD->nx-1 && site_j[idx] >= 0 && site_j[idx] < WGD->ny-1 ){
-      site_id[idx] = WGD->nx - 2 + site_j[idx] * WGD->nx;
-    }else if (site_i[idx] >= 0 && site_i[idx] < WGD->nx-1 && site_j[idx] < 0 ){
-      site_id[idx] = site_i[idx];
-    }else if (site_i[idx] >= 0 && site_i[idx] < WGD->nx-1 && site_j[idx] >= WGD->ny-1 ){
-      site_id[idx] = site_i[idx] + (WGD->ny - 2) * WGD->nx;
-    }else if (site_i[idx] >= WGD->nx-1 && site_j[idx] < 0 ){
-      site_id[idx] = WGD->nx - 2;
-    }else if (site_i[idx] >= WGD->nx-1 && site_j[idx] >= WGD->ny-1 ){
-      site_id[idx] = WGD->nx - 2 + (WGD->ny - 2) * WGD->nx;
-    }else{
-      site_id[idx] = 0;
+    // Find which HRRR sensors are inside the domain
+    if (WID->hrrrInput){
+      if ( site_i[idx] >= 0 && site_i[idx] < WGD->nx-1 && site_j[idx] >= 0 && site_j[idx] < WGD->ny-1){
+	site_id[idx] = site_id[idx];
+      }else if (site_i[idx] < 0 && site_j[idx] >= 0 && site_j[idx] < WGD->ny-1 ){
+	site_id[idx] = site_j[idx] * WGD->nx;
+      }else if (site_i[idx] < 0 && site_j[idx] < 0 ){
+	site_id[idx] = 0;
+      }else if (site_i[idx] < 0 && site_j[idx] >= WGD->ny-1 ){
+	site_id[idx] = (WGD->ny - 2) * WGD->nx;
+      }else if (site_i[idx] >= WGD->nx-1 && site_j[idx] >= 0 && site_j[idx] < WGD->ny-1 ){
+	site_id[idx] = WGD->nx - 2 + site_j[idx] * WGD->nx;
+      }else if (site_i[idx] >= 0 && site_i[idx] < WGD->nx-1 && site_j[idx] < 0 ){
+	site_id[idx] = site_i[idx];
+      }else if (site_i[idx] >= 0 && site_i[idx] < WGD->nx-1 && site_j[idx] >= WGD->ny-1 ){
+	site_id[idx] = site_i[idx] + (WGD->ny - 2) * WGD->nx;
+      }else if (site_i[idx] >= WGD->nx-1 && site_j[idx] < 0 ){
+	site_id[idx] = WGD->nx - 2;
+      }else if (site_i[idx] >= WGD->nx-1 && site_j[idx] >= WGD->ny-1 ){
+	site_id[idx] = WGD->nx - 2 + (WGD->ny - 2) * WGD->nx;
+      }else{
+	site_id[idx] = 0;
+      }
     }
 
     z_terrain = WGD->z_face[WGD->terrain_face_id[site_id[idx]]];
@@ -233,36 +253,39 @@ void WindProfilerSensorType::sensorsProfiles(const WINDSInputData *WID, WINDSGen
 
     if (ts->site_one_overL > 0.0) {
       // Stable boundary layer
-      if (WID->hrrrInput && WGD->hrrrInputData->hrrrPBLHeight[WGD->hrrrInputData->hrrrSensorID[i]] > 100){ // if HRRR file available
+      if (WID->hrrrInput && WGD->hrrrInputData->hrrrPBLHeight[WGD->hrrrInputData->hrrrSensorID[i]] > 200){ // if HRRR file available
 	abl_height.push_back(WGD->hrrrInputData->hrrrPBLHeight[WGD->hrrrInputData->hrrrSensorID[i]]); // read in PBL height
       }else{
 	abl_height.push_back(200);
       }
     } else if (ts->site_one_overL < 0.0) {
       // Unstable boundary layer
-      if (WID->hrrrInput && WGD->hrrrInputData->hrrrPBLHeight[WGD->hrrrInputData->hrrrSensorID[i]] > 500){ // if HRRR file available
+      if (WID->hrrrInput && WGD->hrrrInputData->hrrrPBLHeight[WGD->hrrrInputData->hrrrSensorID[i]] > 1000){ // if HRRR file available
 	abl_height.push_back(WGD->hrrrInputData->hrrrPBLHeight[WGD->hrrrInputData->hrrrSensorID[i]]); // read in PBL height
       }else{
 	abl_height.push_back(1000);
       }
     } else {
       // Neutral boundary layer
-      if (WID->hrrrInput && WGD->hrrrInputData->hrrrPBLHeight[WGD->hrrrInputData->hrrrSensorID[i]] > 50){ // if HRRR file available
+      if (WID->hrrrInput && WGD->hrrrInputData->hrrrPBLHeight[WGD->hrrrInputData->hrrrSensorID[i]] > 100){ // if HRRR file available
 	abl_height.push_back(WGD->hrrrInputData->hrrrPBLHeight[WGD->hrrrInputData->hrrrSensorID[i]]); // read in PBL height
       }else{
 	abl_height.push_back(100);
       }
     }
 
-    if (seaLevelBaseHeight + WGD->terrain[site_id[idx]] + abl_height[idx] < 762 ){
-      WGD->hrrrInputData->hrrrSpeedTop[i] = WGD->hrrrInputData->hrrrSpeed925[i];
-      WGD->hrrrInputData->hrrrDirTop[i] = WGD->hrrrInputData->hrrrDir925[i];
-    }else if (seaLevelBaseHeight + WGD->terrain[site_id[idx]] + abl_height[idx] < 1450 && seaLevelBaseHeight + WGD->terrain[site_id[idx]] + abl_height[idx] >= 762){
-      WGD->hrrrInputData->hrrrSpeedTop[i] = WGD->hrrrInputData->hrrrSpeed850[i];
-      WGD->hrrrInputData->hrrrDirTop[i] = WGD->hrrrInputData->hrrrDir850[i];
-    }else{
-      WGD->hrrrInputData->hrrrSpeedTop[i] = WGD->hrrrInputData->hrrrSpeed700[i];
-      WGD->hrrrInputData->hrrrDirTop[i] = WGD->hrrrInputData->hrrrDir700[i];
+    if (WID->hrrrInput){
+      // If the PBL height at the sensor location (above the sea level) is less than the 925 mb pressure level
+      if (seaLevelBaseHeight + WGD->terrain[site_id[idx]] + abl_height[idx] < 762 ){
+	WGD->hrrrInputData->hrrrSpeedTop[i] = WGD->hrrrInputData->hrrrSpeed925[i];
+	WGD->hrrrInputData->hrrrDirTop[i] = WGD->hrrrInputData->hrrrDir925[i];
+      }else if (seaLevelBaseHeight + WGD->terrain[site_id[idx]] + abl_height[idx] < 1450 && seaLevelBaseHeight + WGD->terrain[site_id[idx]] + abl_height[idx] >= 762){// If the PBL height at the sensor location (above the sea level) is less than the 850 mb and higher than 925 mb pressure level
+	WGD->hrrrInputData->hrrrSpeedTop[i] = WGD->hrrrInputData->hrrrSpeed850[i];
+	WGD->hrrrInputData->hrrrDirTop[i] = WGD->hrrrInputData->hrrrDir850[i];
+      }else{// If the PBL height at the sensor location (above the sea level) is less than the 700 mb and higher than 850 mb pressure level
+	WGD->hrrrInputData->hrrrSpeedTop[i] = WGD->hrrrInputData->hrrrSpeed700[i];
+	WGD->hrrrInputData->hrrrDirTop[i] = WGD->hrrrInputData->hrrrDir700[i];
+      }
     }
 
     size_t id = 1;
@@ -291,18 +314,28 @@ void WindProfilerSensorType::sensorsProfiles(const WINDSInputData *WID, WINDSGen
     if (ts->site_blayer_flag == 1) {
       float u_surf, v_surf, u_abl, v_abl;
       float wind_speed, wind_dir;
+      float psi_z0, x_temp_z0;
       for (auto k = WGD->terrain_face_id[site_id[idx]]; k < WGD->nz - 1; ++k) {
         if (k == WGD->terrain_face_id[site_id[idx]]) {
           if (ts->site_z_ref[0] * ts->site_one_overL >= 0) {
             psi = 4.7 * ts->site_z_ref[0] * ts->site_one_overL;
+	    psi_z0 = 4.7 * ts->site_z0 * ts->site_one_overL;
           } else {
             x_temp = pow((1.0 - 15.0 * ts->site_z_ref[0] * ts->site_one_overL), 0.25);
+	    x_temp_z0 = pow((1.0 - 15.0 * ts->site_z0 * ts->site_one_overL), 0.25);
             psi = -2.0 * log(0.5 * (1.0 + x_temp)) - log(0.5 * (1.0 + pow(x_temp, 2.0))) + 2.0 * atan(x_temp) - 0.5 * M_PI;
+	    psi_z0 = -2.0 * log(0.5 * (1.0 + x_temp_z0)) - log(0.5 * (1.0 + pow(x_temp_z0, 2.0))) + 2.0 * atan(x_temp_z0) - 0.5 * M_PI;
           }
-          u_star = ts->site_U_ref[0] * vk / (log((ts->site_z_ref[0] + ts->site_z0) / ts->site_z0) + psi);
+	  u_star = ts->site_U_ref[0] * vk / (log((ts->site_z_ref[0] + ts->site_z0) / ts->site_z0) + psi + psi_z0);
+	    /*if (idx == 23 || idx == 316){
+	    std::cout << "u_star:   " << u_star << std::endl;
+	    std::cout << "psi_z0:   " << psi_z0 << std::endl;
+	    std::cout << "psi:   " << psi << std::endl;
+	    std::cout << "log((ts->site_z_ref[0] + ts->site_z0) / ts->site_z0) + psi + psi_z0:   " << (log((ts->site_z_ref[0] + ts->site_z0) / ts->site_z0) + psi + psi_z0) << std::endl;
+	    }*/
         }
 
-        if ((WGD->z[k] - z_terrain) * ts->site_one_overL >= 0 && WID->hrrrInput != 0) {// Stable or Neutral BL
+        if ((WGD->z[k] - z_terrain) * ts->site_one_overL > 0 && WID->hrrrInput != 0) {// Stable BL
 	  surf_layer_height = asl_percent * abl_height[idx];
 	  
 	  if (surf_layer_height >= ts->site_z_ref[0]){
@@ -310,8 +343,8 @@ void WindProfilerSensorType::sensorsProfiles(const WINDSInputData *WID, WINDSGen
 	      continue;
 	    }else if ( (WGD->z[k] - z_terrain) <= surf_layer_height ) {// If height (above ground) is less than or equal to ASL height
 	      psi = 4.7 * (WGD->z[k] - z_terrain) * ts->site_one_overL;
-	      u_prof[idx * WGD->nz + k] = (cos(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - z_terrain) + ts->site_z0) / ts->site_z0) + psi);
-	      v_prof[idx * WGD->nz + k] = (sin(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - z_terrain) + ts->site_z0) / ts->site_z0) + psi);
+	      u_prof[idx * WGD->nz + k] = (cos(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - z_terrain) + ts->site_z0) / ts->site_z0) + psi + psi_z0);
+	      v_prof[idx * WGD->nz + k] = (sin(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - z_terrain) + ts->site_z0) / ts->site_z0) + psi + psi_z0);
 	      u_surf = u_prof[idx * WGD->nz + k];
 	      v_surf = v_prof[idx * WGD->nz + k];
 	    }else if ( (WGD->z[k] - z_terrain) > surf_layer_height && (WGD->z[k] - z_terrain) <= abl_height[idx]) {// If height (above ground) is greater than ASL height or less than ABL height
@@ -328,8 +361,8 @@ void WindProfilerSensorType::sensorsProfiles(const WINDSInputData *WID, WINDSGen
 	      continue;
 	    }else if ( (WGD->z[k] - z_terrain) <= ts->site_z_ref[0]) {// If height (above ground) is less than or equal to ASL height
 	      psi = 4.7 * (WGD->z[k] - z_terrain) * ts->site_one_overL;
-	      u_prof[idx * WGD->nz + k] = (cos(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - z_terrain) + ts->site_z0) / ts->site_z0) + psi);
-	      v_prof[idx * WGD->nz + k] = (sin(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - z_terrain) + ts->site_z0) / ts->site_z0) + psi);
+	      u_prof[idx * WGD->nz + k] = (cos(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - z_terrain) + ts->site_z0) / ts->site_z0) + psi + psi_z0);
+	      v_prof[idx * WGD->nz + k] = (sin(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - z_terrain) + ts->site_z0) / ts->site_z0) + psi + psi_z0);
 	    }else if ( (WGD->z[k] - z_terrain) > ts->site_z_ref[0] && (WGD->z[k] - z_terrain) <= abl_height[idx]) {// If height (above ground) is greater than ASL height or less than ABL height
 	      u_prof[idx * WGD->nz + k] = ((WGD->z[k] - z_terrain - ts->site_z_ref[0])*(WGD->hrrrInputData->hrrrSpeedTop[i]*cos(WGD->hrrrInputData->hrrrDirTop[i]*M_PI/180.0) - ts->site_U_ref[0]*cos(site_theta[idx]))/(abl_height[idx] - ts->site_z_ref[0])) + ts->site_U_ref[0]*cos(site_theta[idx]);
 	      v_prof[idx * WGD->nz + k] = ((WGD->z[k] - z_terrain - ts->site_z_ref[0])*(WGD->hrrrInputData->hrrrSpeedTop[i]*sin(WGD->hrrrInputData->hrrrDirTop[i]*M_PI/180.0) - ts->site_U_ref[0]*sin(site_theta[idx]))/(abl_height[idx] - ts->site_z_ref[0])) + ts->site_U_ref[0]*sin(site_theta[idx]);
@@ -340,16 +373,35 @@ void WindProfilerSensorType::sensorsProfiles(const WINDSInputData *WID, WINDSGen
 	      v_prof[idx * WGD->nz + k] = v_abl;
 	    }
 	  }
+	}else if ((WGD->z[k] - z_terrain) * ts->site_one_overL == 0 && WID->hrrrInput != 0) {// Neutral BL
+	  psi = 4.7 * (WGD->z[k] - z_terrain) * ts->site_one_overL;
+	  u_prof[idx * WGD->nz + k] = (cos(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - z_terrain) + ts->site_z0) / ts->site_z0) + psi + psi_z0);
+	  v_prof[idx * WGD->nz + k] = (sin(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - z_terrain) + ts->site_z0) / ts->site_z0) + psi + psi_z0);
         }else if ((WGD->z[k] - z_terrain) * ts->site_one_overL >= 0 && WID->hrrrInput == 0){
 	  psi = 4.7 * (WGD->z[k] - z_terrain) * ts->site_one_overL;
-	  u_prof[idx * WGD->nz + k] = (cos(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - z_terrain) + ts->site_z0) / ts->site_z0) + psi);
-	  v_prof[idx * WGD->nz + k] = (sin(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - z_terrain) + ts->site_z0) / ts->site_z0) + psi);
+	  u_prof[idx * WGD->nz + k] = (cos(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - z_terrain) + ts->site_z0) / ts->site_z0) + psi + psi_z0);
+	  v_prof[idx * WGD->nz + k] = (sin(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - z_terrain) + ts->site_z0) / ts->site_z0) + psi + psi_z0);
 	}else{// Unstable BL
           x_temp = pow((1.0 - 15.0 * (WGD->z[k] - z_terrain) * ts->site_one_overL), 0.25);
           psi = -2.0 * log(0.5 * (1.0 + x_temp)) - log(0.5 * (1.0 + pow(x_temp, 2.0))) + 2.0 * atan(x_temp) - 0.5 * M_PI;
-	  u_prof[idx * WGD->nz + k] = (cos(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - z_terrain) + ts->site_z0) / ts->site_z0) + psi);
-	  v_prof[idx * WGD->nz + k] = (sin(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - z_terrain) + ts->site_z0) / ts->site_z0) + psi);
-        }	
+	  u_prof[idx * WGD->nz + k] = (cos(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - z_terrain) + ts->site_z0) / ts->site_z0) + psi + psi_z0);
+	  v_prof[idx * WGD->nz + k] = (sin(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - z_terrain) + ts->site_z0) / ts->site_z0) + psi + psi_z0);
+        }
+	// Free convection limit
+	if (abs(u_star) >= 2*ts->site_U_ref[0]){
+	  u_prof[idx * WGD->nz + k] = (cos(site_theta[idx]) * ts->site_U_ref[0]);
+	  v_prof[idx * WGD->nz + k] = (sin(site_theta[idx]) * ts->site_U_ref[0]);
+	}
+	/*if (idx == 23 || idx == 316){
+	    std::cout << "k:   " << k << std::endl;
+	    std::cout << "ts->site_z0:   " << ts->site_z0 << std::endl;
+	    std::cout << "site_theta[idx]:   " << site_theta[idx] << std::endl;
+	    std::cout << "ts->site_one_overL:   " << ts->site_one_overL << std::endl;
+	    std::cout << "u_star:   " << u_star << std::endl;
+	    std::cout << "ts->site_U_ref[0]:   " << ts->site_U_ref[0] << std::endl;
+	    std::cout << "u_prof[idx * WGD->nz + k]:   " << u_prof[idx * WGD->nz + k] << std::endl;
+	    std::cout << "v_prof[idx * WGD->nz + k]:   " << v_prof[idx * WGD->nz + k] << std::endl;
+	    }*/
       }
     }
 
@@ -508,16 +560,16 @@ void WindProfilerSensorType::singleSensorInterpolation(WINDSGeneralData *WGD)
 {
   for (auto k = 0; k < WGD->nz - 1; ++k) {
     //Set the modified k-index (sensor)
-    int k_mod_sens = k + WGD->terrain_face_id[site_id[0]] - 1;
+    int k_mod_sens = k + WGD->terrain_face_id[site_id[0]];
     for (auto j = 0; j < WGD->ny; ++j) {
       for (auto i = 0; i < WGD->nx; ++i) {
 
         int id = i + j * WGD->nx;//Index in horizontal surface
         int k_mod(0);
         //If height added to top of terrain is still inside QES domain
-        if (k + WGD->terrain_face_id[id] - 1 < WGD->nz) {
+        if (k + WGD->terrain_face_id[id] < WGD->nz) {
           //Set the modified k-index (current location)
-          k_mod = k + WGD->terrain_face_id[id] - 1;
+          k_mod = k + WGD->terrain_face_id[id];
         } else {
           continue;
         }
@@ -534,7 +586,7 @@ void WindProfilerSensorType::singleSensorInterpolation(WINDSGeneralData *WGD)
           WGD->u0[icell_face] = u_prof[k_mod_sens];
           WGD->v0[icell_face] = v_prof[k_mod_sens];
         }// If sum of z index and the terrain index at the sensor location is outside the domain
-        else if (k + WGD->terrain_face_id[site_id[0]] - 1 > WGD->nz - 2) {
+        else if (k + WGD->terrain_face_id[site_id[0]] > WGD->nz - 2) {
           WGD->u0[icell_face] = u_prof[WGD->nz - 2];
           WGD->v0[icell_face] = v_prof[WGD->nz - 2];
         }// If height (above ground) is greater than ASL height and modified index is inside the domain

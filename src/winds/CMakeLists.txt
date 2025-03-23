@@ -31,6 +31,9 @@ SET( qesWindCoreSources
   TURBWallTerrain.cpp
   WindProfilerWRF.cpp
   WindProfilerBarnGPU.cpp
+  WindProfilerSensorType.cpp
+  WindProfilerBarnCPU.cpp
+  WindProfilerHRRR.cpp
   WINDSInputData.h
   WINDSGeneralData.cpp WINDSGeneralData.h
   WINDSOutputVisualization.cpp

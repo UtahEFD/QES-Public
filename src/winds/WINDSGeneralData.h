@@ -43,11 +43,11 @@
 
 #include "WINDSInputData.h"
 
-#include "util/WindProfilerType.h"
+#include "WindProfilerType.h"
 #include "WindProfilerWRF.h"
-#include "util/WindProfilerBarnCPU.h"
+#include "WindProfilerBarnCPU.h"
 #include "WindProfilerBarnGPU.h"
-#include "util/WindProfilerHRRR.h"
+#include "WindProfilerHRRR.h"
 
 #include "Building.h"
 #include "Canopy.h"
@@ -100,6 +100,8 @@ public:
 
   void applyParametrizations(const WINDSInputData *);
   // void applyParametrizations(const WINDSInputData*);
+
+  void downscaleHRRR(const WINDSInputData *);
 
   void printTimeProgress(int);
 

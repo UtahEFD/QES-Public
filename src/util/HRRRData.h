@@ -75,6 +75,7 @@ class HRRRData
   std::vector<double> hrrrCloudCover, hrrrShortRadiation;
   std::vector<double> hrrrPBLHeight, hrrrU700, hrrrV700, hrrrU850, hrrrV850, hrrrU925, hrrrV925, hrrrUTop, hrrrVTop;
   std::vector<double> hrrrSpeedTop, hrrrDirTop, hrrrSpeed700, hrrrDir700, hrrrSpeed850, hrrrDir850, hrrrSpeed925, hrrrDir925;
+  std::vector<double> hrrrSenHeatFlux, hrrrUStar, hrrrPotTemp;
 
   std::vector<double>  hrrrSourceUTMx, hrrrSourceUTMy;
   std::vector<int> hrrrSourceID, hrrrSourceUTMzone;

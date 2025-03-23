@@ -30,10 +30,6 @@ add_library (qesutil ${LIB_TYPE}
   QESFileSystemHandler.cpp
 
   QEStime.cpp
-	
-  WindProfilerSensorType.cpp
-  WindProfilerBarnCPU.cpp
-  WindProfilerHRRR.cpp
 
   HRRRData.cpp
   HRRRInput.h

@@ -9,7 +9,7 @@
   <cellSize> 100.0 100.0 5.0 </cellSize> 				<!-- Mesh resolution (meters)-->
   <verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-costum grid)-->
   
-  <totalTimeIncrements> 1 </totalTimeIncrements> 			<!-- Number of time steps-->
+  <totalTimeIncrements> 2 </totalTimeIncrements> 			<!-- Number of time steps-->
   <rooftopFlag> 0 </rooftopFlag> 					<!-- Rooftop flag (0-none, 1-log profile (default), 2-vortex) -->
   <upwindCavityFlag> 0 </upwindCavityFlag> 			<!-- Upwind cavity flag (0-none, 1-Rockle, 2-MVP (default), 3-HMVP) -->
   <streetCanyonFlag> 0 </streetCanyonFlag> 			<!-- Street canyon flag (0-none, 1-Roeckle w/ Fackrel (default)) -->
@@ -48,11 +48,12 @@
 </fileOptions>
 
 <hrrrInput>
-  <HRRRFile>../../scratch/Sep_2020_wind_smoke.nc</HRRRFile>
+  <HRRRFile>../../scratch/Sep_2020_1.nc</HRRRFile>
   <inputFields>MASSDEN_8maboveground</inputFields>
   <inputFields>UGRD_10maboveground</inputFields>
   <inputFields>VGRD_10maboveground</inputFields>
-  <interpolationScheme>0</interpolationScheme>        <!-- Interpolation scheme for initial guess field (0-Barnes Scheme (default), 1-Nearest site, 2-Bilinear interpolation) -->
+  <interpolationScheme>2</interpolationScheme>        <!-- Interpolation scheme for initial guess field (0-Barnes Scheme (default), 1-Nearest site, 2-Bilinear interpolation) -->
+  <stabilityClasses>1</stabilityClasses>           <!-- Defining method for stability classes (0-No stability (default), 1-Pasquill-Gifford classes, 2-Monin-Obukhov length (using surface fluxes) -->
 </hrrrInput>
 
 </QESWindsParameters>

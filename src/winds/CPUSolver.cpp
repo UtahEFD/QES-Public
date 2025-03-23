@@ -47,6 +47,7 @@ using std::cout;
 void CPUSolver::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind)
 {
   auto startOfSolveMethod = std::chrono::high_resolution_clock::now();// Start recording execution time
+  
 
   /***************************************************************
    *********   Divergence of the initial velocity field   ********
@@ -71,8 +72,7 @@ void CPUSolver::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool sol
     }
   }
 
-
-  if (solveWind) {
+  if (!solveWind) {
     auto startSolveSection = std::chrono::high_resolution_clock::now();
 
     // INSERT CANOPY CODE
@@ -214,5 +214,5 @@ void CPUSolver::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool sol
     std::chrono::duration<float> elapsedSolve = finish - startSolveSection;
     std::cout << "\t\t Elapsed time: " << elapsedTotal.count() << " s\n";// Print out elapsed execution time
     // std::cout << "Elapsed solve time: " << elapsedSolve.count() << " s\n";// Print out elapsed execution time
-  }
+    }
 }
