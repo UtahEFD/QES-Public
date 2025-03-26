@@ -1,0 +1,72 @@
+
+<QESWindsParameters>
+  <simulationParameters>
+    <DEM>../GISFiles/elevation_5m.tif</DEM>
+  	<halo_x> 0.0 </halo_x >						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
+  	<halo_y> 0.0 </halo_y >						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
+    <domain> 450 375 36 </domain> <!-- nx,ny,nz-->
+	<cellSize> 2 2 5 </cellSize> <!-- dx, dy,dz [Meters]-->	
+	<verticalStretching> 0 </verticalStretching>
+	<totalTimeIncrements> 1 </totalTimeIncrements>
+	<maxIterations> 500 </maxIterations>
+	<tolerance> 1E-9 </tolerance>
+	<meshTypeFlag> 1 </meshTypeFlag>
+</simulationParameters>
+<metParams>
+	<z0_domain_flag> 0 </z0_domain_flag>
+		<sensor>
+    	    <site_coord_flag> 1 </site_coord_flag> 			<!-- Sensor site coordinate system (1=QUIC (default), 2=UTM, 3=Lat/Lon) -->
+            <site_xcoord> 270.0  </site_xcoord> 				<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
+            <site_ycoord> 520.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->
+
+    	    <timeSeries>						<!-- Start of timestep informastion for a sensor -->
+		<timeStamp>2020-01-01T00:00:00</timeStamp>
+       		<boundaryLayerFlag> 1 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
+       		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
+       		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
+       		<height> 5.0 </height> 				<!-- Height of the sensor -->
+       		<speed> 10.0 </speed> 					<!-- Measured speed at the sensor height -->
+       		<direction> 45 </direction> 				<!-- Wind direction of sensor -->
+    	    </timeSeries>
+	</sensor>                      					<!-- End of sensor section -->
+</metParams>
+<turbParams>
+  <method>0</method>   <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
+  <samples>2000</samples>
+</turbParams>
+<buildingsParams>
+	<wallRoughness> 0.1 </wallRoughness>
+  	<rooftopFlag> 0 </rooftopFlag> 					<!-- Rooftop flag (0-none, 1-log profile (default), 2-vortex) -->
+    	<upwindCavityFlag> 1 </upwindCavityFlag> 			<!-- Upwind cavity flag (0-none, 1-Rockle, 2-MVP (default), 3-HMVP) -->
+    	<streetCanyonFlag> 0 </streetCanyonFlag> 			<!-- Street canyon flag (0-none, 1-Roeckle w/ Fackrel (default)) -->
+    	<streetIntersectionFlag> 0 </streetIntersectionFlag> 		<!--Street intersection flag (0-off, 1-on) -->
+    	<wakeFlag> 1 </wakeFlag> 					<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle (default), 3-Area Scaled) -->
+	<highRiseFlag> 0 </highRiseFlag>
+	<sidewallFlag> 1 </sidewallFlag> 				<!-- Sidewall flag (0-off, 1-on (default)) -->
+	<numBuildings> 0 </numBuildings>
+	<numPolygonNodes> 0 </numPolygonNodes>
+</buildingsParams>
+
+<fires>
+	<fireDur> 3600 </fireDur>
+	<fuelType> 203 </fuelType>
+	<fuelMap>../FireFiles/fbfm40_5m_nearest.tif</fuelMap>
+	<fmc> 0.02 </fmc>
+
+    <courant> 0.9 </courant>
+    <fieldFlag> 0 </fieldFlag> <!-- flag for if multiple timesteps for fire -->
+    <ignition>
+    	<height> 2 </height>
+    	<baseHeight> 0 </baseHeight> <!--meters-->
+    	<xStart> 570.0 </xStart> <!--meters-->
+    	<yStart> 570.0 </yStart> <!--meters-->
+    	<length> 30.0 </length> <!--meters-->
+    	<width>  6.0 </width> <!--meters-->
+    </ignition>
+
+</fires>
+<fileOptions>
+	<outputFlag>1</outputFlag>
+	<outputFields>all</outputFields> 
+</fileOptions>
+</QESWindsParameters>

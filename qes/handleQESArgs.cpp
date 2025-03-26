@@ -2,16 +2,16 @@
 
 QESArgs::QESArgs()
   : verbose(false),
-    qesWindsParamFile(""), qesPlumeParamFile(""),
-    netCDFFileBasename(""),
     solveWind(false), compTurb(false), compPlume(false),
     solveType(1),
     visuOutput(true), wkspOutput(false), terrainOut(false),
     turbOutput(false),
-    doParticleDataOutput(false)
+    plumeOutput(false), particleOutput(false)
 
 {
-  reg("help", "help/usage information", ArgumentParsing::NONE, '?');
+  // reg("help", "help/usage information", ArgumentParsing::NONE, '?');
+  reg("help", "help/usage information", ArgumentParsing::NONE, 'h');
+
   reg("verbose", "turn on verbose output", ArgumentParsing::NONE, 'v');
 
   reg("windsolveroff", "Turns off the wind solver and wind output", ArgumentParsing::NONE, 'x');
@@ -27,11 +27,11 @@ QESArgs::QESArgs()
   reg("wkout", "Turns on the netcdf file to write wroking file", ArgumentParsing::NONE, 'w');
   // [FM] the output of turbulence field linked to the flag compTurb
   // reg("turbout", "Turns on the netcdf file to write turbulence file", ArgumentParsing::NONE, 'r');
-  reg("terrainout", "Turn on the output of the triangle mesh for the terrain", ArgumentParsing::NONE, 'h');
+  reg("terrainout", "Turn on the output of the triangle mesh for the terrain", ArgumentParsing::NONE, 'm');
 
   // going to assume concentration is always output. So these next options are like choices for additional debug output
   // reg("doEulDataOutput",     "should debug Eulerian data be output",           ArgumentParsing::NONE,   'e');
-  reg("doParticleDataOutput", "should debug Lagrangian data be output", ArgumentParsing::NONE, 'l');
+  reg("particleOutput", "should debug Lagrangian data be output", ArgumentParsing::NONE, 'l');
 }
 
 
@@ -44,6 +44,11 @@ void QESArgs::processArguments(int argc, char *argv[])
   if (isSet("help")) {
     printUsage();
     exit(EXIT_SUCCESS);
+  }
+
+  verbose = isSet("verbose");
+  if (verbose) {
+    QESout::setVerbose();
   }
 
   isSet("qesWindsParamFile", qesWindsParamFile);
@@ -68,37 +73,35 @@ void QESArgs::processArguments(int argc, char *argv[])
       compTurb = true;
       turbOutput = false;
     }
+    plumeOutput = true;
+  } else {
+    turbOutput = compTurb;
   }
 
-  verbose = isSet("verbose");
-  if (verbose) {
-    QESout::setVerbose();
-  }
+  particleOutput = isSet("particleOutput");
 
-  doParticleDataOutput = isSet("doParticleDataOutput");
-
-  isSet("outbasename", netCDFFileBasename);
-  if (!netCDFFileBasename.empty()) {
+  isSet("outbasename", outputFileBasename);
+  if (!outputFileBasename.empty()) {
     // visuOutput = isSet("visuout");
     if (visuOutput) {
-      netCDFFileVisu = netCDFFileBasename;
+      netCDFFileVisu = outputFileBasename;
       netCDFFileVisu.append("_windsOut.nc");
     }
 
     wkspOutput = isSet("wkout");
     if (wkspOutput) {
-      netCDFFileWksp = netCDFFileBasename;
+      netCDFFileWksp = outputFileBasename;
       netCDFFileWksp.append("_windsWk.nc");
     }
 
     if (turbOutput) {
-      netCDFFileTurb = netCDFFileBasename;
+      netCDFFileTurb = outputFileBasename;
       netCDFFileTurb.append("_turbOut.nc");
     }
 
     terrainOut = isSet("terrainout");
     if (terrainOut) {
-      filenameTerrain = netCDFFileBasename;
+      filenameTerrain = outputFileBasename;
       filenameTerrain.append("_terrainOut.obj");
     }
 
@@ -107,26 +110,38 @@ void QESArgs::processArguments(int argc, char *argv[])
     //     outputEulerianFile = outputFolder + caseBaseName + "_eulerianData.nc";
     // }
     if (compPlume) {
-      outputPlumeFile = netCDFFileBasename + "_plumeOut.nc";
-      if (doParticleDataOutput) {
-        outputParticleDataFile = netCDFFileBasename + "_particleInfo.nc";
+      outputPlumeFile = outputFileBasename + "_plumeOut.nc";
+      if (particleOutput) {
+        outputParticleDataFile = outputFileBasename + "_particleInfo.nc";
       }
     }
 
   } else {
-
     QESout::warning("No output basename set -> output turned off");
     visuOutput = false;
     wkspOutput = false;
     turbOutput = false;
     terrainOut = false;
 
-    // doEulDataOutput = false;
-    doParticleDataOutput = false;
+    plumeOutput = false;
+    particleOutput = false;
   }
+
+  plumeParameters.outputFileBasename = outputFileBasename;
+  plumeParameters.plumeOutput = plumeOutput;
+  plumeParameters.particleOutput = particleOutput;
 
   std::cout << "Summary of QES options: " << std::endl;
   std::cout << "----------------------------" << std::endl;
+  // parameter files:
+  std::cout << "qesWindsParamFile: " << qesWindsParamFile << std::endl;
+  if (compPlume) {
+    std::cout << "qesPlumeParamFile: " << qesPlumeParamFile << std::endl;
+  }
+
+  std::cout << "----------------------------" << std::endl;
+
+  // code options:
   if (solveWind) {
     if (solveType == CPU_Type)
 #ifdef _OPENMP
@@ -143,44 +158,20 @@ void QESArgs::processArguments(int argc, char *argv[])
     else
       std::cout << "[WARNING]\t the wind fields are not being calculated" << std::endl;
   }
-  if (compTurb) {
-    std::cout << "Turbulence model:\t ON" << std::endl;
-  } else {
-    std::cout << "Turbulence model:\t OFF" << std::endl;
-  }
-  if (compPlume) {
-    std::cout << "Plume model:\t\t ON" << std::endl;
-  } else {
-    std::cout << "Plume model:\t\t OFF" << std::endl;
-  }
-  if (verbose) {
-    std::cout << "Verbose:\t\t ON" << std::endl;
-  } else {
-    std::cout << "Verbose:\t\t OFF" << std::endl;
-  }
-  std::cout << "----------------------------" << std::endl;
-  std::cout << "qesWindsParamFile set to " << qesWindsParamFile << std::endl;
-  if (compPlume) {
-    std::cout << "qesPlumeParamFile set to " << qesPlumeParamFile << std::endl;
-  }
-  std::cout << "----------------------------" << std::endl;
-  if (!netCDFFileVisu.empty()) {
-    std::cout << "[WINDS]\t Visualization NetCDF output file set:\t " << netCDFFileVisu << std::endl;
-  }
-  if (!netCDFFileWksp.empty()) {
-    std::cout << "[WINDS]\t Workspace NetCDF output file set:\t " << netCDFFileWksp << std::endl;
-  }
-  if (!filenameTerrain.empty()) {
-    std::cout << "[WINDS]\t Terrain triangle mesh output set:\t " << filenameTerrain << std::endl;
-  }
-  if (!netCDFFileTurb.empty()) {
-    std::cout << "[TURB]\t Turbulence NetCDF output file set:\t " << netCDFFileTurb << std::endl;
-  }
-  if (!outputPlumeFile.empty()) {
-    std::cout << "[PLUME]\t Plume NetCDF output file set:\t\t " << outputPlumeFile << std::endl;
-  }
-  if (!outputParticleDataFile.empty()) {
-    std::cout << "[PLUME]\t Particle NetCDF output file set:\t " << outputParticleDataFile << std::endl;
+  std::cout << "Turbulence model:\t " << (compTurb ? "ON" : "OFF") << std::endl;
+  std::cout << "Plume model:\t\t " << (compPlume ? "ON" : "OFF") << std::endl;
+  std::cout << "Verbose:\t\t " << (verbose ? "ON" : "OFF") << std::endl;
+
+  // output files:
+  if (!outputFileBasename.empty()) {
+    std::cout << "----------------------------" << std::endl;
+    std::cout << "Output file basename:        " << outputFileBasename << std::endl;
+    std::cout << "Winds visualization output:  " << (visuOutput ? "ON" : "OFF") << std::endl;
+    std::cout << "Winds workspace output:      " << (wkspOutput ? "ON" : "OFF") << std::endl;
+    std::cout << "Winds terrain mesh output:   " << (terrainOut ? "ON" : "OFF") << std::endl;
+    std::cout << "Turbulence output:           " << (turbOutput ? "ON" : "OFF") << std::endl;
+    std::cout << "Plume output:                " << (plumeOutput ? "ON" : "OFF") << std::endl;
+    std::cout << "Plume particle output:       " << (particleOutput ? "ON" : "OFF") << std::endl;
   }
 
   std::cout << "###################################################################" << std::endl;

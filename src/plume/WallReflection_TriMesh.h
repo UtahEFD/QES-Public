@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -28,7 +28,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file WallReflection_StairStep.h 
+/** @file WallReflection_StairStep.h
  * @brief
  */
 
@@ -43,21 +43,15 @@
 
 #include "util/QEStime.h"
 #include "util/calcTime.h"
-#include "util/Vector3.h"
+#include "util/Vector3Float.h"
 
 #include "util/HitRecord.h"
 #include "util/Ray.h"
 #include "util/Mesh.h"
 #include "util/BVH.h"
 
-//#include "Matrix3.h"
+// #include "Matrix3.h"
 #include "Random.h"
-
-#include "util/QESNetCDFOutput.h"
-#include "PlumeOutput.h"
-#include "PlumeOutputParticleData.h"
-
-#include "PlumeInputData.hpp"
 
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
@@ -72,23 +66,13 @@
 class WallReflection_TriMesh : public WallReflection
 {
 public:
-  WallReflection_TriMesh()
+  WallReflection_TriMesh(Interp *interp)
+    : WallReflection(interp)
   {}
   ~WallReflection_TriMesh()
   {}
-
-  virtual bool reflect(const WINDSGeneralData *WGD,
-                       const Plume *plume,
-                       double &xPos,
-                       double &yPos,
-                       double &zPos,
-                       double &disX,
-                       double &disY,
-                       double &disZ,
-                       double &uFluct,
-                       double &vFluct,
-                       double &wFluct);
+  virtual void reflect(const WINDSGeneralData *WGD, vec3 &pos, vec3 &dist, vec3 &fluct, ParticleState &state) override;
 
 private:
-  void rayTraceReflect(Mesh *, Vector3 &, Vector3 &, Vector3 &, Vector3 &);
+  void rayTraceReflect(Mesh *, Vector3Float &, Vector3Float &, Vector3Float &, Vector3Float &);
 };

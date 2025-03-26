@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -41,12 +41,17 @@ using namespace netCDF;
 using namespace netCDF::exceptions;
 
 // constructor, linked to NetCDF file, replace mode only
-NetCDFOutput ::NetCDFOutput(std::string output_file)
+
+NetCDFOutput ::NetCDFOutput(const std::string &output_file) : filename(output_file)
 {
-  std::cout << "[NetCDFOutput] \t Writing to " << output_file << std::endl;
+  std::cout << "[NetCDFOutput] \t create new file: " << output_file << std::endl;
   outfile = new NcFile(output_file, NcFile::replace);
 }
-
+NetCDFOutput::~NetCDFOutput()
+{
+  std::cout << "[NetCDFOutput] \t closing file: " << filename << std::endl;
+  delete outfile;
+}
 
 NcDim NetCDFOutput ::addDimension(std::string name, int size)
 {

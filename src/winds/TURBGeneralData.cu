@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -40,9 +40,9 @@ __global__ void getDerivativesCUDA(int nx, int ny, int nz, float dx, float dy, f
   int stride = blockDim.x * gridDim.x;
   for (int it = index; it < icellfluidLength; it += stride) {
     int cellID = icellfluid2[it];
-    //int cellID = it;
-    // linearized index: cellID = i + j*(nx-1) + k*(nx-1)*(ny-1);
-    //  i,j,k -> inverted linearized index
+    // int cellID = it;
+    //  linearized index: cellID = i + j*(nx-1) + k*(nx-1)*(ny-1);
+    //   i,j,k -> inverted linearized index
     int k = (int)(cellID / ((nx - 1) * (ny - 1)));
     int j = (int)((cellID - k * (nx - 1) * (ny - 1)) / (nx - 1));
     int i = (int)(cellID - j * (nx - 1) - k * (nx - 1) * (ny - 1));
@@ -115,9 +115,9 @@ __global__ void uDerivatives(int nx, int ny, int nz, float dx, float dy, float d
   int stride = blockDim.x * gridDim.x;
   for (int it = index; it < icellfluidLength; it += stride) {
     int cellID = icellfluid2[it];
-    //int cellID = it;
-    // linearized index: cellID = i + j*(nx-1) + k*(nx-1)*(ny-1);
-    //  i,j,k -> inverted linearized index
+    // int cellID = it;
+    //  linearized index: cellID = i + j*(nx-1) + k*(nx-1)*(ny-1);
+    //   i,j,k -> inverted linearized index
     int k = (int)(cellID / ((nx - 1) * (ny - 1)));
     int j = (int)((cellID - k * (nx - 1) * (ny - 1)) / (nx - 1));
     int i = (int)(cellID - j * (nx - 1) - k * (nx - 1) * (ny - 1));
@@ -157,9 +157,9 @@ __global__ void vDerivatives(int nx, int ny, int nz, float dx, float dy, float d
   int stride = blockDim.x * gridDim.x;
   for (int it = index; it < icellfluidLength; it += stride) {
     int cellID = icellfluid2[it];
-    //int cellID = it;
-    // linearized index: cellID = i + j*(nx-1) + k*(nx-1)*(ny-1);
-    //  i,j,k -> inverted linearized index
+    // int cellID = it;
+    //  linearized index: cellID = i + j*(nx-1) + k*(nx-1)*(ny-1);
+    //   i,j,k -> inverted linearized index
     int k = (int)(cellID / ((nx - 1) * (ny - 1)));
     int j = (int)((cellID - k * (nx - 1) * (ny - 1)) / (nx - 1));
     int i = (int)(cellID - j * (nx - 1) - k * (nx - 1) * (ny - 1));
@@ -199,9 +199,9 @@ __global__ void wDerivatives(int nx, int ny, int nz, float dx, float dy, float d
   int stride = blockDim.x * gridDim.x;
   for (int it = index; it < icellfluidLength; it += stride) {
     int cellID = icellfluid2[it];
-    //int cellID = it;
-    // linearized index: cellID = i + j*(nx-1) + k*(nx-1)*(ny-1);
-    //  i,j,k -> inverted linearized index
+    // int cellID = it;
+    //  linearized index: cellID = i + j*(nx-1) + k*(nx-1)*(ny-1);
+    //   i,j,k -> inverted linearized index
     int k = (int)(cellID / ((nx - 1) * (ny - 1)));
     int j = (int)((cellID - k * (nx - 1) * (ny - 1)) / (nx - 1));
     int i = (int)(cellID - j * (nx - 1) - k * (nx - 1) * (ny - 1));
@@ -231,6 +231,10 @@ __global__ void wDerivatives(int nx, int ny, int nz, float dx, float dy, float d
 
 void TURBGeneralData::getDerivativesGPU()
 {
+  auto [nx, ny, nz] = domain.getDomainCellNum();
+  auto [dx, dy, dz] = domain.getDomainSize();
+  long numcell_face = domain.numFaceCentered();
+  long numcell_cent = domain.numCellCentered();
 
   int gpuID = 0;
   cudaError_t errorCheck = cudaGetDevice(&gpuID);
@@ -240,7 +244,7 @@ void TURBGeneralData::getDerivativesGPU()
   std::cout << blockCount << std::endl;
 
   int threadsPerBlock = 256;
-  //cudaDeviceGetAttribute(&threadsPerBlock, cudaDevAttrMaxThreadsPerBlock, gpuID);
+  // cudaDeviceGetAttribute(&threadsPerBlock, cudaDevAttrMaxThreadsPerBlock, gpuID);
   std::cout << threadsPerBlock << std::endl;
 
   int length = (int)icellfluid.size();
@@ -250,8 +254,9 @@ void TURBGeneralData::getDerivativesGPU()
   dim3 numberOfBlocks(ceil(length / (float)(blockSize)), 1, 1);
 
   if (errorCheck == cudaSuccess) {
-    //temp
-    float *d_Gxx, *d_Gxy, *d_Gxz, *d_Gyx, *d_Gyy, *d_Gyz, *d_Gzx, *d_Gzy, *d_Gzz, *d_u, *d_v, *d_w, *d_x, *d_y, *d_z, *d_dz_array;
+    // temp
+    float *d_Gxx, *d_Gxy, *d_Gxz, *d_Gyx, *d_Gyy, *d_Gyz, *d_Gzx, *d_Gzy, *d_Gzz;
+    float *d_u, *d_v, *d_w, *d_x, *d_y, *d_z, *d_dz_array;
     int *d_icellfluid;
 
     cudaMalloc((void **)&d_Gxx, numcell_cent * sizeof(float));
@@ -275,13 +280,13 @@ void TURBGeneralData::getDerivativesGPU()
     cudaMemcpy(d_u, m_WGD->u.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(d_v, m_WGD->v.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(d_w, m_WGD->w.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_x, m_WGD->x.data(), (nx - 1) * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_y, m_WGD->y.data(), (ny - 1) * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_z, m_WGD->z.data(), (nz - 1) * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_dz_array, m_WGD->dz_array.data(), (nz - 1) * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_x, domain.x.data(), (nx - 1) * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_y, domain.y.data(), (ny - 1) * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_z, domain.z.data(), (nz - 1) * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_dz_array, domain.dz_array.data(), (nz - 1) * sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(d_icellfluid, icellfluid.data(), (int)icellfluid.size() * sizeof(int), cudaMemcpyHostToDevice);
 
-    //call kernel
+    // call kernel
 
     auto gpuStartTime = std::chrono::high_resolution_clock::now();
 
@@ -316,7 +321,7 @@ void TURBGeneralData::getDerivativesGPU()
     gpuElapsed = gpuEndTime - gpuStartTime;
     std::cout << "\t\t GPU Derivatives: elapsed time: " << gpuElapsed.count() << " s\n";
 */
-    //cudamemcpy back to host
+    // cudamemcpy back to host
     cudaMemcpy(Gxx.data(), d_Gxx, numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
     cudaMemcpy(Gxy.data(), d_Gxy, numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
     cudaMemcpy(Gxz.data(), d_Gxz, numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
@@ -327,7 +332,7 @@ void TURBGeneralData::getDerivativesGPU()
     cudaMemcpy(Gzy.data(), d_Gzy, numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
     cudaMemcpy(Gzz.data(), d_Gzz, numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
 
-    //cudafree
+    // cudafree
     cudaFree(d_Gxx);
     cudaFree(d_Gxy);
     cudaFree(d_Gxz);

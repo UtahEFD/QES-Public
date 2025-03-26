@@ -1,4 +1,7 @@
+#ifndef WIN32
 #include <unistd.h>
+#endif
+
 #include <iostream>
 // #include "handleWINDSArgs.h"
 #include "winds/WINDSInputData.h"
@@ -45,7 +48,9 @@ int main(int argc, char *argv[])
   // Initially, need frame0 to be -1 to start process
   while (wrfFRAME0_FMW == -1) {
     std::cout << "Waiting for FRAME0_FMW to be initialized..." << std::endl;
+    #ifndef WIN32
     usleep(1000000);// 1 sec
+    #endif
     wrfInputFile.getVar("FRAME0_FMW").getVar(fmw_StartIdx, fmw_counts, &wrfFRAME0_FMW);
   }
 
@@ -155,7 +160,9 @@ int main(int argc, char *argv[])
       // close file
       wrfInputFile.close();
 
+      #ifndef WIN32
       usleep(6000000);// 2sec
+      #endif
 
       // re-open
       wrfInputFile.open("/uufs/chpc.utah.edu/common/home/u0240900/WRF-SFIRE/test/em_fire/hill/wrf.nc", NcFile::write);
@@ -163,6 +170,8 @@ int main(int argc, char *argv[])
     }
 
     // wait a bit
+    #ifndef WIN32
     usleep(1000000);
+    #endif
   }
 }

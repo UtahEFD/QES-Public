@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -30,10 +30,10 @@
 
 /** @file AdvectParticle.cu */
 
-#include "vectorMath.cu"
+#include "util/vectorMath_CUDA.h"
+#include "particle.cuh"
 
-
-__device__ void advectParticle(float timeRemainder, vec3 &pPos)
+__device__ void advectParticle(float timeRemainder, particle &p)
 {
 
   float rhoAir = 1.225;// in kg m^-3
@@ -50,13 +50,13 @@ __device__ void advectParticle(float timeRemainder, vec3 &pPos)
   // if it is the first time a particle is ever released, then the value is already set at the initial value
   // LA notes: technically this value is the old position to be overwritten with the new position.
   //  I've been tempted for a while to store both. Might have to for correctly implementing reflective building BCs
-  //vec3 pPos = { 0.0, 0.0, 0.0 };
+  // vec3 pPos = { 0.0, 0.0, 0.0 };
 
   vec3 uMean = { 1.0, 2.0, 3.0 };
 
   vec3 flux_div = { 0.0, 0.0, 0.0 };
 
-  //size_t cellIdx_old = interp->getCellId(xPos,yPos,zPos);
+  // size_t cellIdx_old = interp->getCellId(xPos,yPos,zPos);
 
   // grab the velFluct values.
   // LA notes: hmm, Bailey's code just starts out setting these values to zero,
@@ -103,29 +103,29 @@ __device__ void advectParticle(float timeRemainder, vec3 &pPos)
       will need to use the interp3D function
     */
 
-    //interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, CoEps);
+    // interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, CoEps);
 
     // now need to call makeRealizable on tau
-    makeRealizable(10e-4, tau);
+    makeRealizable(10e-4, p.tau);
 
     // adjusting mean vertical velocity for settling velocity
-    //wMean -= (*parItr)->vs;
+    // wMean -= (*parItr)->vs;
 
 
     // now calculate the particle timestep using the courant number, the velocity fluctuation from the last time,
     // and the grid sizes. Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
 
-    //int cellId = interp->getCellId(xPos, yPos, zPos);
-    //double dWall = WGD->mixingLengths[cellId];
-    //double par_dt = calcCourantTimestep(dWall,
-    //                                    std::abs(uMean) + std::abs(uFluct),
-    //                                    std::abs(vMean) + std::abs(vFluct),
-    //                                    std::abs(wMean) + std::abs(wFluct),
-    //                                    timeRemainder);
+    // int cellId = interp->getCellId(xPos, yPos, zPos);
+    // double dWall = WGD->mixingLengths[cellId];
+    // double par_dt = calcCourantTimestep(dWall,
+    //                                     std::abs(uMean) + std::abs(uFluct),
+    //                                     std::abs(vMean) + std::abs(vFluct),
+    //                                     std::abs(wMean) + std::abs(wFluct),
+    //                                     timeRemainder);
     float par_dt = 0.1;
 
     // update the par_time, useful for debugging
-    //par_time = par_time + par_dt;
+    // par_time = par_time + par_dt;
 
     // now need to calculate the inverse values for tau
     // directly modifies the values of tau
@@ -135,20 +135,20 @@ __device__ void advectParticle(float timeRemainder, vec3 &pPos)
     //  going to send in 9 terms anyways to try to follow Bailey's method for now
 
     mat3 L;
-    L._11 = tau._11;
-    L._12 = tau._12;
-    L._13 = tau._13;
-    L._21 = tau._12;
-    L._22 = tau._22;
-    L._23 = tau._23;
-    L._31 = tau._13;
-    L._32 = tau._23;
-    L._33 = tau._33;
+    L._11 = p.tau._11;
+    L._12 = p.tau._12;
+    L._13 = p.tau._13;
+    L._21 = p.tau._12;
+    L._22 = p.tau._22;
+    L._23 = p.tau._23;
+    L._31 = p.tau._13;
+    L._32 = p.tau._23;
+    L._33 = p.tau._33;
 
     isRogue = !invert3(L);
     if (isRogue == true) {
-      //int cellIdNew = interp->getCellId(xPos,yPos,zPos);
-      //std::cerr << "ERROR in Matrix inversion of stress tensor" << std::endl;
+      // int cellIdNew = interp->getCellId(xPos,yPos,zPos);
+      // std::cerr << "ERROR in Matrix inversion of stress tensor" << std::endl;
       isActive = false;
       break;
     }
@@ -157,20 +157,20 @@ __device__ void advectParticle(float timeRemainder, vec3 &pPos)
     // LA note: should be randn() matlab equivalent, which is a normally distributed random number
     // LA future work: it is possible the rogue particles are caused by the random number generator stuff.
     //  Need to look into it at some time.
-    //double xRandn = random::norRan();
-    //double yRandn = random::norRan();
-    //double zRandn = random::norRan();
+    // double xRandn = random::norRan();
+    // double yRandn = random::norRan();
+    // double zRandn = random::norRan();
     vec3 vRandn = { 0.0, 0.0, 0.0 };
 
     // now calculate a bunch of values for the current particle
     // calculate the time derivative of the stress tensor: (tau_current - tau_old)/dt
     mat3sym tau_ddt;
-    tau_ddt._11 = (tau._11 - tau_old._11) / par_dt;
-    tau_ddt._12 = (tau._12 - tau_old._12) / par_dt;
-    tau_ddt._13 = (tau._13 - tau_old._13) / par_dt;
-    tau_ddt._22 = (tau._22 - tau_old._22) / par_dt;
-    tau_ddt._23 = (tau._23 - tau_old._23) / par_dt;
-    tau_ddt._33 = (tau._33 - tau_old._33) / par_dt;
+    tau_ddt._11 = (p.tau._11 - tau_old._11) / par_dt;
+    tau_ddt._12 = (p.tau._12 - tau_old._12) / par_dt;
+    tau_ddt._13 = (p.tau._13 - tau_old._13) / par_dt;
+    tau_ddt._22 = (p.tau._22 - tau_old._22) / par_dt;
+    tau_ddt._23 = (p.tau._23 - tau_old._23) / par_dt;
+    tau_ddt._33 = (p.tau._33 - tau_old._33) / par_dt;
 
 
     // now calculate and set the A and b matrices for an Ax = b
@@ -198,7 +198,7 @@ __device__ void advectParticle(float timeRemainder, vec3 &pPos)
     // now prepare for the Ax=b calculation by calculating the inverted A matrix
     isRogue = !invert3(A);
     if (isRogue == true) {
-      //std::cerr << "ERROR in matrix inversion in Langevin equation" << std::endl;
+      // std::cerr << "ERROR in matrix inversion in Langevin equation" << std::endl;
       isActive = false;
       break;
     }
@@ -247,13 +247,13 @@ __device__ void advectParticle(float timeRemainder, vec3 &pPos)
     pPos._2 = pPos._2 + (uMean._2 + uFluct._2) * par_dt;
     pPos._3 = pPos._3 + (uMean._3 + uFluct._3) * par_dt;
     // now update the particle position for this iteration
-    //double disX = (uMean + uFluct) * par_dt;
-    //double disY = (vMean + vFluct) * par_dt;
-    //double disZ = (wMean + wFluct) * par_dt;
+    // double disX = (uMean + uFluct) * par_dt;
+    // double disY = (vMean + vFluct) * par_dt;
+    // double disZ = (wMean + wFluct) * par_dt;
 
-    //xPos = xPos + disX;
-    //yPos = yPos + disY;
-    //zPos = zPos + disZ;
+    // xPos = xPos + disX;
+    // yPos = yPos + disY;
+    // zPos = zPos + disZ;
 
     /*
   // check and do wall (building and terrain) reflection (based in the method)
@@ -280,7 +280,7 @@ __device__ void advectParticle(float timeRemainder, vec3 &pPos)
 
     tau_old = tau;
 
-    //cellIdx_old=cellIdx;
+    // cellIdx_old=cellIdx;
 
     // now set the time remainder for the next loop
     // if the par_dt calculated from the Courant Number is greater than the timeRemainder,
@@ -299,31 +299,31 @@ __device__ void advectParticle(float timeRemainder, vec3 &pPos)
     (*parItr)->xPos = xPos;
     (*parItr)->yPos = yPos;
     (*parItr)->zPos = zPos;
-    
+
     (*parItr)->uMean = uMean;
     (*parItr)->vMean = vMean;
     (*parItr)->wMean = wMean;
-    
+
     (*parItr)->uFluct = uFluct;
     (*parItr)->vFluct = vFluct;
     (*parItr)->wFluct = wFluct;
-    
+
     // these are the current velFluct values by this point
     (*parItr)->uFluct_old = uFluct_old;
     (*parItr)->vFluct_old = vFluct_old;
     (*parItr)->wFluct_old = wFluct_old;
-    
+
     (*parItr)->delta_uFluct = delta_uFluct;
     (*parItr)->delta_vFluct = delta_vFluct;
     (*parItr)->delta_wFluct = delta_wFluct;
-    
+
     (*parItr)->txx_old = txx_old;
     (*parItr)->txy_old = txy_old;
     (*parItr)->txz_old = txz_old;
     (*parItr)->tyy_old = tyy_old;
     (*parItr)->tyz_old = tyz_old;
     (*parItr)->tzz_old = tzz_old;
-    
+
     (*parItr)->isRogue = isRogue;
     (*parItr)->isActive = isActive;
   */

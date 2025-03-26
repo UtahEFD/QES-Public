@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -40,12 +40,9 @@
 #include <chrono>
 #include <limits>
 
-#include "WINDSInputData.h"
+#include "qes/Domain.h"
+
 #include "WINDSGeneralData.h"
-
-#include "util/Vector3.h"
-
-using namespace std;
 
 /**
  * @class Solver
@@ -63,7 +60,19 @@ using namespace std;
  */
 class Solver
 {
+private:
+  Solver()
+    : domain(1, 1, 1, 1.0, 1.0, 1.0),
+      alpha1(1),
+      alpha2(1),
+      eta(1),
+      A(1),
+      B(1)
+  {}
+
 protected:
+  qes::Domain domain;
+
   const int alpha1; /**< Gaussian precision moduli */
   const int alpha2; /**< Gaussian precision moduli */
   const float eta; /**< :document this: */
@@ -71,15 +80,16 @@ protected:
   const float B; /**< :document this: */
 
   float tol; /**< Error tolerance */
-  const float omega = 1.0f; /**< Over-relaxation factor */
+  const float omega = 1.78f; /**< Over-relaxation factor */
 
-  int itermax; /**< Maximum number of iterations */
+  // int itermax; /**< Maximum number of iterations */
 
   // SOLVER-based parameters
   std::vector<float> R; /**< Divergence of initial velocity field */
   std::vector<float> lambda, lambda_old; /**< :document these as group or indiv: */
 
-  Solver(const WINDSInputData *WID, WINDSGeneralData *WGD);
+
+  Solver(qes::Domain domain_in, const float &tolerance);
   /**
    * Prints out the current amount that a process
    * has finished with a progress bar.
@@ -93,7 +103,13 @@ public:
   void resetLambda();
   void copyLambda();
 
-  virtual void solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind) = 0;
+  /**
+   * :document this:
+   *
+   * @param WGD :document this:
+   * @param itermax Maximum number of iterations
+   */
+  virtual void solve(WINDSGeneralData *, const int &) = 0;
 };
 
 inline void Solver::resetLambda()

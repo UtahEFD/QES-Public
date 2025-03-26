@@ -1,81 +1,65 @@
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-#INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR}/quicutil)  
-#LINK_DIRECTORIES (${CMAKE_BINARY_DIR}/quicutil/)
+SET(qesPlumeCoreSources
+  
+  ParticleIDGen.cpp
+  SourceIDGen.cpp
+  Random.cpp
+  RandomSingleton.cpp
+  
+  Interp.cpp
+  InterpNearestCell.cpp
+  InterpPowerLaw.cpp
+  InterpTriLinear.cpp    
+  
+  Concentration.cpp
+  Deposition.cpp
+  StatisticsDirector.cpp
+  
+  GLE_Solver.cpp
+  PLUMEGeneralData.cpp
+  ParticleOutput.cpp
+  
+  PI_BoundaryConditions.hpp
+  DomainBoundaryConditions.cpp
+  
+  ParticleModel.cpp
+  
+  Source.cpp
+  SourceGeometryCube.cpp
+  SourceGeometryLine.cpp
+  SourceGeometryPoint.cpp
+  SourceGeometrySphereShell.cpp
+  
+  PI_Source.cpp
+  
+  PI_ReleaseType_instantaneous.cpp
+  PI_ReleaseType_continuous.cpp
+  PI_ReleaseType_duration.cpp
+  
+  PI_SourceGeometry_Cube.cpp PI_SourceGeometry_Cube.hpp
+  PI_SourceGeometry_FullDomain.cpp PI_SourceGeometry_FullDomain.hpp
+  PI_SourceGeometry_Line.cpp PI_SourceGeometry_Line.hpp
+  PI_SourceGeometry_Point.cpp PI_SourceGeometry_Point.hpp
+  PI_SourceGeometry_SphereShell.cpp PI_SourceGeometry_SphereShell.hpp
+  
+  WallReflection.cpp
+  WallReflection_StairStep.cpp
+  WallReflection_TriMesh.cpp)
 
-SET( qesPlumeCoreSources
-    Random.cpp
-    RandomSingleton.cpp
-
-    Interp.cpp
-    InterpNearestCell.cpp
-    InterpPowerLaw.cpp
-    InterpTriLinear.cpp    
-
-    Deposition.cpp
-    
-    Plume.cpp
-    AdvectParticle.cpp
-    DepositParticle.cpp
-    
-    PlumeOutput.cpp
-    PlumeOutputParticleData.cpp
-
-    BoundaryConditions.hpp
-    DomainBoundaryConditions.cpp
-
-    Particle.hpp
-    ParticleFactories.hpp
-    ParticleSmall.hpp
-    ParticleLarge.hpp
-    ParticleHeavyGas.hpp
-    ParticleFactories.cpp
-
-    ReleaseType.hpp
-    ReleaseType_instantaneous.hpp
-    ReleaseType_continuous.hpp
-    ReleaseType_duration.hpp
-    
-    SourceGeometry.hpp
-    SourceGeometry_Cube.cpp SourceGeometry_Cube.hpp
-    SourceGeometry_FullDomain.cpp SourceGeometry_FullDomain.hpp
-    SourceGeometry_Line.cpp SourceGeometry_Line.hpp
-    SourceGeometry_Point.cpp SourceGeometry_Point.hpp
-    SourceGeometry_SphereShell.cpp SourceGeometry_SphereShell.hpp
-
-    Source.cpp
-    
-    WallReflection.cpp
-    WallReflection_StairStep.cpp
-    WallReflection_TriMesh.cpp
-    
-)
+ADD_LIBRARY(qesplumecore ${qesPlumeCoreSources})
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
-   CUDA_ADD_LIBRARY( qesplumecore
-      ${qesPlumeCoreSources}
-   )
-ELSE ($CACHE{HAS_CUDA_SUPPORT})
-   ADD_LIBRARY( qesplumecore
-      ${qesPlumeCoreSources}
-   )
+  SET(qesPlumeGPUSources
+    CUDA/Partition.cu
+    CUDA/RandomGenerator.cpp
+    CUDA/Interpolation.cu
+    CUDA/Model.cu
+    CUDA/Concentration.cu)
+  
+  ADD_LIBRARY(qesplumegpu ${qesPlumeGPUSources})
+  TARGET_INCLUDE_DIRECTORIES(qesplumegpu PRIVATE {CUDAToolkit_INCLUDE_DIRS})
+  SET_TARGET_PROPERTIES(qesplumegpu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 ENDIF ($CACHE{HAS_CUDA_SUPPORT})
 
-#target_link_libraries (qesplumecore quicloader) 
-#target_link_libraries (qesplumecore util)
-#target_link_libraries (qesplumecore ${Boost_PROGRAM_OPTIONS_LIBRARIES} )  
-#
-#if (APPLE)
-#  find_package(OpenGL)
-#  INCLUDE_DIRECTORIES(${OPENGL_INCLUDE_DIR})
-#  find_package(GLUT)
-#  INCLUDE_DIRECTORIES(${GLUT_INCLUDE_DIR})
-#  target_link_libraries (qesplumecore ${OPENGL_LIBRARIES})
-#  target_link_libraries (qesplumecore ${GLUT_LIBRARIES})
-#else (APPLE)
-#  target_link_libraries (qesplumecore GL)
-#  target_link_libraries (qesplumecore glut)
-#  target_link_libraries (qesplumecore GLU)
-#endif (APPLE)
-#target_link_libraries (qesplumecore GLEW) 

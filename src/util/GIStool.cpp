@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -289,8 +289,9 @@ void GIStool::UTMConverter(float &rlon, float &rlat, float &rx, float &ry, int &
 
 void GIStool::getConvergence(float &lon, float &lat, int &site_UTM_zone, float &convergence)
 {
+  double pi = 3.14159265359;
 
   float temp_lon;
   temp_lon = (6.0 * site_UTM_zone) - 183.0 - lon;
-  convergence = atan(atan(temp_lon * M_PI / 180.0) * asin(lat * M_PI / 180.0)) * (180.0 / M_PI);
+  convergence = atan(atan(temp_lon * pi / 180.0) * asin(lat * pi / 180.0)) * (180.0 / pi);
 }

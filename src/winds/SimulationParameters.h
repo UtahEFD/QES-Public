@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -35,7 +35,7 @@
 #include <string>
 #include "util/ParseInterface.h"
 #include "util/ParseVector.h"
-#include "util/Vector3.h"
+#include "util/Vector3Float.h"
 #include "util/Vector3Int.h"
 #include "util/Mesh.h"
 #include "DTEHeightField.h"
@@ -55,7 +55,7 @@ class SimulationParameters : public ParseInterface
 private:
 public:
   Vector3Int domain; /**< :Number of cells in each direction: */
-  Vector3 grid; /**< :Cell sizes in each direction: */
+  Vector3Float grid; /**< :Cell sizes in each direction: */
   int verticalStretching = 0; /**< :Defines grid type in z-direction (0-unifrom (default), 1-custom): */
   std::vector<float> dz_value; /**< :Array holding values of dz if the verticalStretching is 1: */
   unsigned int totalTimeIncrements; /**< :Total number of time steps: */
@@ -350,7 +350,7 @@ public:
                                            DEMDistancex,
                                            DEMDistancey);
       assert(DTE_heightField);
-      
+
       // Forming triangle mesh...
       DTE_heightField->setDomain(domain, grid);
       DTE_mesh = new Mesh(DTE_heightField->getTris());

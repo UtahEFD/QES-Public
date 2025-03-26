@@ -1,0 +1,15 @@
+{
+    "dependencies": [
+	"boost-program-options",
+	"boost-date-time",
+	"boost-property-tree",
+	"netcdf-c",
+	"netcdf-cxx4",
+	{
+	    "name": "gdal",
+	    "default-features": false,
+	    "features": ["curl", "geos", "gif", "hdf5", "jpeg", "netcdf", "png"]
+	},
+	"nlohmann-json"
+    ]
+}

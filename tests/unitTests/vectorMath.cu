@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -33,7 +33,7 @@
  * @brief :document this:
  */
 
-#include "vectorMath.h"
+#include "util/VectorMath.h"
 
 __device__ void calcInvariants(const mat3sym &tau, vec3 &invar)
 {
@@ -47,7 +47,7 @@ __device__ void calcInvariants(const mat3sym &tau, vec3 &invar)
              + tau._13 * (tau._12 * tau._23 - tau._22 * tau._13);
 }
 
-__device__ void makeRealizable(float invarianceTol, mat3sym &tau)
+__device__ void makeRealizable(const float &invarianceTol, mat3sym &tau)
 {
   // first calculate the invariants and see if they are already realizable
   vec3 invar = { 0.0, 0.0, 0.0 };
@@ -107,8 +107,8 @@ __device__ void makeRealizable(float invarianceTol, mat3sym &tau)
   }
 
   if (iter == 999) {
-    //std::cout << "WARNING (Plume::makeRealizable): unable to make stress "
-    //             "tensor realizble.";
+    // std::cout << "WARNING (Plume::makeRealizable): unable to make stress "
+    //              "tensor realizble.";
   }
 
   // now set the output actual stress tensor using the separate temporary stress

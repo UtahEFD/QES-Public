@@ -1,6 +1,6 @@
 <QESPlumeParameters>
   <plumeParameters>
-    <simDur> 1000.0 </simDur>
+    <simDur> 1000 </simDur>
     <timeStep> 1.0 </timeStep>
     <CourantNumber> 0.25 </CourantNumber>
     <invarianceTol> 1e-10 </invarianceTol>
@@ -25,32 +25,33 @@
     <nBoxesY> 40 </nBoxesY>
     <nBoxesZ> 40 </nBoxesZ>
   </collectionParameters>
-  <sourceParameters>
-    <source>
-      <souceStrength> 5 </souceStrength>
-      <particleSmall>
-        <particleDensity> 2.0 </particleDensity>
-        <particleDiameter> 5 </particleDiameter>
-        <depositionFlag>false</depositionFlag>
-        <decayConst> 0.0 </decayConst>
-      </particleSmall>
-      <releaseType_continuous>
-        <parPerTimestep> 100 </parPerTimestep>
-      </releaseType_continuous>
-      <sourceGeometry_Line>
-        <posX_0> 20.0 </posX_0>
-        <posY_0> 50.0 </posY_0>
-        <posZ_0> 20.0 </posZ_0>
-        <posX_1> 20.0 </posX_1>
-        <posY_1> 150.0 </posY_1>
-        <posZ_1> 20.0 </posZ_1>
-      </sourceGeometry_Line>
-    </source>
-  </sourceParameters>
+  <particleParameters>
+    <baseParticle>
+      <tag>heavy</tag>
+      <depositionFlag>false</depositionFlag>
+      <source>
+        <releaseType_continuous>
+          <massPerSec> 5 </massPerSec>
+          <particleDensity> 2.0 </particleDensity>
+          <particleDiameter> 5 </particleDiameter>
+          <decayConst> 0.0 </decayConst>
+          <particlePerTimestep> 100 </particlePerTimestep>
+        </releaseType_continuous>
+        <sourceGeometry_Line>
+          <posX_0> 20.0 </posX_0>
+          <posY_0> 50.0 </posY_0>
+          <posZ_0> 20.0 </posZ_0>
+          <posX_1> 20.0 </posX_1>
+          <posY_1> 150.0 </posY_1>
+          <posZ_1> 20.0 </posZ_1>
+        </sourceGeometry_Line>
+      </source>
+    </baseParticle>
+  </particleParameters>
   <boundaryConditions>
     <xBCtype>exiting</xBCtype>
     <yBCtype>exiting</yBCtype>
-    <zBCtype>reflection</zBCtype>
+    <zBCtype>exiting</zBCtype>
     <wallReflection>stairstepReflection</wallReflection>
   </boundaryConditions>
 </QESPlumeParameters>

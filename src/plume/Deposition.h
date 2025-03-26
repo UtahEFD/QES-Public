@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -41,17 +41,19 @@
 #include <cmath>
 #include <cstring>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #include "util/QEStime.h"
 #include "util/calcTime.h"
-#include "util/Vector3.h"
-//#include "Matrix3.h"
+#include "util/Vector3Float.h"
+// #include "Matrix3.h"
 #include "Random.h"
 
 #include "util/QESNetCDFOutput.h"
-#include "PlumeOutput.h"
-#include "PlumeOutputParticleData.h"
-
-#include "PlumeInputData.hpp"
+// #include "PlumeOutput.h"
+// #include "PlumeOutputParticleData.h"
 
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
@@ -61,21 +63,40 @@
 #include "InterpPowerLaw.h"
 #include "InterpTriLinear.h"
 
+#include "Particle.h"
+
 class Deposition
 {
 private:
-  Deposition()
-  {}
+  Deposition() = default;
+
+protected:
+  // !!!! need implement this !!!!
+  double boxSizeZ{};
+  double c1 = 2.049;
+  double c2 = 1.19;
 
 public:
-  Deposition(const WINDSGeneralData *);
-  ~Deposition()
-  {}
+  explicit Deposition(const WINDSGeneralData *);
+  ~Deposition() = default;
 
-  long numcell_cent; /**< Total number of cell-centered values in domain */
+  void deposit(ParticleState &,
+               ParticleCore &,
+               ParticleLSDM &,
+               const vec3 &dist,
+               const vec3 &vel,
+               const float &vs,
+               WINDSGeneralData *,
+               TURBGeneralData *,
+               Interp *);
 
-  std::vector<float> x, y, z;
+  std::vector<float> x, y, z, z_face;
+
+#ifdef _OPENMP
+  std::vector<std::vector<float>> thread_depcvol;
+#else
   std::vector<float> depcvol;
+#endif
 
   int nbrFace;
 };

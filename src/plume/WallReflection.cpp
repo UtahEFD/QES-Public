@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -28,46 +28,39 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file WallReflection.cpp 
- * @brief 
+/** @file WallReflection.cpp
+ * @brief
  */
 
 #include "WallReflection.h"
-#include "Plume.hpp"
 
-bool WallReflection_SetToInactive::reflect(const WINDSGeneralData *WGD,
-                                           const Plume *plume,
-                                           double &xPos,
-                                           double &yPos,
-                                           double &zPos,
-                                           double &disX,
-                                           double &disY,
-                                           double &disZ,
-                                           double &uFluct,
-                                           double &vFluct,
-                                           double &wFluct)
+void WallReflection_SetToInactive::reflect(const WINDSGeneralData *WGD,
+                                           vec3 &pos,
+                                           vec3 &dist,
+                                           vec3 &fluct,
+                                           ParticleState &state)
 
 {
   try {
-    int cellIdx = plume->interp->getCellId(xPos, yPos, zPos);
+    long cellIdx = m_interp->getCellId(pos);
     int cellFlag(0);
     cellFlag = WGD->icellflag.at(cellIdx);
 
     if ((cellFlag == 0) || (cellFlag == 2)) {
       // particle end trajectory inside solide -> set inactive
-      return false;
+      state = INACTIVE;
     } else {
       // particle end trajectory outside solide -> keep active
-      return true;
+      state = ACTIVE;
     }
 
   } catch (const std::out_of_range &oor) {
     // cell ID out of bound (assuming particle outside of domain)
-    //if (zPos < domainZstart) {
+    // if (zPos < domainZstart) {
     //  std::cerr << "Reflection problem: particle out of range before reflection" << std::endl;
     //  std::cerr << xPos << "," << yPos << "," << zPos << std::endl;
     //}
     // -> set to false
-    return false;
+    state = INACTIVE;
   }
 }

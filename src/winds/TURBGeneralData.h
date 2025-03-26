@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -34,6 +34,8 @@
 
 #include <math.h>
 #include <vector>
+
+#include "qes/Domain.h"
 
 #include "WINDSInputData.h"
 #include "WINDSGeneralData.h"
@@ -66,15 +68,18 @@ public:
 
   void loadNetCDFData(int);
   void divergenceStress();
+  void derivativeVelocity();
 
-  // General QUIC Domain Data
+  // General QES Domain Data
+  qes::Domain domain;
+
   ///@{
   /** number of cells */
-  int nx, ny, nz;
+  // int nx, ny, nz;
   ///@}
 
-  long numcell_cent; /**< Total number of cell-centered values in domain */
-  long numcell_face; /**< Total number of face-centered values in domain */
+  // long numcell_cent; /**< Total number of cell-centered values in domain */
+  // long numcell_face; /**< Total number of face-centered values in domain */
 
   // nt - number of time instance in data
   int nt;
@@ -83,11 +88,11 @@ public:
 
   ///@{
   /** grid information */
-  std::vector<float> x, y, z;
+  // std::vector<float> x, y, z;
 
-  std::vector<float> x_cc;
-  std::vector<float> z_face;
-  std::vector<float> dz_array;
+  // std::vector<float> x_cc;
+  // std::vector<float> z_face;
+  // std::vector<float> dz_array;
   ///@}
 
   // index for fluid cell
@@ -197,8 +202,6 @@ protected:
 
   void getDerivativesGPU();
 
-  void derivativeVelocity();
-
   void getTurbulentViscosity();
   void stressTensor();
 
@@ -215,6 +218,7 @@ private:
   // cannot have an empty constructor (have to pass in a mesh to build)
   TURBGeneralData();
 
+  void allocateMemory();
   // store the wall classes
   std::vector<TURBWall *> wallVec;
 
@@ -222,7 +226,7 @@ private:
   const float vonKar = 0.4;
   float backgroundMixing = 0.0;
 
-  float dx, dy, dz;
+  // float dx, dy, dz;
 
   // input: store here for multiple time instance.
   NetCDFInput *input;

@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -45,11 +45,6 @@
 
 #include "Solver.h"
 
-using std::cerr;
-using std::endl;
-using std::vector;
-using std::cout;
-
 // duplication of this macro
 #define CELL(i, j, k, w) ((i) + (j) * (nx + (w)) + (k) * (nx + (w)) * (ny + (w)))
 
@@ -79,17 +74,18 @@ void Solver::printProgress(float percentage)
  * @param WID :document this:
  * @param WGD :document this:
  */
-Solver::Solver(const WINDSInputData *WID, WINDSGeneralData *WGD)
-  : alpha1(1),
+Solver::Solver(qes::Domain domain_in, const float &tolerance)
+  : domain(std::move(domain_in)),
+    alpha1(1),
     alpha2(1),
     eta(pow((alpha1 / alpha2), 2.0)),
-    A(pow((WGD->dx / WGD->dy), 2.0)),
-    B(eta * pow((WGD->dx / WGD->dz), 2.0))
+    A(pow((domain.dx() / domain.dy()), 2.0)),
+    B(eta * pow((domain.dx() / domain.dz()), 2.0))
 
 {
-  tol = WID->simParams->tolerance;
+  tol = tolerance;
 
-  lambda.resize(WGD->numcell_cent, 0.0);
-  lambda_old.resize(WGD->numcell_cent, 0.0);
-  R.resize(WGD->numcell_cent, 0.0);
+  lambda.resize(domain.numCellCentered(), 0.0);
+  lambda_old.resize(domain.numCellCentered(), 0.0);
+  R.resize(domain.numCellCentered(), 0.0);
 }

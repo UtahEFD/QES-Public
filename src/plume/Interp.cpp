@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -33,18 +33,15 @@
 #include "Interp.h"
 
 
-Interp::Interp(WINDSGeneralData *WGD)
+Interp::Interp(qes::Domain domain_in)
+  : domain(std::move(domain_in))
 {
+
   // std::cout << "[Interp] \t Setting Interp fields " << std::endl;
 
   // copy WGD grid information
-  nz = WGD->nz;
-  ny = WGD->ny;
-  nx = WGD->nx;
-
-  dz = WGD->dz;
-  dy = WGD->dy;
-  dx = WGD->dx;
+  std::tie(nx, ny, nz) = domain.getDomainCellNum();
+  std::tie(dx, dy, dz) = domain.getDomainSize();
 
   // domain beginning for interpolation in each direction
   // in x-direction (halo cell to account for TURB variables)
@@ -59,12 +56,27 @@ Interp::Interp(WINDSGeneralData *WGD)
 
   // get the TGD domain start and end values, other WGD grid information
   // in x-direction (face)
-  xStart = WGD->x[iStart] - 0.5 * dx;
-  xEnd = WGD->x[iEnd] + 0.5 * dx;
+  xStart = domain.x[iStart] - 0.5 * dx;
+  xEnd = domain.x[iEnd] + 0.5 * dx;
   // in y-direction (face)
-  yStart = WGD->y[jStart] - 0.5 * dy;
-  yEnd = WGD->y[jEnd] + 0.5 * dy;
+  yStart = domain.y[jStart] - 0.5 * dy;
+  yEnd = domain.y[jEnd] + 0.5 * dy;
   // in z-direction (face)
-  zStart = WGD->z_face[kStart];
-  zEnd = WGD->z_face[kEnd];
+  zStart = domain.z_face[kStart];
+  zEnd = domain.z_face[kEnd];
+}
+
+void Interp::getDomainBounds(float &domainXstart,
+                             float &domainXend,
+                             float &domainYstart,
+                             float &domainYend,
+                             float &domainZstart,
+                             float &domainZend)
+{
+  domainXstart = xStart;
+  domainXend = xEnd;
+  domainYstart = yStart;
+  domainYend = yEnd;
+  domainZstart = zStart;
+  domainZend = zEnd;
 }

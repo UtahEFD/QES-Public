@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -36,10 +36,7 @@
 #include "util/ArgumentParsing.h"
 #include "util/QESout.h"
 
-enum solverTypes : int { CPU_Type = 1,
-                         DYNAMIC_P = 2,
-                         Global_M = 3,
-                         Shared_M = 4 };
+#include "winds/SolverFactory.h"
 
 /**
  * @class WINDSArgs
@@ -54,7 +51,7 @@ class WINDSArgs : public ArgumentParsing
 public:
   WINDSArgs();
 
-  ~WINDSArgs() {}
+  ~WINDSArgs() = default;
 
   /**
    * Takes in the commandline arguments and places
@@ -69,9 +66,9 @@ public:
   bool verbose;
 
 
-  std::string qesWindsParamFile = ""; /**< Input files (from cmd line) */
+  std::string qesWindsParamFile; /**< Input files (from cmd line) */
 
-  std::string netCDFFileBasename = ""; /**< Base name for all NetCDF output files */
+  std::string netCDFFileBasename; /**< Base name for all NetCDF output files */
 
   ///@{
   /** Flag to turn on/off different modules */
@@ -85,7 +82,8 @@ public:
   std::string netCDFFileTurb = ""; /**< netCDFFile for turbulence field used by Plume */
   std::string filenameTerrain = ""; /**< Filename for terrain output */
 
-  bool fireMode; /**< Boolean to treat WRF input in fire mode */
+  std::string netCDFFileFire = ""; /**< netCDFFile for fire output */
 
+  bool fireMode; /**< Boolean to treat WRF input in fire mode */
 private:
 };

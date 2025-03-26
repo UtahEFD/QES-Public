@@ -1,0 +1,43 @@
+<QESPlumeParameters>
+  <plumeParameters>
+    <CourantNumber> 0.25 </CourantNumber>
+    <simDur> 14400.0 </simDur><!-- this is the amount of time to run the simulation -->
+    <timeStep> 1.0 </timeStep><!-- this is the overall integration timestep -->
+    <invarianceTol> 1e-5 </invarianceTol>     <!-- tolerance in makeRealizeable on the stress tensor -->
+    <interpolationMethod>triLinear</interpolationMethod> 
+    <updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop> <!-- Only used in debug mode. -->
+    <updateFrequency_timeLoop> 1 </updateFrequency_timeLoop> <!-- frequency to print out information during the time integration loop of the solver -->
+  </plumeParameters>
+  <collectionParameters><!-- collecting output parameters -->
+    <timeAvgStart> 1.0 </timeAvgStart>   <!-- time to start concentration averaging -->
+    <timeAvgFreq> 10.0 </timeAvgFreq>   <!-- time averaging frequency and output frequency -->
+    <boxBoundsX1> 0 </boxBoundsX1>
+    <boxBoundsX2> 3840 </boxBoundsX2>
+    <boxBoundsY1> 0 </boxBoundsY1>
+    <boxBoundsY2> 2910 </boxBoundsY2>
+    <boxBoundsZ1> 0.0 </boxBoundsZ1>
+    <boxBoundsZ2> 800 </boxBoundsZ2>
+    <nBoxesX> 128 </nBoxesX>
+    <nBoxesY> 97 </nBoxesY>
+    <nBoxesZ> 160 </nBoxesZ>
+  </collectionParameters>
+<sourceParameters>
+  <source>
+    <releaseType_continuous>
+	  <parPerTimestep> 1 </parPerTimestep>
+    </releaseType_continuous>
+    <sourceGeometry_Point>
+      <posX> 2160 </posX>
+      <posY> 1020 </posY>
+      <posZ> 370 </posZ>
+    </sourceGeometry_Point>
+  </source>
+</sourceParameters>
+  <boundaryConditions>
+    <xBCtype>exiting</xBCtype>
+    <yBCtype>exiting</yBCtype>
+    <zBCtype>exiting</zBCtype>
+    <wallReflection>stairstepReflection</wallReflection>  <!-- type of wall reflection: doNothing; setInactive; stairstepReflection -->
+    <doDepositions>false</doDepositions>
+  </boundaryConditions>
+</QESPlumeParameters>

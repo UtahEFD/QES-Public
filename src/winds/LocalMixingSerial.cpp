@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -42,13 +42,8 @@
 
 void LocalMixingSerial::defineMixingLength(const WINDSInputData *WID, WINDSGeneralData *WGD)
 {
-  int nx = WGD->nx;
-  int ny = WGD->ny;
-  int nz = WGD->nz;
-
-  float dz = WGD->dz;
-  float dy = WGD->dy;
-  float dx = WGD->dx;
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
 
   // x-grid (face-center & cell-center)
   x_fc.resize(nx, 0);
@@ -63,28 +58,28 @@ void LocalMixingSerial::defineMixingLength(const WINDSInputData *WID, WINDSGener
   z_cc.resize(nz - 1, 0);
 
   // x cell-center
-  x_cc = WGD->x;
+  x_cc = WGD->domain.x;
   // x face-center (this assume constant dx for the moment, same as QES-winds)
   for (int i = 1; i < nx - 1; i++) {
-    x_fc[i] = 0.5 * (WGD->x[i - 1] + WGD->x[i]);
+    x_fc[i] = 0.5 * (WGD->domain.x[i - 1] + WGD->domain.x[i]);
   }
   x_fc[0] = x_fc[1] - dx;
   x_fc[nx - 1] = x_fc[nx - 2] + dx;
 
   // y cell-center
-  y_cc = WGD->y;
+  y_cc = WGD->domain.y;
   // y face-center (this assume constant dy for the moment, same as QES-winds)
   for (int i = 1; i < ny - 1; i++) {
-    y_fc[i] = 0.5 * (WGD->y[i - 1] + WGD->y[i]);
+    y_fc[i] = 0.5 * (WGD->domain.y[i - 1] + WGD->domain.y[i]);
   }
   y_fc[0] = y_fc[1] - dy;
   y_fc[ny - 1] = y_fc[ny - 2] + dy;
 
   // z cell-center
-  z_cc = WGD->z;
+  z_cc = WGD->domain.z;
   // z face-center (with ghost cell under the ground)
   for (int i = 1; i < nz; i++) {
-    z_fc[i] = WGD->z_face[i];
+    z_fc[i] = WGD->domain.z_face[i];
   }
   z_fc[0] = z_fc[1] - dz;
 
@@ -166,9 +161,7 @@ void LocalMixingSerial::defineMixingLength(const WINDSInputData *WID, WINDSGener
 void LocalMixingSerial::getMinDistWall(WINDSGeneralData *WGD, int max_height)
 {
 
-  int nx = WGD->nx;
-  int ny = WGD->ny;
-  int nz = WGD->nz;
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
 
   // defining the walls
   for (int i = 1; i < nx - 2; i++) {

@@ -4,7 +4,7 @@
 
 <!-- Badges -->
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7098280.svg)](https://doi.org/10.5281/zenodo.7098280)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7098279.svg)](https://doi.org/10.5281/zenodo.7098279)
 <!-- Badges -->
 
 </div>
@@ -36,9 +36,11 @@ QES-Fire is a microscale wildfire model coupling the fire front to microscale wi
 
 ## Package Requirements
 
-***QES requires the CUDA library and a NVIDIA GPU with Compute Capability of 7.0 (or higher).***
+***QES requires C++17.***
 
-**Note:** a compliation option for configuration without GPU will be added in the future.
+***QES requires the CUDA library and a NVIDIA GPU with Compute Capability of 7.0 (or higher) for GPU acceleration.***
+
+**Note:** the code can be compiled without CUDA.
 
 On a general Linux system, such as Ubuntu 18.04 or 20.04, the following packages need to be installed:
 * libgdal-dev
@@ -55,9 +57,9 @@ If the system uses ```apt```, the packages can be installed using the following 
 apt install libgdal-dev libnetcdf-c++4-dev  libnetcdf-cxx-legacy-dev libnetcdf-dev netcdf-bin libboost-all-dev cmake cmake-curses-gui
 ```
 
-To build the code and to use the GPU system, you will need a NVIDIA GPU with the CUDA library installed.  The code has been tested with CUDA 8.0, 10.0, 10.1, and 10.2. If your version of CUDA is installed in a non-uniform location, you will need to remember the path to the cuda install directory.
+To build the code and to use the GPU system, you will need a NVIDIA GPU with the CUDA library installed.  The code has been tested with CUDA 11.8. If your version of CUDA is installed in a non-uniform location, you will need to remember the path to the CUDA install directory.
 
-Additionally, the code can use NVIDIA's OptiX to accelerate various computations. Our OptiX code has been built to use version 7.0 or higher.
+Additionally, the code can use NVIDIA's OptiX to accelerate various computations. Our OptiX code has been built and tested up to OptiX version 7.5.
 
 ## Building the Code
 
@@ -85,28 +87,23 @@ make
 
 ### Building on CHPC Cluster (University of Utah)
 
-The code does run on the CHPC cluster. You need to make sure the correct set of modules are loaded.  Currently, we have tested a few configurations that use
-- GCC 5.4.0 and CUDA 8.0
-- CCC 8.1.0 and CUDA 10.1 (10.2)
-- GCC 8.5.0 and CUDA 11.4
-If you build with OptiX support, you will need to use CUDA 10.2 or newer configuration. Any builds (with or without OptiX) with CUDA 11.4 are preferred if you don't know which to use. Older configurations are provided in `CHPC/oldBuilds.md`.
+The code does run on the CHPC cluster. You need to make sure the correct set of modules are loaded.  Currently, we have tested recommending the following configurations:
+- GCC 11.2 and CUDA 11.8
 
 After logging into your CHPC account, you will need to load specific modules. In the following sections, we outline the modules that need to be loaded along with the various cmake command-line calls that specify the exact locations of module installs on the CHPC system.  
 
-#### CUDA 11.4 Based Builds with NVIDIA OptiX Support
+#### CUDA 11.8 Based Builds without NVIDIA OptiX Support
 
 *This is the preferred build setup on CHPC*
 
-To build with GCC 8.5.0, CUDA 11.4, and OptiX 7.1.0 on CHPC.
 Please use the following modules:
 ```
-module load cuda/11.4
+module load cuda/11.8
 module load cmake/3.21.4
-module load gcc/8.5.0
-module load boost/1.77.0
-module load intel-oneapi-mpi/2021.4.0
-module load gdal/3.3.3
-module load netcdf-c/4.8.1
+module load gcc/11.2.0
+module load boost/1.83.0
+module load gdal/3.8.5
+module load netcdf-c/4.9.2
 module load netcdf-cxx/4.2
 ```
 Or use the provided load script.
@@ -116,14 +113,15 @@ source CHPC/loadmodules_QES.sh
 After completing the above module loads, the following modules are reported from `module list`:
 ```
 Currently Loaded Modules:
-  1) cuda/11.4    (g)   3) gcc/8.5.0      5) intel-oneapi-mpi/2021.4.0   7) netcdf-c/4.8.1
-  2) cmake/3.21.4       4) boost/1.77.0   6) gdal/3.3.3                  8) netcdf-cxx/4.2
+  1) cuda/11.8.0  (g)   4) zlib/1.2.13    7) netcdf-c/4.9.2
+  2) cmake/3.21.4       5) boost/1.83.0   8) netcdf-cxx/4.2
+  3) gcc/11.2.0         6) hdf5/1.14.3    9) gdal/3.8.5
 ```
 After the modules are loaded, you can create the Makefiles with cmake.  We keep our builds separate from the source and contain our builds within their own folders.  For example, 
 ```
 mkdir build
 cd build
-cmake -DCUDA_TOOLKIT_DIR=/uufs/chpc.utah.edu/sys/installdir/cuda/11.4.0 -DCUDA_SDK_ROOT_DIR=/uufs/chpc.utah.edu/sys/installdir/cuda/11.4.0 -DOptiX_INSTALL_DIR=/uufs/chpc.utah.edu/sys/installdir/optix/7.1.0 -DCMAKE_C_COMPILER=gcc -DNETCDF_CXX_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-cxx/4.3.0-5.4.0g/include ..
+cmake -DNETCDF_CXX_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-cxx/4.3.0-5.4.0g/include ..
 ```
 Upon completion of the above commands, you can go about editing and building mostly as normal, and issue the `make` command in your build folder to compile the source.
 
@@ -133,13 +131,68 @@ make
 ```
 Note you *may* need to type make a second time due to a build bug, especially on the CUDA 8.0 build.
 
+#### CUDA 11.8 Based Builds that use NVIDIA OptiX Support
+
+Enabling OptiX support does work on CHPC and have tested it with OptiX 7.6.0.  Enabling this accelerates mixing length calculations. To enable it, follow the instructions above, and make sure to add
+
+```
+-DOptiX_INSTALL_DIR=/uufs/chpc.utah.edu/sys/installdir/optix/7.6.0
+```
+
+
 ### Build Types
 
 The code support several build types: *Debug*, *Release*, *RelWithDebInfo*, *MinSizeRel*. You can select the build type 
 ```
 cmake -DCMAKE_BUILD_TYPE=Release ..
 ```
-- *Release* is recommanded for production
+- *Release* is recommended for production
+
+### vcpkg - Generalized Build Instructions for Windows, macos and Linux
+
+We support a more generalized build system using vcpkg [https://learn.microsoft.com/en-us/vcpkg/get_started/overview](https://learn.microsoft.com/en-us/vcpkg/get_started/overview) and CMake build presets. Vcpkg is a C++ package manager used to pull the dependencies needed to build QES. When used in this way, the cmake build will pull the needed requirements and not rely on installed system dependencies (as described above). This can result in the initial build being a little slower as the required dependencies are pulled and compiled, but it does mean that you do not have to manually install our dependencies.
+
+#### Setting up vcpkg
+
+To setup vcpkg, you will need to clone the vcpkg repository and setup environment variables that CMake can use to locate your vcpkg install.  More information on vcpkg and specific details for setting it up on different systems (Windows vs. Linux-based systems) can be found here: [https://learn.microsoft.com/en-us/vcpkg/get_started/overview](https://learn.microsoft.com/en-us/vcpkg/get_started/overview). The instructions below will reflect a Windows-based, Powershell setup to facilitate building QES on Windows:
+
+Determine a location where you want vcpkg installed. It can be in system location for all users or cloned into your own user account. After cloning, be sure to run the bootstrap batch file in the vcpkg folder.
+
+```
+git clone https://github.com/microsoft/vcpkg.git
+cd vcpkg
+bootstrap-vcpkg.bat
+```
+
+Next, you will need to create the VCPKG_ROOT environment variable to point to the location of the vcpkg local repository on your system. You should also add the vcpkg root to your PATH variable. The following focuses on Windows, but the same ideas are needed on Unix systems and your shell's environment variables. On Windows, the ideal way to do this so that it is permanent is to set the variables using the Windows System Environment Variables panel from Settings. You will need something like the following:
+
+```
+VCPKG_ROOT = "C:\path\to\vcpkg"
+PATH = "$env:VCPKG_ROOT;$env:PATH"
+```
+
+#### Building QES Using CMake Presets
+
+We have several CMake Build Presets that are outlined in the CMakePresets.json file in QES. Some are for building on Linux, macos, or without CUDA. The main build preset for Windows is the __windowsDev__ preset. For building on macOS, you can use __macOSDev__.  To setup the build environment using a preset, you first need to be in the main QES source folder and issue the cmake command:
+
+```
+cd <path/to/local QES repo>
+cmake --preset=windowsDev
+```
+
+Each preset defines its own build directory and various build variables that are important on that system. You may need to tweak some of these variables for your own system setup to locate the NVIDIA CUDA and OptiX install paths. Most other settings can be left alone, typically.
+
+__Windows-Specfic Instructions__
+
+On Windows, you will need a C++ compiler. We have tested all Windows builds using the Community Edition of Microsoft's Visual Studio development environment [https://visualstudio.microsoft.com/vs/community/](https://visualstudio.microsoft.com/vs/community/). This is different than the Visual Studio Code editor -- make sure you get the full Visual Studio Community IDE, which includes the MSVC C++ compiler. Specifically, our current build environment for Windows is the following:
+
+- Windows 11 (Version 24H2, OS build 26100.3194)
+- Microsoft Visual Studio Community 2022 (64-bit), Version 17.0.4
+
+Microsoft's Visual Studio Community Edition (and related) IDEs understand CMake and can configure a CMake project using the presets. Simply open the Local Folder containing your copy of QES into the IDE. Then, from the "Configuration" drop-down, select windowsDev.  You can trigger a full Reconfigure of the project from the "Project" menu's "Delete Cache and Reconfigure".  Once CMake is configured, you can build the project through the Build > Build All menu items.
+
+You will then need to access the built executables in the buildWindowsDev build folder using either Powershell or other command line shells on Windows.
+
 
 ## Running QES
 

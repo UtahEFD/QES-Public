@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -72,12 +72,12 @@ QEStime &QEStime::operator=(const std::string &t)
   return *this;
 }
 
-std::string QEStime::getTimestamp()
+std::string QEStime::getTimestamp() const
 {
   return btime::to_iso_extended_string(m_ptime);
 }
 
-void QEStime::getTimestamp(std::string &inout)
+void QEStime::getTimestamp(std::string &inout) const
 {
   inout = btime::to_iso_extended_string(m_ptime);
 }
@@ -91,20 +91,20 @@ time_t QEStime::getEpochTime()
 
 void QEStime::increment(float dt)
 {
-  btime::time_duration tt = btime::milliseconds((int)round(1000.0 * (double)dt));
+  btime::time_duration tt = btime::milliseconds((unsigned long)round(1000.0 * (double)dt));
   m_ptime += tt;
 }
 
 QEStime &QEStime::operator+=(const float &dt)
 {
-  btime::time_duration tt = btime::milliseconds((int)round(1000.0 * (double)dt));
+  btime::time_duration tt = btime::milliseconds((unsigned long)round(1000.0 * (double)dt));
   m_ptime += tt;
   return *this;
 }
 
 QEStime QEStime::operator+(const float &dt)
 {
-  btime::time_duration tt = btime::milliseconds((int)round(1000.0 * (double)dt));
+  btime::time_duration tt = btime::milliseconds((unsigned long)round(1000.0 * (double)dt));
   QEStime t(this->m_ptime + tt);
   return t;
 }
@@ -115,38 +115,38 @@ double QEStime::operator-(const QEStime &t2)
   return x;
 }
 
-bool QEStime::operator==(const std::string &t)
+bool QEStime::operator==(const std::string &t) const
 {
   btime::ptime testtime = btime::from_iso_extended_string(t);
   return m_ptime == testtime;
 }
 
-bool QEStime::operator==(const QEStime &t)
+bool QEStime::operator==(const QEStime &t) const
 {
   return m_ptime == t.m_ptime;
 }
 
-bool QEStime::operator!=(const QEStime &t)
+bool QEStime::operator!=(const QEStime &t) const
 {
   return m_ptime != t.m_ptime;
 }
 
-bool QEStime::operator<=(const QEStime &t)
+bool QEStime::operator<=(const QEStime &t) const
 {
   return m_ptime <= t.m_ptime;
 }
 
-bool QEStime::operator<(const QEStime &t)
+bool QEStime::operator<(const QEStime &t) const
 {
   return m_ptime < t.m_ptime;
 }
 
-bool QEStime::operator>=(const QEStime &t)
+bool QEStime::operator>=(const QEStime &t) const
 {
   return m_ptime >= t.m_ptime;
 }
 
-bool QEStime::operator>(const QEStime &t)
+bool QEStime::operator>(const QEStime &t) const
 {
   return m_ptime > t.m_ptime;
 }
@@ -157,7 +157,7 @@ double QEStime::operator%(const double &t)
   return ((m_ptime - epoch).total_milliseconds() % int(t * 1000.0)) / 1000.0;
 }
 
-std::ostream &operator<<(std::ostream &os, QEStime &t)
+std::ostream &operator<<(std::ostream &os, const QEStime &t)
 {
   os << t.getTimestamp();
   return os;

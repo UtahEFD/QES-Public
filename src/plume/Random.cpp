@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -32,35 +32,31 @@
  * @brief This class handles the random number generation
  */
 
+#include <random>
+#include <ctime>
+
 #include "Random.h"
 
 Random::Random()
-  : m_normal_value(false), m_remaining_value(0.0)
+  : m_normal_value(false), m_remaining_value(0.0), prng(), distribution(0.0, 1.0)
 {
-  // std::cout << "Set  RANDOM seed " << std::endl;
-  // std::srand(1);
-  // std::srand(std::time(0));
-  srand48(std::time(nullptr));
+  prng.seed(std::time(nullptr));
 }
 
 Random::Random(long seed)
-  : m_normal_value(false), m_remaining_value(0.0)
+  : m_normal_value(false), m_remaining_value(0.0), prng(), distribution(0.0, 1.0)
 {
-  // std::cout << "Set  RANDOM seed " << std::endl;
-  // std::srand(1);
-  // std::srand(std::time(0));
-  srand48(seed);
+  prng.seed(seed);
 }
 
-double Random::uniRan()
+float Random::uniRan()
 {
-  // return std::rand() / (double)RAND_MAX;
-  return drand48();
+  return distribution(prng);
 }
 
-double Random::norRan()
+float Random::norRan()
 {
-  double rsq, v1, v2;
+  float rsq, v1, v2;
   if (!m_normal_value) {
     do {
       v1 = 2.0 * uniRan() - 1.0;
@@ -89,12 +85,12 @@ double Random::norRan()
 //   std::srand(std::time(0));
 // }
 //
-// double random::uniRan()
+// float random::uniRan()
 //{
-//   return std::rand() / (double)RAND_MAX;
+//   return std::rand() / (float)RAND_MAX;
 // }
 //
-// double random::norRan()
+// float random::norRan()
 //{
 //   float rsq, v1, v2;
 //   if (m_normal_value == false) {
@@ -116,10 +112,10 @@ double Random::norRan()
 //   }
 // }
 //
-// double random::rangen()
+// float random::rangen()
 //{
 //
-//   double x, u, v, w, summ;
+//   float x, u, v, w, summ;
 //
 //   u = uniRan();
 //   if (u <= .8638) {
@@ -165,4 +161,4 @@ double Random::norRan()
 //
 //
 // bool random::m_normal_value;
-// double random::m_remaining_value;
+// float random::m_remaining_value;

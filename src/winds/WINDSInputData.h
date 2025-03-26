@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -45,8 +45,11 @@
 #include "MetParams.h"
 #include "BuildingsParams.h"
 #include "VegetationParams.h"
+
+#include "fire/Fires.hpp"
+
 #include "TURBParams.h"
-#include "util/HRRRInput.h"
+#include "HRRRInput.h"
 
 /**
  * @class WINDSInputData
@@ -65,7 +68,10 @@ public:
   TURBParams *turbParams = nullptr; /**< :document this: */
   BuildingsParams *buildingsParams = nullptr; /**< :document this: */
   VegetationParams *vegetationParams = nullptr; /**< :document this: */
+  
   HRRRInput *hrrrInput = nullptr; /**< :HRRR input class instance: */
+  
+  Fires *fires = nullptr; /**< :document this: */
 
   WINDSInputData()
   {
@@ -75,6 +81,7 @@ public:
     buildingsParams = 0;
     vegetationParams = 0;
     hrrrInput = 0;
+    fires = 0;
   }
 
   WINDSInputData(const std::string fileName)
@@ -86,6 +93,7 @@ public:
     buildingsParams = 0;
     vegetationParams = 0;
     hrrrInput = 0;
+    fires = 0;
 
     QESfs::set_file_path(fileName);
     // read and parse the XML
@@ -104,5 +112,6 @@ public:
     parseElement<BuildingsParams>(false, buildingsParams, "buildingsParams");
     parseElement<VegetationParams>(false, vegetationParams, "vegetationParams");
     parseElement<HRRRInput>(false, hrrrInput, "hrrrInput");
+    parseElement<Fires>(false, fires, "fires");
   }
 };

@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -97,9 +97,10 @@ extern "C" __global__ void __raygen__from_cell()
       } else {
 
         // Trignometric-Polar Method
+	double pi = 3.141592653589793;
 
-        float theta = (curand_uniform(&state) * M_PI);
-        float phi = (curand_uniform(&state) * 2 * M_PI);
+        float theta = (curand_uniform(&state) * pi);
+        float phi = (curand_uniform(&state) * 2 * pi);
 
         float x = std::cos(phi) * std::sin(theta);
         float y = std::sin(theta) * std::sin(phi);
@@ -111,22 +112,22 @@ extern "C" __global__ void __raygen__from_cell()
       }
 
       optixTrace(params.handle,
-        origin,
-        dir,
-        0.0f,
-        1e16f,
-        0.0f,
-        // OptixVisibilityMask(1),
-        OptixVisibilityMask(255),
-        OPTIX_RAY_FLAG_NONE,
-        RAY_TYPE_RADIENCE,
-        RAY_TYPE_COUNT,
-        RAY_TYPE_RADIENCE,
-        t);
+                 origin,
+                 dir,
+                 0.0f,
+                 1e16f,
+                 0.0f,
+                 // OptixVisibilityMask(1),
+                 OptixVisibilityMask(255),
+                 OPTIX_RAY_FLAG_NONE,
+                 RAY_TYPE_RADIENCE,
+                 RAY_TYPE_COUNT,
+                 RAY_TYPE_RADIENCE,
+                 t);
 
 
-      if (int_as_float(t) < lowestLen) {
-        lowestLen = int_as_float(t);
+      if (__int_as_float(t) < lowestLen) {
+        lowestLen = __int_as_float(t);
       }
 
     }// end of for loop
@@ -143,7 +144,7 @@ extern "C" __global__ void __raygen__from_cell()
 extern "C" __global__ void __miss__miss()
 {
 
-  optixSetPayload_0(float_as_int(FLT_MAX));// set to a large number
+  optixSetPayload_0(__float_as_int(FLT_MAX));// set to a large number
 }
 
 extern "C" __global__ void __closesthit__mixlength()
@@ -151,5 +152,5 @@ extern "C" __global__ void __closesthit__mixlength()
 
   const float t = optixGetRayTmax();// get t value from OptiX function
 
-  optixSetPayload_0(float_as_int(t));// assign payload
+  optixSetPayload_0(__float_as_int(t));// assign payload
 }

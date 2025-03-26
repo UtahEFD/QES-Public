@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -44,9 +44,9 @@
 void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, int building_id)
 {
 
-  int nx = WGD->nx;
-  int ny = WGD->ny;
-  int nz = WGD->nz;
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
+  float dxy = WGD->domain.dxy();
 
   const float sigUOrg = 2.0;
   const float sigVOrg = 2.0;
@@ -71,7 +71,7 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
   // int k_bottom, k_top;
   // int kk;
 
-  int icell_face, icell_cent;
+  long icell_face, icell_cent;
 
   std::vector<float> Lr_face, Lr_node;
   std::vector<int> perpendicular_flag;
@@ -119,8 +119,8 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
     return;
   }
   /*
-  if ( height_eff >= WGD->z[nz-1] ) {
-      std::cout << "domain = "<< WGD->z[0] << " " << WGD->z[nz-2] << " " << WGD->z[nz-1] << std::endl;
+  if ( height_eff >= WGD->domain.z[nz-1] ) {
+      std::cout << "domain = "<< WGD->domain.z[0] << " " << WGD->domain.z[nz-2] << " " << WGD->domain.z[nz-1] << std::endl;
       std::cout << "buidling = "<< base_height << " " << height_eff << std::endl;
       // exit if building above top domain is ill-defined (computed in polygonWake.cpp)
       std::cout<< "[WARNING] building ill-defined -> use local mixing (building id="<< building_id << ")" <<std::endl;
@@ -176,26 +176,27 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
   Lr = Lr_ave / total_seg_length;
   for (auto k = 1; k <= k_start; k++) {
     k_bottom = k;
-    if (base_height <= WGD->z.at(k)) {
+    if (base_height <= WGD->domain.z[k]) {
       break;
     }
   }
 
-  for (auto k = k_start; k < WGD->nz - 2; k++) {
+  for (auto k = k_start; k < nz - 2; k++) {
     k_top = k;
-    if (height_eff < WGD->z.at(k + 1)) {
+    if (height_eff < WGD->domain.z[k + 1]) {
       break;
     }
   }
   for (auto k = k_start; k < k_end; k++) {
     kk = k;
-    if (0.75 * H + base_height <= WGD->z.at(k)) {
+    if (0.75 * H + base_height <= WGD->domain.z[k]) {
       break;
     }
   }
 
   // interpolation of velocity at the top of the building
-  icell_face = i_building_cent + j_building_cent * nx + (k_top + 1) * nx * ny;
+  // icell_face = i_building_cent + j_building_cent * nx + (k_top + 1) * nx * ny;
+  icell_face = WGD->domain.face(i_building_cent, j_building_cent, k_top + 1);
   u_h = 0.5 * (WGD->u[icell_face] + WGD->u[icell_face + 1]);
   v_h = 0.5 * (WGD->v[icell_face] + WGD->v[icell_face + nx]);
   // w_h=0.5*(WGD->w[icell_face]+WGD->w[icell_face+nx*ny]);
@@ -213,8 +214,9 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
     } else {
     scale_factor=1.0/sin(upwind_dir);
     }
+    float dxy = scale_factor * WGD->dxy;
   */
-  float dxy = scale_factor * WGD->dxy;
+
 
   // x,y positons of the polybuilding verteces in the rotated coord syst rotated with the wind dir and building center
   std::vector<float> xp_i, yp_i;
@@ -265,8 +267,8 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
    x_r = cos(upwind_dir)*xp_r - sin(upwind_dir)*yp_r + building_cent_x;
    y_r = sin(upwind_dir)*xp_r + cos(upwind_dir)*yp_r + building_cent_y;
 
-   int i_r = floor(x_r/WGD->dx);
-   int j_r = floor(y_r/WGD->dy);
+   int i_r = floor(x_r/dx);
+   int j_r = floor(y_r/dy);
 
    for (auto k=k_top+1; k>=k_bottom; k--) {
    icell_cent = i_r + j_r*(nx-1) + k*(ny-1)*(nx-1);
@@ -277,8 +279,8 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
    x_l = cos(upwind_dir)*xp_l - sin(upwind_dir)*yp_l + building_cent_x;
    y_l = sin(upwind_dir)*xp_l + cos(upwind_dir)*yp_l + building_cent_y;
 
-   int i_l = floor(x_l/WGD->dx);
-   int j_l = floor(y_l/WGD->dy);
+   int i_l = floor(x_l/dx);
+   int j_l = floor(y_l/dy);
 
    for (auto k=k_top+1; k>=k_bottom; k--) {
    icell_cent = i_l + j_l*(nx-1) + k*(ny-1)*(nx-1);
@@ -295,15 +297,15 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
   x_ref_r = cos(upwind_dir) * xp_ref_r - sin(upwind_dir) * yp_ref_r + building_cent_x;
   y_ref_r = sin(upwind_dir) * xp_ref_r + cos(upwind_dir) * yp_ref_r + building_cent_y;
 
-  int i_ref_r = floor(x_ref_r / WGD->dx);
-  int j_ref_r = floor(y_ref_r / WGD->dy);
+  int i_ref_r = floor(x_ref_r / dx);
+  int j_ref_r = floor(y_ref_r / dy);
 
-  if (i_ref_r >= WGD->nx - 2 && i_ref_r <= 0 && j_ref_r >= WGD->ny - 2 && j_ref_r <= 0) {
+  if (i_ref_r >= nx - 2 && i_ref_r <= 0 && j_ref_r >= ny - 2 && j_ref_r <= 0) {
     std::cout << "[WARNING] right ref point outside domain -> use local mixing (building id=" << building_id << ")" << std::endl;
     return;
   }
   for (auto k = k_top + 1; k >= k_bottom; k--) {
-    icell_cent = i_ref_r + j_ref_r * (nx - 1) + k * (ny - 1) * (nx - 1);
+    icell_cent = WGD->domain.cell(i_ref_r, j_ref_r, k);
     // TGD->iturbflag[icell_cent]=12;
   }
 
@@ -316,15 +318,15 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
   x_ref_l = cos(upwind_dir) * xp_ref_l - sin(upwind_dir) * yp_ref_l + building_cent_x;
   y_ref_l = sin(upwind_dir) * xp_ref_l + cos(upwind_dir) * yp_ref_l + building_cent_y;
 
-  int i_ref_l = floor(x_ref_l / WGD->dx);
-  int j_ref_l = floor(y_ref_l / WGD->dy);
+  int i_ref_l = floor(x_ref_l / dx);
+  int j_ref_l = floor(y_ref_l / dy);
 
-  if (i_ref_l >= WGD->nx - 2 && i_ref_l <= 0 && j_ref_l >= WGD->ny - 2 && j_ref_l <= 0) {
+  if (i_ref_l >= nx - 2 && i_ref_l <= 0 && j_ref_l >= ny - 2 && j_ref_l <= 0) {
     std::cout << "[WARNING] left ref point outside domain -> use local mixing (building id=" << building_id << ")" << std::endl;
     return;
   }
   for (auto k = k_top + 1; k >= k_bottom; k--) {
-    icell_cent = i_ref_l + j_ref_l * (nx - 1) + k * (ny - 1) * (nx - 1);
+    icell_cent = WGD->domain.cell(i_ref_l, j_ref_l, k);
     // TGD->iturbflag[icell_cent]=12;
   }
 
@@ -332,7 +334,7 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
   // std::cout << "buidling id" << building_id << " k_start=" << k_start << " k_end=" << k_end << " kk=" << kk << std::endl;
 
   for (auto k = k_top; k >= k_bottom; k--) {
-    z_build = WGD->z[k] - base_height;
+    z_build = WGD->domain.z[k] - base_height;
 
     // reference velocity left
     icell_face = i_ref_l + j_ref_l * nx + k * ny * nx;
@@ -356,8 +358,8 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
           perpendicular_flag[id] = 1;
           x_wall = xi[id];
         }
-        for (auto y_id = 0; y_id <= 2 * ceil(abs(yi[id] - yi[id + 1]) / WGD->dxy); y_id++) {
-          yc = yi[id] - 0.5 * y_id * WGD->dxy;
+        for (auto y_id = 0; y_id <= 2 * ceil(abs(yi[id] - yi[id + 1]) / dxy); y_id++) {
+          yc = yi[id] - 0.5 * y_id * dxy;
           Lr_local = Lr_node[id] + (yc - yi[id]) * (Lr_node[id + 1] - Lr_node[id]) / (yi[id + 1] - yi[id]);
           // Checking to see whether the face is perpendicular to the wind direction
           if (perpendicular_flag[id] == 0) {
@@ -370,14 +372,14 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
           }
           canyon_factor = 1.0;
           x_id_min = -1;
-          for (auto x_id = 1; x_id <= ceil(Lr_local / WGD->dxy); x_id++) {
-            xc = x_id * WGD->dxy;
-            int i = ((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x) / WGD->dx;
-            int j = ((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y) / WGD->dy;
-            if (i >= WGD->nx - 2 && i <= 0 && j >= WGD->ny - 2 && j <= 0) {
+          for (auto x_id = 1; x_id <= ceil(Lr_local / dxy); x_id++) {
+            xc = x_id * dxy;
+            int i = ((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x) / dx;
+            int j = ((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y) / dy;
+            if (i >= nx - 2 && i <= 0 && j >= ny - 2 && j <= 0) {
               break;
             }
-            int icell_cent = i + j * (WGD->nx - 1) + kk * (WGD->nx - 1) * (WGD->ny - 1);
+            icell_cent = WGD->domain.cell(i, j, kk);
             if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2 && x_id_min < 0) {
               x_id_min = x_id;
             }
@@ -387,18 +389,18 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
             }
           }
           x_id_min = -1;
-          for (auto x_id = 1; x_id <= 2 * ceil(farwake_factor * Lr_local / WGD->dxy); x_id++) {
+          for (auto x_id = 1; x_id <= 2 * ceil(farwake_factor * Lr_local / dxy); x_id++) {
             u_wake_flag = 1;
             v_wake_flag = 1;
             w_wake_flag = 1;
 
-            xc = 0.5 * x_id * WGD->dxy;
-            int i = ((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x) / WGD->dx;
-            int j = ((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y) / WGD->dy;
-            if (i >= WGD->nx - 2 || i <= 0 || j >= WGD->ny - 2 || j <= 0) {
+            xc = 0.5 * x_id * dxy;
+            int i = ((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x) / dx;
+            int j = ((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y) / dy;
+            if (i >= nx - 2 || i <= 0 || j >= ny - 2 || j <= 0) {
               break;
             }
-            icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+            icell_cent = WGD->domain.cell(i, j, k);
             if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2 && x_id_min < 0) {
               x_id_min = x_id;
             }
@@ -408,7 +410,8 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
                   x_id_min = -1;
                 } else if (canyon_factor < 1.0) {
                   break;
-                } else if (WGD->icellflag[i + j * (WGD->nx - 1) + kk * (WGD->nx - 1) * (WGD->ny - 1)] == 0 || WGD->icellflag[i + j * (WGD->nx - 1) + kk * (WGD->nx - 1) * (WGD->ny - 1)] == 2) {
+                } else if (WGD->icellflag[WGD->domain.cell(i, j, kk)] == 0
+                           || WGD->icellflag[WGD->domain.cell(i, j, kk)] == 2) {
                   break;
                 }
               }
@@ -416,11 +419,11 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
 
             if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
 
-              i_u = std::round(((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x) / WGD->dx);
-              j_u = ((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y) / WGD->dy;
-              if (i_u < WGD->nx - 1 && i_u > 0 && j_u < WGD->ny - 1 && j_u > 0) {
-                xp = i_u * WGD->dx - building_cent_x;
-                yp = (j_u + 0.5) * WGD->dy - building_cent_y;
+              i_u = std::round(((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x) / dx);
+              j_u = ((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y) / dy;
+              if (i_u < nx - 1 && i_u > 0 && j_u < ny - 1 && j_u > 0) {
+                xp = i_u * dx - building_cent_x;
+                yp = (j_u + 0.5) * dy - building_cent_y;
                 xu = xp * cos(upwind_dir) + yp * sin(upwind_dir);
                 yu = -xp * sin(upwind_dir) + yp * cos(upwind_dir);
                 Lr_local_u = Lr_node[id] + (yu - yi[id]) * (Lr_node[id + 1] - Lr_node[id]) / (yi[id + 1] - yi[id]);
@@ -442,11 +445,11 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
                 }
               }
 
-              i_v = ((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x) / WGD->dx;
-              j_v = std::round(((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y) / WGD->dy);
-              if (i_v < WGD->nx - 1 && i_v > 0 && j_v < WGD->ny - 1 && j_v > 0) {
-                xp = (i_v + 0.5) * WGD->dx - building_cent_x;
-                yp = j_v * WGD->dy - building_cent_y;
+              i_v = ((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x) / dx;
+              j_v = std::round(((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y) / dy);
+              if (i_v < nx - 1 && i_v > 0 && j_v < ny - 1 && j_v > 0) {
+                xp = (i_v + 0.5) * dx - building_cent_x;
+                yp = j_v * dy - building_cent_y;
                 xv = xp * cos(upwind_dir) + yp * sin(upwind_dir);
                 yv = -xp * sin(upwind_dir) + yp * cos(upwind_dir);
                 Lr_local_v = Lr_node[id] + (yv - yi[id]) * (Lr_node[id + 1] - Lr_node[id]) / (yi[id + 1] - yi[id]);
@@ -467,13 +470,13 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
                 }
               }
 
-              i_w = ceil(((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x) / WGD->dx) - 1;
-              j_w = ceil(((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y) / WGD->dy) - 1;
+              i_w = ceil(((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x) / dx) - 1;
+              j_w = ceil(((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y) / dy) - 1;
               // check if position in domain
-              if (i_w < WGD->nx - 2 && i_w > 0 && j_w < WGD->ny - 2 && j_w > 0) {
+              if (i_w < nx - 2 && i_w > 0 && j_w < ny - 2 && j_w > 0) {
 
-                xp = (i_w + 0.5) * WGD->dx - building_cent_x;
-                yp = (j_w + 0.5) * WGD->dy - building_cent_y;
+                xp = (i_w + 0.5) * dx - building_cent_x;
+                yp = (j_w + 0.5) * dy - building_cent_y;
 
                 xw = xp * cos(upwind_dir) + yp * sin(upwind_dir);
                 yw = -xp * sin(upwind_dir) + yp * cos(upwind_dir);
@@ -497,17 +500,17 @@ void PolyBuilding::NonLocalMixing(WINDSGeneralData *WGD, TURBGeneralData *TGD, i
                   w_wake_flag = 0;
                 }
 
-                icell_cent = i_w + j_w * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-                icell_face = i_w + j_w * WGD->nx + k * WGD->nx * WGD->ny;
+                icell_cent = WGD->domain.cell(i_w, j_w, k);
+                icell_face = WGD->domain.face(i_w, j_w, k);
                 if (dn_w > 0.0 && w_wake_flag == 1 && yw <= yi[id] && yw >= yi[id + 1] && WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
                   // location of the center line
-                  i_cl = ceil((cos(upwind_dir) * xw + building_cent_x) / WGD->dx) - 1;
-                  j_cl = ceil((sin(upwind_dir) * xw + building_cent_y) / WGD->dy) - 1;
+                  i_cl = ceil((cos(upwind_dir) * xw + building_cent_x) / dx) - 1;
+                  j_cl = ceil((sin(upwind_dir) * xw + building_cent_y) / dy) - 1;
 
                   // check if position in domain
-                  if (i_cl < WGD->nx - 2 && i_cl > 0 && j_cl < WGD->ny - 2 && j_cl > 0) {
+                  if (i_cl < nx - 2 && i_cl > 0 && j_cl < ny - 2 && j_cl > 0) {
                     // index for centerline
-                    //int icell_cent_cl = i_cl + j_cl * (nx - 1) + k * (ny - 1) * (nx - 1);
+                    // int icell_cent_cl = i_cl + j_cl * (nx - 1) + k * (ny - 1) * (nx - 1);
                     int icell_face_cl = i_cl + j_cl * nx + k * ny * nx;
 
                     // velocity interpolated at the center line

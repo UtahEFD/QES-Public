@@ -1,0 +1,41 @@
+<QESPlumeParameters>
+<simulationParameters>
+    <simDur> 1000.0 </simDur>
+    <timeStep> 0.1 </timeStep>
+    <CourantNumber> 1 </CourantNumber>
+    <invarianceTol> 1e-10 </invarianceTol>
+    <C_0> 4.0 </C_0>
+    <updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop>
+    <updateFrequency_timeLoop> 100 </updateFrequency_timeLoop>
+</simulationParameters>
+<collectionParameters>
+    <timeAvgStart> 0.0 </timeAvgStart>
+    <timeAvgFreq> 60.0 </timeAvgFreq>
+    <boxBoundsX1> 0.0 </boxBoundsX1>
+    <boxBoundsX2> 110.0 </boxBoundsX2>
+    <boxBoundsY1> 0.0 </boxBoundsY1>
+    <boxBoundsY2> 110.0 </boxBoundsY2>
+    <boxBoundsZ1> 0.0 </boxBoundsZ1>
+    <boxBoundsZ2> 35.0 </boxBoundsZ2>
+    <nBoxesX> 110 </nBoxesX>
+    <nBoxesY> 110 </nBoxesY>
+    <nBoxesZ> 70 </nBoxesZ>
+</collectionParameters>
+<sources>
+    <numSources> 1 </numSources>
+    <SourcePoint>
+        <ReleaseType_continuous>
+            <parPerTimestep>10</parPerTimestep>
+        </ReleaseType_continuous>
+        <posX> 10.0 </posX>
+        <posY> 10.0 </posY>
+        <posZ> 1.0 </posZ>
+    </SourcePoint>
+</sources>
+<boundaryConditions>
+    <xBCtype>exiting</xBCtype>
+    <yBCtype>exiting</yBCtype>
+    <zBCtype>exiting</zBCtype>
+    <wallReflection>stairstepReflection</wallReflection>
+</boundaryConditions>
+</QESPlumeParameters>

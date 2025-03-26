@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -38,9 +38,9 @@
 #include <algorithm>
 
 #include "util/ParseInterface.h"
-
 #include "Building.h"
 
+class CutBuilding;
 
 using namespace std;
 using std::cerr;
@@ -55,9 +55,8 @@ using std::cout;
  * @brief Designed for the general building shape (polygons).
  *
  * It's an inheritance of the building class (has all the features defined in that class).
- * In this class, first, the polygone buildings will be defined and then different
- * parameterizations related to each building will be applied. For now, it only includes
- * wake behind the building parameterization.
+ * In this class, first, the polygon buildings will be defined and then different
+ * parameterizations related to each building will be applied. For now,
  *
  * @sa Building
  * @sa ParseInterface
@@ -93,15 +92,12 @@ protected:
 
   ///@{
   /** :document this: */
-  int icell_cent, icell_face;
-  ///@}
-
-  ///@{
-  /** :document this: */
   float x1, x2, y1, y2;
   ///@}
 
   std::vector<float> upwind_rel_dir; /**< :document this: */
+
+  CutBuilding *cutBuilding;
 
 public:
   PolyBuilding()
@@ -115,6 +111,7 @@ public:
   {
   }
 
+  // friend class CutBuilding;
 
   /**
    * Creates a polygon type building.
@@ -210,8 +207,8 @@ public:
    * features of the building defined in the class constructor and setCellsFlag function. It defines
    * cells qualified in the space between buildings and applies the approperiate parameterization to them.
    * More information: "Improvements to a fast-response WINDSan wind model, M. Nelson et al. (2008)"
-   * New model base on "Evaluation of the QUIC-URB fast response urban wind model for a cubical building 
-   * array and wide building street canyon" Singh et al. (2008) 
+   * New model base on "Evaluation of the QUIC-URB fast response urban wind model for a cubical building
+   * array and wide building street canyon" Singh et al. (2008)
    *
    * @param WGD :document this:
    */
@@ -271,33 +268,6 @@ public:
    * @param WGD :document this:
    */
   // void poisson (const WINDSInputData* WID, WINDSGeneralData* WGD);
-
-  /**
-   * :document this:
-   *
-   * @param face_points :document this:
-   * @param index :document this:
-   */
-  void reorderPoints(std::vector<cutVert> &face_points, int index);
-
-  /**
-   * :document this:
-   *
-   * @param angle :document this:
-   * @param face_points :document this:
-   */
-  void mergeSort(std::vector<float> &angle, std::vector<cutVert> &face_points);
-
-
-  /**
-   * :document this:
-   *
-   * @param WGD :document this:
-   * @param face_points :document this:
-   * @param cutcell_index :document this:
-   * @param index :document this:
-   */
-  float calculateArea(WINDSGeneralData *WGD, std::vector<cutVert> &face_points, int cutcell_index, int index);
 
 
   /**

@@ -1,6 +1,38 @@
-//
-// Created by Fabien Margairaz on 4/2/23.
-//
+/****************************************************************************
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
+ *
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
+ *
+ * This file is part of QES-Winds
+ *
+ * GPL-3.0 License
+ *
+ * QES-Winds is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Winds is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
+/**
+ * @file plume_uniform.cpp
+ * @brief This is a regression test based on the uniform Gaussian plume model
+ */
+
 #include <catch2/catch_test_macros.hpp>
 
 #include <iostream>
@@ -8,19 +40,17 @@
 #include <algorithm>
 
 #include "util/calcTime.h"
-
-#include "plume/PlumeInputData.hpp"
 #include "util/NetCDFInput.h"
 #include "util/QESout.h"
 
-#include "test_WINDSGeneralData.h"
+#include "qes/Domain.h"
 
 #include "winds/WINDSGeneralData.h"
-#include "plume/Plume.hpp"
 
-#include "util/QESNetCDFOutput.h"
-#include "plume/PlumeOutput.h"
-#include "plume/PlumeOutputParticleData.h"
+#include "plume/PLUMEInputData.h"
+#include "plume/PLUMEGeneralData.h"
+
+#include "plume/Concentration.h"
 
 // float calcEntropy(int nbrBins, Plume *plume);
 // void calcRMSE_wFluct(int nbrBins, Plume *plume, std::map<std::string, float> &rmse);
@@ -42,7 +72,7 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
   qesPlumeParamFile.append("/tests/regressionTests/plume_uniform_parameters.xml");
 
   // parse xml settings
-  auto PID = new PlumeInputData(qesPlumeParamFile);
+  auto *PID = new PlumeInputData(qesPlumeParamFile);
 
   float uMean = 2.0;
   float uStar = 0.174;
@@ -53,59 +83,60 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
   int gridSize[3] = { 102, 102, 141 };
   float gridRes[3] = { 1.0, 1.0, 1.0 };
 
-  WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes);
-  TURBGeneralData *TGD = new TURBGeneralData(WGD);
+  qes::Domain domain(102, 102, 141, 1.0, 1.0, 1.0);
 
-  for (int k = 0; k < WGD->nz; ++k) {
-    for (int j = 0; j < WGD->ny; ++j) {
-      for (int i = 0; i < WGD->nx; ++i) {
-        int faceID = i + j * (WGD->nx) + k * (WGD->nx) * (WGD->ny);
-        WGD->u[faceID] = uMean;
+  auto *WGD = new WINDSGeneralData(domain);
+  WGD->timestamp.emplace_back("2020-01-01T00:00:00");
+
+  auto *TGD = new TURBGeneralData(WGD);
+
+  for (int k = 0; k < WGD->domain.nz(); ++k) {
+    for (int j = 0; j < WGD->domain.ny(); ++j) {
+      for (int i = 0; i < WGD->domain.nx(); ++i) {
+        // int faceID = i + j * (WGD->nx) + k * (WGD->nx) * (WGD->ny);
+        WGD->u[WGD->domain.face(i, j, k)] = uMean;
       }
     }
   }
 
-  for (int k = 1; k < WGD->nz - 1; ++k) {
-    for (int j = 0; j < WGD->ny - 1; ++j) {
-      for (int i = 0; i < WGD->nx - 1; ++i) {
-        int cellID = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-        TGD->txx[cellID] = pow(2.50 * uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
-        TGD->tyy[cellID] = pow(1.78 * uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
-        TGD->tzz[cellID] = pow(1.27 * uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
-        TGD->txz[cellID] = -pow(uStar, 2) * pow(1 - WGD->z[k] / zi, 3. / 2.);
+  for (int k = 1; k < WGD->domain.nz() - 1; ++k) {
+    for (int j = 0; j < WGD->domain.ny() - 1; ++j) {
+      for (int i = 0; i < WGD->domain.nx() - 1; ++i) {
+        int cellID = WGD->domain.cell(i, j, k);
+        TGD->txx[cellID] = pow(2.50 * uStar, 2) * pow(1 - WGD->domain.z[k] / zi, 3. / 2.);
+        TGD->tyy[cellID] = pow(1.78 * uStar, 2) * pow(1 - WGD->domain.z[k] / zi, 3. / 2.);
+        TGD->tzz[cellID] = pow(1.27 * uStar, 2) * pow(1 - WGD->domain.z[k] / zi, 3. / 2.);
+        TGD->txz[cellID] = -pow(uStar, 2) * pow(1 - WGD->domain.z[k] / zi, 3. / 2.);
 
         TGD->tke[cellID] = pow(uStar / 0.55, 2.0);
-        TGD->CoEps[cellID] = C0 * pow(uStar, 3) / (0.4 * WGD->z[k]) * pow(1 - 0.85 * WGD->z[k] / zi, 3.0 / 2.0);
+        TGD->CoEps[cellID] = C0 * pow(uStar, 3)
+                             / (0.4 * WGD->domain.z[k]) * pow(1 - 0.85 * WGD->domain.z[k] / zi, 3.0 / 2.0);
       }
     }
   }
   TGD->divergenceStress();
 
   // Create instance of Plume model class
-  auto *plume = new Plume(PID, WGD, TGD);
-
-  // create output instance
-  std::vector<QESNetCDFOutput *> outputVec;
-  std::string outFile = QES_DIR;
-  outFile.append("/scratch/UniformFlow_xDir_ContRelease_plumeOut.nc");
-
-  auto *plumeOutput = new PlumeOutput(PID, plume, outFile);
-
-  outputVec.push_back(plumeOutput);
-  // outputVec.push_back(new PlumeOutputParticleData(PID, plume, "../testCases/Sinusoidal3D/QES-data/Sinusoidal3D_0.01_12_particleInfo.nc"));
+  // auto *plume = new Plume(PID, WGD, TGD);
+  PlumeParameters PP("", false, false);
+  auto *PGD = new PLUMEGeneralData(PP, PID, WGD, TGD);
 
   // Run plume advection model
   QEStime endtime = WGD->timestamp[0] + PID->plumeParams->simDur;
-  plume->run(endtime, WGD, TGD, outputVec);
+  // plume->run(endtime, WGD, TGD, outputVec);
+  PGD->run(endtime, WGD, TGD);
 
   // compute run time information and print the elapsed execution time
   std::cout << "[QES-Plume] \t Finished." << std::endl;
 
   std::cout << "End run particle summary \n";
-  // plume->showCurrentStatus();
+  PGD->showCurrentStatus();
   timers.printStoredTime("QES-Plume total runtime");
   std::cout << "##############################################################" << std::endl
             << std::endl;
+
+  auto tag = PID->particleParams->particles.at(0)->tag;
+  auto *test_conc = dynamic_cast<Concentration *>(PGD->models[tag]->stats->get("concentration"));
 
   // source info (hard coded because no way to access the source info here)
   float xS = 20;
@@ -117,12 +148,11 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
 
   float CNorm = (uMean * H * H / Q);
 
-  // concentration info
-  float dt = plumeOutput->timeStep;
-  float tAvg = plumeOutput->averagingPeriod;
+  float dt = PID->plumeParams->timeStep;
+  float tAvg = test_conc->ongoingAveragingTime;
 
   // normalization of particle count #particle -> time-averaged # particle/m3
-  float CC = dt / tAvg / plumeOutput->volume;
+  float CC = dt / tAvg / test_conc->volume;
 
   // model variances
   float sigV = 1.78f * uStar;
@@ -132,9 +162,9 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
   float SSres = 0.0, SStot = 0.0;
   std::vector<float> xoH, maxRelErr, relRMSE;
 
-  for (int i = 7; i < plumeOutput->nBoxesX; ++i) {
+  for (int i = 7; i < test_conc->nBoxesX; ++i) {
     // x-location of the profile
-    float x = plumeOutput->xBoxCen[i] - xS;
+    float x = test_conc->xBoxCen[i] - xS;
 
     // time of flight of the particle
     float t = x / uMean;
@@ -150,25 +180,25 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
 
     // calculate the normalize concentration from Gaussian plume model
     std::vector<float> CStarModel;
-    CStarModel.resize(plumeOutput->nBoxesY * plumeOutput->nBoxesZ, 0.0);
-    for (int k = 0; k < plumeOutput->nBoxesZ; ++k) {
-      for (int j = 0; j < plumeOutput->nBoxesY; ++j) {
-        float y = plumeOutput->yBoxCen[j] - yS;
-        float z = plumeOutput->zBoxCen[k] - zS;
-        CStarModel[j + k * plumeOutput->nBoxesY] = Q / (2 * M_PI * uMean * sigY * sigZ)
-                                                   * expf(-0.5f * powf(y, 2) / powf(sigY, 2))
-                                                   * expf(-0.5f * powf(z, 2) / powf(sigZ, 2))
-                                                   * CNorm;
+    CStarModel.resize(test_conc->nBoxesY * test_conc->nBoxesZ, 0.0);
+    for (int k = 0; k < test_conc->nBoxesZ; ++k) {
+      for (int j = 0; j < test_conc->nBoxesY; ++j) {
+        float y = test_conc->yBoxCen[j] - yS;
+        float z = test_conc->zBoxCen[k] - zS;
+        CStarModel[j + k * test_conc->nBoxesY] = Q / (2 * M_PI * uMean * sigY * sigZ)
+                                                 * expf(-0.5f * powf(y, 2) / powf(sigY, 2))
+                                                 * expf(-0.5f * powf(z, 2) / powf(sigZ, 2))
+                                                 * CNorm;
       }
     }
 
     // calculate the normalize concentration from QES-plume
     std::vector<float> CStarQES;
-    CStarQES.resize(plumeOutput->nBoxesY * plumeOutput->nBoxesZ, 0.0);
-    for (int k = 0; k < plumeOutput->nBoxesZ; ++k) {
-      for (int j = 0; j < plumeOutput->nBoxesY; ++j) {
-        int id = i + j * plumeOutput->nBoxesX + k * plumeOutput->nBoxesX * plumeOutput->nBoxesY;
-        CStarQES[j + k * plumeOutput->nBoxesY] = (float)plumeOutput->pBox[id] * CC * CNorm;
+    CStarQES.resize(test_conc->nBoxesY * test_conc->nBoxesZ, 0.0);
+    for (int k = 0; k < test_conc->nBoxesZ; ++k) {
+      for (int j = 0; j < test_conc->nBoxesY; ++j) {
+        int id = i + j * test_conc->nBoxesX + k * test_conc->nBoxesX * test_conc->nBoxesY;
+        CStarQES[j + k * test_conc->nBoxesY] = (float)test_conc->pBox[id] * CC * CNorm;
       }
     }
 
@@ -212,8 +242,9 @@ TEST_CASE("Regression test of QES-Plume: uniform flow gaussian plume model")
   std::cout << "QES-Plume r2 coeff: r2 = " << R2 << std::endl;
   std::cout << "--------------------------------------------------------------" << std::endl;
 
+
   // Catch2 requirements
-  REQUIRE(plume->getNumRogueParticles() == 0);
+  REQUIRE(PGD->getNumRogueParticles() == 0);
   for (auto k = 0u; k < xoH.size(); ++k) {
     REQUIRE(maxRelErr[k] < 0.1);
     REQUIRE(relRMSE[k] < 0.02);

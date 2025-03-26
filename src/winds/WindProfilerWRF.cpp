@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -63,27 +63,32 @@ void WindProfilerWRF::interpolateWindProfile(const WINDSInputData *WID, WINDSGen
 
   auto start = std::chrono::high_resolution_clock::now();
 
-  int id, icell_face;
+  long id, icell_face;
   float zm;
+
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+
   WRFInput *wrf_ptr = WID->simParams->wrfInputData;
 
   // Create initial wind field in the area WRF data is available
-  for (auto k = 1; k < WGD->nz - 1; ++k) {
+  for (auto k = 1; k < nz - 1; ++k) {
     for (auto j = WGD->halo_index_y; j < WGD->wrf_ny + WGD->halo_index_y; ++j) {
       for (auto i = WGD->halo_index_x + 1; i < WGD->wrf_nx + WGD->halo_index_x; ++i) {
         id = (i - WGD->halo_index_x) + (j - WGD->halo_index_y) * WGD->wrf_nx;
-        zm = WGD->z[k] - WGD->z_face[WGD->terrain_face_id[i + j * WGD->nx]];
-        icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+        zm = WGD->domain.z[k] - WGD->domain.z_face[WGD->terrain_face_id[i + j * nx]];
+        // icell_face = i + j * nx + k * nx * ny;
+        icell_face = WGD->domain.face(i, j, k);
         interpolate(WGD->u0[icell_face], zm, id, wrf_ptr->u0_fmw, wrf_ptr->ht_fmw, 1, WGD->wrf_nx * WGD->wrf_ny);
       }
     }
   }
-  for (auto k = 1; k < WGD->nz - 1; ++k) {
+  for (auto k = 1; k < nz - 1; ++k) {
     for (auto j = WGD->halo_index_y + 1; j < WGD->wrf_ny + WGD->halo_index_y; ++j) {
       for (auto i = WGD->halo_index_x; i < WGD->wrf_nx + WGD->halo_index_x; ++i) {
         id = (i - WGD->halo_index_x) + (j - WGD->halo_index_y) * WGD->wrf_nx;
-        zm = WGD->z[k] - WGD->z_face[WGD->terrain_face_id[i + j * WGD->nx]];
-        icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+        zm = WGD->domain.z[k] - WGD->domain.z_face[WGD->terrain_face_id[i + j * nx]];
+        // icell_face = i + j * nx + k * nx * ny;
+        icell_face = WGD->domain.face(i, j, k);
         interpolate(WGD->v0[icell_face], zm, id, wrf_ptr->v0_fmw, wrf_ptr->ht_fmw, WGD->wrf_nx, WGD->wrf_nx * WGD->wrf_ny);
       }
     }
@@ -92,16 +97,18 @@ void WindProfilerWRF::interpolateWindProfile(const WINDSInputData *WID, WINDSGen
   // top ghost cell (above domain)
   for (auto j = WGD->halo_index_y + 1; j < WGD->wrf_ny + WGD->halo_index_y; ++j) {
     for (auto i = WGD->halo_index_x + 1; i < WGD->wrf_nx + WGD->halo_index_x; ++i) {
-      int icell_face_up = i + j * WGD->nx + (WGD->nz - 1) * WGD->nx * WGD->ny;
-      int icell_face_down = i + j * WGD->nx + (WGD->nz - 2) * WGD->nx * WGD->ny;
+      // int icell_face_up = i + j * nx + (nz - 1) * nx * ny;
+      long icell_face_up = WGD->domain.face(i, j, nz - 1);
+      // int icell_face_down = i + j * nx + (nz - 2) * nx * ny;
+      long icell_face_down = WGD->domain.face(i, j, nz - 2);
       WGD->u0[icell_face_up] = WGD->u0[icell_face_down];
       WGD->v0[icell_face_up] = WGD->v0[icell_face_down];
     }
   }
   // bottom ghost cell (under the terrain)
-  for (auto j = 0; j < WGD->ny; ++j) {
-    for (auto i = 0; i < WGD->nx; ++i) {
-      icell_face = i + j * WGD->nx;
+  for (auto j = 0; j < ny; ++j) {
+    for (auto i = 0; i < nx; ++i) {
+      icell_face = i + j * nx;
       WGD->u0[icell_face] = 0.0;
       WGD->v0[icell_face] = 0.0;
     }
@@ -109,72 +116,88 @@ void WindProfilerWRF::interpolateWindProfile(const WINDSInputData *WID, WINDSGen
 
   // sides (including halo cells)
   // u-velocity
-  for (auto k = 1; k < WGD->nz; ++k) {
+  for (auto k = 1; k < nz; ++k) {
     // West side (inside domain only)
     for (auto j = WGD->halo_index_y + 1; j < WGD->wrf_ny + WGD->halo_index_y; ++j) {
       for (auto i = 0; i <= WGD->halo_index_x; ++i) {
-        icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-        id = (WGD->halo_index_x + 1) + j * WGD->nx + k * WGD->nx * WGD->ny;
+        // icell_face = i + j * nx + k * nx * ny;
+        icell_face = WGD->domain.face(i, j, k);
+        // id = (WGD->halo_index_x + 1) + j * nx + k * nx * ny;
+        id = WGD->domain.face(WGD->halo_index_x + 1, j, k);
         WGD->u0[icell_face] = WGD->u0[id];
       }
     }
     // East side (inside domain only)
     for (auto j = WGD->halo_index_y + 1; j < WGD->wrf_ny + WGD->halo_index_y; ++j) {
-      for (auto i = WGD->wrf_ny + WGD->halo_index_y; i < WGD->nx; ++i) {
-        icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-        id = (WGD->wrf_ny + WGD->halo_index_x - 1) + j * WGD->nx + k * WGD->nx * WGD->ny;
+      for (auto i = WGD->wrf_ny + WGD->halo_index_y; i < nx; ++i) {
+        // icell_face = i + j * nx + k * nx * ny;
+        icell_face = WGD->domain.face(i, j, k);
+        // id = (WGD->wrf_ny + WGD->halo_index_x - 1) + j * nx + k * nx * ny;
+        id = WGD->domain.face(WGD->wrf_ny + WGD->halo_index_x - 1, j, k);
         WGD->u0[icell_face] = WGD->u0[id];
       }
     }
     // South side (whole domain)
     for (auto j = 0; j <= WGD->halo_index_y; ++j) {
-      for (auto i = 0; i < WGD->nx; ++i) {
-        icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-        id = i + (WGD->halo_index_y + 1) * WGD->nx + k * WGD->nx * WGD->ny;
+      for (auto i = 0; i < nx; ++i) {
+        // icell_face = i + j * nx + k * nx * ny;
+        icell_face = WGD->domain.face(i, j, k);
+        // id = i + (WGD->halo_index_y + 1) * nx + k * nx * ny;
+        id = WGD->domain.face(i, WGD->halo_index_y + 1, k);
         WGD->u0[icell_face] = WGD->u0[id];
       }
     }
     // North side (whole domain)
-    for (auto j = WGD->wrf_nx + WGD->halo_index_x; j < WGD->ny; ++j) {
-      for (auto i = 0; i < WGD->nx; ++i) {
-        icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-        id = i + (WGD->wrf_ny + WGD->halo_index_y - 1) * WGD->nx + k * WGD->nx * WGD->ny;
+    for (auto j = WGD->wrf_nx + WGD->halo_index_x; j < ny; ++j) {
+      for (auto i = 0; i < nx; ++i) {
+        // icell_face = i + j * nx + k * nx * ny;
+        icell_face = WGD->domain.face(i, j, k);
+        // id = i + (WGD->wrf_ny + WGD->halo_index_y - 1) * nx + k * nx * ny;
+        id = WGD->domain.face(i, WGD->wrf_ny + WGD->halo_index_y - 1, k);
         WGD->u0[icell_face] = WGD->u0[id];
       }
     }
   }
 
   // v-velocity
-  for (auto k = 1; k < WGD->nz; ++k) {
+  for (auto k = 1; k < nz; ++k) {
     // South side (inside domain only)
     for (auto j = 0; j <= WGD->halo_index_y; ++j) {
       for (auto i = WGD->halo_index_x + 1; i < WGD->wrf_nx + WGD->halo_index_x; ++i) {
-        icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-        id = i + (WGD->halo_index_y + 1) * WGD->nx + k * WGD->nx * WGD->ny;
+        // icell_face = i + j * nx + k * nx * ny;
+        icell_face = WGD->domain.face(i, j, k);
+        // id = i + (WGD->halo_index_y + 1) * nx + k * nx * ny;
+        id = WGD->domain.face(i, WGD->halo_index_y + 1, k);
         WGD->v0[icell_face] = WGD->v0[id];
       }
     }
     // North side (inside domain only)
-    for (auto j = WGD->wrf_nx + WGD->halo_index_y; j < WGD->ny; ++j) {
+    for (auto j = WGD->wrf_nx + WGD->halo_index_y; j < ny; ++j) {
       for (auto i = WGD->halo_index_x + 1; i < WGD->wrf_nx + WGD->halo_index_x; ++i) {
-        icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-        id = i + (WGD->wrf_nx + WGD->halo_index_x - 1) * WGD->nx + k * WGD->nx * WGD->ny;
+        // icell_face = i + j * nx + k * nx * ny;
+        icell_face = WGD->domain.face(i, j, k);
+        // id = i + (WGD->wrf_nx + WGD->halo_index_x - 1) * nx + k * nx * ny;
+        id = WGD->domain.face(i, WGD->wrf_nx + WGD->halo_index_x - 1, k);
         WGD->v0[icell_face] = WGD->v0[id];
       }
     }
     // West side (whole domain)
-    for (auto j = 0; j < WGD->ny; ++j) {
+    for (auto j = 0; j < ny; ++j) {
       for (auto i = 0; i <= WGD->halo_index_x; ++i) {
-        icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-        id = (WGD->halo_index_x + 1) + j * WGD->nx + k * WGD->nx * WGD->ny;
+        // icell_face = i + j * nx + k * nx * ny;
+        icell_face = WGD->domain.face(i, j, k);
+        // id = (WGD->halo_index_x + 1) + j * nx + k * nx * ny;
+        id = WGD->domain.face(WGD->halo_index_x + 1, j, k);
         WGD->v0[icell_face] = WGD->v0[id];
       }
     }
     // East side (whole domain)
-    for (auto j = 0; j < WGD->ny; ++j) {
-      for (auto i = WGD->wrf_nx + WGD->halo_index_x; i < WGD->nx; ++i) {
-        icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-        id = (WGD->wrf_ny + WGD->halo_index_x - 1) + j * WGD->nx + k * WGD->nx * WGD->ny;
+    for (auto j = 0; j < ny; ++j) {
+      for (auto i = WGD->wrf_nx + WGD->halo_index_x; i < nx; ++i) {
+        // icell_face = i + j * nx + k * nx * ny;
+        icell_face = WGD->domain.face(i, j, k);
+        // id = (WGD->wrf_ny + WGD->halo_index_x - 1) + j * nx + k * nx * ny;
+        id = WGD->domain.face(WGD->wrf_ny + WGD->halo_index_x - 1, j, k);
         WGD->v0[icell_face] = WGD->v0[id];
       }
     }
@@ -182,13 +205,13 @@ void WindProfilerWRF::interpolateWindProfile(const WINDSInputData *WID, WINDSGen
 
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<float> elapsed = finish - start;
-  //std::cout << "Elapsed time for Barnes interpolation on CPU: " << elapsed.count() << " s\n";
+  // std::cout << "Elapsed time for Barnes interpolation on CPU: " << elapsed.count() << " s\n";
 
   return;
 }
 
 
-void WindProfilerWRF::interpolate(float &u, float &zm, int &id, std::vector<float> &u_fmw, std::vector<float> &z_fmw, int s1, int s2)
+void WindProfilerWRF::interpolate(float &u, float &zm, long &id, std::vector<float> &u_fmw, std::vector<float> &z_fmw, int s1, int s2)
 {
   if (zm < 0) {
     // if zm is under the surface -> u = 0
@@ -206,7 +229,7 @@ void WindProfilerWRF::interpolate(float &u, float &zm, int &id, std::vector<floa
     kt = kl + 1;
     // vertical interpolation at cell head of face
     u = (u_fmw[id + kl * s2] + (zm - z_fmw[kl]) * (u_fmw[id + kt * s2] - u_fmw[id + kl * s2]) / (z_fmw[kt] - z_fmw[kl]));
-    //vertical interpolation at cell behind of face
+    // vertical interpolation at cell behind of face
     u += (u_fmw[id - s1 + kl * s2] + (zm - z_fmw[kl]) * (u_fmw[id - s1 + kt * s2] - u_fmw[id - s1 + kl * s2]) / (z_fmw[kt] - z_fmw[kl]));
     // averaging....
     u *= 0.5;

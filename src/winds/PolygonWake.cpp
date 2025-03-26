@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -54,6 +54,9 @@
  */
 void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD, int building_id)
 {
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
+  float dxy = WGD->domain.dxy();
 
   std::vector<float> Lr_face, Lr_node;
   std::vector<int> perpendicular_flag;
@@ -84,8 +87,8 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
   float dn_u(0.0), dn_v(0.0), dn_w(0.0);// Length of cavity zone
   float farwake_vel;
   std::vector<double> u_temp, v_temp;
-  //u_temp.resize(WGD->nx * WGD->ny, 0.0);
-  //v_temp.resize(WGD->nx * WGD->ny, 0.0);
+  // u_temp.resize(WGD->nx * WGD->ny, 0.0);
+  // v_temp.resize(WGD->nx * WGD->ny, 0.0);
   std::vector<double> u0_modified, v0_modified;
   std::vector<int> u0_mod_id, v0_mod_id;
   float R_scale, R_cx, vd, hd, shell_height;
@@ -96,7 +99,8 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
   int k_s(0);// Index of the saddle point in vetical dir
 
 
-  int index_building_face = i_building_cent + j_building_cent * WGD->nx + (k_end)*WGD->nx * WGD->ny;
+  long index_building_face = WGD->domain.face(i_building_cent, j_building_cent, k_end);
+  long icell_face, icell_cent;
   u0_h = WGD->u0[index_building_face];// u velocity at the height of building at the centroid
   v0_h = WGD->v0[index_building_face];// v velocity at the height of building at the centroid
 
@@ -195,8 +199,8 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
     if (id_valid >= 0) {
 
       // search for building upstream
-      for (auto y_id = 0; y_id <= 2 * ceil(abs(yi[id_valid] - yi[id_valid + 1]) / WGD->dxy); y_id++) {
-        yc = MIN_S(yi[id_valid], yi[id_valid + 1]) + 0.5 * y_id * WGD->dxy;
+      for (auto y_id = 0; y_id <= 2 * ceil(abs(yi[id_valid] - yi[id_valid + 1]) / dxy); y_id++) {
+        yc = MIN_S(yi[id_valid], yi[id_valid + 1]) + 0.5 * y_id * dxy;
 
         // Checking to see whether the face is perpendicular to the wind direction
         if (perpendicular_flag[id_valid] == 1) {
@@ -205,12 +209,12 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
           x_wall = ((xi[id_valid + 1] - xi[id_valid]) / (yi[id_valid + 1] - yi[id_valid])) * (yc - yi[id_valid]) + xi[id_valid];
         }
 
-        for (auto x_id = ceil(Lr / WGD->dxy) + 1; x_id >= 1; x_id--) {
-          xc = -x_id * WGD->dxy;
-          int i = ceil(((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x)) / WGD->dx - 1;
-          int j = ceil(((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y)) / WGD->dy - 1;
-          if (i < WGD->nx - 2 && i > 0 && j < WGD->ny - 2 && j > 0) {
-            int icell_cent = i + j * (WGD->nx - 1) + (k_end - 1) * (WGD->nx - 1) * (WGD->ny - 1);
+        for (auto x_id = ceil(Lr / dxy) + 1; x_id >= 1; x_id--) {
+          xc = -x_id * dxy;
+          int i = ceil(((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x)) / dx - 1;
+          int j = ceil(((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y)) / dy - 1;
+          if (i < nx - 2 && i > 0 && j < ny - 2 && j > 0) {
+            icell_cent = WGD->domain.cell(i, j, k_end - 1);
             if (WGD->icellflag[icell_cent] == 0) {
               // found building
               bldg_upwind++;
@@ -221,7 +225,7 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
       }
 
       // set rooftop_flag based on presence of building upstream
-      if (bldg_upwind >= ceil(abs(yi[id_valid] - yi[id_valid + 1]) / WGD->dxy)) {
+      if (bldg_upwind >= ceil(abs(yi[id_valid] - yi[id_valid + 1]) / dxy)) {
         rooftop_flag = 0;
       } else {
         rooftop_flag = 1;
@@ -280,9 +284,9 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
     z_s = (-1.47 * L_over_H - 0.69 * W_over_H + 1.25) * wake_height;
     x_sep = 4.34 * wake_height * W_over_H / (pow(L_over_H, -0.16) * (2.99 - 0.81 * W_over_H));
     wake_height = (1.4077 * L_over_H - 1.5705 * W_over_H + 0.9297) * wake_height;
-    for (auto k = k_start; k <= WGD->nz - 2; k++) {
+    for (auto k = k_start; k <= nz - 2; k++) {
       k_s = k;
-      if (z_s <= WGD->z[k]) {
+      if (z_s <= WGD->domain.z[k]) {
         break;
       }
     }
@@ -336,34 +340,34 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
 
   for (auto k = 1; k <= k_start; k++) {
     k_bottom = k;
-    if (base_height <= WGD->z[k]) {
+    if (base_height <= WGD->domain.z[k]) {
       break;
     }
   }
 
-  for (auto k = k_start; k < WGD->nz - 2; k++) {
+  for (auto k = k_start; k < nz - 2; k++) {
     k_top = k;
-    if (wake_height < WGD->z[k + 1]) {
+    if (wake_height < WGD->domain.z[k + 1]) {
       break;
     }
   }
 
   for (auto k = k_start; k < k_end; k++) {
     kk = k;
-    if (0.75 * H + base_height <= WGD->z[k]) {
+    if (0.75 * H + base_height <= WGD->domain.z[k]) {
       break;
     }
   }
 
   for (auto k = k_top; k >= k_bottom; k--) {
-    z_build = WGD->z[k] - base_height;
+    z_build = WGD->domain.z[k] - base_height;
     for (auto id = 0; id <= stop_id; id++) {
       if (abs(upwind_rel_dir[id]) < 0.5 * M_PI) {
         if (perpendicular_flag[id] == 1) {
           x_wall = xi[id];
         }
-        for (auto y_id = 0; y_id <= 2 * ceil(abs(yi[id] - yi[id + 1]) / WGD->dxy); y_id++) {
-          yc = yi[id] - 0.5 * y_id * WGD->dxy;
+        for (auto y_id = 0; y_id <= 2 * ceil(abs(yi[id] - yi[id + 1]) / dxy); y_id++) {
+          yc = yi[id] - 0.5 * y_id * dxy;
           Lr_local = Lr_node[id] + (yc - yi[id]) * (Lr_node[id + 1] - Lr_node[id]) / (yi[id + 1] - yi[id]);
           // Checking to see whether the face is perpendicular to the wind direction
           if (perpendicular_flag[id] == 0) {
@@ -378,14 +382,14 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
           }
           canyon_factor = 1.0;
           x_id_min = -1;
-          for (auto x_id = 1; x_id <= ceil(Lr_local / WGD->dxy); x_id++) {
-            xc = x_id * WGD->dxy;
-            int i = ((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x) / WGD->dx;
-            int j = ((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y) / WGD->dy;
-            if (i >= WGD->nx - 2 || i <= 0 || j >= WGD->ny - 2 || j <= 0) {
+          for (auto x_id = 1; x_id <= ceil(Lr_local / dxy); x_id++) {
+            xc = x_id * dxy;
+            int i = ((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x) / dx;
+            int j = ((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y) / dy;
+            if (i >= nx - 2 || i <= 0 || j >= ny - 2 || j <= 0) {
               break;
             }
-            int icell_cent = i + j * (WGD->nx - 1) + kk * (WGD->nx - 1) * (WGD->ny - 1);
+            icell_cent = WGD->domain.cell(i, j, kk);
             if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2 && x_id_min < 0) {
               x_id_min = x_id;
             }
@@ -395,17 +399,17 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
             }
           }
           x_id_min = -1;
-          for (auto x_id = 1; x_id <= 2 * ceil(farwake_factor * Lr_local / WGD->dxy); x_id++) {
+          for (auto x_id = 1; x_id <= 2 * ceil(farwake_factor * Lr_local / dxy); x_id++) {
             u_wake_flag = 1;
             v_wake_flag = 1;
             w_wake_flag = 1;
-            xc = 0.5 * x_id * WGD->dxy;
-            int i = ((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x) / WGD->dx;
-            int j = ((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y) / WGD->dy;
-            if (i >= WGD->nx - 2 || i <= 0 || j >= WGD->ny - 2 || j <= 0) {
+            xc = 0.5 * x_id * dxy;
+            int i = ((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x) / dx;
+            int j = ((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y) / dy;
+            if (i >= nx - 2 || i <= 0 || j >= ny - 2 || j <= 0) {
               break;
             }
-            icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+            icell_cent = WGD->domain.cell(i, j, k);
             if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2 && x_id_min < 0) {
               x_id_min = x_id;
             }
@@ -415,19 +419,19 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
                   x_id_min = -1;
                 } else if (canyon_factor < 1.0) {
                   break;
-                } else if (WGD->icellflag[i + j * (WGD->nx - 1) + kk * (WGD->nx - 1) * (WGD->ny - 1)] == 0
-                           || WGD->icellflag[i + j * (WGD->nx - 1) + kk * (WGD->nx - 1) * (WGD->ny - 1)] == 2) {
+                } else if (WGD->icellflag[WGD->domain.cell(i, j, kk)] == 0
+                           || WGD->icellflag[WGD->domain.cell(i, j, kk)] == 2) {
                   break;
                 }
               }
             }
 
             if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
-              i_u = std::round(((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x) / WGD->dx);
-              j_u = ((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y) / WGD->dy;
-              if (i_u < WGD->nx - 1 && i_u > 0 && j_u < WGD->ny - 1 && j_u > 0) {
-                xp = i_u * WGD->dx - building_cent_x;
-                yp = (j_u + 0.5) * WGD->dy - building_cent_y;
+              i_u = std::round(((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x) / dx);
+              j_u = ((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y) / dy;
+              if (i_u < nx - 1 && i_u > 0 && j_u < ny - 1 && j_u > 0) {
+                xp = i_u * dx - building_cent_x;
+                yp = (j_u + 0.5) * dy - building_cent_y;
                 xu = xp * cos(upwind_dir) + yp * sin(upwind_dir);
                 yu = -xp * sin(upwind_dir) + yp * cos(upwind_dir);
                 Lr_local_u = Lr_node[id] + (yu - yi[id]) * (Lr_node[id + 1] - Lr_node[id]) / (yi[id + 1] - yi[id]);
@@ -453,8 +457,8 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
                 if (xu > farwake_factor * dn_u) {
                   u_wake_flag = 0;
                 }
-                icell_cent = i_u + j_u * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-                icell_face = i_u + j_u * WGD->nx + k * WGD->nx * WGD->ny;
+                icell_cent = WGD->domain.cell(i_u, j_u, k);
+                icell_face = WGD->domain.face(i_u, j_u, k);
                 if (dn_u > 0.0 && u_wake_flag == 1 && yu <= yi[id] && yu >= yi[id + 1]
                     && WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
                   // Far wake zone
@@ -483,11 +487,11 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
                 }
               }
 
-              i_v = ((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x) / WGD->dx;
-              j_v = std::round(((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y) / WGD->dy);
-              if (i_v < WGD->nx - 1 && i_v > 0 && j_v < WGD->ny - 1 && j_v > 0) {
-                xp = (i_v + 0.5) * WGD->dx - building_cent_x;
-                yp = j_v * WGD->dy - building_cent_y;
+              i_v = ((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x) / dx;
+              j_v = std::round(((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y) / dy);
+              if (i_v < nx - 1 && i_v > 0 && j_v < ny - 1 && j_v > 0) {
+                xp = (i_v + 0.5) * dx - building_cent_x;
+                yp = j_v * dy - building_cent_y;
                 xv = xp * cos(upwind_dir) + yp * sin(upwind_dir);
                 yv = -xp * sin(upwind_dir) + yp * cos(upwind_dir);
                 Lr_local_v = Lr_node[id] + (yv - yi[id]) * (Lr_node[id + 1] - Lr_node[id]) / (yi[id + 1] - yi[id]);
@@ -512,8 +516,8 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
                 if (xv > farwake_factor * dn_v) {
                   v_wake_flag = 0;
                 }
-                icell_cent = i_v + j_v * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-                icell_face = i_v + j_v * WGD->nx + k * WGD->nx * WGD->ny;
+                icell_cent = WGD->domain.cell(i_v, j_v, k);
+                icell_face = WGD->domain.face(i_v, j_v, k);
                 if (dn_v > 0.0 && v_wake_flag == 1 && yv <= yi[id] && yv >= yi[id + 1]
                     && WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
                   // Far wake zone
@@ -543,11 +547,11 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
                 }
               }
 
-              i_w = ceil(((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x) / WGD->dx) - 1;
-              j_w = ceil(((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y) / WGD->dy) - 1;
-              if (i_w < WGD->nx - 2 && i_w > 0 && j_w < WGD->ny - 2 && j_w > 0) {
-                xp = (i_w + 0.5) * WGD->dx - building_cent_x;
-                yp = (j_w + 0.5) * WGD->dy - building_cent_y;
+              i_w = ceil(((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x) / dx) - 1;
+              j_w = ceil(((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y) / dy) - 1;
+              if (i_w < nx - 2 && i_w > 0 && j_w < ny - 2 && j_w > 0) {
+                xp = (i_w + 0.5) * dx - building_cent_x;
+                yp = (j_w + 0.5) * dy - building_cent_y;
                 xw = xp * cos(upwind_dir) + yp * sin(upwind_dir);
                 yw = -xp * sin(upwind_dir) + yp * cos(upwind_dir);
                 Lr_local_w = Lr_node[id] + (yw - yi[id]) * (Lr_node[id + 1] - Lr_node[id]) / (yi[id + 1] - yi[id]);
@@ -572,8 +576,8 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
                 if (xw > farwake_factor * dn_w) {
                   w_wake_flag = 0;
                 }
-                icell_cent = i_w + j_w * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-                icell_face = i_w + j_w * WGD->nx + k * WGD->nx * WGD->ny;
+                icell_cent = WGD->domain.cell(i_w, j_w, k);
+                icell_face = WGD->domain.face(i_w, j_w, k);
                 if (dn_w > 0.0 && w_wake_flag == 1 && yw <= yi[id] && yw >= yi[id + 1]
                     && WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
                   if (xw > dn_w) {

@@ -4,6 +4,46 @@ This file is provided as reference to older build on CHPC.
 
 NOTE: these commandes where vaild on CentOS7. Now CHPC cluster run on Rocky 8. Most commands are no longer valid!!
 
+#### CUDA 11.4 Based Builds with NVIDIA OptiX Support
+
+*This is the preferred build setup on CHPC*
+
+To build with GCC 8.5.0, CUDA 11.4, and OptiX 7.1.0 on CHPC.
+Please use the following modules:
+```
+module load cuda/11.4
+module load cmake/3.21.4
+module load gcc/8.5.0
+module load boost/1.77.0
+module load intel-oneapi-mpi/2021.4.0
+module load gdal/3.3.3
+module load netcdf-c/4.8.1
+module load netcdf-cxx/4.2
+```
+Or use the provided load script.
+```
+source CHPC/loadmodules_QES.sh
+```
+After completing the above module loads, the following modules are reported from `module list`:
+```
+Currently Loaded Modules:
+  1) cuda/11.4    (g)   3) gcc/8.5.0      5) intel-oneapi-mpi/2021.4.0   7) netcdf-c/4.8.1
+  2) cmake/3.21.4       4) boost/1.77.0   6) gdal/3.3.3                  8) netcdf-cxx/4.2
+```
+After the modules are loaded, you can create the Makefiles with cmake.  We keep our builds separate from the source and contain our builds within their own folders.  For example, 
+```
+mkdir build
+cd build
+cmake -DCUDA_TOOLKIT_DIR=/uufs/chpc.utah.edu/sys/installdir/cuda/11.4.0 -DCUDA_SDK_ROOT_DIR=/uufs/chpc.utah.edu/sys/installdir/cuda/11.4.0 -DOptiX_INSTALL_DIR=/uufs/chpc.utah.edu/sys/installdir/optix/7.1.0 -DCMAKE_C_COMPILER=gcc -DNETCDF_CXX_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-cxx/4.3.0-5.4.0g/include ..
+```
+Upon completion of the above commands, you can go about editing and building mostly as normal, and issue the `make` command in your build folder to compile the source.
+
+After you've created the Makefiles with the cmake commands above, the code can be compiled on CHPC:
+```
+make
+```
+Note you *may* need to type make a second time due to a build bug, especially on the CUDA 8.0 build.
+
 ### CUDA 10.2 Based Builds with NVIDIA OptiX Support
 
 To build with CUDA 10.2 and OptiX 7.1.0 on CHPC, please use the following
@@ -131,3 +171,5 @@ Currently Loaded Modules:
 ```
 cmake -DCUDA_TOOLKIT_DIR=/usr/local/cuda-8.0 -DCUDA_SDK_ROOT_DIR=/usr/local/cuda-8.0 -DCMAKE_PREFIX_PATH=/uufs/chpc.utah.edu/sys/installdir/gdal/2.1.3-c7 -DNETCDF_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-c/4.4.1-c7/include -DNETCDF_CXX_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-cxx/4.3.0-5.4.0g/include ..
 ```
+
+

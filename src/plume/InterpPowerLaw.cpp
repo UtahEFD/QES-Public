@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -33,10 +33,10 @@
 #include "InterpPowerLaw.h"
 
 
-InterpPowerLaw::InterpPowerLaw(WINDSGeneralData *WGD, TURBGeneralData *TGD, const bool &debug_val)
-  : Interp(WGD)
+InterpPowerLaw::InterpPowerLaw(qes::Domain domain_in, bool debug_val = 0)
+  : Interp(domain_in)
 {
-  //std::cout << "[InterpPowerLaw] \t Setting Interpolation method " << std::endl;
+  // std::cout << "[InterpPowerLaw] \t Setting Interpolation method " << std::endl;
 
   // copy debug information
   bool debug = debug_val;
@@ -49,105 +49,81 @@ InterpPowerLaw::InterpPowerLaw(WINDSGeneralData *WGD, TURBGeneralData *TGD, cons
   }
 }
 
-double InterpPowerLaw::getMaxFluctuation()
+float InterpPowerLaw::getMaxFluctuation()
 {
   // calculate the threshold velocity
-  double a = 4.8;
-  double p = 0.15;
+  float a = 4.8;
+  float p = 0.15;
 
-  double us = 0.4 * p * a * pow(zEnd, p);
+  float us = 0.4 * p * a * pow(zEnd, p);
   return 10.0 * 2.5 * us;
 }
 
-
-void InterpPowerLaw::interpInitialValues(const double &xPos,
-                                         const double &yPos,
-                                         const double &zPos,
-                                         const TURBGeneralData *TGD,
-                                         double &sig_x_out,
-                                         double &sig_y_out,
-                                         double &sig_z_out,
-                                         double &txx_out,
-                                         double &txy_out,
-                                         double &txz_out,
-                                         double &tyy_out,
-                                         double &tyz_out,
-                                         double &tzz_out)
+void InterpPowerLaw::interpWindsValues(const WINDSGeneralData *WGD,
+                                       const vec3 &pos,
+                                       vec3 &vel_out)
 {
-  double a = 4.8;
-  double p = 0.15;
+  float a = 4.8;
+  float p = 0.15;
 
-  //double b = 0.08;
-  //double n = 1.0;
-  double z = 0.1 * ceil(10.0 * zPos);
+  // float b = 0.08;
+  // float n = 1.0;
 
-  double us = 0.4 * p * a * pow(z, p);
-  //double us = sqrt(b * p * a * pow(zPos, n + p - 1));
+  float z = 0.1 * ceil(10.0 * pos._3);
 
-  sig_x_out = 2.5 * us;
-  sig_y_out = 2.3 * us;
-  sig_z_out = 1.3 * us;
+  float us = 0.4 * p * a * powf(z, p);
+  // float us = sqrt(b * p * a * pow(z, n + p - 1));
 
-  txx_out = pow(sig_x_out, 2.0);
-  tyy_out = pow(sig_y_out, 2.0);
-  tzz_out = pow(sig_z_out, 2.0);
-  txy_out = 0.0;
-  tyz_out = 0.0;
-  txz_out = -pow(us, 2.0);
-
-  return;
+  vel_out._1 = a * powf(z, p);
+  vel_out._2 = 0.0;
+  vel_out._3 = 0.0;
 }
 
-void InterpPowerLaw::interpValues(const double &xPos,
-                                  const double &yPos,
-                                  const double &zPos,
-                                  const WINDSGeneralData *WGD,
-                                  double &uMean_out,
-                                  double &vMean_out,
-                                  double &wMean_out,
-                                  const TURBGeneralData *TGD,
-                                  double &txx_out,
-                                  double &txy_out,
-                                  double &txz_out,
-                                  double &tyy_out,
-                                  double &tyz_out,
-                                  double &tzz_out,
-                                  double &flux_div_x_out,
-                                  double &flux_div_y_out,
-                                  double &flux_div_z_out,
-                                  double &nuT_out,
-                                  double &CoEps_out)
+void InterpPowerLaw::interpTurbValues(const TURBGeneralData *TGD,
+                                      const vec3 &pos,
+                                      mat3sym &tau_out,
+                                      vec3 &flux_div_out,
+                                      float &nuT_out,
+                                      float &CoEps_out)
 {
-  double a = 4.8;
-  double p = 0.15;
+  float a = 4.8;
+  float p = 0.15;
 
-  //double b = 0.08;
-  //double n = 1.0;
+  // float b = 0.08;
+  // float n = 1.0;
 
-  double z = 0.1 * ceil(10.0 * zPos);
+  float z = 0.1 * ceil(10.0 * pos._3);
 
-  double us = 0.4 * p * a * pow(z, p);
-  //double us = sqrt(b * p * a * pow(z, n + p - 1));
+  float us = 0.4 * p * a * pow(z, p);
+  // float us = sqrt(b * p * a * pow(z, n + p - 1));
 
-  uMean_out = a * pow(z, p);
-  vMean_out = 0.0;
-  wMean_out = 0.0;
+  CoEps_out = (5.7f * us * us * us) / (0.4f * z);
 
-  CoEps_out = (5.7 * us * us * us) / (0.4 * z);
+  tau_out = { powf(2.5f * us, 2.0f), powf(2.3f * us, 2.0f), powf(1.3f * us, 2.0f), 0.0f, 0.0f, -powf(us, 2.0f) };
 
-  txx_out = pow(2.5 * us, 2.0);
-  tyy_out = pow(2.3 * us, 2.0);
-  tzz_out = pow(1.3 * us, 2.0);
-  txy_out = 0.0;
-  tyz_out = 0.0;
-  txz_out = -pow(us, 2.0);
-
-  flux_div_x_out = -2.0 * p * pow(0.4 * p * a, 2.0) * pow(z, 2.0 * p - 1.0);
-  //flux_div_x_out = -b * p * a * (n + p - 1) * pow(z, n + p - 2.0);
-  flux_div_y_out = 0.0;
-  flux_div_z_out = 2.0 * p * pow(1.3 * 0.4 * p * a, 2.0) * pow(z, 2.0 * p - 1.0);
-  //flux_div_z_out = (1.3 * 1.3) * b * p * a * (n + p - 1) * pow(z, n + p - 2.0);
+  flux_div_out._1 = -2.0f * p * powf(0.4f * p * a, 2.0f) * powf(z, 2.0f * p - 1.0f);
+  // flux_div_out.1 = -b * p * a * (n + p - 1) * pow(z, n + p - 2.0);
+  flux_div_out._2 = 0.0f;
+  flux_div_out._3 = 2.0f * p * powf(1.3f * 0.4f * p * a, 2.0f) * powf(z, 2.0f * p - 1.0f);
+  // flux_div_out._3 = (1.3 * 1.3) * b * p * a * (n + p - 1) * pow(z, n + p - 2.0);
+}
 
 
-  return;
+void InterpPowerLaw::interpTurbInitialValues(const TURBGeneralData *TGD,
+                                             const vec3 &pos,
+                                             mat3sym &tau_out,
+                                             vec3 &sig_out)
+{
+  float a = 4.8;
+  float p = 0.15;
+
+  // float b = 0.08;
+  // float n = 1.0;
+  float z = 0.1 * ceil(10.0 * pos._3);
+
+  float us = 0.4 * p * a * powf(z, p);
+  // float us = sqrt(b * p * a * pow(zPos, n + p - 1));
+
+  tau_out = { powf(2.5f * us, 2.0f), powf(2.3f * us, 2.0f), powf(1.3f * us, 2.0f), 0.0f, 0.0f, -powf(us, 2.0f) };
+  sig_out = { 2.5f * us, 2.3f * us, 1.3f * us };
 }

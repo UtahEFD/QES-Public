@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -53,7 +53,7 @@ void LocalMixingNetCDF::defineMixingLength(const WINDSInputData *WID, WINDSGener
   mixLengthInput->getDimensionSize("y", ny_f);
   mixLengthInput->getDimensionSize("z", nz_f);
 
-  if (nx_f != WGD->nx - 1 || ny_f != WGD->ny - 1 || nz_f != WGD->nz - 1) {
+  if (nx_f != WGD->domain.nx() - 1 || ny_f != WGD->domain.ny() - 1 || nz_f != WGD->domain.nz() - 1) {
     std::cout << "[ERROR] \t domain size error in " << WID->turbParams->filename << std::endl;
     exit(EXIT_FAILURE);
   }
@@ -68,8 +68,8 @@ void LocalMixingNetCDF::defineMixingLength(const WINDSInputData *WID, WINDSGener
     std::vector<size_t> count;
     start = { 0, 0, 0 };
     count = { static_cast<unsigned long>(nz_f),
-      static_cast<unsigned long>(ny_f),
-      static_cast<unsigned long>(nx_f) };
+              static_cast<unsigned long>(ny_f),
+              static_cast<unsigned long>(nx_f) };
 
     // read in mixilength
     mixLengthInput->getVariableData(WID->turbParams->varname, start, count, WGD->mixingLengths);
@@ -78,6 +78,4 @@ void LocalMixingNetCDF::defineMixingLength(const WINDSInputData *WID, WINDSGener
               << WID->turbParams->filename << std::endl;
     exit(EXIT_FAILURE);
   }
-
-  return;
 }

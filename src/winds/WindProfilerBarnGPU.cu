@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -39,7 +39,7 @@
 #include <chrono>
 #include <cuda.h>
 #include <cuda_runtime.h>
-#include <cuda_gl_interop.h>
+
 #include "Sensor.h"
 
 #include "WindProfilerBarnGPU.h"
@@ -273,7 +273,12 @@ __global__ void CorrectInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_wu
 }
 
 
+/*<<<<<<< HEAD
 __global__ void BarnesScheme(float *d_u_prof, float *d_v_prof, float *d_wm, float *d_wms, float *d_u0_int, float *d_v0_int, float *d_x, float *d_y, float *d_z, float *d_site_xcoord, float *d_site_ycoord, float *d_sum_wm, float *d_sum_wu, float *d_sum_wv, float *d_u0, float *d_v0, float *d_w0, int *d_iwork, int *d_jwork, int *d_site_id, int *d_terrain_face_id, int *d_k_mod, float *d_dxx, float *d_dyy, float *d_u12, float *d_u34, float *d_v12, float *d_v34, int num_sites, int nx, int ny, int nz, float dx, float dy, float asl_percent, int *d_abl_height, float *d_surf_layer_height)
+=======*/
+/* FM 10/29/2024 Removing dynamic parallelism because cudaDeviceSynchronize from device code is deprecated
+__global__ void BarnesScheme(float *d_u_prof, float *d_v_prof, float *d_wm, float *d_wms, float *d_u0_int, float *d_v0_int, float *d_x, float *d_y, float *d_z, float *d_site_xcoord, float *d_site_ycoord, float *d_sum_wm, float *d_sum_wu, float *d_sum_wv, float *d_u0, float *d_v0, float *d_w0, int *d_iwork, int *d_jwork, int *d_site_id, int *d_terrain_face_id, int *d_k_mod, float *d_dxx, float *d_dyy, float *d_u12, float *d_u34, float *d_v12, float *d_v34, int num_sites, int nx, int ny, int nz, float dx, float dy, float asl_percent, float abl_height, float *d_surf_layer_height)
+>>>>>>> 6aee4dc53fb682adbc547a865dc1f74ace4421cc
 {
   float rc_sum, rc_val, xc, yc, rc;
   float dn, lamda, s_gamma;
@@ -298,29 +303,48 @@ __global__ void BarnesScheme(float *d_u_prof, float *d_v_prof, float *d_wm, floa
   dim3 numberOfBlocks(ceil((num_sites * nx * ny) / (float)(BLOCKSIZE)), 1, 1);
 
   Calculatewm<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_wm, d_wms, d_sum_wm, d_site_xcoord, d_site_ycoord, d_x, d_y, lamda, s_gamma, num_sites, nx, ny, nz);
-  cudaDeviceSynchronize();
-
+  //cudaDeviceSynchronize();
+  __syncthreads();
   dim3 numberOfThreadsPerBlock1(BLOCKSIZE, 1, 1);
   dim3 numberOfBlocks1(ceil((nx * ny) / (float)(BLOCKSIZE)), 1, 1);
 
+<<<<<<< HEAD
   CalculateInitialWind<<<numberOfBlocks1, numberOfThreadsPerBlock1>>>(d_wm, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_u_prof, d_v_prof, d_site_id, d_terrain_face_id, d_k_mod, num_sites, nx, ny, nz, asl_percent, d_abl_height, d_z, d_surf_layer_height);
   cudaDeviceSynchronize();
 
+=======
+  CalculateInitialWind<<<numberOfBlocks1, numberOfThreadsPerBlock1>>>(d_wm, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_u_prof, d_v_prof, d_site_id, d_terrain_face_id, d_k_mod, num_sites, nx, ny, nz, asl_percent, abl_height, d_z, d_surf_layer_height);
+  //cudaDeviceSynchronize();
+  __syncthreads();
+>>>>>>> 6aee4dc53fb682adbc547a865dc1f74ace4421cc
   dim3 numberOfThreadsPerBlock2(BLOCKSIZE, 1, 1);
   dim3 numberOfBlocks2(ceil((num_sites) / (float)(BLOCKSIZE)), 1, 1);
 
   CalculateInit<<<numberOfBlocks2, numberOfThreadsPerBlock2>>>(d_site_xcoord, d_site_ycoord, d_x, d_y, d_dxx, d_dyy, d_iwork, d_jwork, d_u12, d_u34, d_v12, d_v34, d_u0_int, d_v0_int, d_u0, d_v0, d_u_prof, d_v_prof, d_site_id, d_terrain_face_id, num_sites, dx, dy, nx, ny, nz);
+<<<<<<< HEAD
   cudaDeviceSynchronize();
 
   CorrectInitialWind<<<numberOfBlocks1, numberOfThreadsPerBlock1>>>(d_wm, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_u_prof, d_v_prof, d_u0_int, d_v0_int, d_site_id, d_terrain_face_id, d_k_mod, num_sites, nx, ny, nz, asl_percent, d_abl_height, d_z, d_surf_layer_height);
   cudaDeviceSynchronize();
+=======
+  //cudaDeviceSynchronize();
+  __syncthreads();
+  CorrectInitialWind<<<numberOfBlocks1, numberOfThreadsPerBlock1>>>(d_wm, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_u_prof, d_v_prof, d_u0_int, d_v0_int, d_site_id, d_terrain_face_id, d_k_mod, num_sites, nx, ny, nz, asl_percent, abl_height, d_z, d_surf_layer_height);
+  //cudaDeviceSynchronize();
+  __syncthreads();
+>>>>>>> 6aee4dc53fb682adbc547a865dc1f74ace4421cc
 }
+*/
 
 void WindProfilerBarnGPU::BarnesInterpolationGPU(const WINDSInputData *WID, WINDSGeneralData *WGD)
 {
   int num_sites = available_sensor_id.size();
 
-  //std::vector<float> u_prof_1d, v_prof_1d;
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
+  long numcell_face = WGD->domain.numFaceCentered();
+
+  // std::vector<float> u_prof_1d, v_prof_1d;
   std::vector<float> wm, wms, u0_int, v0_int;
   std::vector<float> site_xcoord, site_ycoord, sum_wm, sum_wu, sum_wv;
   std::vector<float> dxx, dyy, u12, u34, v12, v34;
@@ -328,32 +352,32 @@ void WindProfilerBarnGPU::BarnesInterpolationGPU(const WINDSInputData *WID, WIND
   std::vector<int> k_mod;
   std::vector<int> surf_layer_height;
 
-  //u_prof_1d.resize(num_sites * WGD->nz, 0.0);
-  //v_prof_1d.resize(num_sites * WGD->nz, 0.0);
-  wm.resize(num_sites * WGD->nx * WGD->ny, 0.0);
-  wms.resize(num_sites * WGD->nx * WGD->ny, 0.0);
-  u0_int.resize(num_sites * WGD->nz, 0.0);
-  v0_int.resize(num_sites * WGD->nz, 0.0);
-  sum_wm.resize(WGD->nx * WGD->ny, 0.0);
-  sum_wu.resize(WGD->nx * WGD->ny * WGD->nz, 0.0);
-  sum_wv.resize(WGD->nx * WGD->ny * WGD->nz, 0.0);
+  // u_prof_1d.resize(num_sites * nz, 0.0);
+  // v_prof_1d.resize(num_sites * nz, 0.0);
+  wm.resize(num_sites * nx * ny, 0.0);
+  wms.resize(num_sites * nx * ny, 0.0);
+  u0_int.resize(num_sites * nz, 0.0);
+  v0_int.resize(num_sites * nz, 0.0);
+  sum_wm.resize(nx * ny, 0.0);
+  sum_wu.resize(nx * ny * nz, 0.0);
+  sum_wv.resize(nx * ny * nz, 0.0);
   site_xcoord.resize(num_sites, 0.0);
   site_ycoord.resize(num_sites, 0.0);
   iwork.resize(num_sites, 0);
   jwork.resize(num_sites, 0);
   dxx.resize(num_sites, 0.0);
   dyy.resize(num_sites, 0.0);
-  u12.resize(num_sites * WGD->nz, 0.0);
-  u34.resize(num_sites * WGD->nz, 0.0);
-  v12.resize(num_sites * WGD->nz, 0.0);
-  v34.resize(num_sites * WGD->nz, 0.0);
-  k_mod.resize(WGD->nx * WGD->ny, 1);
-  surf_layer_height.resize(WGD->nx * WGD->ny, 0);
+  u12.resize(num_sites * nz, 0.0);
+  u34.resize(num_sites * nz, 0.0);
+  v12.resize(num_sites * nz, 0.0);
+  v34.resize(num_sites * nz, 0.0);
+  k_mod.resize(nx * ny, 1);
+  surf_layer_height.resize(nx * ny, 0);
 
   /*
     for (auto i = 0; i < num_sites; i++) {
-    for (auto k = 0; k < WGD->nz; k++) {
-      int id = k + i * WGD->nz;
+    for (auto k = 0; k < nz; k++) {
+      int id = k + i * nz;
       u_prof_1d[id] = u_prof[i][k];
       v_prof_1d[id] = v_prof[i][k];
     }
@@ -367,15 +391,34 @@ void WindProfilerBarnGPU::BarnesInterpolationGPU(const WINDSInputData *WID, WIND
 
 
   std::vector<float> x, y;
-  x.resize(WGD->nx);
-  for (int i = 0; i < WGD->nx; i++) {
-    x[i] = (i - 0.5) * WGD->dx; /**< Location of face centers in x-dir */
+  x.resize(nx);
+  for (int i = 0; i < nx; i++) {
+    x[i] = (i - 0.5) * dx; /**< Location of face centers in x-dir */
   }
 
-  y.resize(WGD->ny);
-  for (auto j = 0; j < WGD->ny; j++) {
-    y[j] = (j - 0.5) * WGD->dy; /**< Location of face centers in y-dir */
+  y.resize(ny);
+  for (auto j = 0; j < ny; j++) {
+    y[j] = (j - 0.5) * dy; /**< Location of face centers in y-dir */
   }
+
+  float rc_sum, rc_val, xc, yc, rc;
+  float dn, lamda, s_gamma;
+  rc_sum = 0.0;
+  for (int i = 0; i < num_sites; i++) {
+    rc_val = 1000000.0;
+    for (int ii = 0; ii < num_sites; ii++) {
+      xc = site_xcoord[ii] - site_xcoord[i];
+      yc = site_ycoord[ii] - site_ycoord[i];
+      rc = sqrt(pow(xc, 2.0) + pow(yc, 2.0));
+      if (rc < rc_val && ii != i) {
+        rc_val = rc;
+      }
+    }
+    rc_sum = rc_sum + rc_val;
+  }
+  dn = rc_sum / num_sites;
+  lamda = 5.052 * pow((2 * dn / M_PI), 2.0);
+  s_gamma = 0.2;
 
   float *d_u_prof, *d_v_prof, *d_wm, *d_wms, *d_u0_int, *d_v0_int;
   float *d_x, *d_y, *d_site_xcoord, *d_site_ycoord, *d_sum_wm, *d_sum_wu, *d_sum_wv;
@@ -386,74 +429,100 @@ void WindProfilerBarnGPU::BarnesInterpolationGPU(const WINDSInputData *WID, WIND
   float *d_z, *d_surf_layer_height;
   int *d_abl_height;
 
-  cudaMalloc((void **)&d_u_prof, num_sites * WGD->nz * sizeof(float));
-  cudaMalloc((void **)&d_v_prof, num_sites * WGD->nz * sizeof(float));
-  cudaMalloc((void **)&d_wm, num_sites * WGD->nx * WGD->ny * sizeof(float));
-  cudaMalloc((void **)&d_wms, num_sites * WGD->nx * WGD->ny * sizeof(float));
-  cudaMalloc((void **)&d_u0_int, num_sites * WGD->nz * sizeof(float));
-  cudaMalloc((void **)&d_v0_int, num_sites * WGD->nz * sizeof(float));
-  cudaMalloc((void **)&d_sum_wm, WGD->nx * WGD->ny * sizeof(float));
-  cudaMalloc((void **)&d_sum_wu, WGD->nx * WGD->ny * WGD->nz * sizeof(float));
-  cudaMalloc((void **)&d_sum_wv, WGD->nx * WGD->ny * WGD->nz * sizeof(float));
+  cudaMalloc((void **)&d_u_prof, num_sites * nz * sizeof(float));
+  cudaMalloc((void **)&d_v_prof, num_sites * nz * sizeof(float));
+  cudaMalloc((void **)&d_wm, num_sites * nx * ny * sizeof(float));
+  cudaMalloc((void **)&d_wms, num_sites * nx * ny * sizeof(float));
+  cudaMalloc((void **)&d_u0_int, num_sites * nz * sizeof(float));
+  cudaMalloc((void **)&d_v0_int, num_sites * nz * sizeof(float));
+  cudaMalloc((void **)&d_sum_wm, nx * ny * sizeof(float));
+  cudaMalloc((void **)&d_sum_wu, nx * ny * nz * sizeof(float));
+  cudaMalloc((void **)&d_sum_wv, nx * ny * nz * sizeof(float));
   cudaMalloc((void **)&d_site_xcoord, num_sites * sizeof(float));
   cudaMalloc((void **)&d_site_ycoord, num_sites * sizeof(float));
-  cudaMalloc((void **)&d_x, WGD->nx * sizeof(float));
-  cudaMalloc((void **)&d_y, WGD->ny * sizeof(float));
-  cudaMalloc((void **)&d_z, (WGD->nz - 1) * sizeof(float));
-  cudaMalloc((void **)&d_u0, WGD->numcell_face * sizeof(float));
-  cudaMalloc((void **)&d_v0, WGD->numcell_face * sizeof(float));
-  cudaMalloc((void **)&d_w0, WGD->numcell_face * sizeof(float));
+  cudaMalloc((void **)&d_x, nx * sizeof(float));
+  cudaMalloc((void **)&d_y, ny * sizeof(float));
+  cudaMalloc((void **)&d_z, (nz - 1) * sizeof(float));
+  cudaMalloc((void **)&d_u0, numcell_face * sizeof(float));
+  cudaMalloc((void **)&d_v0, numcell_face * sizeof(float));
+  cudaMalloc((void **)&d_w0, numcell_face * sizeof(float));
   cudaMalloc((void **)&d_iwork, num_sites * sizeof(int));
   cudaMalloc((void **)&d_jwork, num_sites * sizeof(int));
   cudaMalloc((void **)&d_site_id, num_sites * sizeof(int));
   cudaMalloc((void **)&d_dxx, num_sites * sizeof(float));
   cudaMalloc((void **)&d_dyy, num_sites * sizeof(float));
-  cudaMalloc((void **)&d_u12, num_sites * WGD->nz * sizeof(float));
-  cudaMalloc((void **)&d_u34, num_sites * WGD->nz * sizeof(float));
-  cudaMalloc((void **)&d_v12, num_sites * WGD->nz * sizeof(float));
-  cudaMalloc((void **)&d_v34, num_sites * WGD->nz * sizeof(float));
-  cudaMalloc((void **)&d_terrain_face_id, WGD->nx * WGD->ny * sizeof(int));
-  cudaMalloc((void **)&d_k_mod, WGD->nx * WGD->ny * sizeof(int));
-  cudaMalloc((void **)&d_surf_layer_height, WGD->nx * WGD->ny * sizeof(float));
+  cudaMalloc((void **)&d_u12, num_sites * nz * sizeof(float));
+  cudaMalloc((void **)&d_u34, num_sites * nz * sizeof(float));
+  cudaMalloc((void **)&d_v12, num_sites * nz * sizeof(float));
+  cudaMalloc((void **)&d_v34, num_sites * nz * sizeof(float));
+  cudaMalloc((void **)&d_terrain_face_id, nx * ny * sizeof(int));
+  cudaMalloc((void **)&d_k_mod, nx * ny * sizeof(int));
+  cudaMalloc((void **)&d_surf_layer_height, nx * ny * sizeof(float));
   cudaMalloc((void **)&d_abl_height, num_sites * sizeof(int));
 
-  cudaMemcpy(d_u_prof, u_prof.data(), num_sites * WGD->nz * sizeof(int), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_v_prof, v_prof.data(), num_sites * WGD->nz * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_wm, wm.data(), num_sites * WGD->nx * WGD->ny * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_wms, wms.data(), num_sites * WGD->nx * WGD->ny * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_u0_int, u0_int.data(), num_sites * WGD->nz * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_v0_int, v0_int.data(), num_sites * WGD->nz * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_sum_wm, sum_wm.data(), WGD->nx * WGD->ny * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_sum_wu, sum_wu.data(), WGD->nx * WGD->ny * WGD->nz * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_sum_wv, sum_wv.data(), WGD->nx * WGD->ny * WGD->nz * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_u_prof, u_prof.data(), num_sites * nz * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_v_prof, v_prof.data(), num_sites * nz * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_wm, wm.data(), num_sites * nx * ny * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_wms, wms.data(), num_sites * nx * ny * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_u0_int, u0_int.data(), num_sites * nz * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_v0_int, v0_int.data(), num_sites * nz * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_sum_wm, sum_wm.data(), nx * ny * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_sum_wu, sum_wu.data(), nx * ny * nz * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_sum_wv, sum_wv.data(), nx * ny * nz * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_site_xcoord, site_xcoord.data(), num_sites * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_site_ycoord, site_ycoord.data(), num_sites * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_x, x.data(), WGD->nx * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_y, y.data(), WGD->ny * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_z, WGD->z.data(), (WGD->nz - 1) * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_u0, WGD->u0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_v0, WGD->v0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_w0, WGD->w0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_x, x.data(), nx * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_y, y.data(), ny * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_z, WGD->domain.z.data(), (nz - 1) * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_u0, WGD->u0.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_v0, WGD->v0.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_w0, WGD->w0.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_iwork, iwork.data(), num_sites * sizeof(int), cudaMemcpyHostToDevice);
   cudaMemcpy(d_jwork, jwork.data(), num_sites * sizeof(int), cudaMemcpyHostToDevice);
   cudaMemcpy(d_site_id, site_id.data(), num_sites * sizeof(int), cudaMemcpyHostToDevice);
   cudaMemcpy(d_dxx, dxx.data(), num_sites * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_dyy, dyy.data(), num_sites * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_u12, u12.data(), num_sites * WGD->nz * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_u34, u34.data(), num_sites * WGD->nz * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_v12, v12.data(), num_sites * WGD->nz * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_v34, v34.data(), num_sites * WGD->nz * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_terrain_face_id, WGD->terrain_face_id.data(), WGD->nx * WGD->ny * sizeof(int), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_k_mod, k_mod.data(), WGD->nx * WGD->ny * sizeof(int), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_surf_layer_height, surf_layer_height.data(), WGD->nx * WGD->ny * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_u12, u12.data(), num_sites * nz * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_u34, u34.data(), num_sites * nz * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_v12, v12.data(), num_sites * nz * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_v34, v34.data(), num_sites * nz * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_terrain_face_id, WGD->terrain_face_id.data(), nx * ny * sizeof(int), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_k_mod, k_mod.data(), nx * ny * sizeof(int), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_surf_layer_height, surf_layer_height.data(), nx * ny * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_abl_height, abl_height.data(), num_sites * sizeof(int), cudaMemcpyHostToDevice);
-	   
-  BarnesScheme<<<1, 1>>>(d_u_prof, d_v_prof, d_wm, d_wms, d_u0_int, d_v0_int, d_x, d_y, d_z, d_site_xcoord, d_site_ycoord, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_iwork, d_jwork, d_site_id, d_terrain_face_id, d_k_mod, d_dxx, d_dyy, d_u12, d_u34, d_v12, d_v34, num_sites, WGD->nx, WGD->ny, WGD->nz, WGD->dx, WGD->dy, asl_percent, d_abl_height, d_surf_layer_height);
-  //cudaCheck(cudaGetLastError());
 
-  cudaMemcpy(WGD->u0.data(), d_u0, WGD->numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
-  cudaMemcpy(WGD->v0.data(), d_v0, WGD->numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
-  cudaMemcpy(WGD->w0.data(), d_w0, WGD->numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
+  // FM 10/29/2024 Removing dynamic parallelism because cudaDeviceSynchronize from device code is deprecated
+  // BarnesScheme<<<1, 1>>>(d_u_prof, d_v_prof, d_wm, d_wms, d_u0_int, d_v0_int, d_x, d_y, d_z, d_site_xcoord, d_site_ycoord, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_iwork, d_jwork, d_site_id, d_terrain_face_id, d_k_mod, d_dxx, d_dyy, d_u12, d_u34, d_v12, d_v34, num_sites, nx, ny, nz, dx, dy, asl_percent, abl_height, d_surf_layer_height);
+
+  dim3 numberOfThreadsPerBlock(BLOCKSIZE, 1, 1);
+
+  dim3 numberOfBlocks(ceil((num_sites * nx * ny) / (float)(BLOCKSIZE)), 1, 1);
+
+  // add comment here
+  Calculatewm<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_wm, d_wms, d_sum_wm, d_site_xcoord, d_site_ycoord, d_x, d_y, lamda, s_gamma, num_sites, nx, ny, nz);
+  cudaDeviceSynchronize();
+
+  dim3 numberOfBlocks1(ceil((nx * ny) / (float)(BLOCKSIZE)), 1, 1);
+
+  // add comment here
+  CalculateInitialWind<<<numberOfBlocks1, numberOfThreadsPerBlock>>>(d_wm, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_u_prof, d_v_prof, d_site_id, d_terrain_face_id, d_k_mod, num_sites, nx, ny, nz, asl_percent, d_abl_height, d_z, d_surf_layer_height);
+  cudaDeviceSynchronize();
+
+  dim3 numberOfBlocks2(ceil((num_sites) / (float)(BLOCKSIZE)), 1, 1);
+
+  // add comment here
+  CalculateInit<<<numberOfBlocks2, numberOfThreadsPerBlock>>>(d_site_xcoord, d_site_ycoord, d_x, d_y, d_dxx, d_dyy, d_iwork, d_jwork, d_u12, d_u34, d_v12, d_v34, d_u0_int, d_v0_int, d_u0, d_v0, d_u_prof, d_v_prof, d_site_id, d_terrain_face_id, num_sites, dx, dy, nx, ny, nz);
+  cudaDeviceSynchronize();
+
+  // add comment here
+  CorrectInitialWind<<<numberOfBlocks1, numberOfThreadsPerBlock>>>(d_wm, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_u_prof, d_v_prof, d_u0_int, d_v0_int, d_site_id, d_terrain_face_id, d_k_mod, num_sites, nx, ny, nz, asl_percent, d_abl_height, d_z, d_surf_layer_height);
+  cudaDeviceSynchronize();
+
+  cudaCheck(cudaGetLastError());
+
+  cudaMemcpy(WGD->u0.data(), d_u0, numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
+  cudaMemcpy(WGD->v0.data(), d_v0, numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
+  cudaMemcpy(WGD->w0.data(), d_w0, numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
 
   cudaFree(d_u_prof);
   cudaFree(d_v_prof);

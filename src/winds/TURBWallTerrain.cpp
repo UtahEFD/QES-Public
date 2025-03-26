@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -88,8 +88,8 @@ void TURBWallTerrain::setWallsStressDeriv(WINDSGeneralData *WGD,
 void TURBWallTerrain::set_loglaw_stairstep(WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
 
-  int nx = WGD->nx;
-  int ny = WGD->ny;
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
 
   // ## HORIZONTAL WALL
   // set BC for horizontal wall below the cell
@@ -106,10 +106,10 @@ void TURBWallTerrain::set_loglaw_stairstep(WINDSGeneralData *WGD, TURBGeneralDat
 
     // Gxz = dudz
     TGD->Gxz[it->cellID] = 0.5 * (WGD->u[it->faceID] + WGD->u[it->faceID + 1])
-                           / (0.5 * WGD->dz_array[k] * log(0.5 * WGD->dz_array[k] / z0));
+                           / (0.5 * WGD->domain.dz_array[k] * log(0.5 * WGD->domain.dz_array[k] / z0));
     // Gyz = dvdz
     TGD->Gyz[it->cellID] = 0.5 * (WGD->v[it->faceID] + WGD->v[it->faceID + nx])
-                           / (0.5 * WGD->dz_array[k] * log(0.5 * WGD->dz_array[k] / z0));
+                           / (0.5 * WGD->domain.dz_array[k] * log(0.5 * WGD->domain.dz_array[k] / z0));
   }
   // set BC for horizontal wall above the cell
   for (std::vector<pairCellFaceID>::iterator it = wall_above_indices.begin();
@@ -126,10 +126,10 @@ void TURBWallTerrain::set_loglaw_stairstep(WINDSGeneralData *WGD, TURBGeneralDat
 
     // Gxz = dudz
     TGD->Gxz[it->cellID] = 0.5 * (WGD->u[it->faceID] + WGD->u[it->faceID + 1])
-                           / (0.5 * WGD->dz_array[k] * log(0.5 * WGD->dz_array[k] / z0));
+                           / (0.5 * WGD->domain.dz_array[k] * log(0.5 * WGD->domain.dz_array[k] / z0));
     // Gyz = dvdz
     TGD->Gyz[it->cellID] = 0.5 * (WGD->v[it->faceID] + WGD->v[it->faceID + nx])
-                           / (0.5 * WGD->dz_array[k] * log(0.5 * WGD->dz_array[k] / z0));
+                           / (0.5 * WGD->domain.dz_array[k] * log(0.5 * WGD->domain.dz_array[k] / z0));
   }
 
   // ## VERTICAL WALL ALONG X (front/back)
@@ -147,10 +147,10 @@ void TURBWallTerrain::set_loglaw_stairstep(WINDSGeneralData *WGD, TURBGeneralDat
 
     // Gyx = dvdx
     TGD->Gyx[it->cellID] = 0.5 * (WGD->v[it->faceID] + WGD->v[it->faceID + nx])
-                           / (0.5 * WGD->dx * log(0.5 * WGD->dx / z0));
+                           / (0.5 * dx * log(0.5 * dx / z0));
     // Gzx = dwdx
     TGD->Gzx[it->cellID] = 0.5 * (WGD->w[it->faceID] + WGD->w[it->faceID + nx * ny])
-                           / (0.5 * WGD->dx * log(0.5 * WGD->dx / z0));
+                           / (0.5 * dx * log(0.5 * dx / z0));
   }
   // set BC for vertical wall in front of the cell
   for (std::vector<pairCellFaceID>::iterator it = wall_front_indices.begin();
@@ -166,10 +166,10 @@ void TURBWallTerrain::set_loglaw_stairstep(WINDSGeneralData *WGD, TURBGeneralDat
 
     // Gyx = dvdx
     TGD->Gyx[it->cellID] = 0.5 * (WGD->v[it->faceID] + WGD->v[it->faceID + nx])
-                           / (0.5 * WGD->dx * log(0.5 * WGD->dx / z0));
+                           / (0.5 * dx * log(0.5 * dx / z0));
     // Gzx = dwdx
     TGD->Gzx[it->cellID] = 0.5 * (WGD->w[it->faceID] + WGD->w[it->faceID + nx * ny])
-                           / (0.5 * WGD->dx * log(0.5 * WGD->dx / z0));
+                           / (0.5 * dx * log(0.5 * dx / z0));
   }
 
   // ## VERTICAL WALL ALONG Y (right/left)
@@ -187,10 +187,10 @@ void TURBWallTerrain::set_loglaw_stairstep(WINDSGeneralData *WGD, TURBGeneralDat
 
     // Gxy = dudy
     TGD->Gxy[it->cellID] = 0.5 * (WGD->u[it->faceID] + WGD->u[it->faceID + 1])
-                           / (0.5 * WGD->dy * log(0.5 * WGD->dy / z0));
+                           / (0.5 * dy * log(0.5 * dy / z0));
     // Gzy = dwdy
     TGD->Gzy[it->cellID] = 0.5 * (WGD->w[it->faceID] + WGD->w[it->faceID + nx * ny])
-                           / (0.5 * WGD->dy * log(0.5 * WGD->dy / z0));
+                           / (0.5 * dy * log(0.5 * dy / z0));
   }
   // set BC for vertical wall left of the cell
   for (std::vector<pairCellFaceID>::iterator it = wall_below_indices.begin();
@@ -206,10 +206,10 @@ void TURBWallTerrain::set_loglaw_stairstep(WINDSGeneralData *WGD, TURBGeneralDat
 
     // Gxy = dudy
     TGD->Gxy[it->cellID] = 0.5 * (WGD->u[it->faceID] + WGD->u[it->faceID + 1])
-                           / (0.5 * WGD->dy * log(0.5 * WGD->dy / z0));
+                           / (0.5 * dy * log(0.5 * dy / z0));
     // Gzy = dwdy
     TGD->Gzy[it->cellID] = 0.5 * (WGD->w[it->faceID] + WGD->w[it->faceID + nx * ny])
-                           / (0.5 * WGD->dy * log(0.5 * WGD->dy / z0));
+                           / (0.5 * dy * log(0.5 * dy / z0));
   }
 
   return;

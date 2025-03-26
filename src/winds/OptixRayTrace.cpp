@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -33,8 +33,19 @@
  * @brief :document this:
  */
 
+#include <array>
+#include <cstring>
+
 #include "OptixRayTrace.h"
 #include <optix_function_table_definition.h>
+
+// Header needed due to modifications to how we processed the
+// OptixKernels.
+// - The Optix .cu file is compiled into a PTX file.
+// - Then, that is converted to C++ header where the PTX instructions
+//   are converted into a binary character string
+// - This header is included and then used to load into the optix module.
+#include "OptixRayTrace_embedded.h"
 
 #define TEST 0// Set to true for ground-only AS
 #define GEN_FILE 0// Generate mixing length output file for testing
@@ -456,8 +467,6 @@ void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy,
 }
 
 
-extern "C" char embedded_ptx_code[];// The generated ptx file
-
 void OptixRayTrace::createModule()
 {
 
@@ -487,8 +496,9 @@ void OptixRayTrace::createModule()
 
   // Grab the ptx string from the generated ptx file
   // This should be located at compile time in the "ptx" folder
-  ptx = embedded_ptx_code;
-
+  // ptx = (const char *) OptixRayTrace_ptx; // embedded_ptx_code;
+  size_t ptxSize = std::strlen(reinterpret_cast<const char *>(OptixRayTrace_ptx));
+  ptx.assign(reinterpret_cast<const char *>(OptixRayTrace_ptx), ptxSize);
 
   OPTIX_CHECK(optixModuleCreateFromPTX(
     state.context,

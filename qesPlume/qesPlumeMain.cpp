@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -36,31 +36,25 @@
 #include <algorithm>
 
 
-#include <boost/foreach.hpp>
+// #include <boost/foreach.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
 #include "util/calcTime.h"
 
 
-#include "handlePlumeArgs.hpp"
-#include "plume/PlumeInputData.hpp"
+#include "handlePlumeArgs.h"
+#include "plume/PLUMEInputData.h"
 #include "util/NetCDFInput.h"
 #include "util/QESout.h"
 
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
 
-#include "plume/Plume.hpp"
+#include "plume/PLUMEGeneralData.h"
 
 #include "util/QESNetCDFOutput.h"
-#include "plume/PlumeOutput.h"
-#include "plume/PlumeOutputParticleData.h"
 
-
-// LA do these need to be here???
-using namespace netCDF;
-using namespace netCDF::exceptions;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Program main
@@ -68,10 +62,6 @@ using namespace netCDF::exceptions;
 int main(int argc, char **argv)
 {
   QESout::splashScreen();
-
-  // set up timer information for the simulation runtime
-  calcTime timers;
-  timers.startNewTimer("QES-Plume total runtime");// start recording execution time
 
   // parse command line arguments
   PlumeArgs arguments;
@@ -86,42 +76,32 @@ int main(int argc, char **argv)
   WINDSGeneralData *WGD = new WINDSGeneralData(arguments.inputWINDSFile);
   // Create instance of QES-Turb General data class
   TURBGeneralData *TGD = new TURBGeneralData(arguments.inputTURBFile, WGD);
-
-  // Create instance of Plume model class
-  Plume *plume = new Plume(PID, WGD, TGD);
-
-  // create output instance
-  std::vector<QESNetCDFOutput *> outputVec;
-  // always supposed to output lagrToEulOutput data
-  outputVec.push_back(new PlumeOutput(PID, plume, arguments.outputFile));
-  if (arguments.doParticleDataOutput) {
-    outputVec.push_back(new PlumeOutputParticleData(PID, plume, arguments.outputParticleDataFile));
-  }
+  // Create instance of QES-Plume General data class
+  PLUMEGeneralData *PGD = new PLUMEGeneralData(arguments.plumeParameters, PID, WGD, TGD);
 
   for (int index = 0; index < WGD->totalTimeIncrements; index++) {
-    // load data at
-    TGD->loadNetCDFData(index);
+    // Load data at current time index
     WGD->loadNetCDFData(index);
+    TGD->loadNetCDFData(index);
+
+    // Determine the end time for advection
+    QEStime endTime = WGD->nextTimeInstance(index, PID->plumeParams->simDur);
 
     // Run plume advection model
-    QEStime endtime;
-    if (WGD->totalTimeIncrements == 1) {
-      endtime = WGD->timestamp[index] + PID->plumeParams->simDur;
-    } else if (index == WGD->totalTimeIncrements - 1) {
-      endtime = WGD->timestamp[index] + (WGD->timestamp[index] - WGD->timestamp[index - 1]);
-    } else {
-      endtime = WGD->timestamp[index + 1];
-    }
-    plume->run(endtime, WGD, TGD, outputVec);
+    PGD->run(endTime, WGD, TGD);
 
-    // compute run time information and print the elapsed execution time
     std::cout << "[QES-Plume] \t Finished." << std::endl;
   }
 
-  std::cout << "End run particle summary \n";
-  plume->showCurrentStatus();
-  timers.printStoredTime("QES-Plume total runtime");
+  PGD->showCurrentStatus();
+
   std::cout << "##############################################################" << std::endl;
+
+  delete WGD;
+  delete TGD;
+
+  delete PID;
+  delete PGD;
 
   exit(EXIT_SUCCESS);
 }

@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -43,19 +43,14 @@
 
 #include "util/QEStime.h"
 #include "util/calcTime.h"
-#include "util/Vector3.h"
-//#include "Matrix3.h"
+#include "util/Vector3Float.h"
+#include "util/VectorMath.h"
 #include "Random.h"
-
-#include "util/QESNetCDFOutput.h"
-#include "PlumeOutput.h"
-#include "PlumeOutputParticleData.h"
-
-#include "PlumeInputData.hpp"
 
 #include "winds/WINDSGeneralData.h"
 #include "winds/TURBGeneralData.h"
 
+#include "Particle.h"
 #include "Interp.h"
 #include "InterpNearestCell.h"
 #include "InterpPowerLaw.h"
@@ -66,64 +61,45 @@ class Plume;
 class WallReflection
 {
 public:
-  WallReflection()
-  {}
-  ~WallReflection()
-  {}
-  virtual bool reflect(const WINDSGeneralData *,
-                       const Plume *,
-                       double &,
-                       double &,
-                       double &,
-                       double &,
-                       double &,
-                       double &,
-                       double &,
-                       double &,
-                       double &) = 0;
+  explicit WallReflection(Interp *interp) : m_interp(interp) {}
+  virtual ~WallReflection() = default;
+
+  virtual void reflect(const WINDSGeneralData *WGD,
+                       vec3 &pos,
+                       vec3 &dist,
+                       vec3 &fluct,
+                       ParticleState &state) = 0;
+
+private:
+  WallReflection() : m_interp(nullptr) {}
+
+protected:
+  Interp *m_interp;
 };
 
 class WallReflection_DoNothing : public WallReflection
 {
 public:
-  WallReflection_DoNothing()
-  {}
-  ~WallReflection_DoNothing()
-  {}
+  explicit WallReflection_DoNothing(Interp *interp) : WallReflection(interp) {}
+  ~WallReflection_DoNothing() = default;
 
-  virtual bool reflect(const WINDSGeneralData *WGD,
-                       const Plume *plume,
-                       double &xPos,
-                       double &yPos,
-                       double &zPos,
-                       double &disX,
-                       double &disY,
-                       double &disZ,
-                       double &uFluct,
-                       double &vFluct,
-                       double &wFluct)
-  {
-    return true;
-  }
+  virtual void reflect(const WINDSGeneralData *WGD,
+                       vec3 &pos,
+                       vec3 &dist,
+                       vec3 &fluct,
+                       ParticleState &state) override
+  {}
 };
 
 class WallReflection_SetToInactive : public WallReflection
 {
 public:
-  WallReflection_SetToInactive()
-  {}
-  ~WallReflection_SetToInactive()
-  {}
+  explicit WallReflection_SetToInactive(Interp *interp) : WallReflection(interp) {}
+  ~WallReflection_SetToInactive() = default;
 
-  virtual bool reflect(const WINDSGeneralData *WGD,
-                       const Plume *plume,
-                       double &xPos,
-                       double &yPos,
-                       double &zPos,
-                       double &disX,
-                       double &disY,
-                       double &disZ,
-                       double &uFluct,
-                       double &vFluct,
-                       double &wFluct);
+  void reflect(const WINDSGeneralData *WGD,
+               vec3 &pos,
+               vec3 &dist,
+               vec3 &fluct,
+               ParticleState &state) override;
 };

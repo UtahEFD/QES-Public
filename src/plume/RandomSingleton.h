@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -34,10 +34,7 @@
 
 #pragma once
 
-#include <iostream>
-#include <cstdlib>
-#include <ctime>
-#include <math.h>
+#include <random>
 
 class RandomSingleton
 {
@@ -52,11 +49,18 @@ private:
   static RandomSingleton *m_the_instance;
 
   bool m_normal_value;
-  double m_remaining_value;
+  float m_remaining_value;
+
+  std::default_random_engine prng;
+
+  // We must also create a distribution from which to pull the random numbers
+  // we want.  In this case, I would like random integers to be generated
+  // uniformly from betwen -10000000 and 10000000
+  std::uniform_real_distribution<float> distribution;
 
 public:
   static RandomSingleton *getInstance();
 
-  double uniRan();
-  double norRan();
+  float uniRan();
+  float norRan();
 };

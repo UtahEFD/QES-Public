@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -36,6 +36,9 @@
 void CanopyElement::setPolyBuilding(WINDSGeneralData *WGD)
 {
 
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
+
   // Calculate the centroid coordinates of the building (average of all nodes coordinates)
   building_cent_x = 0.0;// x-coordinate of the centroid of the building
   building_cent_y = 0.0;// y-coordinate of the centroid of the building
@@ -47,8 +50,8 @@ void CanopyElement::setPolyBuilding(WINDSGeneralData *WGD)
   building_cent_x /= polygonVertices.size() - 1;
   building_cent_y /= polygonVertices.size() - 1;
 
-  i_building_cent = std::round(building_cent_x / WGD->dx) - 1;// Index of building centroid in x-direction
-  j_building_cent = std::round(building_cent_y / WGD->dy) - 1;// Index of building centroid in y-direction
+  i_building_cent = std::round(building_cent_x / dx) - 1;// Index of building centroid in x-direction
+  j_building_cent = std::round(building_cent_y / dy) - 1;// Index of building centroid in y-direction
 
   // Loop to calculate maximum and minimum of x and y values of the building
   x_min = x_max = polygonVertices[0].x_poly;
@@ -69,13 +72,13 @@ void CanopyElement::setPolyBuilding(WINDSGeneralData *WGD)
   }
 
   // i_start and i_end are faces and not cells
-  i_start = x_min / WGD->dx;// Index of canopy start location in x-direction
-  i_end = x_max / WGD->dx + 1;// Index of canopy end location in x-direction
+  i_start = x_min / dx;// Index of canopy start location in x-direction
+  i_end = x_max / dx + 1;// Index of canopy end location in x-direction
   // j_start and j_end are faces and not cells
-  j_start = y_min / WGD->dy;// Index of canopy end location in y-direction
-  j_end = y_max / WGD->dy + 1;// Index of canopy start location in y-direction
+  j_start = y_min / dy;// Index of canopy end location in y-direction
+  j_end = y_max / dy + 1;// Index of canopy start location in y-direction
 
-  if (i_start < 0 || i_end >= WGD->nx - 1 || j_start < 0 || j_end >= WGD->ny - 1) {
+  if (i_start < 0 || i_end >= nx - 1 || j_start < 0 || j_end >= ny - 1) {
     std::cerr << "==============================================================" << std::endl;
     std::cerr << "[ERROR] canopy element out of bound" << std::endl;
     std::cout << "x value (min,man) (indeces) (" << x_min << "," << x_max << ") (" << i_start << "," << i_end << ")" << std::endl;
@@ -313,7 +316,7 @@ void CanopyElement::canopyCioncoParam(WINDSGeneralData *WGD)
   int num_atten;
 
   // Call regression to define ustar and surface roughness of the canopy
-  //canopyRegression(WGD);
+  // canopyRegression(WGD);
 
   for (auto j = 0; j < ny_canopy; j++) {
     for (auto i = 0; i < nx_canopy; i++) {

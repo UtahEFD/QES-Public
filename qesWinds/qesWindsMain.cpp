@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2024 University of Utah
+ * Copyright (c) 2024 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2024 Behnam Bozorgmehr
+ * Copyright (c) 2024 Jeremy A. Gibbs
+ * Copyright (c) 2024 Fabien Margairaz
+ * Copyright (c) 2024 Eric R. Pardyjak
+ * Copyright (c) 2024 Zachary Patterson
+ * Copyright (c) 2024 Rob Stoll
+ * Copyright (c) 2024 Lucas Ulmer
+ * Copyright (c) 2024 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -38,6 +38,8 @@
 
 #include "handleWINDSArgs.h"
 
+#include "qes/Domain.h"
+
 #include "winds/WINDSInputData.h"
 #include "winds/WINDSGeneralData.h"
 #include "winds/WINDSOutputVisualization.h"
@@ -47,13 +49,8 @@
 #include "winds/TURBOutput.h"
 
 #include "winds/Solver.h"
-#include "winds/CPUSolver.h"
-#include "winds/Solver_CPU_RB.h"
-#ifdef HAS_CUDA
-#include "winds/DynamicParallelism.h"
-#include "winds/GlobalMemory.h"
-#include "winds/SharedMemory.h"
-#endif
+#include "winds/SolverFactory.h"
+
 #include "winds/Sensor.h"
 
 int main(int argc, char *argv[])
@@ -98,8 +95,21 @@ int main(int argc, char *argv[])
     }
   }
 
+  //
+  // WID should be deleted at this point....
+  //
+  // transfer to other things through some Factory???
+
+  // Somehere... we initialize the QESDomain... some class that holds ifo for
+  // Singleton????
+  //
+  qes::Domain domain(WID->simParams->domain, WID->simParams->grid);
+
   // Generate the general WINDS data from all inputs
-  WINDSGeneralData *WGD = new WINDSGeneralData(WID, arguments.solveType);
+  WINDSGeneralData *WGD = new WINDSGeneralData(WID, domain, arguments.solveType);
+  //
+  // get Domain data to WGD... have it constructed, setup outside of this class as a start....
+  // WINDSGeneralData *WGD = new WINDSGeneralData(WID, arguments.solveType, qes->getCopyDomain());
 
   // create WINDS output classes
   std::vector<QESNetCDFOutput *> outputVec;
@@ -120,35 +130,9 @@ int main(int argc, char *argv[])
     outputVec.push_back(new TURBOutput(TGD, arguments.netCDFFileTurb));
   }
 
-  // //////////////////////////////////////////
-  //
-  // Run the QES-Winds Solver
-  //
-  // //////////////////////////////////////////
-  Solver *solver = nullptr;
-  if (arguments.solveType == CPU_Type) {
-#ifdef _OPENMP
-    std::cout << "Run Red/Black Solver (CPU) ..." << std::endl;
-    solver = new Solver_CPU_RB(WID, WGD);
-#else
-    std::cout << "Run Serial Solver (CPU) ..." << std::endl;
-    solver = new CPUSolver(WID, WGD);
-#endif
-
-#ifdef HAS_CUDA
-  } else if (arguments.solveType == DYNAMIC_P) {
-    std::cout << "Run Dynamic Parallel Solver (GPU) ..." << std::endl;
-    solver = new DynamicParallelism(WID, WGD);
-  } else if (arguments.solveType == Global_M) {
-    std::cout << "Run Global Memory Solver (GPU) ..." << std::endl;
-    solver = new GlobalMemory(WID, WGD);
-  } else if (arguments.solveType == Shared_M) {
-    std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
-    solver = new SharedMemory(WID, WGD);
-#endif
-  } else {
-    QESout::error("Invalid solve type");
-  }
+  // Set the QES-Winds Solver
+  SolverFactory solverFactory;
+  Solver *solver = solverFactory.create(arguments.solveType, WGD->domain, WID->simParams->tolerance);
 
   int numIterations = 1;
   int tempMaxIter = WID->simParams->maxIterations;
@@ -171,8 +155,7 @@ int main(int argc, char *argv[])
 
     // Applying the log law and solver iteratively
     if (WID->simParams->logLawFlag == 1) {
-      WID->simParams->maxIterations = tempMaxIter;
-      solver->solve(WID, WGD, !arguments.solveWind);
+      solver->solve(WGD, tempMaxIter);
 
       WGD->u0 = WGD->u;
       WGD->v0 = WGD->v;
@@ -183,7 +166,7 @@ int main(int argc, char *argv[])
       WGD->w = WGD->w0;
     } else {
       // Run WINDS simulation code
-      solver->solve(WID, WGD, !arguments.solveWind);
+      solver->solve(WGD, tempMaxIter);
     }
 
     // std::cout << "Solver done!\n";
