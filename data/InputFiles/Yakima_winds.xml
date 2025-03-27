@@ -48,7 +48,7 @@
 </fileOptions>
 
 <hrrrInput>
-  <HRRRFile>../../scratch/Sep_2020_wind_smoke.nc</HRRRFile>
+  <HRRRFile>../../scratch/Sep_2020_1.nc</HRRRFile>
   <inputFields>MASSDEN_8maboveground</imputFields>
   <inputFields>UGRD_10maboveground</imputFields>
   <inputFields>VGRD_10maboveground</imputFields>
