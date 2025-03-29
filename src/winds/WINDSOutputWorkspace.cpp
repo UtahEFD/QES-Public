@@ -85,6 +85,19 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, const std::str
     m_z_face[k] = m_WGD->domain.z_face[k];
   }
 
+  m_utmx = m_WGD->UTMx;
+  std::cout << "m_utmx:   " << m_utmx << std::endl;
+  
+  // set UTM dimensions
+  NcDim NcDim_utm_x = addDimension("UTMx", 1);
+  //NcDim NcDim_utm_y = addDimension("UTMy", 1);
+  //NcDim NcDim_utm_zone = addDimension("UTMzone", 1);
+
+  // create attributes UTM dimensions
+  std::vector<NcDim> dim_utm_x;
+  dim_utm_x.push_back(NcDim_utm_x);
+  createAttScalar("UTMx", "UTMx", "m", dim_utm_x, &m_utmx);
+
   // set face-centered data dimensions
   // space dimensions
   createDimension("x_face", "x-face", "m", &m_x_face);

@@ -49,7 +49,9 @@ private:
   WINDSOutputWorkspace() {}
 
 public:
+
   WINDSOutputWorkspace(WINDSGeneralData *, const std::string &);
+  
   ~WINDSOutputWorkspace()
   {}
 
@@ -66,6 +68,8 @@ private:
   std::vector<float> m_x, m_y, m_z;
   std::vector<float> m_x_face, m_y_face, m_z_face;
   std::vector<float> m_dz_array;
+
+  float m_utmx, m_utmy, m_utmzone;
 
   WINDSGeneralData *m_WGD;
 

@@ -44,17 +44,40 @@
 class PI_SourceGeometry_Point : public PI_SourceComponent
 {
 private:
+
   // position of the source
   float m_posX = -1.0f;
   float m_posY = -1.0f;
   float m_posZ = -1.0f;
 
 protected:
+  
 public:
   // Default constructor
   PI_SourceGeometry_Point() : PI_SourceComponent()
   {
   }
+  
+  /*SourceGeometry_Point(HRRRData *hrrrInputData, WINDSGeneralData *WGD, int sid) : SourceGeometry(SourceShape::point)
+  {  
+
+    if (WGD->UTMZone == hrrrInputData->hrrrSourceUTMzone[sid]){
+      posX = hrrrInputData->hrrrSourceUTMx[sid] - WGD->UTMx;;
+    }else{
+      int end_zone = 729400;
+      int start_zone = 270570;
+      int zone_diff = hrrrInputData->hrrrSourceUTMzone[sid] - WGD->UTMZone;
+      posX = (hrrrInputData->hrrrSourceUTMx[sid] - start_zone) + (zone_diff - 1) * (end_zone - start_zone) + (end_zone - WGD->UTMx);
+    }
+    
+    posY = hrrrInputData->hrrrSourceUTMy[sid] - WGD->UTMy;
+    int site_i = posX / WGD->dx;
+    int site_j = posY / WGD->dy;
+
+
+    posZ = 8.0 + WGD->terrain[site_i + site_j *(WGD->nx - 1)];
+    int site_k = (posZ / WGD->dz) + 1;
+    }*/
 
   // destructor
   ~PI_SourceGeometry_Point() = default;
@@ -62,6 +85,7 @@ public:
 
   void parseValues() override
   {
+
     parsePrimitive<float>(true, m_posX, "posX");
     parsePrimitive<float>(true, m_posY, "posY");
     parsePrimitive<float>(true, m_posZ, "posZ");

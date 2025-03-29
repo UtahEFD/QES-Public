@@ -107,6 +107,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
   // /////////////////////////
   allocateMemory();
 
+
   //////////////////////////////////////////////////////////////////////////////////
   /////    Create sensor velocity profiles and generate initial velocity field /////
   //////////////////////////////////////////////////////////////////////////////////
@@ -284,13 +285,27 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, qes::Domain domain
        - does not support halo for lon/lat coord (site coord == 3)
     */
 
-    if (solverType == 1 && WID->hrrrInput->interpolationScheme == 0) {
-      windProfiler = new WindProfilerBarnCPU();
-    }else if (WID->hrrrInput->interpolationScheme != 0){
-      windProfiler = new WindProfilerHRRR();
+    if (solverType == 1) {
+      if (WID->hrrrInput) {
+	if (WID->hrrrInput->interpolationScheme == 0) {
+	  windProfiler = new WindProfilerBarnCPU();
+	}else{
+	  windProfiler = new WindProfilerHRRR();
+	}
+      }else{
+	windProfiler = new WindProfilerBarnCPU();
+      }
 #ifdef HAS_CUDA
     } else {
-      windProfiler = new WindProfilerBarnGPU();
+      if (WID->hrrrInput) {
+	if (WID->hrrrInput->interpolationScheme == 0) {
+	  windProfiler = new WindProfilerBarnGPU();
+	}else{
+	  windProfiler = new WindProfilerHRRR();
+	}
+      }else{
+	windProfiler = new WindProfilerBarnGPU();
+      } 
     }
 #else
     } else {
@@ -1601,7 +1616,6 @@ void WINDSGeneralData::downscaleHRRR(const WINDSInputData *WID)
       for (size_t i = 1; i < domain.nx()-1; i++) {
 	int id = i + j * (domain.nx()-1);//Index in horizontal surface
 	for (size_t ii = 0; ii < hrrrInputData->hrrrSensorID.size(); ii++) {
-	  site1_id_temp = -1;
 	  site2_id_temp = -1;
 	  site3_id_temp = -1;
 	  site4_id_temp = -1;
@@ -1674,64 +1688,69 @@ void WINDSGeneralData::downscaleHRRR(const WINDSInputData *WID)
       WID->metParams->sensors[i]->TS[t]->site_U_ref.push_back(hrrrInputData->hrrrSpeed[i]);
       WID->metParams->sensors[i]->TS[t]->site_wind_dir.push_back(hrrrInputData->hrrrDir[i]);
       WID->metParams->sensors[i]->TS[t]->site_z0 = hrrrInputData->hrrrZ0[hrrrInputData->hrrrSensorID[i]];
-      WID->metParams->sensors[i]->TS[t]->site_one_overL = 0.0;
-      if (hrrrInputData->hrrrShortRadiation[hrrrInputData->hrrrSensorID[i]] > 0){// If during day
+      if (WID->hrrrInput->stabilityClasses == 0){ // No stability
+	WID->metParams->sensors[i]->TS[t]->site_one_overL = 0.0;
+      }else if (WID->hrrrInput->stabilityClasses == 1){ // Pasquill-Gifford stability classes 
+	if (hrrrInputData->hrrrShortRadiation[hrrrInputData->hrrrSensorID[i]] > 0){// If during day
 	    
-	if (hrrrInputData->hrrrShortRadiation[hrrrInputData->hrrrSensorID[i]] > 700){// If strong solar insolation
-	  if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 2.0){// If wind is less than 2m/s
-	    WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.4;// Class A stability
-	  }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 2.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 3.0){// If wind is greater than 2m/s and less than 3m/s
-	    WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.31;// Class A-B stability
-	  }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 3.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 5.0){// If wind is greater than 3m/s and less than 5m/s
-	    WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.22;// Class B stability
-	  }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 5.0){// If wind is greater than 5m/s
-	    WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.074;// Class C stability
+	  if (hrrrInputData->hrrrShortRadiation[hrrrInputData->hrrrSensorID[i]] > 700){// If strong solar insolation
+	    if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 3.0){// If wind is less than 2m/s
+	      WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.4;// Class A stability
+	    }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 3.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 5.0){// If wind is greater than 3m/s and less than 5m/s
+	      WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.22;// Class B stability
+	    }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 5.0){// If wind is greater than 5m/s
+	      WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.074;// Class C stability
+	    }
 	  }
-	}
 
 
-	if (hrrrInputData->hrrrShortRadiation[hrrrInputData->hrrrSensorID[i]] >= 350  && hrrrInputData->hrrrShortRadiation[hrrrInputData->hrrrSensorID[i]] <= 700){// If moderate solar insolation
-	  if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 2.0){// If wind is less than 2m/s
-	    WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.31;// Class A-B stability
-	  }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 2.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 3.0){// If wind is greater than 2m/s and less than 3m/s
-	    WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.22;// Class B stability
-	  }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 3.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 5.0){// If wind is greater than 3m/s and less than 5m/s
-	    WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.147;// Class B-C stability
-	  }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 5.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 6.0){// If wind is greater than 5m/s and less than 6m/s
-	    WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.037;// Class C-D stability
-	  }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 6.0){// If wind is greater than 6m/s
-	    WID->metParams->sensors[i]->TS[t]->site_one_overL = 0.0;// Class D stability
+	  if (hrrrInputData->hrrrShortRadiation[hrrrInputData->hrrrSensorID[i]] >= 350  && hrrrInputData->hrrrShortRadiation[hrrrInputData->hrrrSensorID[i]] <= 700){// If moderate solar insolation
+	    if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 2.0){// If wind is less than 2m/s
+	      WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.4;// Class A stability
+	    }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 2.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 5.0){// If wind is greater than 2m/s and less than 3m/s
+	      WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.22;// Class B stability
+	    }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 5.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 6.0){// If wind is greater than 5m/s and less than 6m/s
+	      WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.074;// Class C stability
+	    }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 6.0){// If wind is greater than 6m/s
+	      WID->metParams->sensors[i]->TS[t]->site_one_overL = 0.0;// Class D stability
+	    }
 	  }
-	}
 
 
-	if (hrrrInputData->hrrrShortRadiation[hrrrInputData->hrrrSensorID[i]] < 350){// If slight solar insolation
-	  if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 2.0){// If wind is less than 2m/s
-	    WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.22;// Class B stability
-	  }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 2.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 5.0){// If wind is greater than 2m/s and less than 5m/s
-	    WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.074;// Class C stability
-	  }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 5.0){// If wind is greater than 5m/s
-	    WID->metParams->sensors[i]->TS[t]->site_one_overL = 0.0;// Class D stability
-	  }
-	}	    
-      }else{// If during night
-	if (hrrrInputData->hrrrCloudCover[hrrrInputData->hrrrSensorID[i]] > 50.0){// High cloud cover
+	  if (hrrrInputData->hrrrShortRadiation[hrrrInputData->hrrrSensorID[i]] < 350){// If slight solar insolation
+	    if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 2.0){// If wind is less than 2m/s
+	      WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.22;// Class B stability
+	    }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 2.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 5.0){// If wind is greater than 2m/s and less than 5m/s
+	      WID->metParams->sensors[i]->TS[t]->site_one_overL = -0.074;// Class C stability
+	    }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 5.0){// If wind is greater than 5m/s
+	      WID->metParams->sensors[i]->TS[t]->site_one_overL = 0.0;// Class D stability
+	    }
+	  }	    
+	}else{// If during night
+	  if (hrrrInputData->hrrrCloudCover[hrrrInputData->hrrrSensorID[i]] > 50.0){// High cloud cover
 	      
-	  if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 3.0){// If wind is less than 3m/s
-	    WID->metParams->sensors[i]->TS[t]->site_one_overL = 0.018;// Class E stability
-	  }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 3.0){// If wind is greater than 3m/s
-	    WID->metParams->sensors[i]->TS[t]->site_one_overL = 0.0;// Class D stability
-	  }	      
-	}else{// Low cloud cover
+	    if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 3.0){// If wind is less than 3m/s
+	      WID->metParams->sensors[i]->TS[t]->site_one_overL = 0.018;// Class E stability
+	    }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 3.0){// If wind is greater than 3m/s
+	      WID->metParams->sensors[i]->TS[t]->site_one_overL = 0.0;// Class D stability
+	    }	      
+	  }else{// Low cloud cover
 	      
-	  if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 3.0){// If wind is less than 3m/s
-	    WID->metParams->sensors[i]->TS[t]->site_one_overL = 0.047;// Class F stability
-	  }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 3.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 5.0){// If wind is greater than 3m/s and less than 5m/s
-	    WID->metParams->sensors[i]->TS[t]->site_one_overL = 0.018;// Class E stability
-	  }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 5.0){// If wind is greater than 5m/s
-	    WID->metParams->sensors[i]->TS[t]->site_one_overL = 0.0;// Class D stability
+	    if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 3.0){// If wind is less than 3m/s
+	      WID->metParams->sensors[i]->TS[t]->site_one_overL = 0.047;// Class F stability
+	    }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 3.0 && WID->metParams->sensors[i]->TS[t]->site_U_ref[0] < 5.0){// If wind is greater than 3m/s and less than 5m/s
+	      WID->metParams->sensors[i]->TS[t]->site_one_overL = 0.018;// Class E stability
+	    }else if(WID->metParams->sensors[i]->TS[t]->site_U_ref[0] >= 5.0){// If wind is greater than 5m/s
+	      WID->metParams->sensors[i]->TS[t]->site_one_overL = 0.0;// Class D stability
+	    }
 	  }
 	}
+      } else if (WID->hrrrInput->stabilityClasses == 2){ // Monin-Obukhov lenght (based on surface fluxes)
+	float cp = 1006;   // Specific heat capacity of air at constant pressure (J/kg.K)
+	float g = 9.81;    // Gravitational acceleration (m/s^2)
+	float rho = 1.2;   // Air density (kg/m^3)
+	float vk = 0.4;    // Von Karman constant
+	WID->metParams->sensors[i]->TS[t]->site_one_overL = -(vk*g*hrrrInputData->hrrrSenHeatFlux[hrrrInputData->hrrrSensorID[i]])/(cp*rho*hrrrInputData->hrrrPotTemp[hrrrInputData->hrrrSensorID[i]]*pow(hrrrInputData->hrrrUStar[hrrrInputData->hrrrSensorID[i]],3.0));
       }
     }
   }

@@ -41,12 +41,17 @@ namespace btime = boost::posix_time;
 #include "HRRRData.h"
 #include "WINDSGeneralData.h"
 #include "WINDSInputData.h"
-
+#include "WINDSGeneralData.h"
+#include "WINDSInputData.h"
+#include "plume/PLUMEInputData.h"
 
 
 HRRRData::HRRRData(std::string fileName, std::vector<std::string> HRRRFields)
 {
   netcdf = new  NetCDFInput(fileName);
+
+  std::cout << "fileName:   " << fileName << std::endl;
+  std::cout << "HRRRFields:   " << HRRRFields[0] << std::endl;
     
   netcdf->getDimension("time", timeDim);
   netcdf->getDimensionSize("time", timeSize);
@@ -130,6 +135,43 @@ void HRRRData::findHRRRSensors(const WINDSInputData *WID, WINDSGeneralData *WGD)
 }
 
 
+void HRRRData::findHRRRSources(const PlumeInputData *PID, WINDSGeneralData *WGD){
+  auto [nx, ny, nz] = WGD->domain.getDomainCellNum();
+  auto [dx, dy, dz] = WGD->domain.getDomainSize();
+  
+  siteUTMx.resize( xSize * ySize );
+  siteUTMy.resize( xSize * ySize );
+  siteUTMzone.resize( xSize * ySize );
+  float temp_utmx, temp_utmy;
+  temp_utmx = float(WGD->UTMx);
+  temp_utmy = float(WGD->UTMy);
+  float lat_south, lat_north, lon_east, lon_west;
+  GIStool::UTMConverter(lon_west,lat_south,temp_utmx,temp_utmy,WGD->UTMZone,true,1);
+  temp_utmx = float(WGD->UTMx) + float((nx-1) * dx);
+  temp_utmy = float(WGD->UTMy) + float((ny-1) * dy);
+  GIStool::UTMConverter(lon_east,lat_north,temp_utmx,temp_utmy,WGD->UTMZone,true,1);
+    
+  for (auto i = 0; i < xSize; i++){
+    for (auto j = 0; j < ySize; j++){
+      int id = i + j * xSize;
+      if (siteLat[id] >= lat_south && siteLat[id] <= lat_north
+	  && siteLon[id] >= lon_west && siteLon[id] <= lon_east){
+	
+	float temp_lat, temp_lon;
+	temp_lat = float(siteLat[id]);
+	temp_lon = float(siteLon[id]);
+	GIStool::UTMConverter(temp_lon,temp_lat,siteUTMx[id],siteUTMy[id],siteUTMzone[id] ,true,0);
+	hrrrSourceUTMx.push_back(double(siteUTMx[id]));
+	hrrrSourceUTMy.push_back(double(siteUTMy[id]));
+	hrrrSourceUTMzone.push_back(siteUTMzone[id]);
+	hrrrSourceID.push_back(id);
+      }
+    }
+  }
+
+}
+
+
 void HRRRData::readSensorData(int t){
   
   std::vector<size_t> stepStartIdx = {t,0,0};
@@ -139,11 +181,18 @@ void HRRRData::readSensorData(int t){
   hrrrZ0.resize( xSize * ySize );
   hrrrCloudCover.resize( xSize * ySize );
   hrrrShortRadiation.resize( xSize * ySize );
+  hrrrSenHeatFlux.resize( xSize * ySize );
+  hrrrUStar.resize( xSize * ySize );
+  hrrrPotTemp.resize( xSize * ySize );
   netcdf->getVariableData("UGRD_10maboveground", stepStartIdx, stepCounts, hrrrU);
   netcdf->getVariableData("VGRD_10maboveground", stepStartIdx, stepCounts, hrrrV);
   netcdf->getVariableData("SFCR_surface", stepStartIdx, stepCounts, hrrrZ0);
   netcdf->getVariableData("TCDC_entireatmosphere", stepStartIdx, stepCounts, hrrrCloudCover);
   netcdf->getVariableData("DSWRF_surface", stepStartIdx, stepCounts, hrrrShortRadiation);
+
+  netcdf->getVariableData("SHTFL_surface", stepStartIdx, stepCounts, hrrrSenHeatFlux);
+  netcdf->getVariableData("FRICV_surface", stepStartIdx, stepCounts, hrrrUStar);
+  netcdf->getVariableData("TMP_surface", stepStartIdx, stepCounts, hrrrPotTemp);
   
   float u_temp, v_temp;
   float rotcon_p = 0.622515;
@@ -154,12 +203,12 @@ void HRRRData::readSensorData(int t){
   for (size_t i = 0; i < hrrrSensorID.size(); i++) {
     u_temp = hrrrU[hrrrSensorID[i]];
     v_temp = hrrrV[hrrrSensorID[i]];
-    angle2 = rotcon_p * (siteLon[hrrrSensorID[i]] + 360 - lon_xx_p) * 0.017453;
+    angle2 = rotcon_p * (siteLon[hrrrSensorID[i]] - lon_xx_p) * 0.017453;
     hrrrU[hrrrSensorID[i]] = cos(angle2) * u_temp + sin(angle2) * v_temp;
     hrrrV[hrrrSensorID[i]] = -sin(angle2) * u_temp + cos(angle2) * v_temp;
 
     hrrrSpeed.push_back(sqrt( pow(hrrrU[hrrrSensorID[i]], 2.0) + pow(hrrrV[hrrrSensorID[i]], 2.0) ));
-    hrrrDir.push_back(fmod((atan2(hrrrV[hrrrSensorID[i]]/hrrrSpeed[i], hrrrU[hrrrSensorID[i]]/hrrrSpeed[i])*180.0/M_PI) , 360.0));
+    hrrrDir.push_back(270 - fmod(360 + (atan2(hrrrV[hrrrSensorID[i]], hrrrU[hrrrSensorID[i]])*180.0/M_PI) , 360.0));
       
   }
   
@@ -204,31 +253,43 @@ void HRRRData::readAloftData(int t){
     
     u_temp = hrrrU700[hrrrSensorID[i]];
     v_temp = hrrrV700[hrrrSensorID[i]];
-    angle2 = rotcon_p * (siteLon[hrrrSensorID[i]] + 360 - lon_xx_p) * 0.017453;
+    angle2 = rotcon_p * (siteLon[hrrrSensorID[i]] - lon_xx_p) * 0.017453;
     hrrrU700[hrrrSensorID[i]] = cos(angle2) * u_temp + sin(angle2) * v_temp;
     hrrrV700[hrrrSensorID[i]] = -sin(angle2) * u_temp + cos(angle2) * v_temp;
     hrrrSpeed700.push_back(sqrt( pow(hrrrU700[hrrrSensorID[i]], 2.0) + pow(hrrrV700[hrrrSensorID[i]], 2.0) ));
-    hrrrDir700.push_back(fmod((atan2(hrrrV700[hrrrSensorID[i]]/hrrrSpeed700[i], hrrrU700[hrrrSensorID[i]]/hrrrSpeed700[i])*180.0/M_PI), 360.0));
+    hrrrDir700.push_back(270 - fmod(360 + (atan2(hrrrV700[hrrrSensorID[i]], hrrrU700[hrrrSensorID[i]])*180.0/M_PI), 360.0));
     hrrrSpeedTop.push_back(sqrt( pow(hrrrU700[hrrrSensorID[i]], 2.0) + pow(hrrrV700[hrrrSensorID[i]], 2.0) ));
-    hrrrDirTop.push_back(fmod((atan2(hrrrV700[hrrrSensorID[i]]/hrrrSpeed700[i], hrrrU700[hrrrSensorID[i]]/hrrrSpeed700[i])*180.0/M_PI), 360.0));
+    hrrrDirTop.push_back(270 - fmod(360 + (atan2(hrrrV700[hrrrSensorID[i]], hrrrU700[hrrrSensorID[i]])*180.0/M_PI), 360.0));
 
     u_temp = hrrrU850[hrrrSensorID[i]];
     v_temp = hrrrV850[hrrrSensorID[i]];
-    angle2 = rotcon_p * (siteLon[hrrrSensorID[i]] + 360 - lon_xx_p) * 0.017453;
     hrrrU850[hrrrSensorID[i]] = cos(angle2) * u_temp + sin(angle2) * v_temp;
     hrrrV850[hrrrSensorID[i]] = -sin(angle2) * u_temp + cos(angle2) * v_temp;
     hrrrSpeed850.push_back(sqrt( pow(hrrrU850[hrrrSensorID[i]], 2.0) + pow(hrrrV850[hrrrSensorID[i]], 2.0) ));
-    hrrrDir850.push_back(fmod((atan2(hrrrV850[hrrrSensorID[i]]/hrrrSpeed850[i], hrrrU850[hrrrSensorID[i]]/hrrrSpeed850[i])*180.0/M_PI), 360.0));
+    hrrrDir850.push_back(270 - fmod(360 + (atan2(hrrrV850[hrrrSensorID[i]], hrrrU850[hrrrSensorID[i]])*180.0/M_PI), 360.0));
 
     u_temp = hrrrU925[hrrrSensorID[i]];
     v_temp = hrrrV925[hrrrSensorID[i]];
-    angle2 = rotcon_p * (siteLon[hrrrSensorID[i]] + 360 - lon_xx_p) * 0.017453;
     hrrrU925[hrrrSensorID[i]] = cos(angle2) * u_temp + sin(angle2) * v_temp;
     hrrrV925[hrrrSensorID[i]] = -sin(angle2) * u_temp + cos(angle2) * v_temp;
     hrrrSpeed925.push_back(sqrt( pow(hrrrU925[hrrrSensorID[i]], 2.0) + pow(hrrrV925[hrrrSensorID[i]], 2.0) ));
-    hrrrDir925.push_back(fmod((atan2(hrrrV925[hrrrSensorID[i]]/hrrrSpeed925[i], hrrrU925[hrrrSensorID[i]]/hrrrSpeed925[i])*180.0/M_PI), 360.0)); 
+    hrrrDir925.push_back(270 - fmod(360 + (atan2(hrrrV925[hrrrSensorID[i]], hrrrU925[hrrrSensorID[i]])*180.0/M_PI), 360.0)); 
   }
 
 }
  
 
+void HRRRData::readSourceData(int t){
+  
+  std::vector<size_t> stepStartIdx = {t,0,0};
+  std::vector<size_t> stepCounts = {1,static_cast<unsigned long>(ySize),static_cast<unsigned long>(xSize)};
+  hrrrCon.resize( xSize * ySize );
+  netcdf->getVariableData("MASSDEN_8maboveground", stepStartIdx, stepCounts, hrrrCon);
+
+  hrrrC.clear();
+  for (size_t i = 0; i < hrrrSourceID.size(); i++) {
+    hrrrC.push_back(hrrrCon[hrrrSourceID[i]]);
+      
+  }
+  
+}

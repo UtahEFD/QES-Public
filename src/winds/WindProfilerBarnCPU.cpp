@@ -45,8 +45,8 @@
 #include <chrono>
 #include <limits>
 
-#include "winds/WINDSInputData.h"
-#include "winds/WINDSGeneralData.h"
+#include "WINDSInputData.h"
+#include "WINDSGeneralData.h"
 #include "WindProfilerBarnCPU.h"
 
 
@@ -54,7 +54,7 @@ void WindProfilerBarnCPU::interpolateWindProfile(const WINDSInputData *WID, WIND
 {
   sensorsProfiles(WID, WGD);
   int num_sites = available_sensor_id.size();
-
+  
   if (num_sites == 1) {
     singleSensorInterpolation(WGD);
   } else {
@@ -90,6 +90,7 @@ void WindProfilerBarnCPU::BarnesInterpolationCPU(const WINDSInputData *WID, WIND
   float sum_wm, sum_wu, sum_wv;
   float dxx, dyy, u12, u34, v12, v34;
   int icell_face;
+  float z_terrain;
 
   int num_sites = available_sensor_id.size();
 
@@ -141,16 +142,17 @@ void WindProfilerBarnCPU::BarnesInterpolationCPU(const WINDSInputData *WID, WIND
   }
 
   int k_mod;// Modified index in z-direction
-  for (auto k = 1; k < nz - 1; k++) {
+  for (auto k = 0; k < nz - 1; k++) {
     for (auto j = 0; j < ny; j++) {
       for (auto i = 0; i < nx; i++) {
         sum_wu = 0.0;
         sum_wv = 0.0;
         sum_wm = 0.0;
         int id = i + j * nx;// Index in horizontal surface
+	z_terrain = WGD->domain.z_face[WGD->terrain_face_id[id]];
         // If height added to top of terrain is still inside QES domain
         if (k + WGD->terrain_face_id[id] < nz) {
-          k_mod = k + WGD->terrain_face_id[id] - 1;// Set the modified index
+          k_mod = k + WGD->terrain_face_id[id];// Set the modified index
         } else {
           continue;
         }
@@ -166,31 +168,25 @@ void WindProfilerBarnCPU::BarnesInterpolationCPU(const WINDSInputData *WID, WIND
             surf_layer_height = asl_percent * (2 * abl_height[ii] - abs(WGD->domain.z[WGD->terrain_face_id[id]] - WGD->domain.z[WGD->terrain_face_id[site_id[ii]]]));
           }
           // If sum of z index and the terrain index at the sensor location is outside the domain
-          if (k + WGD->terrain_face_id[site_id[ii]] -1 > nz - 2) {
+          if (k + WGD->terrain_face_id[site_id[ii]] > nz - 2) {
             sum_wu += wm[ii][i][j] * u_prof[ii * nz + nz - 2];
             sum_wv += wm[ii][i][j] * v_prof[ii * nz + nz - 2];
             sum_wm += wm[ii][i][j];
           }// If height (above ground) is less than or equal to ASL height
-          else if (WGD->domain.z[k] <= surf_layer_height) {
+          else if ( (WGD->domain.z[k_mod]-z_terrain) <= surf_layer_height) {
             sum_wu += wm[ii][i][j] * u_prof[ii * nz + k + WGD->terrain_face_id[site_id[ii]]];
             sum_wv += wm[ii][i][j] * v_prof[ii * nz + k + WGD->terrain_face_id[site_id[ii]]];
             sum_wm += wm[ii][i][j];
           }// If height (above ground) is greater than ASL height and modified index is inside the domain
-          else if (WGD->domain.z[k] > surf_layer_height
-                   && k + WGD->terrain_face_id[site_id[ii]] - 1 < nz
-                   && k_mod > k + WGD->terrain_face_id[site_id[ii]]-1) {
-	    if (abs(WGD->domain.z[WGD->terrain_face_id[id]] - WGD->domain.z[WGD->terrain_face_id[site_id[ii]]]) > abl_height[ii]) {
-	      continue;
-	    }
+          else if ((WGD->domain.z[k_mod]-z_terrain) > surf_layer_height
+                   && k + WGD->terrain_face_id[site_id[ii]] < nz
+                   && k_mod > k + WGD->terrain_face_id[site_id[ii]]) {
             sum_wu += wm[ii][i][j] * u_prof[ii * nz + k_mod];
             sum_wv += wm[ii][i][j] * v_prof[ii * nz + k_mod];
             sum_wm += wm[ii][i][j];
 	    } else {
-	    if (abs(WGD->domain.z[WGD->terrain_face_id[id]] - WGD->domain.z[WGD->terrain_face_id[site_id[ii]]]) > abl_height[ii]) {
-	      continue;
-	    }
-            sum_wu += wm[ii][i][j] * u_prof[ii * nz + k_mod];
-            sum_wv += wm[ii][i][j] * v_prof[ii * nz + k_mod];
+            sum_wu += wm[ii][i][j] * u_prof[ii * nz + k + WGD->terrain_face_id[site_id[ii]]];
+            sum_wv += wm[ii][i][j] * v_prof[ii * nz + k + WGD->terrain_face_id[site_id[ii]]];
             sum_wm += wm[ii][i][j];
           }
 	  
@@ -238,28 +234,30 @@ void WindProfilerBarnCPU::BarnesInterpolationCPU(const WINDSInputData *WID, WIND
       site_i[ii] = WID->metParams->sensors[available_sensor_id[ii]]->site_xcoord / dx;
       site_j[ii] = WID->metParams->sensors[available_sensor_id[ii]]->site_ycoord / dy;
       site_id[ii] = site_i[ii] + site_j[ii] * nx;
-      for (auto k = 1; k < nz; k++) {
-        if (k + WGD->terrain_face_id[site_id[ii]] - 1 > nz - 2) {
+      for (auto k = 0; k < nz; k++) {
+        if (k + WGD->terrain_face_id[site_id[ii]] > nz - 2) {
           u0_int[k + ii * nz] = u_prof[ii * nz + nz - 2];
           v0_int[k + ii * nz] = v_prof[ii * nz + nz - 2];
         } else {
-          u0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * nz] = u_prof[ii * nz + k + WGD->terrain_face_id[site_id[ii]] - 1];
-          v0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * nz] = v_prof[ii * nz + k + WGD->terrain_face_id[site_id[ii]] - 1];
+          u0_int[k + WGD->terrain_face_id[site_id[ii]] + ii * nz] = u_prof[ii * nz + k + WGD->terrain_face_id[site_id[ii]]];
+          v0_int[k + WGD->terrain_face_id[site_id[ii]] + ii * nz] = v_prof[ii * nz + k + WGD->terrain_face_id[site_id[ii]]];
         }
       }
     }
   }
 
-  for (auto k = 1; k < nz - 1; k++) {
+
+  for (auto k = 0; k < nz - 1; k++) {
     for (auto j = 0; j < ny; j++) {
       for (auto i = 0; i < nx; i++) {
         sum_wu = 0.0;
         sum_wv = 0.0;
         sum_wm = 0.0;
-        int id = WGD->domain.face2d(i, j);// Index in horizontal surface
-        // If height added to top of terrain is still inside QES domain
-        if (k + WGD->terrain_face_id[id] - 1 < nz) {
-          k_mod = k + WGD->terrain_face_id[id] - 1;// Set the modified index
+        int id = i + j * nx;//Index in horizontal surface
+	z_terrain = WGD->domain.z_face[WGD->terrain_face_id[id]];
+        //If height added to top of terrain is still inside QES domain
+        if (k + WGD->terrain_face_id[id] < nz) {
+          k_mod = k + WGD->terrain_face_id[id];//Set the modified index
         } else {
           continue;
         }
@@ -274,39 +272,33 @@ void WindProfilerBarnCPU::BarnesInterpolationCPU(const WINDSInputData *WID, WIND
             surf_layer_height = asl_percent * (2 * abl_height[ii] - abs(WGD->domain.z[WGD->terrain_face_id[id]] - WGD->domain.z[WGD->terrain_face_id[site_id[ii]]]));
           }
           // If sum of z index and the terrain index at the sensor location is outside the domain
-          if (k + WGD->terrain_face_id[site_id[ii]] - 1 > nz - 2) {
+          if (k + WGD->terrain_face_id[site_id[ii]] > nz - 2) {
             sum_wu += wm[ii][i][j] * (u_prof[ii * nz + nz - 2] - u0_int[nz - 2 + ii * nz]);
             sum_wv += wm[ii][i][j] * (v_prof[ii * nz + nz - 2] - v0_int[nz - 2 + ii * nz]);
             sum_wm += wm[ii][i][j];
           }// If height (above ground) is less than or equal to ASL height
-          else if (WGD->domain.z[k] <= surf_layer_height) {
+          else if ((WGD->domain.z[k_mod]-z_terrain) <= surf_layer_height) {
             sum_wu += wm[ii][i][j]
-                      * (u_prof[ii * nz + k + WGD->terrain_face_id[site_id[ii]] - 1]
-                         - u0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * nz]);
+                      * (u_prof[ii * nz + k + WGD->terrain_face_id[site_id[ii]]]
+                         - u0_int[k + WGD->terrain_face_id[site_id[ii]] + ii * nz]);
             sum_wv += wm[ii][i][j]
-                      * (v_prof[ii * nz + k + WGD->terrain_face_id[site_id[ii]] - 1]
-                         - v0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * nz]);
+                      * (v_prof[ii * nz + k + WGD->terrain_face_id[site_id[ii]]]
+                         - v0_int[k + WGD->terrain_face_id[site_id[ii]] + ii * nz]);
             sum_wm += wm[ii][i][j];
           }// If height (above ground) is greater than ASL height and modified index is inside the domain
-          else if (WGD->domain.z[k] > surf_layer_height
-                   && k + WGD->terrain_face_id[site_id[ii]] - 1 < nz
-                   && k_mod > k + WGD->terrain_face_id[site_id[ii]] - 1) {
-	    if (abs(WGD->domain.z[WGD->terrain_face_id[id]] - WGD->domain.z[WGD->terrain_face_id[site_id[ii]]]) > abl_height[ii]) {
-	      continue;
-	    }
+          else if ((WGD->domain.z[k_mod]-z_terrain) > surf_layer_height
+                   && k + WGD->terrain_face_id[site_id[ii]] < nz
+                   && k_mod > k + WGD->terrain_face_id[site_id[ii]]) {
             sum_wu += wm[ii][i][j] * (u_prof[ii * nz + k_mod] - u0_int[k_mod + ii * nz]);
             sum_wv += wm[ii][i][j] * (v_prof[ii * nz + k_mod] - v0_int[k_mod + ii * nz]);
             sum_wm += wm[ii][i][j];
 	    } else {
-	    if (abs(WGD->domain.z[WGD->terrain_face_id[id]] - WGD->domain.z[WGD->terrain_face_id[site_id[ii]]]) > abl_height[ii]) {
-	      continue;
-	    }
             sum_wu += wm[ii][i][j]
-                      * (u_prof[ii * nz + k + WGD->terrain_face_id[site_id[ii]] - 1]
-                         - u0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * nz]);
+                      * (u_prof[ii * nz + k + WGD->terrain_face_id[site_id[ii]]]
+                         - u0_int[k + WGD->terrain_face_id[site_id[ii]] + ii * nz]);
             sum_wv += wm[ii][i][j]
-                      * (v_prof[ii * nz + k + WGD->terrain_face_id[site_id[ii]] - 1]
-                         - v0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * nz]);
+                      * (v_prof[ii * nz + k + WGD->terrain_face_id[site_id[ii]]]
+                         - v0_int[k + WGD->terrain_face_id[site_id[ii]] + ii * nz]);
             sum_wm += wm[ii][i][j];
           }
         }

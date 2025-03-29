@@ -65,6 +65,7 @@ int Source::generate(const QEStime &currTime)
     if (m_data.contains("mass")) {
       for (auto m : m_data.get_ref<std::vector<float>>("mass"))
         total_mass += m;
+
     }
     total_particle_released += n;
 

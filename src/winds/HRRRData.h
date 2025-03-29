@@ -42,6 +42,7 @@ using namespace netCDF::exceptions;
 // Forward declaration
 class WINDSGeneralData;
 class WINDSInputData;
+class PlumeInputData;
 
 
 
@@ -75,6 +76,11 @@ class HRRRData
   std::vector<double> hrrrCloudCover, hrrrShortRadiation;
   std::vector<double> hrrrPBLHeight, hrrrU700, hrrrV700, hrrrU850, hrrrV850, hrrrU925, hrrrV925, hrrrUTop, hrrrVTop;
   std::vector<double> hrrrSpeedTop, hrrrDirTop, hrrrSpeed700, hrrrDir700, hrrrSpeed850, hrrrDir850, hrrrSpeed925, hrrrDir925;
+  std::vector<double> hrrrSenHeatFlux, hrrrUStar, hrrrPotTemp;
+
+  std::vector<double>  hrrrSourceUTMx, hrrrSourceUTMy;
+  std::vector<int> hrrrSourceID, hrrrSourceUTMzone;
+  std::vector<float> hrrrCon, hrrrC;
 
   HRRRData(std::string fileName, std::vector<std::string> HRRRFields);
 
@@ -82,8 +88,12 @@ class HRRRData
 
   void findHRRRSensors(const WINDSInputData *WID, WINDSGeneralData *WGD);
 
+  void findHRRRSources(const PlumeInputData *PID, WINDSGeneralData *WGD);
+
   void readSensorData(int t);
 
   void readAloftData(int t);
+
+  void readSourceData(int t);
 
 };

@@ -38,6 +38,7 @@
 #pragma once
 
 #include "PI_ReleaseType.hpp"
+#include "winds/WINDSGeneralData.h"
 
 class PI_ReleaseType_instantaneous : public PI_ReleaseType
 {
@@ -58,10 +59,28 @@ public:
   {
   }
 
+  /*ReleaseType_instantaneous(HRRRData *hrrrInputData, int sid) : ReleaseType(ParticleReleaseType::instantaneous)
+  {
+    float hrrrDx = 3000;
+    float hrrrDy = 3000;
+    float hrrrDz = 2;
+    float QESdx = 100;
+    float QESdy = 100;
+    float QESdz = 5;
+    float particleMass = 1.8*pow(10, -12);
+    
+    if (hrrrInputData->hrrrC[sid] > 0){
+      m_numPar = ((hrrrInputData->hrrrC[sid]/pow(10, 9)))/particleMass;
+    }else{
+      m_numPar = 0;
+    }
+    }*/
+
   // destructor
   ~PI_ReleaseType_instantaneous() override = default;
 
   void parseValues() override;
   void initialize(const float &timestep) override;
   SourceReleaseController *create(QESDataTransport &data) override;
+
 };

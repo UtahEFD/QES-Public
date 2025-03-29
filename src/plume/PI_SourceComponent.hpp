@@ -60,10 +60,16 @@ class PI_SourceComponent : public ParseInterface,
                            public SourceComponentBuilderInterface
 {
 private:
+
+
+  // SourceGeometry() = default;
+
 protected:
   PI_SourceComponent() = default;
 
 public:
+
+
   // destructor
   virtual ~PI_SourceComponent() = default;
 

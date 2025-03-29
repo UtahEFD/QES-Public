@@ -1,7 +1,6 @@
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-
 SET(qesWindCoreSources
         ../qes/Domain.cpp ../qes/Domain.h
         Canopy.cpp
@@ -56,6 +55,7 @@ SET(qesWindCoreSources
 	HRRRInput.h)
 
 ADD_LIBRARY(qeswindscore ${qesWindCoreSources})
+
 
 IF ($CACHE{HAS_CUDA_SUPPORT})
   MESSAGE(STATUS "CUDA Toolkit Include Directories: ${CUDAToolkit_INCLUDE_DIRS}")

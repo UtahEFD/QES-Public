@@ -40,8 +40,14 @@
 
 
 #include "util/ParseInterface.h"
+#include "util/QESFileSystemHandler.h"
+
 #include <string>
-#include <vector>
+#include <netcdf>
+using namespace std;
+using namespace netCDF;
+using namespace netCDF::exceptions;
+
 
 class PI_ParticleOutputParameters : public ParseInterface
 {
@@ -52,11 +58,25 @@ public:
   float outputFrequency;
   std::vector<std::string> outputFields;
 
+  /*int numSources;// number of sources, you fill in source information for each source next
+  std::vector<ParseSource *> sources;// source type and the collection of all the different sources from input
+  std::string HRRRFile; /**< HRRR file name 
+  std::vector<std::string> inputFields; /**< HRRR input fields */
+
   virtual void parseValues()
   {
     parsePrimitive<float>(false, outputStartTime, "outputStartTime");
     parsePrimitive<float>(false, outputEndTime, "outputEndTime");
     parsePrimitive<float>(true, outputFrequency, "outputFrequency");
     parseMultiPrimitives<std::string>(false, outputFields, "outputFields");
+    
+    /* parsePrimitive<int>(false, numSources, "numSources");
+    parseMultiElements(false, sources, "source");
+    HRRRFile = "";
+    parsePrimitive<std::string>(false, HRRRFile, "HRRRFile");
+    std::cout << HRRRFile <<std::endl;
+    std::cout << HRRRFile <<std::endl;
+    parseMultiPrimitives<std::string>(false, inputFields, "inputFields");*/
   }
+  
 };

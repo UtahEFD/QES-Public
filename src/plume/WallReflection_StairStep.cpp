@@ -321,12 +321,14 @@ void WallReflection_StairStep::oneReflection(const WINDSGeneralData *WGD,
     // check if more than one surface is valid
     if (validSurface == 0) {
       // if 0 valid surface
+
       //std::cerr << "[WARNING]\t Reflection problem: no valid surface" << std::endl;
       // std::cerr << "\tReflection problem: no valid surface\n"
       //           << "\t" << count << " " << U.length() << "->"
       //           << "[" << l1 << "," << l2 << "," << l3 << "]"
       //           << std::endl;
       // exit(EXIT_FAILURE);
+	
       isActive = false;
       return;
     } else if (validSurface == 1) {

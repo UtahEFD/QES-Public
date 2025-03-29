@@ -65,7 +65,7 @@ void WindProfilerHRRR::interpolateWindProfile(const WINDSInputData *WID, WINDSGe
   auto [dx, dy, dz] = WGD->domain.getDomainSize();
   
   sensorsProfiles(WID, WGD);
-  auto start_biLinear = std::chrono::high_resolution_clock::now();
+  
   int num_sites = available_sensor_id.size();
   std::vector<int> site_i(num_sites, 0);
   std::vector<int> site_j(num_sites, 0);
@@ -79,8 +79,10 @@ void WindProfilerHRRR::interpolateWindProfile(const WINDSInputData *WID, WINDSGe
 
   int k_mod;//Modified index in z-direction
   int icell_face, ii;
+  float z_terrain;
 
   if (WID->hrrrInput->interpolationScheme == 1){
+    auto start_nearest = std::chrono::high_resolution_clock::now();
     for (auto j = 0; j < ny; j++) {
       for (auto i = 0; i < nx; i++) {
 	int id = i + j * nx;//Index in horizontal surface
@@ -93,13 +95,14 @@ void WindProfilerHRRR::interpolateWindProfile(const WINDSInputData *WID, WINDSGe
       }
     }
   
-    for (auto k = 1; k < nz - 1; k++) {
+    for (auto k = 0; k < nz - 1; k++) {
       for (auto j = 0; j < ny; j++) {
 	for (auto i = 0; i < nx; i++) {
 	  int id = i + j * nx;//Index in horizontal surface
+	  z_terrain = WGD->domain.z_face[WGD->terrain_face_id[id]];
 	  //If height added to top of terrain is still inside QES domain
 	  if (k + WGD->terrain_face_id[id] < nz) {
-	    k_mod = k + WGD->terrain_face_id[id] -1;//Set the modified index
+	    k_mod = k + WGD->terrain_face_id[id];//Set the modified index
 	  } else {
 	    continue;
 	  }
@@ -113,44 +116,47 @@ void WindProfilerHRRR::interpolateWindProfile(const WINDSInputData *WID, WINDSGe
 	    surf_layer_height = asl_percent * (2 * abl_height[ii] - abs(WGD->domain.z[WGD->terrain_face_id[id]] - WGD->domain.z[WGD->terrain_face_id[site_id[ii]]]));
 	  }
 	  // If sum of z index and the terrain index at the sensor location is outside the domain
-	  if (k + WGD->terrain_face_id[site_id[ii]] -1 > nz - 2) {
+	  if (k + WGD->terrain_face_id[site_id[ii]] > nz - 2) {
 	    WGD->u0[icell_face] = u_prof[ii * nz + nz - 2];
 	    WGD->v0[icell_face] = v_prof[ii * nz + nz - 2];
 	    WGD->w0[icell_face] = 0.0;
 	  }// If height (above ground) is less than or equal to ASL height
-	  else if (WGD->domain.z[k] <= surf_layer_height) {
+	  else if ((WGD->domain.z[k_mod]-z_terrain) <= surf_layer_height) {
 	    WGD->u0[icell_face] = u_prof[ii * nz + k + WGD->terrain_face_id[site_id[ii]]];
 	    WGD->v0[icell_face] = v_prof[ii * nz + k + WGD->terrain_face_id[site_id[ii]]];
 	    WGD->w0[icell_face] = 0.0;
 	  }// If height (above ground) is greater than ASL height and modified index is inside the domain
-	  else if (WGD->domain.z[k] > surf_layer_height
-		   && k + WGD->terrain_face_id[site_id[ii]] - 1 < nz
-		   && k_mod > k + WGD->terrain_face_id[site_id[ii]]-1) {
+	  else if ((WGD->domain.z[k_mod]-z_terrain) > surf_layer_height
+		   && k + WGD->terrain_face_id[site_id[ii]] < nz
+		   && k_mod > k + WGD->terrain_face_id[site_id[ii]]) {
 	    WGD->u0[icell_face] = u_prof[ii * nz + k_mod];
 	    WGD->v0[icell_face] = v_prof[ii * nz + k_mod];
 	    WGD->w0[icell_face] = 0.0;
 	  } else {
-	    WGD->u0[icell_face] = u_prof[ii * nz + k + WGD->terrain_face_id[site_id[ii]]-1];
-	    WGD->v0[icell_face] = v_prof[ii * nz + k + WGD->terrain_face_id[site_id[ii]]-1];
+	    WGD->u0[icell_face] = u_prof[ii * nz + k + WGD->terrain_face_id[site_id[ii]]];
+	    WGD->v0[icell_face] = v_prof[ii * nz + k + WGD->terrain_face_id[site_id[ii]]];
 	    WGD->w0[icell_face] = 0.0;
 	  }	  
 	}
       }
     }
+    auto finish_nearest = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<float> elapsed = finish_nearest - start_nearest;
+    std::cout << "Elapsed time for No Interpolation: " << elapsed.count() << " s\n";
   }
-
-  
+ 
   int count;
   int id, idx;
   if (WID->hrrrInput->interpolationScheme == 2){
+    auto start_biLinear = std::chrono::high_resolution_clock::now();
     for (auto j = 1; j < ny-1; j++) {
       for (auto i = 1; i < nx-1; i++) {
 	id = i + j * (nx-1);//Index in horizontal surface
 	idx = i + j * nx;
 	//If height added to top of terrain is still inside QES domain
-	for (auto k = 1; k < nz - 1; k++) {
+	for (auto k = 0; k < nz - 1; k++) {
 	  if (k + WGD->terrain_face_id[idx] < nz) {
-	    k_mod = k + WGD->terrain_face_id[idx] -1;//Set the modified index
+	    k_mod = k + WGD->terrain_face_id[idx];//Set the modified index
 	  } else {
 	    continue;
 	  }	
@@ -198,12 +204,10 @@ void WindProfilerHRRR::interpolateWindProfile(const WINDSInputData *WID, WINDSGe
 	WGD->v0[icell_new] = WGD->v0[icell_face];
       }
     }
-    
+    auto finish_biLinear = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<float> elapsed = finish_biLinear - start_biLinear;
+    std::cout << "Elapsed time for Bilinear Interpolation: " << elapsed.count() << " s\n";
   }
-
-  auto finish_biLinear = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<float> elapsed = finish_biLinear - start_biLinear;
-  std::cout << "Elapsed time for Nearest Site Interpolation: " << elapsed.count() << " s\n";
 
   return;
 }
@@ -248,6 +252,7 @@ void WindProfilerHRRR::biLinearInterpolation(const WINDSInputData *WID, WINDSGen
 
   float z_terrain;
   int jj;
+
   for (auto ii = 0; ii < WGD->closest_site_ids[id].size(); ii++){
     jj = WGD->closest_site_ids[id][ii];
     
@@ -273,32 +278,32 @@ void WindProfilerHRRR::biLinearInterpolation(const WINDSInputData *WID, WINDSGen
       site_id[jj] = 0;
     }
     
-    z_terrain = WGD->domain.z_face[WGD->terrain_face_id[site_id[jj]]];
+    z_terrain = WGD->domain.z_face[WGD->terrain_face_id[idx]];
     
     // If the height difference between the terrain at the curent cell and sensor location is less than ABL height
-    if (abs(WGD->domain.z[WGD->terrain_face_id[idx]] - z_terrain) > abl_height[jj]) {
+    if (abs(WGD->domain.z[WGD->terrain_face_id[idx]] - WGD->domain.z_face[WGD->terrain_face_id[site_id[jj]]]) > abl_height[jj]) {
       surf_layer_height = asl_percent * abl_height[jj];
     } else {
-      surf_layer_height = asl_percent * (2 * abl_height[jj] - abs(WGD->domain.z[WGD->terrain_face_id[idx]] - z_terrain));
+      surf_layer_height = asl_percent * (2 * abl_height[jj] - abs(WGD->domain.z[WGD->terrain_face_id[idx]] - WGD->domain.z_face[WGD->terrain_face_id[site_id[jj]]]));
     }
    
     // If sum of z index and the terrain index at the sensor location is outside the domain
-    if (k + WGD->terrain_face_id[site_id[jj]] -1 > nz - 2) {
+    if (k + WGD->terrain_face_id[site_id[jj]] > nz - 2) {
       u[ii] = u_prof[jj * nz + nz - 2];
       v[ii] = v_prof[jj * nz + nz - 2];
     }// If height (above ground) is less than or equal to ASL height
-    else if (WGD->domain.z[k] <= surf_layer_height) {
+    else if ((WGD->domain.z[k_mod]-z_terrain) <= surf_layer_height) {
       u[ii] = u_prof[jj * nz + k + WGD->terrain_face_id[site_id[jj]]];
       v[ii] = v_prof[jj * nz + k + WGD->terrain_face_id[site_id[jj]]];
     }// If height (above ground) is greater than ASL height and modified index is inside the domain
-    else if (WGD->domain.z[k] > surf_layer_height
-	     && k + WGD->terrain_face_id[site_id[jj]] - 1 < nz
-	     && k_mod > k + WGD->terrain_face_id[site_id[jj]]-1) {
+    else if ((WGD->domain.z[k_mod]-z_terrain) > surf_layer_height
+	     && k + WGD->terrain_face_id[site_id[jj]] < nz
+	     && k_mod > k + WGD->terrain_face_id[site_id[jj]]) {
       u[ii] = u_prof[jj * nz + k_mod];
       v[ii] = v_prof[jj * nz + k_mod];
     } else {
-      u[ii] = u_prof[jj * nz + k + WGD->terrain_face_id[site_id[jj]]-1];
-      v[ii] = v_prof[jj * nz + k + WGD->terrain_face_id[site_id[jj]]-1];
+      u[ii] = u_prof[jj * nz + k + WGD->terrain_face_id[site_id[jj]]];
+      v[ii] = v_prof[jj * nz + k + WGD->terrain_face_id[site_id[jj]]];
     }
   }
 

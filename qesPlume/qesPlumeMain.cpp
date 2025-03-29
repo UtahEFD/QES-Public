@@ -74,6 +74,7 @@ int main(int argc, char **argv)
 
   // Create instance of QES-winds General data class
   WINDSGeneralData *WGD = new WINDSGeneralData(arguments.inputWINDSFile);
+  std::cout << "WGD->UTMx:   " <<  WGD->UTMx << std::endl;
   // Create instance of QES-Turb General data class
   TURBGeneralData *TGD = new TURBGeneralData(arguments.inputTURBFile, WGD);
   // Create instance of QES-Plume General data class
