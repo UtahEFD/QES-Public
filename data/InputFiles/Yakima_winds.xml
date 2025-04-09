@@ -50,9 +50,6 @@
 
 <hrrrInput>
   <HRRRFile>../../scratch/Sep_2020_1.nc</HRRRFile>
-  <inputFields>MASSDEN_8maboveground</inputFields>
-  <inputFields>UGRD_10maboveground</inputFields>
-  <inputFields>VGRD_10maboveground</inputFields>
   <interpolationScheme>2</interpolationScheme>        <!-- Interpolation scheme for initial guess field (0-Barnes Scheme (default), 1-Nearest site, 2-Bilinear interpolation) -->
   <stabilityClasses>2</stabilityClasses>           <!-- Defining method for stability classes (0-No stability (default), 1-Pasquill-Gifford classes, 2-Monin-Obukhov length (using surface fluxes) -->
 </hrrrInput>

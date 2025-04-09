@@ -1561,7 +1561,7 @@ float WINDSGeneralData::canopyBisection(float ustar, float z0, float canopy_top,
 void WINDSGeneralData::downscaleHRRR(const WINDSInputData *WID)
 {
   std::cout << "Processing HRRR data..." << std::flush;
-  hrrrInputData = new HRRRData(WID->hrrrInput->HRRRFile, WID->hrrrInput->inputFields);
+  hrrrInputData = new HRRRData(WID->hrrrInput->HRRRFile);
   hrrrInputData->findHRRRSensors(WID, this);
 
   std::vector<int> site_i(hrrrInputData->hrrrSensorID.size(), 0);

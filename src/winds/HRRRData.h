@@ -62,7 +62,7 @@ class HRRRData
   
   NetCDFInput *netcdf;
   std::string fileName; /**< HRRR file name */
-  std::vector<std::string> HRRRFields; /**< HRRR input fields */
+  //std::vector<std::string> HRRRFields; /**< HRRR input fields */
   std::vector<double> hrrrTime, hrrrX, hrrrY;
   std::vector<double> siteLat, siteLon;
   std::vector<float> siteUTMx, siteUTMy;
@@ -82,7 +82,7 @@ class HRRRData
   std::vector<int> hrrrSourceID, hrrrSourceUTMzone;
   std::vector<float> hrrrCon, hrrrC;
 
-  HRRRData(std::string fileName, std::vector<std::string> HRRRFields);
+  HRRRData(std::string fileName);
 
   ~HRRRData();
 
