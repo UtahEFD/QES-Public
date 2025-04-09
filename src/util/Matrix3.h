@@ -463,7 +463,7 @@ public:
   // read matrix from istream
   friend std::istream &operator>>(std::istream &is, Matrix3<T> &M)
   {
-    is >> M.m_val[0] >> M.m_val[1] >> M.val[2] >> M.m_val[3] >> M.m_val[4] >> M.val[5] >> M.m_val[6] >> M.m_val[7] >> M.val[8];
+    is >> M.m_val[0] >> M.m_val[1] >> M.m_val[2] >> M.m_val[3] >> M.m_val[4] >> M.m_val[5] >> M.m_val[6] >> M.m_val[7] >> M.m_val[8];
     return is;
   }
   friend std::ostream &operator<<(std::ostream &out, const Matrix3<T> &M)
@@ -722,7 +722,7 @@ public:
   // read from istream
   friend std::istream &operator>>(std::istream &is, Matrix3sym<T> &M)
   {
-    is >> M.m_val[0] >> M.m_val[1] >> M.val[2] >> M.m_val[3] >> M.val[4] >> M.val[5];
+    is >> M.m_val[0] >> M.m_val[1] >> M.m_val[2] >> M.m_val[3] >> M.m_val[4] >> M.m_val[5];
     return is;
   }
 
