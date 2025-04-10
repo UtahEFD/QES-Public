@@ -187,8 +187,8 @@ int main(int argc, char *argv[])
     // /////////////////////////////
     // Output the various files requested from the simulation run (netcdf wind velocity, icell values, etc...)
     // /////////////////////////////
-    for (auto id_out = 0u; id_out < outputVec.size(); id_out++) {
-      outputVec.at(id_out)->save(WGD->timestamp[index]);
+    for (auto &id_out : outputVec) {
+      id_out->save(WGD->timestamp[index]);
     }
 
     if (WID->simParams->wrfCoupling) {
@@ -202,6 +202,13 @@ int main(int argc, char *argv[])
     WID->simParams->wrfInputData->endWRFSession();
 
   // /////////////////////////////
+  delete WID;
+  delete WGD;
+  delete TGD;
+  for (auto p : outputVec) {
+    delete p;
+  }
+
   std::cout << "QES-Winds Exiting." << std::endl;
   exit(EXIT_SUCCESS);
 }
