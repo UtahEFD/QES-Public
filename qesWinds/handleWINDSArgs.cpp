@@ -96,35 +96,6 @@ void WINDSArgs::processArguments(int argc, char *argv[])
     QESout::setVerbose();
   }
 
-  std::cout << "Summary of QES-WINDS options: " << std::endl;
-  std::cout << "----------------------------" << std::endl;
-
-  if (solveWind) {
-    if (solveType == CPU_Type)
-#ifdef _OPENMP
-      std::cout << "Wind Solver:\t\t ON\t [Red/Black Solver (CPU)]" << std::endl;
-#else
-      std::cout << "Wind Solver:\t\t ON\t [Serial solver (CPU)]" << std::endl;
-#endif
-    else if (solveType == DYNAMIC_P)
-      std::cout << "Wind Solver:\t\t ON\t [Dynamic Parallel solver (GPU)]" << std::endl;
-    else if (solveType == Global_M)
-      std::cout << "Wind Solver:\t\t ON\t [Global memory solver (GPU)]" << std::endl;
-    else if (solveType == Shared_M)
-      std::cout << "Wind Solver:\t\t ON\t [Shared memory solver (GPU)]" << std::endl;
-    else
-      std::cout << "[WARNING]\t the wind fields are not being calculated" << std::endl;
-  }
-
-  std::cout << "Turbulence model:\t " << (compTurb ? "ON" : "OFF") << std::endl;
-  std::cout << "Verbose:\t\t " << (verbose ? "ON" : "OFF") << std::endl;
-
-  std::cout << "----------------------------" << std::endl;
-
-  std::cout << "qesWindsParamFile set to " << qesWindsParamFile << std::endl;
-
-  std::cout << "----------------------------" << std::endl;
-
   isSet("outbasename", netCDFFileBasename);
   if (!netCDFFileBasename.empty()) {
     // visuOutput = isSet("visuout");
@@ -153,27 +124,53 @@ void WINDSArgs::processArguments(int argc, char *argv[])
       filenameTerrain.append("_terrainOut.obj");
     }
 
-    if (!netCDFFileVisu.empty()) {
-      std::cout << "[WINDS]\t Visualization NetCDF output file set:\t " << netCDFFileVisu << std::endl;
-    }
-    if (!netCDFFileWksp.empty()) {
-      std::cout << "[WINDS]\t Workspace NetCDF output file set:\t " << netCDFFileWksp << std::endl;
-    }
-    if (!filenameTerrain.empty()) {
-      std::cout << "[WINDS]\t Terrain triangle mesh output set:\t " << filenameTerrain << std::endl;
-    }
-    if (!netCDFFileTurb.empty()) {
-      std::cout << "[TURB]\t Turbulence NetCDF output file set:\t " << netCDFFileTurb << std::endl;
-    }
     netCDFFileFire = netCDFFileBasename;
     netCDFFileFire.append("_fireOut.nc");
   } else {
-
-    QESout::warning("No output basename set -> output turned off ");
     visuOutput = false;
     wkspOutput = false;
     turbOutput = false;
     terrainOut = false;
+  }
+
+
+  std::cout << "Summary of QES-WINDS options: " << std::endl;
+  std::cout << "----------------------------" << std::endl;
+  // parameter files:
+  std::cout << "qesWindsParamFile: " << qesWindsParamFile << std::endl;
+
+  std::cout << "----------------------------" << std::endl;
+
+  // code options:
+  if (solveWind) {
+    if (solveType == CPU_Type)
+#ifdef _OPENMP
+      std::cout << "Wind Solver:\t\t ON\t [Red/Black Solver (CPU)]" << std::endl;
+#else
+      std::cout << "Wind Solver:\t\t ON\t [Serial solver (CPU)]" << std::endl;
+#endif
+    else if (solveType == DYNAMIC_P)
+      std::cout << "Wind Solver:\t\t ON\t [Dynamic Parallel solver (GPU)]" << std::endl;
+    else if (solveType == Global_M)
+      std::cout << "Wind Solver:\t\t ON\t [Global memory solver (GPU)]" << std::endl;
+    else if (solveType == Shared_M)
+      std::cout << "Wind Solver:\t\t ON\t [Shared memory solver (GPU)]" << std::endl;
+    else
+      std::cout << "[WARNING]\t the wind fields are not being calculated" << std::endl;
+  }
+  std::cout << "Turbulence model:\t " << (compTurb ? "ON" : "OFF") << std::endl;
+  std::cout << "Verbose:\t\t " << (verbose ? "ON" : "OFF") << std::endl;
+
+  // output files:
+  if (!netCDFFileBasename.empty()) {
+    std::cout << "----------------------------" << std::endl;
+    std::cout << "Output file basename:        " << netCDFFileBasename << std::endl;
+    std::cout << "Winds visualization output:  " << (visuOutput ? "ON" : "OFF") << std::endl;
+    std::cout << "Winds workspace output:      " << (wkspOutput ? "ON" : "OFF") << std::endl;
+    std::cout << "Winds terrain mesh output:   " << (terrainOut ? "ON" : "OFF") << std::endl;
+    std::cout << "Turbulence output:           " << (turbOutput ? "ON" : "OFF") << std::endl;
+  } else {
+    QESout::warning("No output basename set -> output turned off ");
   }
 
   std::cout << "###################################################################" << std::endl;
