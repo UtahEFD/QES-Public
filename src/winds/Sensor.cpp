@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2024 University of Utah
- * Copyright (c) 2024 University of Minnesota Duluth
+ * Copyright (c) 2025 University of Utah
+ * Copyright (c) 2025 University of Minnesota Duluth
  *
- * Copyright (c) 2024 Behnam Bozorgmehr
- * Copyright (c) 2024 Jeremy A. Gibbs
- * Copyright (c) 2024 Fabien Margairaz
- * Copyright (c) 2024 Eric R. Pardyjak
- * Copyright (c) 2024 Zachary Patterson
- * Copyright (c) 2024 Rob Stoll
- * Copyright (c) 2024 Lucas Ulmer
- * Copyright (c) 2024 Pete Willemsen
+ * Copyright (c) 2025 Behnam Bozorgmehr
+ * Copyright (c) 2025 Jeremy A. Gibbs
+ * Copyright (c) 2025 Fabien Margairaz
+ * Copyright (c) 2025 Eric R. Pardyjak
+ * Copyright (c) 2025 Zachary Patterson
+ * Copyright (c) 2025 Rob Stoll
+ * Copyright (c) 2025 Lucas Ulmer
+ * Copyright (c) 2025 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -221,18 +221,18 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
     }
   }
 
-  int k_mod;//Modified index in z-direction
+  int k_mod;// Modified index in z-direction
   for (auto k = 1; k < WGD->nz; k++) {
     for (auto j = 0; j < WGD->ny; j++) {
       for (auto i = 0; i < WGD->nx; i++) {
         sum_wu = 0.0;
         sum_wv = 0.0;
         sum_wm = 0.0;
-        int id = i + j * WGD->nx;//Index in horizontal surface
-        int idx = i + j * (WGD->nx - 1);//Index in horizontal surface for cell faces
-        //If height added to top of terrain is still inside QES domain
+        int id = i + j * WGD->nx;// Index in horizontal surface
+        int idx = i + j * (WGD->nx - 1);// Index in horizontal surface for cell faces
+        // If height added to top of terrain is still inside QES domain
         if (k + WGD->terrain_face_id[id] - 1 < WGD->nz) {
-          k_mod = k + WGD->terrain_face_id[id] - 1;//Set the modified index
+          k_mod = k + WGD->terrain_face_id[id] - 1;// Set the modified index
         } else {
           continue;
         }
@@ -326,10 +326,10 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
         sum_wu = 0.0;
         sum_wv = 0.0;
         sum_wm = 0.0;
-        int id = i + j * WGD->nx;//Index in horizontal surface
-        //If height added to top of terrain is still inside QES domain
+        int id = i + j * WGD->nx;// Index in horizontal surface
+        // If height added to top of terrain is still inside QES domain
         if (k + WGD->terrain_face_id[id] - 1 < WGD->nz) {
-          k_mod = k + WGD->terrain_face_id[id] - 1;//Set the modified index
+          k_mod = k + WGD->terrain_face_id[id] - 1;// Set the modified index
         } else {
           continue;
         }

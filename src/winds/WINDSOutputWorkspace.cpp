@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2024 University of Utah
- * Copyright (c) 2024 University of Minnesota Duluth
+ * Copyright (c) 2025 University of Utah
+ * Copyright (c) 2025 University of Minnesota Duluth
  *
- * Copyright (c) 2024 Behnam Bozorgmehr
- * Copyright (c) 2024 Jeremy A. Gibbs
- * Copyright (c) 2024 Fabien Margairaz
- * Copyright (c) 2024 Eric R. Pardyjak
- * Copyright (c) 2024 Zachary Patterson
- * Copyright (c) 2024 Rob Stoll
- * Copyright (c) 2024 Lucas Ulmer
- * Copyright (c) 2024 Pete Willemsen
+ * Copyright (c) 2025 Behnam Bozorgmehr
+ * Copyright (c) 2025 Jeremy A. Gibbs
+ * Copyright (c) 2025 Fabien Margairaz
+ * Copyright (c) 2025 Eric R. Pardyjak
+ * Copyright (c) 2025 Zachary Patterson
+ * Copyright (c) 2025 Rob Stoll
+ * Copyright (c) 2025 Lucas Ulmer
+ * Copyright (c) 2025 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -87,11 +87,11 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, const std::str
 
   m_utmx = m_WGD->UTMx;
   std::cout << "m_utmx:   " << m_utmx << std::endl;
-  
+
   // set UTM dimensions
   NcDim NcDim_utm_x = addDimension("UTMx", 1);
-  //NcDim NcDim_utm_y = addDimension("UTMy", 1);
-  //NcDim NcDim_utm_zone = addDimension("UTMzone", 1);
+  // NcDim NcDim_utm_y = addDimension("UTMy", 1);
+  // NcDim NcDim_utm_zone = addDimension("UTMzone", 1);
 
   // create attributes UTM dimensions
   std::vector<NcDim> dim_utm_x;

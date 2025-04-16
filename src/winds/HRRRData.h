@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2025 University of Utah
+ * Copyright (c) 2025 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2025 Behnam Bozorgmehr
+ * Copyright (c) 2025 Jeremy A. Gibbs
+ * Copyright (c) 2025 Fabien Margairaz
+ * Copyright (c) 2025 Eric R. Pardyjak
+ * Copyright (c) 2025 Zachary Patterson
+ * Copyright (c) 2025 Rob Stoll
+ * Copyright (c) 2025 Lucas Ulmer
+ * Copyright (c) 2025 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -45,7 +45,6 @@ class WINDSInputData;
 class PlumeInputData;
 
 
-
 /**
  * @class HRRRData
  * @brief Processing HRRR wind data into QES-Winds
@@ -53,21 +52,19 @@ class PlumeInputData;
 
 class HRRRData
 {
-  private:
-  
+private:
   NcFile hrrrInputFile;
   std::vector<std::string> hrrrFields;
-  
-  public:
-  
+
+public:
   NetCDFInput *netcdf;
   std::string fileName; /**< HRRR file name */
-  //std::vector<std::string> HRRRFields; /**< HRRR input fields */
+  // std::vector<std::string> HRRRFields; /**< HRRR input fields */
   std::vector<double> hrrrTime, hrrrX, hrrrY;
   std::vector<double> siteLat, siteLon;
   std::vector<float> siteUTMx, siteUTMy;
   std::vector<int> siteUTMzone;
-  std::vector<double>  hrrrSensorUTMx, hrrrSensorUTMy;
+  std::vector<double> hrrrSensorUTMx, hrrrSensorUTMy;
   std::vector<int> hrrrSensorID, hrrrSensorUTMzone;
   NcDim xDim, yDim, timeDim;
   int xSize, ySize, timeSize;
@@ -78,7 +75,7 @@ class HRRRData
   std::vector<double> hrrrSpeedTop, hrrrDirTop, hrrrSpeed700, hrrrDir700, hrrrSpeed850, hrrrDir850, hrrrSpeed925, hrrrDir925;
   std::vector<double> hrrrSenHeatFlux, hrrrUStar, hrrrPotTemp;
 
-  std::vector<double>  hrrrSourceUTMx, hrrrSourceUTMy;
+  std::vector<double> hrrrSourceUTMx, hrrrSourceUTMy;
   std::vector<int> hrrrSourceID, hrrrSourceUTMzone;
   std::vector<float> hrrrCon, hrrrC;
 
@@ -95,5 +92,4 @@ class HRRRData
   void readAloftData(int t);
 
   void readSourceData(int t);
-
 };

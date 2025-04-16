@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2024 University of Utah
- * Copyright (c) 2024 University of Minnesota Duluth
+ * Copyright (c) 2025 University of Utah
+ * Copyright (c) 2025 University of Minnesota Duluth
  *
- * Copyright (c) 2024 Behnam Bozorgmehr
- * Copyright (c) 2024 Jeremy A. Gibbs
- * Copyright (c) 2024 Fabien Margairaz
- * Copyright (c) 2024 Eric R. Pardyjak
- * Copyright (c) 2024 Zachary Patterson
- * Copyright (c) 2024 Rob Stoll
- * Copyright (c) 2024 Lucas Ulmer
- * Copyright (c) 2024 Pete Willemsen
+ * Copyright (c) 2025 Behnam Bozorgmehr
+ * Copyright (c) 2025 Jeremy A. Gibbs
+ * Copyright (c) 2025 Fabien Margairaz
+ * Copyright (c) 2025 Eric R. Pardyjak
+ * Copyright (c) 2025 Zachary Patterson
+ * Copyright (c) 2025 Rob Stoll
+ * Copyright (c) 2025 Lucas Ulmer
+ * Copyright (c) 2025 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -138,7 +138,7 @@ public:
       std::cerr << " timeStep = \"" << timeStep << "\", simDur = \"" << simDur << "\"" << std::endl;
       exit(EXIT_FAILURE);
     }
-    
+
     // make sure the updateFrequency time loop variable is not bigger than the simulation duration
     // LA note: this is not the same way nTimes is calculated in plume, I'm assuming that zero doesn't matter
     int nTimes = std::ceil(simDur / timeStep);

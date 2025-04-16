@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2024 University of Utah
- * Copyright (c) 2024 University of Minnesota Duluth
+ * Copyright (c) 2025 University of Utah
+ * Copyright (c) 2025 University of Minnesota Duluth
  *
- * Copyright (c) 2024 Behnam Bozorgmehr
- * Copyright (c) 2024 Jeremy A. Gibbs
- * Copyright (c) 2024 Fabien Margairaz
- * Copyright (c) 2024 Eric R. Pardyjak
- * Copyright (c) 2024 Zachary Patterson
- * Copyright (c) 2024 Rob Stoll
- * Copyright (c) 2024 Lucas Ulmer
- * Copyright (c) 2024 Pete Willemsen
+ * Copyright (c) 2025 Behnam Bozorgmehr
+ * Copyright (c) 2025 Jeremy A. Gibbs
+ * Copyright (c) 2025 Fabien Margairaz
+ * Copyright (c) 2025 Eric R. Pardyjak
+ * Copyright (c) 2025 Zachary Patterson
+ * Copyright (c) 2025 Rob Stoll
+ * Copyright (c) 2025 Lucas Ulmer
+ * Copyright (c) 2025 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -56,14 +56,13 @@ using std::cout;
  * @class CutBuliding
  * @brief Designed for applying the cut-cell method to the general building shape (polygons).
  *
- * In this class, the cut-cell method to the polygon buildings. 
+ * In this class, the cut-cell method to the polygon buildings.
  *
  */
 class CutBuilding
 {
 private:
 protected:
-  
   ///@{
   /** :document this */
   std::vector<float> xi, yi;
@@ -75,7 +74,6 @@ protected:
   ///@}
 
 public:
-  
   CutBuilding()
   {
   }
@@ -95,7 +93,7 @@ public:
   void setCutCellFlags(WINDSGeneralData *WGD, const PolyBuilding *PolyB, int building_number);
 
   /**
-   * This function reorders the solid points of a face (passed to it) in a counter-clock wise order. 
+   * This function reorders the solid points of a face (passed to it) in a counter-clock wise order.
    *
    * @param face_points list of solid points on a face
    * @param index index of the face that the points belong to
@@ -117,8 +115,7 @@ public:
    * @param WGD Winds general data class pointer
    * @param face_points list of solid points on a face
    * @param cutcell_index index of the cut-cell
-   * @param index index of the face that the points belong to 
+   * @param index index of the face that the points belong to
    */
   float calculateArea(WINDSGeneralData *WGD, std::vector<cutVert> &face_points, int cutcell_index, int index);
-
 };

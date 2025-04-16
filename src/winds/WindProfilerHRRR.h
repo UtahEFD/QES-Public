@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2025 University of Utah
+ * Copyright (c) 2025 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2025 Behnam Bozorgmehr
+ * Copyright (c) 2025 Jeremy A. Gibbs
+ * Copyright (c) 2025 Fabien Margairaz
+ * Copyright (c) 2025 Eric R. Pardyjak
+ * Copyright (c) 2025 Zachary Patterson
+ * Copyright (c) 2025 Rob Stoll
+ * Copyright (c) 2025 Lucas Ulmer
+ * Copyright (c) 2025 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -41,9 +41,8 @@
 class WindProfilerHRRR : public WindProfilerSensorType
 {
 private:
-  void biLinearInterpolation(const WINDSInputData *WID, WINDSGeneralData *WGD, int i, int j, int k, int k_mod, int id, int idx,  int icell_face,std::vector<int> site_i, std::vector<int> site_j);
+  void biLinearInterpolation(const WINDSInputData *WID, WINDSGeneralData *WGD, int i, int j, int k, int k_mod, int id, int idx, int icell_face, std::vector<int> site_i, std::vector<int> site_j);
 
 public:
   void interpolateWindProfile(const WINDSInputData *, WINDSGeneralData *);
 };
-

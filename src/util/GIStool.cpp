@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2024 University of Utah
- * Copyright (c) 2024 University of Minnesota Duluth
+ * Copyright (c) 2025 University of Utah
+ * Copyright (c) 2025 University of Minnesota Duluth
  *
- * Copyright (c) 2024 Behnam Bozorgmehr
- * Copyright (c) 2024 Jeremy A. Gibbs
- * Copyright (c) 2024 Fabien Margairaz
- * Copyright (c) 2024 Eric R. Pardyjak
- * Copyright (c) 2024 Zachary Patterson
- * Copyright (c) 2024 Rob Stoll
- * Copyright (c) 2024 Lucas Ulmer
- * Copyright (c) 2024 Pete Willemsen
+ * Copyright (c) 2025 Behnam Bozorgmehr
+ * Copyright (c) 2025 Jeremy A. Gibbs
+ * Copyright (c) 2025 Fabien Margairaz
+ * Copyright (c) 2025 Eric R. Pardyjak
+ * Copyright (c) 2025 Zachary Patterson
+ * Copyright (c) 2025 Rob Stoll
+ * Copyright (c) 2025 Lucas Ulmer
+ * Copyright (c) 2025 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -40,7 +40,7 @@
   ---------------------------------------
 
   Main authors: Dimitri Komatitsch and Jeroen Tromp
-  Princeton University, USA and CNRS / INRIA / University of Pau (c) Princeton University / 
+  Princeton University, USA and CNRS / INRIA / University of Pau (c) Princeton University /
   California Institute of Technology and CNRS / INRIA / University of Pau
   July 2012
 
@@ -65,16 +65,16 @@
   a list of UTM zones of the world is available at www.dmap.co.uk/utmworld.htm
 
   CAMx v2.03
-  
+
   UTM_GEO performs UTM to geodetic (long/lat) translation, and back.
-  
+
   This is a Fortran version of the BASIC program "Transverse Mercator
   Conversion", Copyright 1986, Norman J. Berls (Stefan Musarra, 2/94)
   Based on algorithm taken from "Map Projections Used by the USGS"
   by John P. SWGD->nyder, Geological Survey Bulletin 1532, USDI.
-  
+
   Input/Output arguments:
-    
+
            rlon                  Longitude (deg, negative for West)
            rlat                  Latitude (deg)
            rx                    UTM easting (m)
@@ -85,13 +85,13 @@
                                  IUTM2LONGLAT = UTM to geodetic
 
   some extracts about UTM:
-  
+
   There are 60 longitudinal projection zones numbered 1 to 60 starting at 180Â°W.
   Each of these zones is 6 degrees wide, apart from a few exceptions around Norway and Svalbard.
   There are 20 latitudinal zones spanning the latitudes 80Â°S to 84Â°N and denoted
   by the letters C to X, ommitting the letter O.
   Each of these is 8 degrees south-north, apart from zone X which is 12 degrees south-north.
-  
+
   To change the UTM zone and the hemisphere in which the
   calculations are carried out, need to change the fortran code and recompile. The UTM zone is described
   actually by the central meridian of that zone, i.e. the longitude at the midpoint of the zone, 3 degrees
@@ -99,7 +99,7 @@
   To change hemisphere need to change the "north" variable:
   - north=0 for northern hemisphere and
   - north=10000000 (10000km) for southern hemisphere. values must be in metres i.e. north=10000000.
-  
+
   Note that the UTM grids are actually Mercators which
   employ the standard UTM scale factor 0.9996 and set the
   Easting Origin to 500,000;
@@ -123,7 +123,7 @@ void GIStool::UTMConverter(float &rlon, float &rlat, float &rx, float &ry, int &
   const float semimin = 6356583.80;
   const float scfa = 0.99960;
 
-  //To change hemisphere need to change the "north" variable:
+  // To change hemisphere need to change the "north" variable:
   float north = 0.0;
   if (N_HEMISPHERE)
     //- north=0 for northern hemisphere and
@@ -165,7 +165,7 @@ void GIStool::UTMConverter(float &rlon, float &rlat, float &rx, float &ry, int &
 
   // Set Zone parameters
   if (iway == ILONGLAT2UTM) {
-    UTM_PROJECTION_ZONE = std::ceil((rlon+180)/6);
+    UTM_PROJECTION_ZONE = std::ceil((rlon + 180) / 6);
   }
   zone = UTM_PROJECTION_ZONE;
   // sets central meridian for this zone

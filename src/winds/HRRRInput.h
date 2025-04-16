@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2022 University of Utah
- * Copyright (c) 2022 University of Minnesota Duluth
+ * Copyright (c) 2025 University of Utah
+ * Copyright (c) 2025 University of Minnesota Duluth
  *
- * Copyright (c) 2022 Behnam Bozorgmehr
- * Copyright (c) 2022 Jeremy A. Gibbs
- * Copyright (c) 2022 Fabien Margairaz
- * Copyright (c) 2022 Eric R. Pardyjak
- * Copyright (c) 2022 Zachary Patterson
- * Copyright (c) 2022 Rob Stoll
- * Copyright (c) 2022 Lucas Ulmer
- * Copyright (c) 2022 Pete Willemsen
+ * Copyright (c) 2025 Behnam Bozorgmehr
+ * Copyright (c) 2025 Jeremy A. Gibbs
+ * Copyright (c) 2025 Fabien Margairaz
+ * Copyright (c) 2025 Eric R. Pardyjak
+ * Copyright (c) 2025 Zachary Patterson
+ * Copyright (c) 2025 Rob Stoll
+ * Copyright (c) 2025 Lucas Ulmer
+ * Copyright (c) 2025 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -41,30 +41,28 @@ using namespace netCDF::exceptions;
 /**
  * @class HRRRInput
  * @brief Read in HRRR wind data into QES-Winds
- * it can be used in QES-Plume later to read in 
+ * it can be used in QES-Plume later to read in
  * HRRR smoke data
  */
 
 class HRRRInput : public ParseInterface
 {
- private:
- public:
-
+private:
+public:
   std::string HRRRFile; /**< HRRR file name */
-  //std::vector<std::string> inputFields; /**< HRRR input fields */
+  // std::vector<std::string> inputFields; /**< HRRR input fields */
   int interpolationScheme = 0; /**< Interpolation scheme for Interpolation scheme for initial guess field (0-Barnes Scheme (default), 1-Nearest site, 2-Bilinear interpolation) */
-  int stabilityClasses = 0;  /**< Defining method for stability classes (0-No stability (default), 1-Pasquill-Gifford classes, 2-Monin-Obukhov length (using surface fluxes) */
+  int stabilityClasses = 0; /**< Defining method for stability classes (0-No stability (default), 1-Pasquill-Gifford classes, 2-Monin-Obukhov length (using surface fluxes) */
 
   virtual void parseValues()
   {
-    //parseMultiPrimitives<std::string>(false, inputFields, "inputFields");
+    // parseMultiPrimitives<std::string>(false, inputFields, "inputFields");
     parsePrimitive<int>(false, interpolationScheme, "interpolationScheme");
     parsePrimitive<int>(false, stabilityClasses, "stabilityClasses");
     HRRRFile = "";
     parsePrimitive<std::string>(false, HRRRFile, "HRRRFile");
-    if (HRRRFile != ""){
+    if (HRRRFile != "") {
       HRRRFile = QESfs::get_absolute_path(HRRRFile);
     }
-    
   }
 };

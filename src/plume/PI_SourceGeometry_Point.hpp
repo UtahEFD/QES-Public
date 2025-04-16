@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2024 University of Utah
- * Copyright (c) 2024 University of Minnesota Duluth
+ * Copyright (c) 2025 University of Utah
+ * Copyright (c) 2025 University of Minnesota Duluth
  *
- * Copyright (c) 2024 Behnam Bozorgmehr
- * Copyright (c) 2024 Jeremy A. Gibbs
- * Copyright (c) 2024 Fabien Margairaz
- * Copyright (c) 2024 Eric R. Pardyjak
- * Copyright (c) 2024 Zachary Patterson
- * Copyright (c) 2024 Rob Stoll
- * Copyright (c) 2024 Lucas Ulmer
- * Copyright (c) 2024 Pete Willemsen
+ * Copyright (c) 2025 Behnam Bozorgmehr
+ * Copyright (c) 2025 Jeremy A. Gibbs
+ * Copyright (c) 2025 Fabien Margairaz
+ * Copyright (c) 2025 Eric R. Pardyjak
+ * Copyright (c) 2025 Zachary Patterson
+ * Copyright (c) 2025 Rob Stoll
+ * Copyright (c) 2025 Lucas Ulmer
+ * Copyright (c) 2025 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -44,22 +44,20 @@
 class PI_SourceGeometry_Point : public PI_SourceComponent
 {
 private:
-
   // position of the source
   float m_posX = -1.0f;
   float m_posY = -1.0f;
   float m_posZ = -1.0f;
 
 protected:
-  
 public:
   // Default constructor
   PI_SourceGeometry_Point() : PI_SourceComponent()
   {
   }
-  
+
   /*SourceGeometry_Point(HRRRData *hrrrInputData, WINDSGeneralData *WGD, int sid) : SourceGeometry(SourceShape::point)
-  {  
+  {
 
     if (WGD->UTMZone == hrrrInputData->hrrrSourceUTMzone[sid]){
       posX = hrrrInputData->hrrrSourceUTMx[sid] - WGD->UTMx;;
@@ -69,7 +67,7 @@ public:
       int zone_diff = hrrrInputData->hrrrSourceUTMzone[sid] - WGD->UTMZone;
       posX = (hrrrInputData->hrrrSourceUTMx[sid] - start_zone) + (zone_diff - 1) * (end_zone - start_zone) + (end_zone - WGD->UTMx);
     }
-    
+
     posY = hrrrInputData->hrrrSourceUTMy[sid] - WGD->UTMy;
     int site_i = posX / WGD->dx;
     int site_j = posY / WGD->dy;

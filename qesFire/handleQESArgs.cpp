@@ -1,13 +1,13 @@
 /****************************************************************************
- * Copyright (c) 2024 University of Utah
- * Copyright (c) 2024 University of Minnesota Duluth
+ * Copyright (c) 2025 University of Utah
+ * Copyright (c) 2025 University of Minnesota Duluth
  *
- * Copyright (c) 2024 Matthew Moody
- * Copyright (c) 2024 Jeremy Gibbs
- * Copyright (c) 2024 Rob Stoll
- * Copyright (c) 2024 Fabien Margairaz
- * Copyright (c) 2024 Brian Bailey
- * Copyright (c) 2024 Pete Willemsen
+ * Copyright (c) 2025 Matthew Moody
+ * Copyright (c) 2025 Jeremy Gibbs
+ * Copyright (c) 2025 Rob Stoll
+ * Copyright (c) 2025 Fabien Margairaz
+ * Copyright (c) 2025 Brian Bailey
+ * Copyright (c) 2025 Pete Willemsen
  *
  * This file is part of QES-Fire
  *
@@ -25,7 +25,7 @@
  * You should have received a copy of the GNU General Public License
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
-/** 
+/**
  * @file handleQESArgs.cpp
  * @class QESArgs
  * @brief This class handles different commandline options and arguments
@@ -61,11 +61,11 @@ QESArgs::QESArgs()
   reg("visuout", "Turns on the netcdf file to write visulatization results", ArgumentParsing::NONE, 'z');
   reg("wkout", "Turns on the netcdf file to write wroking file", ArgumentParsing::NONE, 'w');
   // [FM] the output of turbulence field linked to the flag compTurb
-  //reg("turbout", "Turns on the netcdf file to write turbulence file", ArgumentParsing::NONE, 'r');
+  // reg("turbout", "Turns on the netcdf file to write turbulence file", ArgumentParsing::NONE, 'r');
   reg("terrainout", "Turn on the output of the triangle mesh for the terrain", ArgumentParsing::NONE, 'h');
 
   // going to assume concentration is always output. So these next options are like choices for additional debug output
-  //reg("doEulDataOutput",     "should debug Eulerian data be output",           ArgumentParsing::NONE,   'e');
+  // reg("doEulDataOutput",     "should debug Eulerian data be output",           ArgumentParsing::NONE,   'e');
   reg("doParticleDataOutput", "should debug Lagrangian data be output", ArgumentParsing::NONE, 'l');
   reg("fireout", "Turns on the netcdf fire output", ArgumentParsing::NONE, 'b');
   // command line to turn off fire-induced winds
@@ -223,5 +223,4 @@ void QESArgs::processArguments(int argc, char *argv[])
   }
 
   std::cout << "###################################################################" << std::endl;
-
 }

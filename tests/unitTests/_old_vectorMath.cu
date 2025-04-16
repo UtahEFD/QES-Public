@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2024 University of Utah
- * Copyright (c) 2024 University of Minnesota Duluth
+ * Copyright (c) 2025 University of Utah
+ * Copyright (c) 2025 University of Minnesota Duluth
  *
- * Copyright (c) 2024 Behnam Bozorgmehr
- * Copyright (c) 2024 Jeremy A. Gibbs
- * Copyright (c) 2024 Fabien Margairaz
- * Copyright (c) 2024 Eric R. Pardyjak
- * Copyright (c) 2024 Zachary Patterson
- * Copyright (c) 2024 Rob Stoll
- * Copyright (c) 2024 Lucas Ulmer
- * Copyright (c) 2024 Pete Willemsen
+ * Copyright (c) 2025 Behnam Bozorgmehr
+ * Copyright (c) 2025 Jeremy A. Gibbs
+ * Copyright (c) 2025 Fabien Margairaz
+ * Copyright (c) 2025 Eric R. Pardyjak
+ * Copyright (c) 2025 Zachary Patterson
+ * Copyright (c) 2025 Rob Stoll
+ * Copyright (c) 2025 Lucas Ulmer
+ * Copyright (c) 2025 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -154,8 +154,8 @@ __device__ void makeRealizable(float &txx,
   }
 
   if (iter == 999) {
-    //std::cout << "WARNING (Plume::makeRealizable): unable to make stress "
-    //             "tensor realizble.";
+    // std::cout << "WARNING (Plume::makeRealizable): unable to make stress "
+    //              "tensor realizble.";
   }
 
   // now set the output actual stress tensor using the separate temporary stress
@@ -327,8 +327,8 @@ __device__ void makeRealizable(float invarianceTol, mat3sym &tau)
   }
 
   if (iter == 999) {
-    //std::cout << "WARNING (Plume::makeRealizable): unable to make stress "
-    //             "tensor realizble.";
+    // std::cout << "WARNING (Plume::makeRealizable): unable to make stress "
+    //              "tensor realizble.";
   }
 
   // now set the output actual stress tensor using the separate temporary stress
@@ -489,7 +489,7 @@ void test_PlumeGeneralData::testGPU(int length)
   x3.resize(length, 0.0);
 
   if (errorCheck == cudaSuccess) {
-    //temp
+    // temp
 
     auto gpuStartTime = std::chrono::high_resolution_clock::now();
 
@@ -529,7 +529,7 @@ void test_PlumeGeneralData::testGPU(int length)
     cudaMemcpy(d_b2, b2.data(), length * sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(d_b3, b3.data(), length * sizeof(float), cudaMemcpyHostToDevice);
 
-    //call kernel
+    // call kernel
     auto kernelStartTime = std::chrono::high_resolution_clock::now();
     testCUDA<<<numberOfBlocks, numberOfThreadsPerBlock>>>(length,
                                                           d_A11,
@@ -551,7 +551,7 @@ void test_PlumeGeneralData::testGPU(int length)
     auto kernelEndTime = std::chrono::high_resolution_clock::now();
 
 
-    //cudamemcpy back to host
+    // cudamemcpy back to host
     /*
       cudaMemcpy(A11.data(), d_A11, length * sizeof(float), cudaMemcpyDeviceToHost);
       cudaMemcpy(A12.data(), d_A12, length * sizeof(float), cudaMemcpyDeviceToHost);
@@ -567,7 +567,7 @@ void test_PlumeGeneralData::testGPU(int length)
     cudaMemcpy(x2.data(), d_x2, length * sizeof(float), cudaMemcpyDeviceToHost);
     cudaMemcpy(x3.data(), d_x3, length * sizeof(float), cudaMemcpyDeviceToHost);
 
-    //cudafree
+    // cudafree
     cudaFree(d_A11);
     cudaFree(d_A12);
     cudaFree(d_A13);
@@ -614,11 +614,11 @@ void test_PlumeGeneralData::testGPU_struct(int length)
 
   int blockCount = 1;
   cudaDeviceGetAttribute(&blockCount, cudaDevAttrMultiProcessorCount, gpuID);
-  //std::cout << blockCount << std::endl;
+  // std::cout << blockCount << std::endl;
 
   int threadsPerBlock = 32;
   cudaDeviceGetAttribute(&threadsPerBlock, cudaDevAttrMaxThreadsPerBlock, gpuID);
-  //std::cout << threadsPerBlock << std::endl;
+  // std::cout << threadsPerBlock << std::endl;
 
   int blockSize = 1024;
   dim3 numberOfThreadsPerBlock(blockSize, 1, 1);
@@ -635,13 +635,13 @@ void test_PlumeGeneralData::testGPU_struct(int length)
   x.resize(length, { 0.0, 0.0, 0.0 });
 
   std::vector<mat3sym> tau;
-  //tau.resize(length, { 1, 2, 3, 1, 2, 1 });
+  // tau.resize(length, { 1, 2, 3, 1, 2, 1 });
   tau.resize(length, { 1, 0, 3, 0, 0, 1 });
   std::vector<vec3> invar;
   invar.resize(length, { 0.0, 0.0, 0.0 });
 
   if (errorCheck == cudaSuccess) {
-    //temp
+    // temp
 
     auto gpuStartTime = std::chrono::high_resolution_clock::now();
 
@@ -664,7 +664,7 @@ void test_PlumeGeneralData::testGPU_struct(int length)
     cudaMemcpy(d_tau, tau.data(), length * sizeof(mat3sym), cudaMemcpyHostToDevice);
 
 
-    //call kernel
+    // call kernel
     auto kernelStartTime = std::chrono::high_resolution_clock::now();
     testCUDA_matmult<<<numberOfBlocks, numberOfThreadsPerBlock>>>(length, d_A, d_b, d_x);
     testCUDA_invar<<<numberOfBlocks, numberOfThreadsPerBlock>>>(length, d_tau, d_invar);
@@ -672,7 +672,7 @@ void test_PlumeGeneralData::testGPU_struct(int length)
     auto kernelEndTime = std::chrono::high_resolution_clock::now();
 
 
-    //cudamemcpy back to host
+    // cudamemcpy back to host
     cudaMemcpy(A.data(), d_A, 9 * length * sizeof(float), cudaMemcpyDeviceToHost);
     cudaMemcpy(x.data(), d_x, 3 * length * sizeof(float), cudaMemcpyDeviceToHost);
 
@@ -680,7 +680,7 @@ void test_PlumeGeneralData::testGPU_struct(int length)
     cudaMemcpy(invar.data(), d_invar, length * sizeof(vec3), cudaMemcpyDeviceToHost);
 
 
-    //cudafree
+    // cudafree
     cudaFree(d_A);
     cudaFree(d_b);
     cudaFree(d_x);

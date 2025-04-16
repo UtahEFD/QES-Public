@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2024 University of Utah
- * Copyright (c) 2024 University of Minnesota Duluth
+ * Copyright (c) 2025 University of Utah
+ * Copyright (c) 2025 University of Minnesota Duluth
  *
- * Copyright (c) 2024 Behnam Bozorgmehr
- * Copyright (c) 2024 Jeremy A. Gibbs
- * Copyright (c) 2024 Fabien Margairaz
- * Copyright (c) 2024 Eric R. Pardyjak
- * Copyright (c) 2024 Zachary Patterson
- * Copyright (c) 2024 Rob Stoll
- * Copyright (c) 2024 Lucas Ulmer
- * Copyright (c) 2024 Pete Willemsen
+ * Copyright (c) 2025 Behnam Bozorgmehr
+ * Copyright (c) 2025 Jeremy A. Gibbs
+ * Copyright (c) 2025 Fabien Margairaz
+ * Copyright (c) 2025 Eric R. Pardyjak
+ * Copyright (c) 2025 Zachary Patterson
+ * Copyright (c) 2025 Rob Stoll
+ * Copyright (c) 2025 Lucas Ulmer
+ * Copyright (c) 2025 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -322,13 +322,13 @@ void WallReflection_StairStep::oneReflection(const WINDSGeneralData *WGD,
     if (validSurface == 0) {
       // if 0 valid surface
 
-      //std::cerr << "[WARNING]\t Reflection problem: no valid surface" << std::endl;
-      // std::cerr << "\tReflection problem: no valid surface\n"
-      //           << "\t" << count << " " << U.length() << "->"
-      //           << "[" << l1 << "," << l2 << "," << l3 << "]"
-      //           << std::endl;
-      // exit(EXIT_FAILURE);
-	
+      // std::cerr << "[WARNING]\t Reflection problem: no valid surface" << std::endl;
+      //  std::cerr << "\tReflection problem: no valid surface\n"
+      //            << "\t" << count << " " << U.length() << "->"
+      //            << "[" << l1 << "," << l2 << "," << l3 << "]"
+      //            << std::endl;
+      //  exit(EXIT_FAILURE);
+
       isActive = false;
       return;
     } else if (validSurface == 1) {

@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2024 University of Utah
- * Copyright (c) 2024 University of Minnesota Duluth
+ * Copyright (c) 2025 University of Utah
+ * Copyright (c) 2025 University of Minnesota Duluth
  *
- * Copyright (c) 2024 Behnam Bozorgmehr
- * Copyright (c) 2024 Jeremy A. Gibbs
- * Copyright (c) 2024 Fabien Margairaz
- * Copyright (c) 2024 Eric R. Pardyjak
- * Copyright (c) 2024 Zachary Patterson
- * Copyright (c) 2024 Rob Stoll
- * Copyright (c) 2024 Lucas Ulmer
- * Copyright (c) 2024 Pete Willemsen
+ * Copyright (c) 2025 Behnam Bozorgmehr
+ * Copyright (c) 2025 Jeremy A. Gibbs
+ * Copyright (c) 2025 Fabien Margairaz
+ * Copyright (c) 2025 Eric R. Pardyjak
+ * Copyright (c) 2025 Zachary Patterson
+ * Copyright (c) 2025 Rob Stoll
+ * Copyright (c) 2025 Lucas Ulmer
+ * Copyright (c) 2025 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -58,7 +58,7 @@ public:
   int streetCanyonFlag = 1; /**< :Street canyon flag (0-none, 1-Roeckle w/ Fackrel (default)): */
   int streetIntersectionFlag = 0; /**< :Street intersection flag (0-off, 1-on): */
   int wakeFlag = 2; /**< :Wake flag (0-none, 1-Rockle, 2-Modified Rockle (default)): */
-  int highRiseFlag = 0;  /**< :High-rise flag (0-off (default), 1-on): */
+  int highRiseFlag = 0; /**< :High-rise flag (0-off (default), 1-on): */
   int sidewallFlag = 1; /**< :Sidewall flag (0-off, 1-on (default)): */
 
   // SHP File parameters
@@ -98,7 +98,7 @@ public:
     if (shpFile != "") {
       shpFile = QESfs::get_absolute_path(shpFile);
       // Read polygon node coordinates and building height from shapefile
-      //SHPData = new ESRIShapefile(shpFile, shpTreeLayerName, shpPolygons, shpFeatures);
+      // SHPData = new ESRIShapefile(shpFile, shpTreeLayerName, shpPolygons, shpFeatures);
       SHPData = new ESRIShapefile(shpFile, shpBuildingLayerName);
       // std::cout << shpPolygons.size() << " " << shpTreeHeight.size() << std::endl;
     }

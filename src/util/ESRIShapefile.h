@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2024 University of Utah
- * Copyright (c) 2024 University of Minnesota Duluth
+ * Copyright (c) 2025 University of Utah
+ * Copyright (c) 2025 University of Minnesota Duluth
  *
- * Copyright (c) 2024 Behnam Bozorgmehr
- * Copyright (c) 2024 Jeremy A. Gibbs
- * Copyright (c) 2024 Fabien Margairaz
- * Copyright (c) 2024 Eric R. Pardyjak
- * Copyright (c) 2024 Zachary Patterson
- * Copyright (c) 2024 Rob Stoll
- * Copyright (c) 2024 Lucas Ulmer
- * Copyright (c) 2024 Pete Willemsen
+ * Copyright (c) 2025 Behnam Bozorgmehr
+ * Copyright (c) 2025 Jeremy A. Gibbs
+ * Copyright (c) 2025 Fabien Margairaz
+ * Copyright (c) 2025 Eric R. Pardyjak
+ * Copyright (c) 2025 Zachary Patterson
+ * Copyright (c) 2025 Rob Stoll
+ * Copyright (c) 2025 Lucas Ulmer
+ * Copyright (c) 2025 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -56,7 +56,7 @@
 class ESRIShapefile
 {
 public:
-  #if 0
+#if 0
   ESRIShapefile(const std::string &filename,
                 const std::string &layerName,
                 std::vector<std::vector<polyVert>> &polygons,
@@ -66,7 +66,7 @@ public:
                 const std::string &layerName,
                 std::vector<std::vector<polyVert>> &polygons,
                 std::map<std::string, std::vector<float>> &features);
-  #endif
+#endif
   ESRIShapefile(const std::string &filename,
                 const std::string &layerName);
   ~ESRIShapefile() = default;
@@ -108,7 +108,7 @@ public:
 private:
   ESRIShapefile();
 
-  #if 0
+#if 0
   /**
    * :document this:
    *
@@ -119,7 +119,7 @@ private:
   
   // void loadVectorData(std::vector<std::vector<polyVert>> &polygons, std::vector<float> &building_height, float heightFactor);
 
-  #endif
+#endif
   /**
    * :document this:
    *

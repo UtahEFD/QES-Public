@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2024 University of Utah
- * Copyright (c) 2024 University of Minnesota Duluth
+ * Copyright (c) 2025 University of Utah
+ * Copyright (c) 2025 University of Minnesota Duluth
  *
- * Copyright (c) 2024 Behnam Bozorgmehr
- * Copyright (c) 2024 Jeremy A. Gibbs
- * Copyright (c) 2024 Fabien Margairaz
- * Copyright (c) 2024 Eric R. Pardyjak
- * Copyright (c) 2024 Zachary Patterson
- * Copyright (c) 2024 Rob Stoll
- * Copyright (c) 2024 Lucas Ulmer
- * Copyright (c) 2024 Pete Willemsen
+ * Copyright (c) 2025 Behnam Bozorgmehr
+ * Copyright (c) 2025 Jeremy A. Gibbs
+ * Copyright (c) 2025 Fabien Margairaz
+ * Copyright (c) 2025 Eric R. Pardyjak
+ * Copyright (c) 2025 Zachary Patterson
+ * Copyright (c) 2025 Rob Stoll
+ * Copyright (c) 2025 Lucas Ulmer
+ * Copyright (c) 2025 Pete Willemsen
  *
  * This file is part of QES-Plume
  *
@@ -74,7 +74,7 @@ int main(int argc, char **argv)
 
   // Create instance of QES-winds General data class
   WINDSGeneralData *WGD = new WINDSGeneralData(arguments.inputWINDSFile);
-  std::cout << "WGD->UTMx:   " <<  WGD->UTMx << std::endl;
+  std::cout << "WGD->UTMx:   " << WGD->UTMx << std::endl;
   // Create instance of QES-Turb General data class
   TURBGeneralData *TGD = new TURBGeneralData(arguments.inputTURBFile, WGD);
   // Create instance of QES-Plume General data class

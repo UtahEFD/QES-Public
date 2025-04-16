@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2024 University of Utah
- * Copyright (c) 2024 University of Minnesota Duluth
+ * Copyright (c) 2025 University of Utah
+ * Copyright (c) 2025 University of Minnesota Duluth
  *
- * Copyright (c) 2024 Behnam Bozorgmehr
- * Copyright (c) 2024 Jeremy A. Gibbs
- * Copyright (c) 2024 Fabien Margairaz
- * Copyright (c) 2024 Eric R. Pardyjak
- * Copyright (c) 2024 Zachary Patterson
- * Copyright (c) 2024 Rob Stoll
- * Copyright (c) 2024 Lucas Ulmer
- * Copyright (c) 2024 Pete Willemsen
+ * Copyright (c) 2025 Behnam Bozorgmehr
+ * Copyright (c) 2025 Jeremy A. Gibbs
+ * Copyright (c) 2025 Fabien Margairaz
+ * Copyright (c) 2025 Eric R. Pardyjak
+ * Copyright (c) 2025 Zachary Patterson
+ * Copyright (c) 2025 Rob Stoll
+ * Copyright (c) 2025 Lucas Ulmer
+ * Copyright (c) 2025 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -194,28 +194,28 @@ __global__ void SOR_iteration(float *d_lambda, float *d_lambda_old, int nx, int 
 
     // Save previous iteration values for error calculation
     saveLambda<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, nx, ny, nz);
-    //cudaDeviceSynchronize();
+    // cudaDeviceSynchronize();
     __syncthreads();
     // SOR part
     int offset = 0;// red nodes
     //  Invoke red-black SOR kernel for red nodes
     SOR_RB<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, nx, ny, nz, omega, A, B, dx, d_e, d_f, d_g, d_h, d_m, d_n, d_R, offset);
-    //cudaDeviceSynchronize();
+    // cudaDeviceSynchronize();
     __syncthreads();
     offset = 1;// black nodes
     //  Invoke red-black SOR kernel for black nodes
     SOR_RB<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, nx, ny, nz, omega, A, B, dx, d_e, d_f, d_g, d_h, d_m, d_n, d_R, offset);
-    //cudaDeviceSynchronize();
+    // cudaDeviceSynchronize();
     __syncthreads();
-    
+
     dim3 numberOfBlocks2(ceil(((nx - 1) * (ny - 1)) / (float)(BLOCKSIZE)), 1, 1);
     // Invoke kernel to apply Neumann boundary condition (lambda (@k=0) = lambda (@k=1))
     applyNeumannBC<<<numberOfBlocks2, numberOfThreadsPerBlock>>>(d_lambda, nx, ny);
-    //cudaDeviceSynchronize();
+    // cudaDeviceSynchronize();
     __syncthreads();
     // Error calculation
     calculateError<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, nx, ny, nz, d_value, d_bvalue);
-    //cudaDeviceSynchronize();
+    // cudaDeviceSynchronize();
     __syncthreads();
     // Final step of the reduction to calculate error.
     error = 0.0;
@@ -421,7 +421,7 @@ void Solver_GPU_DynamicParallelism::solve(WINDSGeneralData *WGD, const int &iter
   // Invoke the main (mother) kernel
 <<<<<<< HEAD:src/winds/DynamicParallelism.cu
   SOR_iteration<<<1, 1>>>(d_lambda, d_lambda_old, WGD->nx, WGD->ny, WGD->nz, omega, A, B, WGD->dx, WGD->dy, WGD->dz, d_dz_array, d_e, d_f, d_g, d_h, d_m, d_n, d_R, itermax, tol, d_value, d_bvalue, alpha1, alpha2, d_u, d_v, d_w, d_icellflag);
-  //cudaCheck(cudaGetLastError());
+  // cudaCheck(cudaGetLastError());
 =======
   SOR_iteration<<<1, 1>>>(d_lambda, d_lambda_old, nx, ny, nz, omega, A, B, dx, dy, dz, d_dz_array, d_e, d_f, d_g, d_h, d_m, d_n, d_R, itermax, tol, d_value, d_bvalue, alpha1, alpha2, d_u, d_v, d_w, d_icellflag);
   cudaCheck(cudaGetLastError());

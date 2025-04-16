@@ -1,15 +1,15 @@
 /****************************************************************************
- * Copyright (c) 2024 University of Utah
- * Copyright (c) 2024 University of Minnesota Duluth
+ * Copyright (c) 2025 University of Utah
+ * Copyright (c) 2025 University of Minnesota Duluth
  *
- * Copyright (c) 2024 Behnam Bozorgmehr
- * Copyright (c) 2024 Jeremy A. Gibbs
- * Copyright (c) 2024 Fabien Margairaz
- * Copyright (c) 2024 Eric R. Pardyjak
- * Copyright (c) 2024 Zachary Patterson
- * Copyright (c) 2024 Rob Stoll
- * Copyright (c) 2024 Lucas Ulmer
- * Copyright (c) 2024 Pete Willemsen
+ * Copyright (c) 2025 Behnam Bozorgmehr
+ * Copyright (c) 2025 Jeremy A. Gibbs
+ * Copyright (c) 2025 Fabien Margairaz
+ * Copyright (c) 2025 Eric R. Pardyjak
+ * Copyright (c) 2025 Zachary Patterson
+ * Copyright (c) 2025 Rob Stoll
+ * Copyright (c) 2025 Lucas Ulmer
+ * Copyright (c) 2025 Pete Willemsen
  *
  * This file is part of QES-Winds
  *
@@ -127,7 +127,7 @@ __global__ void CalculateInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_
           d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_v_prof[nz - 2 + id * nz];
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
         }// If height (above ground) is less than or equal to ASL height
-        else if ( (d_z[k] - z_terrain) <= d_surf_layer_height[ii]) {
+        else if ((d_z[k] - z_terrain) <= d_surf_layer_height[ii]) {
           d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_u_prof[k + d_terrain_face_id[d_site_id[id]] + id * nz];
           d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_v_prof[k + d_terrain_face_id[d_site_id[id]] + id * nz];
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
@@ -142,10 +142,10 @@ __global__ void CalculateInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
         }
       }
-	 
-      	 
+
+
       int icell_face = i + j * nx + d_k_mod[ii] * nx * ny;
-      if (d_sum_wm[i + j * nx] != 0.0){
+      if (d_sum_wm[i + j * nx] != 0.0) {
         d_u0[icell_face] = d_sum_wu[idx] / d_sum_wm[i + j * nx];
         d_v0[icell_face] = d_sum_wv[idx] / d_sum_wm[i + j * nx];
       }
@@ -246,7 +246,7 @@ __global__ void CorrectInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_wu
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
         }// If height (above ground) is greater than ASL height and modified index is inside the domain
         else if ((d_z[k] - z_terrain) > d_surf_layer_height[ii] && k + d_terrain_face_id[d_site_id[id]] < nz && d_k_mod[ii] > k + d_terrain_face_id[d_site_id[id]]) {
-          d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_u_prof[d_k_mod[ii] + id * nz] - d_u0_int[d_k_mod[ii] + id * nz] );
+          d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_u_prof[d_k_mod[ii] + id * nz] - d_u0_int[d_k_mod[ii] + id * nz]);
           d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_v_prof[d_k_mod[ii] + id * nz] - d_v0_int[d_k_mod[ii] + id * nz]);
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
         } else {
