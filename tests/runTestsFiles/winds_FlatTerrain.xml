@@ -56,7 +56,7 @@
       <timeStamp>2020-01-01T00:00:00</timeStamp>
       <boundaryLayerFlag> 1 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
       <siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
-      <reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
+      <reciprocal> 3.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
       <height> 10.0 </height> 				<!-- Height of the sensor -->
       <speed> 5.0 </speed> 					<!-- Measured speed at the sensor height -->
       <direction> 180.0 </direction> 				<!-- Wind direction of sensor -->

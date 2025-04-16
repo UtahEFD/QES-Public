@@ -64,7 +64,7 @@ void WindProfilerBarnCPU::interpolateWindProfile(const WINDSInputData *WID, WIND
     BarnesInterpolationCPU(WID, WGD);
     auto finishBarnesCPU = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> elapsedBarnesCPU = finishBarnesCPU - startBarnesCPU;
-    std::cout << "Elapsed time for Barnes interpolation on CPU: " << elapsedBarnesCPU.count() << " s\n";
+    // std::cout << "Elapsed time for Barnes interpolation on CPU: " << elapsedBarnesCPU.count() << " s\n";
   }
   return;
 }

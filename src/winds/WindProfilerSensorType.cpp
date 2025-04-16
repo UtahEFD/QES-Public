@@ -136,7 +136,7 @@ void WindProfilerSensorType::sensorsProfiles(const WINDSInputData *WID, WINDSGen
     return;
   }
 
-  std::cout << "Number of sensors with available data:  " << available_sensor_id.size() << std::endl;
+  // std::cout << "Number of sensors with available data:  " << available_sensor_id.size() << std::endl;
 
   u_prof.clear();
   u_prof.resize(num_sites * nz, 0.0);
@@ -153,7 +153,6 @@ void WindProfilerSensorType::sensorsProfiles(const WINDSInputData *WID, WINDSGen
   std::vector<float> site_theta(num_sites, 0.0);
   int count = 0;
 
-
   // Loop through all sites and create velocity profiles (WGD->u0,WGD->v0)
   for (auto i = 0u; i < WID->metParams->sensors.size(); i++) {
     // If sensor does not have the timestep information, skip it
@@ -161,18 +160,21 @@ void WindProfilerSensorType::sensorsProfiles(const WINDSInputData *WID, WINDSGen
       count += 1;
       continue;
     }
-
-    if (WID->hrrrInput->interpolationScheme != 2) {
-      if (WGD->hrrrInputData->hrrrSensorUTMx[i] < WID->simParams->UTMx || WGD->hrrrInputData->hrrrSensorUTMx[i] > WID->simParams->UTMx + (nx - 1) * dx || WGD->hrrrInputData->hrrrSensorUTMy[i] < WID->simParams->UTMy || WGD->hrrrInputData->hrrrSensorUTMy[i] > WID->simParams->UTMy + (ny - 1) * dy) {
-        count += 1;
-        continue;
+    if (WID->hrrrInput) {
+      if (WID->hrrrInput->interpolationScheme != 2) {
+        if (WGD->hrrrInputData->hrrrSensorUTMx[i] < WID->simParams->UTMx
+            || WGD->hrrrInputData->hrrrSensorUTMx[i] > WID->simParams->UTMx + (nx - 1) * dx
+            || WGD->hrrrInputData->hrrrSensorUTMy[i] < WID->simParams->UTMy
+            || WGD->hrrrInputData->hrrrSensorUTMy[i] > WID->simParams->UTMy + (ny - 1) * dy) {
+          count += 1;
+          continue;
+        }
       }
     }
 
     float convergence = 0.0;
 
     int idx = i - count;// id of the available sensors for the running timestep of the code
-
 
     TimeSeries *ts = WID->metParams->sensors[i]->TS[time_id[i]];
     // average_one_overL += ts->site_one_overL / num_sites;
@@ -244,7 +246,10 @@ void WindProfilerSensorType::sensorsProfiles(const WINDSInputData *WID, WINDSGen
 
     z_terrain = WGD->domain.z_face[WGD->terrain_face_id[site_id[idx]]];
 
-    float seaLevelBaseHeight = WID->simParams->DTE_heightField->adfMinMax[0];
+    float seaLevelBaseHeight = 0.0;
+    if (WID->simParams->DTE_heightField) {
+      seaLevelBaseHeight = WID->simParams->DTE_heightField->adfMinMax[0];
+    }
 
     if (ts->site_one_overL > 0.0) {
       // Stable boundary layer
@@ -529,7 +534,7 @@ void WindProfilerSensorType::sensorsProfiles(const WINDSInputData *WID, WINDSGen
     }
   }
 
-  std::cout << "Sensor profiles are created" << std::endl;
+  // std::cout << "Sensor profiles are created" << std::endl;
 
   return;
 }
