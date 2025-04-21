@@ -9,7 +9,7 @@
   <cellSize> 100.0 100.0 5.0 </cellSize> 				<!-- Mesh resolution (meters)-->
   <verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-costum grid)-->
   
-  <totalTimeIncrements> 50 </totalTimeIncrements> 			<!-- Number of time steps-->
+  <totalTimeIncrements> 233 </totalTimeIncrements> 			<!-- Number of time steps-->
   
   <rooftopFlag> 0 </rooftopFlag> 					<!-- Rooftop flag (0-none, 1-log profile (default), 2-vortex) -->
   <upwindCavityFlag> 0 </upwindCavityFlag> 			<!-- Upwind cavity flag (0-none, 1-Rockle, 2-MVP (default), 3-HMVP) -->
@@ -51,7 +51,7 @@
 <hrrrInput>
   <HRRRFile>../../scratch/Sep_2020_1.nc</HRRRFile>
   <interpolationScheme>2</interpolationScheme>        <!-- Interpolation scheme for initial guess field (0-Barnes Scheme (default), 1-Nearest site, 2-Bilinear interpolation) -->
-  <stabilityClasses>2</stabilityClasses>           <!-- Defining method for stability classes (0-No stability (default), 1-Pasquill-Gifford classes, 2-Monin-Obukhov length (using surface fluxes) -->
+  <stabilityClasses>0</stabilityClasses>           <!-- Defining method for stability classes (0-No stability (default), 1-Pasquill-Gifford classes, 2-Monin-Obukhov length (using surface fluxes) -->
 </hrrrInput>
 
 </QESWindsParameters>

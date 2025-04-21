@@ -1681,7 +1681,7 @@ void WINDSGeneralData::downscaleHRRR(const WINDSInputData *WID)
     for (size_t i = 0; i < hrrrInputData->hrrrSensorID.size(); i++) {
       WID->metParams->sensors[i]->TS.push_back(new TimeSeries);
       WID->metParams->sensors[i]->TS[t]->time = sensortime[t];
-      WID->metParams->sensors[i]->TS[t]->site_blayer_flag = 1;
+      WID->metParams->sensors[i]->TS[t]->site_blayer_flag = 5;
       WID->metParams->sensors[i]->TS[t]->site_z_ref.push_back(10.0);
       WID->metParams->sensors[i]->TS[t]->site_U_ref.push_back(hrrrInputData->hrrrSpeed[i]);
       WID->metParams->sensors[i]->TS[t]->site_wind_dir.push_back(hrrrInputData->hrrrDir[i]);
