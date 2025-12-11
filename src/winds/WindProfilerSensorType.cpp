@@ -482,13 +482,13 @@ void WindProfilerSensorType::sensorsProfiles(const WINDSInputData *WID, WINDSGen
       // If the PBL height at the sensor location (above the sea level) is less than the 925 mb pressure level
       if (seaLevelBaseHeight + WGD->terrain[site_id[idx]] + abl_height[idx] < 762) {
 	WGD->hrrrInputData->hrrrSpeedTop[i] = WGD->hrrrInputData->hrrrSpeed925[i];
-	WGD->hrrrInputData->hrrrDirTop[i] = WGD->hrrrInputData->hrrrDir925[i];
+	WGD->hrrrInputData->hrrrDirTop[i] = (270.0 - WGD->hrrrInputData->hrrrDir925[i]) * M_PI / 180.0;
       } else if (seaLevelBaseHeight + WGD->terrain[site_id[idx]] + abl_height[idx] < 1450 && seaLevelBaseHeight + WGD->terrain[site_id[idx]] + abl_height[idx] >= 762) {// If the PBL height at the sensor location (above the sea level) is less than the 850 mb and higher than 925 mb pressure level
 	WGD->hrrrInputData->hrrrSpeedTop[i] = WGD->hrrrInputData->hrrrSpeed850[i];
-	WGD->hrrrInputData->hrrrDirTop[i] = WGD->hrrrInputData->hrrrDir850[i];
+	WGD->hrrrInputData->hrrrDirTop[i] =  (270.0 - WGD->hrrrInputData->hrrrDir850[i]) * M_PI / 180.0;
       } else {// If the PBL height at the sensor location (above the sea level) is less than the 700 mb and higher than 850 mb pressure level
 	WGD->hrrrInputData->hrrrSpeedTop[i] = WGD->hrrrInputData->hrrrSpeed700[i];
-	WGD->hrrrInputData->hrrrDirTop[i] = WGD->hrrrInputData->hrrrDir700[i];
+	WGD->hrrrInputData->hrrrDirTop[i] =  (270.0 - WGD->hrrrInputData->hrrrDir700[i]) * M_PI / 180.0;
       }
 
       for (auto k = WGD->terrain_face_id[site_id[idx]]; k < nz - 1; ++k) {

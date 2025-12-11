@@ -234,7 +234,7 @@ void HRRRData::readSensorData(int t)
     hrrrV[hrrrSensorID[i]] = -sin(angle2) * u_temp + cos(angle2) * v_temp;
 
     hrrrSpeed[i] = sqrt(pow(hrrrU[hrrrSensorID[i]], 2.0) + pow(hrrrV[hrrrSensorID[i]], 2.0));
-    hrrrDir[i] = 270 - fmod(360 + (atan2(hrrrV[hrrrSensorID[i]], hrrrU[hrrrSensorID[i]]) * 180.0 / M_PI), 360.0);
+    hrrrDir[i] = fmod(270 - (atan2(hrrrV[hrrrSensorID[i]], hrrrU[hrrrSensorID[i]]) * 180.0 / M_PI), 360.0);
   }
 }
 
@@ -294,7 +294,7 @@ void HRRRData::readAloftData(int t)
     hrrrU700[hrrrSensorID[i]] = cos(angle2) * u_temp + sin(angle2) * v_temp;
     hrrrV700[hrrrSensorID[i]] = -sin(angle2) * u_temp + cos(angle2) * v_temp;
     hrrrSpeed700[i] = sqrt(pow(hrrrU700[hrrrSensorID[i]], 2.0) + pow(hrrrV700[hrrrSensorID[i]], 2.0));
-    hrrrDir700[i] = 270 - fmod(360 + (atan2(hrrrV700[hrrrSensorID[i]], hrrrU700[hrrrSensorID[i]]) * 180.0 / M_PI), 360.0);
+    hrrrDir700[i] = fmod( 270 - (atan2(hrrrV700[hrrrSensorID[i]], hrrrU700[hrrrSensorID[i]]) * 180.0 / M_PI), 360.0);
     hrrrSpeedTop[i] = hrrrSpeed700[i];
     hrrrDirTop[i] = hrrrDir700[i];
 
@@ -304,7 +304,7 @@ void HRRRData::readAloftData(int t)
     hrrrU850[hrrrSensorID[i]] = cos(angle2) * u_temp + sin(angle2) * v_temp;
     hrrrV850[hrrrSensorID[i]] = -sin(angle2) * u_temp + cos(angle2) * v_temp;
     hrrrSpeed850[i] = sqrt(pow(hrrrU850[hrrrSensorID[i]], 2.0) + pow(hrrrV850[hrrrSensorID[i]], 2.0));
-    hrrrDir850[i] = 270 - fmod(360 + (atan2(hrrrV850[hrrrSensorID[i]], hrrrU850[hrrrSensorID[i]]) * 180.0 / M_PI), 360.0);
+    hrrrDir850[i] = fmod( 270 - (atan2(hrrrV850[hrrrSensorID[i]], hrrrU850[hrrrSensorID[i]]) * 180.0 / M_PI), 360.0);
 
     // Calculate wind speed and direction at 925 mb level
     u_temp = hrrrU925[hrrrSensorID[i]];
@@ -312,7 +312,7 @@ void HRRRData::readAloftData(int t)
     hrrrU925[hrrrSensorID[i]] = cos(angle2) * u_temp + sin(angle2) * v_temp;
     hrrrV925[hrrrSensorID[i]] = -sin(angle2) * u_temp + cos(angle2) * v_temp;
     hrrrSpeed925[i] = sqrt(pow(hrrrU925[hrrrSensorID[i]], 2.0) + pow(hrrrV925[hrrrSensorID[i]], 2.0));
-    hrrrDir925[i] = 270 - fmod(360 + (atan2(hrrrV925[hrrrSensorID[i]], hrrrU925[hrrrSensorID[i]]) * 180.0 / M_PI), 360.0);
+    hrrrDir925[i] = fmod( 270 - (atan2(hrrrV925[hrrrSensorID[i]], hrrrU925[hrrrSensorID[i]]) * 180.0 / M_PI), 360.0);
   }
 }
 
