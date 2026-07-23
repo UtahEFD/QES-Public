@@ -65,6 +65,8 @@ sdist.include = [
     "README.md",
     "LICENSE",
     "vcpkg.json",
+    "vcpkg-configuration.json",
+    "overlays/vcpkg/**",
     "pyproject.toml",
 ]
 sdist.exclude = [

@@ -13,7 +13,10 @@
         "openssl"
       ]
     },
-    "netcdf-cxx4",
+    {
+      "name": "netcdf-cxx4",
+      "default-features": false
+    },
     {
       "name": "boost-program-options",
       "default-features": false

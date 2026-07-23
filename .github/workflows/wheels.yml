@@ -10,6 +10,8 @@ on:
       - "CMakeLists.txt"
       - "pyproject.toml"
       - "vcpkg.json"
+      - "vcpkg-configuration.json"
+      - "overlays/vcpkg/**"
       - ".github/workflows/wheels.yml"
 
 concurrency:
