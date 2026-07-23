@@ -1,15 +1,18 @@
 {
-    "dependencies": [
-	"boost-program-options",
-	"boost-date-time",
-	"boost-property-tree",
-	"netcdf-c",
-	"netcdf-cxx4",
-	{
-	    "name": "gdal",
-	    "default-features": false,
-	    "features": ["curl", "geos", "gif", "hdf5", "jpeg", "netcdf", "png"]
-	},
-	"nlohmann-json"
-    ]
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "pyqes",
+  "version-string": "2.3.1",
+  "description": "Native dependencies for building the pyQES pybind11 wheels.",
+  "dependencies": [
+    "gdal",
+    "netcdf-cxx4",
+    {
+      "name": "boost-program-options",
+      "default-features": false
+    },
+    {
+      "name": "boost-date-time",
+      "default-features": false
+    }
+  ]
 }

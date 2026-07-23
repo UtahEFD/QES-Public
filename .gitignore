@@ -48,3 +48,15 @@ data/InputFiles/vineyard_tower_validation/*
 
 # MacOS files
 *.DS_Store
+
+# Python / uv / packaging
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+wheelhouse/

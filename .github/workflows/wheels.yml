@@ -1,0 +1,91 @@
+name: wheels
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  pull_request:
+    paths:
+      - "src/bindings/**"
+      - "src/pyQES/**"
+      - "CMakeLists.txt"
+      - "pyproject.toml"
+      - "vcpkg.json"
+      - ".github/workflows/wheels.yml"
+
+concurrency:
+  group: wheels-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_wheels:
+    name: Wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # macOS/Windows GitHub runners ship a preinstalled vcpkg at
+      # $VCPKG_INSTALLATION_ROOT; manifest mode (vcpkg.json) installs the deps at
+      # CMake configure time via the toolchain file. On Linux, cibuildwheel builds
+      # inside a manylinux container, so vcpkg is bootstrapped there (below).
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.21
+        env:
+          # Build CPython 3.10-3.13; skip musllinux and 32-bit.
+          CIBW_BUILD: "cp310-* cp311-* cp312-* cp313-*"
+          CIBW_SKIP: "*-musllinux* *-manylinux_i686 *-win32 pp*"
+          CIBW_ARCHS_LINUX: "x86_64"
+          CIBW_ARCHS_MACOS: "arm64"
+          CIBW_ARCHS_WINDOWS: "AMD64"
+          CIBW_MANYLINUX_X86_64_IMAGE: "manylinux_2_28"
+
+          # --- Linux: bootstrap vcpkg inside the manylinux container ---
+          CIBW_BEFORE_ALL_LINUX: >
+            dnf install -y zip unzip tar curl ninja-build perl-IPC-Cmd flex bison &&
+            git clone --depth 1 https://github.com/microsoft/vcpkg /project/vcpkg &&
+            /project/vcpkg/bootstrap-vcpkg.sh -disableMetrics
+          CIBW_ENVIRONMENT_LINUX: >
+            VCPKG_FORCE_SYSTEM_BINARIES=1
+            CMAKE_ARGS=-DCMAKE_TOOLCHAIN_FILE=/project/vcpkg/scripts/buildsystems/vcpkg.cmake
+
+          # --- macOS: use the preinstalled vcpkg (manifest mode) ---
+          CIBW_ENVIRONMENT_MACOS: >
+            MACOSX_DEPLOYMENT_TARGET=14.0
+            CMAKE_ARGS=-DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
+
+          # --- Windows: use the preinstalled vcpkg (manifest mode) ---
+          CIBW_ENVIRONMENT_WINDOWS: >
+            VCPKG_DEFAULT_TRIPLET=x64-windows
+            CMAKE_ARGS=-DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
+
+          # Smoke-test the delocated wheel: the native extensions must import.
+          CIBW_TEST_COMMAND: >
+            python -c "import pyQES._winds, pyQES._plume, pyQES._fire, pyQES._util; import pyQES; print(pyQES.__version__)"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}
+          path: ./wheelhouse/*.whl
+
+  build_sdist:
+    name: Build sdist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Build sdist
+        run: uv build --sdist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: ./dist/*.tar.gz

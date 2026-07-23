@@ -38,6 +38,14 @@ option(ENABLE_OPENMP "Enable multithreaded support with OpenMP." OFF)
 option(ENABLE_CPPCHECK "Enable static analysis with cppcheck" OFF)
 option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
 option(ENABLE_TESTS "Enable Testing suite" OFF)
+option(QES_BUILD_PYTHON "Build the pyQES pybind11 extension modules (used for the Python wheel)." OFF)
+
+# When building the Python wheel we compile the core libraries into shared
+# pybind11 modules, so the object code must be position independent and the
+# CLI executables / examples / tests are not needed.
+if (QES_BUILD_PYTHON)
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+endif()
 
 # ----------------------------------------------------------
 # CLANG TIDY
@@ -182,7 +190,7 @@ ELSE (ENABLE_DEV_MODE)
   # Remove verbose output
   SET(CMAKE_VERBOSE_MAKEFILE OFF CACHE BOOL "OFF" FORCE)
 
-  IF((CMAKE_BUILD_TYPE NOT DEFINED) OR (CMAKE_BUILD_TYPE STREQUAL ""))
+  IF(NOT DEFINED CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
     SET(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
   ENDIF()
   MESSAGE(STATUS "Building the '" ${CMAKE_BUILD_TYPE} "' version of QES.")
@@ -461,15 +469,29 @@ add_subdirectory(src/winds)
 add_subdirectory(src/plume)
 add_subdirectory(src/fire)
 
-# add_subdirectory(scratch)
-add_subdirectory(examples)
+if (QES_BUILD_PYTHON)
 
-add_subdirectory(qesWinds)
-list(APPEND QES_INSTALL_EXECUTABLES qesWinds)
+  # ----------------------------------------------------------
+  # Python wheel build: core libraries + pybind11 modules only.
+  # The CLI executables, examples and tests are skipped.
+  # ----------------------------------------------------------
+  FIND_PACKAGE(pybind11 CONFIG REQUIRED)
+  MESSAGE(STATUS "Building pyQES pybind11 modules (pybind11 ${pybind11_VERSION}).")
+  add_subdirectory(src/bindings)
 
-add_subdirectory(qesPlume)
-add_subdirectory(qesFire)
-add_subdirectory(qes)
+else (QES_BUILD_PYTHON)
+
+  # add_subdirectory(scratch)
+  add_subdirectory(examples)
+
+  add_subdirectory(qesWinds)
+  list(APPEND QES_INSTALL_EXECUTABLES qesWinds)
+
+  add_subdirectory(qesPlume)
+  add_subdirectory(qesFire)
+  add_subdirectory(qes)
+
+endif (QES_BUILD_PYTHON)
 
 # ----------------------------------------------------------
 #  Testing Suite
@@ -498,6 +520,8 @@ IF (ENABLE_TESTS)
   #option(TESTS_ENABLE_RIDICULOUSLY_LONG_COMPARISON_TESTS "Enables the longest comparison tests (adds around 15 minutes)." OFF)
 ENDIF()
 
+
+if (NOT QES_BUILD_PYTHON)
 
 set(CPACK_PACKAGE_NAME "${CMAKE_PROJECT_NAME}")
 set(CPACK_PACKAGE_VENDOR "UtahEFD")
@@ -541,3 +565,5 @@ elseif(UNIX)
 endif()
 
 include( CPack )
+
+endif (NOT QES_BUILD_PYTHON)

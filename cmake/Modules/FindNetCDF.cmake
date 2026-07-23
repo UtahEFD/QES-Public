@@ -134,7 +134,9 @@ macro (NetCDF_check_interface lang header libs)
   endif (NETCDF_${lang})
 endmacro (NetCDF_check_interface)
 
-NetCDF_check_interface (CXX netcdf netcdf_c++4)  # header for CXX does not have .h
+# header for CXX does not have .h; library name varies by distribution
+# (netcdf_c++4 on source builds, netcdf-cxx4 on Homebrew, netcdf_c++ legacy)
+NetCDF_check_interface (CXX netcdf "netcdf_c++4;netcdf-cxx4;netcdf_c++")
 NetCDF_check_interface (F77 netcdf.inc  netcdff)
 NetCDF_check_interface (F90 netcdf.mod  netcdff)
 
