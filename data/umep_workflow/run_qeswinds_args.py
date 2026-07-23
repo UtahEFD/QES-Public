@@ -92,8 +92,8 @@ def _parse_args() -> argparse.Namespace:
     sim.add_argument("--origin-flag", type=int, default=0)
     sim.add_argument("--dem-distance-x", type=float, default=0.0)
     sim.add_argument("--dem-distance-y", type=float, default=0.0)
-    sim.add_argument("--utm-x", type=float, default=379678.17)
-    sim.add_argument("--utm-y", type=float, default=6570739.25)
+    sim.add_argument("--utm-x", type=float, default=0)
+    sim.add_argument("--utm-y", type=float, default=0)
     sim.add_argument("--utm-zone", type=int, default=30)
     sim.add_argument("--utm-zone-letter", type=str, default="T")
     sim.add_argument("--read-coefficients-flag", type=int, default=0)
@@ -271,8 +271,20 @@ def main() -> int:
         kwargs["buildings_src"] = args.buildings_src.resolve()
         kwargs["buildings_mask"] = args.buildings_mask.resolve()
 
+    if auto_preprocess:
+        from pyQES.util import geo
+
+        origin = geo.compute_domain_origin_from_dem(dem)
+        utm_x, utm_y = origin.utm_x, origin.utm_y
+        utm_zone, utm_letter = origin.utm_zone, origin.utm_zone_letter
+    else:
+        sim = params.simulation_parameters
+        utm_x, utm_y = sim.utm_x, sim.utm_y
+        utm_zone, utm_letter = sim.utm_zone, sim.utm_zone_letter
+
     print(f"DEM:      {dem}")
     print(f"SHP:      {params.buildings_params.shp_file}")
+    print(f"Origin:   UTMx={utm_x} UTMy={utm_y} UTMZone={utm_zone}{utm_letter}")
     print(f"Solver:   {args.solver}")
     print(f"Wind:     {args.speed} m/s @ {args.direction}°")
     print(f"Preproc:  {auto_preprocess}")

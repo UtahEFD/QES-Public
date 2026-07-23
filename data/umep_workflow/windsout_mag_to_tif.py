@@ -27,7 +27,12 @@ DEFAULT_XML = os.path.join(_REPO_ROOT, "data/umep_workflow/qes/umep_larochelle.x
 
 
 def _parse_qes_xml(xml_path: str) -> tuple[float, float, float, float, str]:
-    """Return UTMx, UTMy, dx, dy, and relative DEM path from a QES XML file."""
+    """Return dx, dy, halo_x, halo_y, and relative DEM path from a QES XML.
+
+    Domain origin (UTMx/UTMy) is intentionally not read: the template XML is not
+    updated by run_qeswinds.py / run_qeswinds_args.py. Use DEM SW minus halo
+    (DEM content is inset by halo in the QES mesh — see DTEHeightField.cpp).
+    """
     tree = ET.parse(xml_path)
     root = tree.getroot()
 
@@ -37,15 +42,15 @@ def _parse_qes_xml(xml_path: str) -> tuple[float, float, float, float, str]:
                 return elem.text.strip()
         raise ValueError(f"Could not read <{tag}> from {xml_path}")
 
-    utmx = float(find_text("UTMx"))
-    utmy = float(find_text("UTMy"))
     cell_size = find_text("cellSize").split()
     if len(cell_size) < 2:
         raise ValueError(f"Invalid <cellSize> in {xml_path}: expected 'dx dy'")
     dx = float(cell_size[0])
     dy = float(cell_size[1])
+    halo_x = float(find_text("halo_x"))
+    halo_y = float(find_text("halo_y"))
     dem_rel = find_text("DEM")
-    return utmx, utmy, dx, dy, dem_rel
+    return dx, dy, halo_x, halo_y, dem_rel
 
 
 def _resolve_dem_path(xml_path: str, dem_rel: str, dem_override: Optional[str] = None) -> str:
@@ -116,7 +121,8 @@ def _load_terrain(
             "terrain not in NetCDF, using elevations from DEM",
             stacklevel=2,
         )
-        return dem_ds.read(1).astype(np.float64)
+        # DEM is north-up; QES mag/terrain NetCDF are south-up (j=0 at south).
+        return np.flipud(dem_ds.read(1).astype(np.float64))
 
 
 def _select_mag_at_agl(
@@ -144,15 +150,17 @@ def _apply_icell_mask(
 def _write_geotiff(
     output_path: str,
     array: np.ndarray,
-    utmx: float,
-    utmy: float,
+    x0: float,
+    y0: float,
     dx: float,
     dy: float,
     crs,
     agl_height: float,
 ) -> None:
+    """Write GeoTIFF. ``x0, y0`` = SW corner of the full QES domain (DEM SW − halo)."""
     ny, nx = array.shape
-    transform = from_origin(utmx, utmy + ny * dy, dx, dy)
+    # north-up transform: NW corner = (x0, y0 + ny*dy)
+    transform = from_origin(x0, y0 + ny * dy, dx, dy)
     os.makedirs(os.path.dirname(os.path.abspath(output_path)) or ".", exist_ok=True)
 
     profile = {
@@ -168,7 +176,8 @@ def _write_geotiff(
         "tiled": True,
     }
     with rasterio.open(output_path, "w", **profile) as dst:
-        dst.write(array, 1)
+        # QES j=0 at south; GeoTIFF line 0 must be north.
+        dst.write(np.flipud(array), 1)
         dst.set_band_description(1, f"velocity magnitude at {agl_height} m AGL (m/s)")
         dst.update_tags(1, units="m/s")
 
@@ -195,7 +204,7 @@ def windsout_mag_to_tif(
     else:
         output_path = os.path.abspath(output_path)
 
-    utmx, utmy, dx, dy, dem_rel = _parse_qes_xml(xml_path)
+    dx, dy, halo_x, halo_y, dem_rel = _parse_qes_xml(xml_path)
     dem_path = _resolve_dem_path(xml_path, dem_rel, dem_override=dem_path)
     if not os.path.isfile(dem_path):
         umep_dir = os.path.dirname(os.path.dirname(xml_path))
@@ -235,10 +244,13 @@ def windsout_mag_to_tif(
 
     with rasterio.open(dem_path) as dem_ds:
         crs = dem_ds.crs
+        # DEM is inset by halo in the QES mesh; mag covers the full domain.
+        x0 = dem_ds.bounds.left - halo_x
+        y0 = dem_ds.bounds.bottom - halo_y
     if crs is None:
         raise ValueError(f"Could not read CRS from {dem_path}")
 
-    _write_geotiff(output_path, out, utmx, utmy, dx, dy, crs, agl_height)
+    _write_geotiff(output_path, out, x0, y0, dx, dy, crs, agl_height)
 
     selected_z = z_levels[k_idx]
     agl_actual = selected_z - terrain
@@ -250,7 +262,10 @@ def windsout_mag_to_tif(
     print(f"  Output : {output_path}")
     print(f"  XML    : {xml_path}")
     print(f"  DEM    : {dem_path}")
-    print(f"  Origin : UTMx={utmx} UTMy={utmy}  cellSize={dx}x{dy} m")
+    print(
+        f"  Origin : domain SW x0={x0} y0={y0} "
+        f"(DEM SW − halo {halo_x}x{halo_y})  cellSize={dx}x{dy} m"
+    )
     print(f"  Mask buildings: {'yes' if mask_buildings else 'no'}")
     print(f"  Grid   : {nx} x {ny} pixels, {len(z_levels)} z levels")
     print(
@@ -305,7 +320,10 @@ def main() -> None:
         "-x",
         "--xml",
         default=DEFAULT_XML,
-        help=f"QES XML for UTMx/UTMy/cellSize georeferencing (default: {DEFAULT_XML})",
+        help=(
+            f"QES XML for cellSize, halo_x/halo_y and <DEM> path "
+            f"(domain SW = DEM SW − halo; default: {DEFAULT_XML})"
+        ),
     )
     parser.add_argument(
         "-z",
@@ -329,7 +347,10 @@ def main() -> None:
     parser.add_argument(
         "--dem",
         default=None,
-        help="Reference DEM GeoTIFF for CRS (default: <DEM> from XML, with fallback to DEM_clip.tif)",
+        help=(
+            "Reference DEM GeoTIFF for CRS and domain SW origin "
+            "(default: <DEM> from XML, with fallback to DEM_clip.tif)"
+        ),
     )
     args = parser.parse_args()
 

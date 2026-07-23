@@ -48,7 +48,10 @@ def _parse_args() -> argparse.Namespace:
         "--xml",
         type=Path,
         default=DEFAULT_XML,
-        help=f"QES XML for georeferencing (default: {DEFAULT_XML.relative_to(HERE)}).",
+        help=(
+            "QES XML for cellSize, halo and <DEM> path "
+            f"(domain SW = DEM SW − halo; default: {DEFAULT_XML.relative_to(HERE)})."
+        ),
     )
     p.add_argument(
         "-z",
@@ -68,7 +71,9 @@ def _parse_args() -> argparse.Namespace:
         "--dem",
         type=Path,
         default=DEFAULT_DEM,
-        help=f"Reference DEM for CRS (default: {DEFAULT_DEM.name}).",
+        help=(
+            f"Reference DEM for CRS and domain SW origin (default: {DEFAULT_DEM.name})."
+        ),
     )
     p.add_argument(
         "--no-mask-buildings",

@@ -21,6 +21,14 @@
     {
       "name": "boost-date-time",
       "default-features": false
+    },
+    {
+      "name": "boost-property-tree",
+      "default-features": false
+    },
+    {
+      "name": "boost-optional",
+      "default-features": false
     }
   ]
 }

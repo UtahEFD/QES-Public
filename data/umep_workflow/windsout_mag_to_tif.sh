@@ -28,7 +28,7 @@ selects the nearest vertical level where z ≈ terrain + HEIGHT using the terrai
 Options:
   -i FILE     Input NetCDF (default: $DEFAULT_NC)
   -o FILE     Output GeoTIFF (default: <input_basename>_mag_<HEIGHT>m.tif)
-  -x FILE     QES XML for UTMx/UTMy/cellSize georeferencing (default: umep_larochelle.xml)
+  -x FILE     QES XML for cellSize and <DEM> path (origin = DEM SW corner; default: umep_larochelle.xml)
   -z HEIGHT   Height above ground in metres (default: 1.5)
   -t INDEX    Time index in NetCDF (default: 0)
   --no-mask-buildings   Keep building/terrain cells (default: mask as NoData)
@@ -115,11 +115,24 @@ if [[ ! -f "$DEM_ABS" ]]; then
   exit 1
 fi
 
-UTMX="$(read_xml_tag "$XML" UTMx)"
-UTMY="$(read_xml_tag "$XML" UTMy)"
 CELL_SIZE="$(read_xml_tag "$XML" cellSize)"
 DX="$(echo "$CELL_SIZE" | awk '{print $1}')"
 DY="$(echo "$CELL_SIZE" | awk '{print $2}')"
+HALO_X="$(read_xml_tag "$XML" halo_x)"
+HALO_Y="$(read_xml_tag "$XML" halo_y)"
+HALO_X="${HALO_X:-0}"
+HALO_Y="${HALO_Y:-0}"
+
+# Domain SW = DEM SW − halo (DEM is inset by halo in the QES mesh).
+read -r X0 Y0 < <(
+  python3 - "$DEM_ABS" "$HALO_X" "$HALO_Y" <<'PY'
+import json, subprocess, sys
+dem, hx, hy = sys.argv[1], float(sys.argv[2]), float(sys.argv[3])
+info = json.loads(subprocess.check_output(["gdalinfo", "-json", dem], text=True))
+c = info["cornerCoordinates"]["lowerLeft"]
+print(c[0] - hx, c[1] - hy)
+PY
+)
 
 mkdir -p "$(dirname "$OUT_TIF")"
 
@@ -128,10 +141,10 @@ echo "  Input  : $NC_IN"
 echo "  Output : $OUT_TIF"
 echo "  XML    : $XML"
 echo "  DEM    : $DEM_ABS"
-echo "  Origin : UTMx=$UTMX UTMy=$UTMY  cellSize=${DX}x${DY} m"
+echo "  Origin : domain SW x0=$X0 y0=$Y0 (DEM SW − halo ${HALO_X}x${HALO_Y})  cellSize=${DX}x${DY} m"
 echo "  Mask buildings: $([[ "$MASK_BUILDINGS" -eq 1 ]] && echo yes || echo no)"
 
-"$PYTHON" - "$NC_IN" "$OUT_TIF" "$DEM_ABS" "$UTMX" "$UTMY" "$DX" "$DY" "$AGL_HEIGHT" "$TIME_IDX" "$MASK_BUILDINGS" <<'PY'
+"$PYTHON" - "$NC_IN" "$OUT_TIF" "$DEM_ABS" "$X0" "$Y0" "$DX" "$DY" "$AGL_HEIGHT" "$TIME_IDX" "$MASK_BUILDINGS" <<'PY'
 import json
 import re
 import subprocess
@@ -142,9 +155,9 @@ from osgeo import gdal
 
 gdal.UseExceptions()
 
-nc_path, out_tif, dem_path, utmx, utmy, dx, dy, agl_height, time_idx, mask_buildings = sys.argv[1:11]
-utmx = float(utmx)
-utmy = float(utmy)
+nc_path, out_tif, dem_path, x0, y0, dx, dy, agl_height, time_idx, mask_buildings = sys.argv[1:11]
+x0 = float(x0)
+y0 = float(y0)
 dx = float(dx)
 dy = float(dy)
 agl_height = float(agl_height)
@@ -257,7 +270,9 @@ if driver is None:
 if gdal.VSIStatL(out_tif) is not None:
     driver.Delete(out_tif)
 
-gt = (utmx, dx, 0.0, utmy + ny * dy, 0.0, -dy)
+# QES j=0 at south; GeoTIFF line 0 must be north.
+out_north = np.flipud(out)
+gt = (x0, dx, 0.0, y0 + ny * dy, 0.0, -dy)
 dst = driver.Create(out_tif, nx, ny, 1, gdal.GDT_Float32, options=["COMPRESS=DEFLATE", "TILED=YES"])
 if dst is None:
     raise SystemExit(f"Error: could not create {out_tif}")
@@ -268,7 +283,7 @@ band = dst.GetRasterBand(1)
 band.SetNoDataValue(NODATA)
 band.SetDescription(f"velocity magnitude at {agl_height} m AGL (m/s)")
 band.SetUnitType("m/s")
-band.WriteArray(out)
+band.WriteArray(out_north)
 band.ComputeStatistics(False)
 band.FlushCache()
 dst = None
