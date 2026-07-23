@@ -46,15 +46,22 @@ jobs:
           CIBW_MANYLINUX_X86_64_IMAGE: "manylinux_2_28"
 
           # --- Linux: bootstrap vcpkg inside the manylinux container ---
+          # openssl Configure needs a full Perl core (FindBin, Data::Dumper, IPC::Cmd)
+          # plus kernel headers. freexl (GDAL → libspatialite) needs autotools.
+          # manylinux_2_28 (EL8) is minimal — install all of these explicitly.
           CIBW_BEFORE_ALL_LINUX: >
-            dnf install -y zip unzip tar curl ninja-build perl-IPC-Cmd flex bison &&
+            dnf install -y zip unzip tar curl ninja-build flex bison
+            perl-core kernel-headers
+            autoconf autoconf-archive automake libtool &&
             git clone --depth 1 https://github.com/microsoft/vcpkg /project/vcpkg &&
             /project/vcpkg/bootstrap-vcpkg.sh -disableMetrics
           CIBW_ENVIRONMENT_LINUX: >
             VCPKG_FORCE_SYSTEM_BINARIES=1
             CMAKE_ARGS=-DCMAKE_TOOLCHAIN_FILE=/project/vcpkg/scripts/buildsystems/vcpkg.cmake
 
-          # --- macOS: use the preinstalled vcpkg (manifest mode) ---
+          # --- macOS: host tools for freexl + preinstalled vcpkg (manifest mode) ---
+          CIBW_BEFORE_ALL_MACOS: >
+            brew install autoconf autoconf-archive automake libtool
           CIBW_ENVIRONMENT_MACOS: >
             MACOSX_DEPLOYMENT_TARGET=14.0
             CMAKE_ARGS=-DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake
