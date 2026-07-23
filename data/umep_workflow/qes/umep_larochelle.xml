@@ -1,0 +1,105 @@
+<!-- Cas QES-Winds : La Rochelle (umep_workflow) — DEM_clip.tif + buildings_clipped.shp -->
+<QESWindsParameters>
+  <simulationParameters>
+    <!-- MNT GeoTIFF (EPSG:2154 Lambert-93), relatif au dossier qes/ -->
+    <DEM>../DEM.tif</DEM>
+
+    <!-- Zone tampon (m) aux bords du domaine pour éviter bâtiments/terrain sur les limites -->
+    <halo_x> 40.0 </halo_x>
+    <halo_y> 40.0 </halo_y>
+
+    <!-- Nombre de cellules nx ny nz — recalculé par run_qeswinds.sh : ceil((DEM + 2*halo) / cellSize), nz depuis hauteur max bâtiments -->
+    <domain> 146 99 89 </domain>
+    <!-- Résolution du maillage (m) : dx dy dz -->
+    <cellSize> 2 2 0.5 </cellSize>
+    <!-- Grille verticale : 0 = uniforme (défaut), 1 = personnalisée (dz_value) -->
+    <verticalStretching> 0 </verticalStretching>
+    <!-- Nombre de pas de temps ; doit correspondre aux capteurs dans metParams -->
+    <totalTimeIncrements> 1 </totalTimeIncrements>
+
+    <!-- Paramétrisations urbaines (empiriques) — voir doc QES-Winds buildingsParams -->
+    <!-- Toit : 0=aucun, 1=profil log (défaut), 2=vortex -->
+    <rooftopFlag> 1 </rooftopFlag>
+    <!-- Cavité amont : 0=aucun, 1=Röckle, 2=MVP (défaut), 3=HMVP -->
+    <upwindCavityFlag> 1 </upwindCavityFlag>
+    <!-- Canyon urbain : 0=aucun, 1=Röckle/Fackrell (défaut) -->
+    <streetCanyonFlag> 1 </streetCanyonFlag>
+    <!-- Intersection de rues : 0=off, 1=on -->
+    <streetIntersectionFlag> 0 </streetIntersectionFlag>
+    <!-- Sillage aval : 0=aucun, 1=Röckle, 2=Modified Röckle (défaut), 3=Area Scaled -->
+    <wakeFlag> 2 </wakeFlag>
+    <!-- Gratte-ciel : 0=off (défaut), 1=on — max hauteur bâtiment ~23 m ici -->
+    <highRiseFlag> 0 </highRiseFlag>
+    <!-- Recirculation latérale : 0=off, 1=on (défaut) -->
+    <sidewallFlag> 1 </sidewallFlag>
+    <!-- Loi logarithmique globale : 0=off (défaut), 1=on -->
+    <logLawFlag> 1 </logLawFlag>
+    <!-- Solveur SOR : nombre max d'itérations -->
+    <maxIterations> 500 </maxIterations>
+    <!-- Critère de convergence : résidu max sur lambda < tolerance -->
+    <tolerance> 1e-9 </tolerance>
+    <!-- Maillage terrain : 0=stair-step (défaut QES), 1=cut-cell -->
+    <meshTypeFlag> 0 </meshTypeFlag>
+    <!-- Rotation du domaine par rapport au nord vrai (degrés) -->
+    <domainRotation> 90 </domainRotation>
+
+    <!-- Origine du sous-domaine dans le DEM : 0=coords DEM (défaut), 1=coords UTM/projetées -->
+    <originFlag> 0 </originFlag>
+    <!-- Décalage (m) depuis le coin inférieur-gauche du raster DEM si originFlag=0 -->
+    <DEMDistancex> 0.0 </DEMDistancex>
+    <DEMDistancey> 0.0 </DEMDistancey>
+    <!-- Origine domaine (coin SW Lambert-93) — recalculée par run_qeswinds.sh depuis <DEM> ; aligne shapefile et terrain -->
+    <UTMx> 379678.17 </UTMx>
+    <UTMy> 6570739.25 </UTMy>
+    <UTMZone> 30 </UTMZone>
+    <UTMZoneLetter> T </UTMZoneLetter>
+    <!-- Coefficients solveur : 0=calculés (défaut), 1=lus depuis fichier COEFF -->
+    <readCoefficientsFlag> 0 </readCoefficientsFlag>
+    
+  </simulationParameters>
+
+  <metParams>
+    <!-- Rugosité de surface : 0=uniforme (défaut), 1=personnalisée -->
+    <z0_domain_flag> 0 </z0_domain_flag>
+    <!-- Fichier capteur(s) vent — profil initial et conditions limites -->
+    <sensorName>sensor_umep.xml</sensorName>
+  </metParams>
+
+  <buildingsParams>
+    <!-- Rugosité des parois de bâtiment (m) -->
+    <wallRoughness> 0.01 </wallRoughness>
+    <rooftopFlag> 1 </rooftopFlag>
+    <upwindCavityFlag> 2 </upwindCavityFlag>
+    <streetCanyonFlag> 1 </streetCanyonFlag>
+    <streetIntersectionFlag> 0 </streetIntersectionFlag>
+    <wakeFlag> 2 </wakeFlag>
+    <highRiseFlag> 0 </highRiseFlag>
+    <sidewallFlag> 1 </sidewallFlag>
+
+    <!-- Shapefile ESRI (EPSG:2154), découpé sur mask.shp -->
+    <SHPFile>buildings_clipped.shp</SHPFile>
+    <!-- Nom de la couche dans le shapefile -->
+    <SHPBuildingLayer>buildings_clipped</SHPBuildingLayer>
+    <!-- Champ attributaire hauteur de bâtiment (m) -->
+    <SHPHeightField>hauteur</SHPHeightField>
+    <!-- Facteur multiplicatif appliqué aux hauteurs lues (défaut 1.0) -->
+    <heightFactor> 1.0 </heightFactor>
+  </buildingsParams>
+
+  <turbParams>
+    <!-- Turbulence QES-Turb : 0=hauteur (défaut, pas d'OptiX), 1=serial, 2=raytracing, 3=OptiX, 4=fichier -->
+    <method>0</method>
+  </turbParams>
+
+  <fileOptions>
+    <!-- 1=écriture NetCDF activée, 0=désactivée -->
+    <outputFlag>1</outputFlag>
+    <!-- Champs exportés dans umep_larochelle_windsOut.nc (grille cell-centered) -->
+    <outputFields>all</outputFields>
+    <outputFields>u</outputFields>       <!-- composante vitesse x (m/s) -->
+    <outputFields>v</outputFields>       <!-- composante vitesse y (m/s) -->
+    <outputFields>w</outputFields>       <!-- composante vitesse z (m/s) -->
+    <outputFields>icell</outputFields>   <!-- type de cellule : 0=bâtiment, 1=air, 2=terrain -->
+    <outputFields>mag</outputFields>     <!-- module vitesse sqrt(u²+v²+w²) (m/s) -->
+  </fileOptions>
+</QESWindsParameters>

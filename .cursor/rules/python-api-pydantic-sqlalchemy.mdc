@@ -1,0 +1,142 @@
+---
+description: Bonnes pratiques pour API Python avec Pydantic et SQLAlchemy
+globs: backend/**/*.py
+alwaysApply: true
+---
+
+# Règle API Python — Pydantic & SQLAlchemy
+
+Quand tu écris du code backend Python (FastAPI ou Flask), respecte strictement la séparation des couches et les conventions ci-dessous.
+
+---
+
+## 1. Séparation des modèles
+
+Ne jamais mélanger les modèles SQLAlchemy (ORM) et les schémas Pydantic.
+
+| Couche | Rôle | Fichier type |
+|--------|------|--------------|
+| `models/` | Modèles SQLAlchemy — représentent les tables | `models/user.py` |
+| `schemas/` | Schémas Pydantic — validation I/O de l'API | `schemas/user.py` |
+| `crud/` ou `repositories/` | Logique d'accès à la DB | `crud/user.py` |
+| `routers/` | Endpoints FastAPI | `routers/user.py` |
+
+---
+
+## 2. Modèles SQLAlchemy
+
+- Utilise `DeclarativeBase` (SQLAlchemy 2.x) avec typage `Mapped[...]`.
+- Nomme les tables en **snake_case pluriel** (`users`, `order_items`).
+- Déclare explicitement les contraintes (`nullable`, `unique`, `index`).
+- N'ajoute jamais de logique métier dans les modèles ORM.
+
+```python
+# models/user.py
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy import String, Boolean
+
+class Base(DeclarativeBase):
+    pass
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+```
+
+---
+
+## 3. Schémas Pydantic
+
+- Utilise **Pydantic v2** (`model_config`, `ConfigDict`).
+- Sépare toujours les schémas : `Base`, `Create`, `Update`, `Response`.
+- Active `from_attributes = True` uniquement sur les schémas de réponse (lecture ORM).
+- Ne jamais exposer les champs sensibles (`password`, `secret`) dans les schémas `Response`.
+
+```python
+# schemas/user.py
+from pydantic import BaseModel, EmailStr, ConfigDict
+
+class UserBase(BaseModel):
+    email: EmailStr
+
+class UserCreate(UserBase):
+    password: str
+
+class UserUpdate(BaseModel):
+    email: EmailStr | None = None
+    is_active: bool | None = None
+
+class UserResponse(UserBase):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    is_active: bool
+```
+
+---
+
+## 4. Accès base de données (CRUD / Repository)
+
+- Toujours injecter la `Session` via dépendance FastAPI (`Depends(get_db)`).
+- Utiliser les requêtes SQLAlchemy 2.x (`select`, `update`, `delete` avec `execute`).
+- Ne jamais faire de `session.commit()` dans les routers — déléguer au CRUD.
+- Gérer les `not found` avec une exception explicite, pas un `None` silencieux.
+
+```python
+# crud/user.py
+from sqlalchemy.orm import Session
+from sqlalchemy import select
+from models.user import User
+from schemas.user import UserCreate
+
+def get_user(db: Session, user_id: int) -> User:
+    user = db.execute(select(User).where(User.id == user_id)).scalar_one_or_none()
+    if not user:
+        raise ValueError(f"User {user_id} not found")
+    return user
+
+def create_user(db: Session, payload: UserCreate) -> User:
+    user = User(email=payload.email)
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+```
+
+---
+
+## 5. Routers FastAPI
+
+- Typer explicitement les réponses avec `response_model=`.
+- Utiliser les codes HTTP sémantiques (`201` pour création, `204` pour suppression).
+- Attraper les exceptions métier et les convertir en `HTTPException`.
+
+```python
+# routers/user.py
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+from schemas.user import UserCreate, UserResponse
+from crud import user as crud_user
+from database import get_db
+
+router = APIRouter(prefix="/users", tags=["users"])
+
+@router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+def create_user(payload: UserCreate, db: Session = Depends(get_db)):
+    try:
+        return crud_user.create_user(db, payload)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+```
+
+---
+
+## Contraintes absolues
+
+- ❌ Ne jamais retourner un objet SQLAlchemy directement depuis un endpoint — toujours passer par un schéma Pydantic.
+- ❌ Ne jamais utiliser `db.query()` (API legacy SQLAlchemy 1.x) — utiliser `select()`.
+- ❌ Ne jamais mettre de `session.commit()` dans un router.
+- ✅ Toujours utiliser `Mapped[...]` pour le typage des colonnes SQLAlchemy 2.x.
+- ✅ Toujours valider les données entrantes via un schéma Pydantic dédié (`Create` ou `Update`).

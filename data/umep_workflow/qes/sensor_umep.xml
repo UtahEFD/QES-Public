@@ -1,0 +1,30 @@
+<!-- Capteur vent de référence — La Rochelle (umep_workflow), référencé par sensorName dans umep_larochelle.xml -->
+<sensor>
+    <!-- Sensor site coordinate system (1=QES (default), 2=UTM, 3=Lat/Lon) -->
+    <!-- site_xcoord/site_ycoord : recalculés par run_qeswinds.sh (centre bord nord DEM, QES local sans halo) -->
+    <site_coord_flag> 1 </site_coord_flag>
+    <site_xcoord> 511.8 </site_xcoord>
+    <site_ycoord> 603.4 </site_ycoord>
+
+
+  <timeSeries>
+    <!-- Horodatage ISO 8601 ; doit correspondre à totalTimeIncrements / série UMEP si multi-pas -->
+    <timeStamp>2025-07-01T12:00:00</timeStamp>
+    <!-- Profil vertical initial : 1=log, 2=power law, 3=urban canopy, 4=profil mesuré -->
+    <boundaryLayerFlag> 2 </boundaryLayerFlag>
+    <!-- Rugosité de surface au sol (m) -->
+    <siteZ0> 0.24 </siteZ0>
+    <!-- Inverse longueur de Monin-Obukhov 1/L (1/m) ; 0.0 = neutre -->
+    <reciprocal> 0.0 </reciprocal>
+    <!-- Hauteur de mesure du vent (m) -->
+    <height> 10.0 </height>
+    <!-- Vitesse mesurée à cette hauteur (m/s) -->
+    <speed> 3.0 </speed>
+    <!-- Direction du vent (degrés, convention météo : d'où vient le vent) ; 270 = depuis l'ouest -->
+    <direction> 270.0 </direction>
+    <!-- Hauteur de canopée urbaine (m) — requis si boundaryLayerFlag=3 -->
+    <canopyHeight> 3.0 </canopyHeight>
+    <!-- Coefficient d'atténuation du profil urban canopy — requis si boundaryLayerFlag=3 -->
+    <attenuationCoefficient> 1.0 </attenuationCoefficient>
+  </timeSeries>
+</sensor>

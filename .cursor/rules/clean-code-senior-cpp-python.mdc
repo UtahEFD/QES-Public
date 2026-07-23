@@ -1,0 +1,52 @@
+---
+description: Code C++/Python propre, attitude développeur senior — fonctions claires, courtes, documentées
+alwaysApply: true
+---
+
+# Code propre — attitude senior (C++ & Python)
+
+Écrire comme un développeur senior : lisible, minimal, intentionnel. Pas de cleverness inutile.
+
+## Principes
+
+- **Une fonction = une responsabilité.** Nommer ce qu’elle fait (`computeNz`, `resolveDemPath`), pas comment.
+- **Courtes.** Idéalement < 40 lignes. Au-delà : extraire des helpers privés / méthodes locales.
+- **Simples.** Préférer le chemin heureux clair ; erreurs explicites tôt (`return`/`throw`/`QESout::error`).
+- **Documentées.** Docstring / commentaire de tête : *quoi* et *pourquoi*, pas le *comment* évident. Pas de commentaires narratifs ligne à ligne.
+- **Pas de duplication.** Factoriser seulement quand le pattern est stable (pas de sur-abstraction anticipée).
+- **Diffs ciblés.** Ne pas reformater ni « nettoyer » du code hors périmètre de la tâche.
+
+## Fonctions
+
+```text
+✅  parseZLevels(mag_ds) → ndarray
+✅  readBandStack(ds, time_idx) → (nz, ny, nx)
+❌  processEverythingAndWriteOutput(...)  // trop large
+```
+
+- Entrées/sorties typées (Python annotations ; C++ types explicites, `const&` si non modifié).
+- Effets de bord visibles (I/O, mutation d’état) — éviter les surprises.
+- Guards en tête, pas de nesting profond (max ~3 niveaux).
+
+## Python
+
+- Typage (`list[float]`, `Path`, `-> None`) sur l’API publique des modules.
+- Exceptions claires avec message actionnable ; pas de `except:` nu.
+- Scripts CLI : `main()` mince, logique dans des fonctions testables.
+- Respecter les règles API Pydantic/SQLAlchemy du projet quand applicable.
+
+## C++
+
+- En-têtes : responsabilités claires ; implémentation dans `.cpp`.
+- RAII, pas de raw `new`/`delete` si un smart pointer / conteneur suffit.
+- `const` correct ; éviter les variables magiques — nommer les constantes.
+- Logs / erreurs via les helpers du projet (`QESout`, etc.), pas de `printf` ad hoc dispersés.
+- Garder le style et les conventions déjà présentes dans le fichier touché.
+
+## Checklist avant de livrer
+
+- [ ] Chaque nouvelle fonction a un rôle unique et un nom clair
+- [ ] Aucune fonction « fourre-tout » > ~40 lignes sans extraction
+- [ ] Doc minimale sur l’API non évidente
+- [ ] Pas de code mort, pas de TODO non justifié
+- [ ] Compile / lint / comportement alignés avec le code voisin

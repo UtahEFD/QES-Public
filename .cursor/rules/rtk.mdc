@@ -1,0 +1,28 @@
+---
+description: Utiliser RTK pour compresser les sorties CLI (moins de tokens)
+alwaysApply: true
+---
+
+# Règle RTK (Rust Token Killer)
+
+[RTK](https://www.rtk-ai.app/) est un proxy CLI qui **compresse les sorties** des commandes avant qu’elles n’entrent dans le contexte de l’agent (moins de bruit, sessions plus longues, coûts réduits).
+
+## Quand l’utiliser
+
+- Dès qu’une commande risque de produire **beaucoup de lignes** : tests, builds, `git diff`, `git log`, `grep`/`find` larges, `cat` sur gros fichiers, etc.
+- Préfixer la commande avec `rtk` (ou utiliser les sous-commandes documentées par RTK), par ex. :
+  - `rtk git status` au lieu de `git status`
+  - `rtk git diff …` au lieu de `git diff …`
+  - `rtk grep …` / `rtk find …` selon le besoin
+  - `rtk test "pytest -v"` / équivalent pour d’autres runners si adapté à l’environnement
+
+## Contraintes pour l’agent
+
+- **Préférer** une forme filtrée / compactée (`rtk …`) plutôt que de pomper des milliers de tokens de sortie brute dans le chat.
+- Si la sortie reste énorme même avec RTK, **réduire le périmètre** (fichier ciblé, `-n`, `--stat`, etc.) plutôt que tout afficher.
+- Ne pas supposer RTK installé : si la commande échoue (`rtk: command not found`), retomber sur la commande native en restant **minimal** sur la sortie.
+
+## Référence
+
+- Site : https://www.rtk-ai.app/
+- Installation / hook global : suivre la doc du site (`rtk init --global`, etc.).
