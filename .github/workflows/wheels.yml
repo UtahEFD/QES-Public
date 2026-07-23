@@ -20,6 +20,10 @@ jobs:
   build_wheels:
     name: Wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    # upload-artifact@v4+ uses the actions API namespace (not contents).
+    permissions:
+      contents: read
+      actions: write
     strategy:
       fail-fast: false
       matrix:
@@ -46,9 +50,9 @@ jobs:
           CIBW_MANYLINUX_X86_64_IMAGE: "manylinux_2_28"
 
           # --- Linux: bootstrap vcpkg inside the manylinux container ---
-          # openssl Configure needs a full Perl core (FindBin, Data::Dumper, IPC::Cmd)
-          # plus kernel headers. freexl (GDAL → libspatialite) needs autotools.
-          # manylinux_2_28 (EL8) is minimal — install all of these explicitly.
+          # openssl Configure needs a full Perl core + kernel headers.
+          # Autotools kept for any remaining autotools-based vcpkg ports.
+          # (GDAL is built without libspatialite/freexl — see vcpkg.json.)
           CIBW_BEFORE_ALL_LINUX: >
             dnf install -y zip unzip tar curl ninja-build flex bison
             perl-core kernel-headers
@@ -83,6 +87,9 @@ jobs:
   build_sdist:
     name: Build sdist
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
     steps:
       - uses: actions/checkout@v4
 

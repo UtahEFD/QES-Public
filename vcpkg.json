@@ -4,7 +4,15 @@
   "version-string": "2.3.1",
   "description": "Native dependencies for building the pyQES pybind11 wheels.",
   "dependencies": [
-    "gdal",
+    {
+      "name": "gdal",
+      "default-features": false,
+      "features": [
+        "recommended-features",
+        "iconv",
+        "openssl"
+      ]
+    },
     "netcdf-cxx4",
     {
       "name": "boost-program-options",

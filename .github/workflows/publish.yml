@@ -19,6 +19,7 @@ jobs:
       url: https://pypi.org/p/pyqes
     permissions:
       id-token: write  # required for Trusted Publishing (OIDC)
+      actions: read    # download-artifact@v4+
     steps:
       - name: Download all build artifacts
         uses: actions/download-artifact@v4
