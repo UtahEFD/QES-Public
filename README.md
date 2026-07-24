@@ -88,7 +88,21 @@ Optional extras (also pulled by the `dev` dependency group):
 uv sync --extra geo --extra io   # rasterio/pyproj/geopandas + netCDF4
 ```
 
-Wheel builds for macOS / Linux / Windows are produced by GitHub Actions (`wheels.yml`) and published to PyPI on `v*` tags (`publish.yml`).
+**Wheels (CI / PyPI)**
+
+| Build | Workflow | Platforms | Notes |
+|-------|----------|-----------|--------|
+| CPU | [`wheels.yml`](.github/workflows/wheels.yml) | Linux (manylinux), macOS, Windows | Default `pip install pyqes` |
+| GPU (CUDA) | [`cuda-build.yml`](.github/workflows/cuda-build.yml) | Linux host (`linux_x86_64`, CPython 3.12) | Built with CUDA 12.4; needs a CUDA 12.x runtime at import/run time |
+
+Both are published to PyPI on `v*` tags ([`publish.yml`](.github/workflows/publish.yml)). On Linux, pip prefers the **manylinux CPU** wheel over the host GPU wheel when both match; use the GPU wheel file from the release artifacts / PyPI files list if you need CUDA, then check:
+
+```python
+import pyQES._util
+assert pyQES._util.has_cuda  # True only for the CUDA-built wheel
+```
+
+Pass `solver="gpu"` to `pywinds.run` / `pyfire.run` when using a GPU wheel on a machine with a suitable NVIDIA GPU (Compute Capability 7.0+).
 
 > **macOS tip:** if `uv sync` builds an `x86_64` wheel on Apple Silicon, check that `ARCHFLAGS` is not forced to `-arch x86_64` in your shell profile. Prefer `export ARCHFLAGS="-arch $(uname -m)"`.
 
@@ -345,8 +359,9 @@ GitHub Actions workflows:
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
 | [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | push / PR (Python paths) | Ruff, mypy, fast pytest |
-| [`.github/workflows/wheels.yml`](.github/workflows/wheels.yml) | PR / dispatch / reusable | Cross-platform wheels (cibuildwheel + vcpkg) |
-| [`.github/workflows/publish.yml`](.github/workflows/publish.yml) | tag `v*` | Build wheels and publish to PyPI (Trusted Publishing) |
+| [`.github/workflows/wheels.yml`](.github/workflows/wheels.yml) | PR / dispatch / reusable | Cross-platform **CPU** wheels (cibuildwheel + vcpkg) |
+| [`.github/workflows/cuda-build.yml`](.github/workflows/cuda-build.yml) | PR / push / dispatch / reusable | Linux **CUDA** wheel (scikit-build + vcpkg + CUDA 12.4); asserts `has_cuda` |
+| [`.github/workflows/publish.yml`](.github/workflows/publish.yml) | tag `v*` | CPU wheels + CUDA wheel + sdist → PyPI (Trusted Publishing) |
 
 The project [`README.md`](README.md) is declared as the package long description in [`pyproject.toml`](pyproject.toml) (`project.readme`). It is embedded in the wheel/sdist `METADATA` / `PKG-INFO` (Markdown) and therefore shown on the PyPI project page when a release is published.
 

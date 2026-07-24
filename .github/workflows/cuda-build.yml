@@ -1,0 +1,116 @@
+# Build a Linux pyQES wheel with CUDA (QES_BUILD_PYTHON=ON).
+# Host Ubuntu wheel (not manylinux). Also invoked from publish.yml on tags.
+#
+# ubuntu-22.04: Jimver/cuda-toolkit 12.4.1 404s on ubuntu-24.04 (ubuntu-latest).
+
+name: cuda-build
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  push:
+    paths:
+      - "src/bindings/**"
+      - "src/winds/**"
+      - "src/plume/**"
+      - "src/fire/**"
+      - "src/util/**"
+      - "src/pyQES/**"
+      - "CMakeLists.txt"
+      - "pyproject.toml"
+      - "vcpkg.json"
+      - "vcpkg-configuration.json"
+      - "overlays/vcpkg/**"
+      - ".github/workflows/cuda-build.yml"
+  pull_request:
+    paths:
+      - "src/bindings/**"
+      - "src/winds/**"
+      - "src/plume/**"
+      - "src/fire/**"
+      - "src/util/**"
+      - "src/pyQES/**"
+      - "CMakeLists.txt"
+      - "pyproject.toml"
+      - "vcpkg.json"
+      - "vcpkg-configuration.json"
+      - "overlays/vcpkg/**"
+      - ".github/workflows/cuda-build.yml"
+
+concurrency:
+  group: cuda-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_cuda_wheel:
+    name: Linux GPU wheel (cp312)
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      actions: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install CUDA toolkit
+        uses: Jimver/cuda-toolkit@v0.2.35
+        id: cuda-toolkit
+        with:
+          cuda: "12.4.1"
+          method: local
+          linux-local-args: '["--toolkit"]'
+
+      - name: Verify nvcc
+        run: nvcc -V
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            ninja-build zip unzip tar curl \
+            autoconf autoconf-archive automake libtool \
+            pkg-config
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
+
+      - name: Bootstrap vcpkg
+        run: |
+          git clone --depth 1 https://github.com/microsoft/vcpkg "${GITHUB_WORKSPACE}/vcpkg"
+          "${GITHUB_WORKSPACE}/vcpkg/bootstrap-vcpkg.sh" -disableMetrics
+          echo "VCPKG_ROOT=${GITHUB_WORKSPACE}/vcpkg" >> "$GITHUB_ENV"
+
+      - name: Build CUDA wheel
+        env:
+          # QES_BUILD_PYTHON=ON / ENABLE_TESTS=OFF come from pyproject.toml.
+          CMAKE_ARGS: >-
+            -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
+            -DVCPKG_INSTALLED_DIR=${{ github.workspace }}/vcpkg_installed
+            -DCMAKE_CUDA_ARCHITECTURES=70
+            -DHAS_OPTIX_SUPPORT=OFF
+            -DCMAKE_CUDA_COMPILER=${{ steps.cuda-toolkit.outputs.CUDA_PATH }}/bin/nvcc
+        run: |
+          uv build --wheel --python 3.12 -o dist
+
+      - name: Smoke-test wheel (require has_cuda)
+        env:
+          # Host wheel is not delocated; point at vcpkg + CUDA runtimes for import.
+          LD_LIBRARY_PATH: ${{ github.workspace }}/vcpkg_installed/x64-linux/lib:${{ steps.cuda-toolkit.outputs.CUDA_PATH }}/lib64
+        run: |
+          uv venv --python 3.12 .venv-cuda
+          uv pip install --python .venv-cuda dist/*.whl
+          .venv-cuda/bin/python -c "
+          import pyQES._util
+          assert pyQES._util.has_cuda, 'wheel built without CUDA'
+          import pyQES._winds, pyQES._plume, pyQES._fire
+          import pyQES
+          print('pyQES', pyQES.__version__, 'has_cuda=', pyQES._util.has_cuda)
+          "
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-linux-cuda
+          path: dist/*.whl

@@ -5,14 +5,17 @@ on:
     tags: ["v*"]
 
 jobs:
-  # Rebuild wheels + sdist for the tag, then publish to PyPI via Trusted
-  # Publishing (OIDC). No API token is stored in the repository.
+  # Rebuild CPU wheels + sdist + Linux CUDA wheel for the tag, then publish
+  # to PyPI via Trusted Publishing (OIDC). No API token is stored in the repo.
   call-wheels:
     uses: ./.github/workflows/wheels.yml
 
+  call-cuda-build:
+    uses: ./.github/workflows/cuda-build.yml
+
   publish-pypi:
     name: Publish to PyPI
-    needs: call-wheels
+    needs: [call-wheels, call-cuda-build]
     runs-on: ubuntu-latest
     environment:
       name: pypi
@@ -21,7 +24,8 @@ jobs:
       id-token: write  # required for Trusted Publishing (OIDC)
       actions: read    # download-artifact@v4+
     steps:
-      - name: Download all build artifacts
+      # Includes CPU wheels (wheels-ubuntu-latest, …) and wheels-linux-cuda.
+      - name: Download all wheel artifacts
         uses: actions/download-artifact@v4
         with:
           path: dist
@@ -34,6 +38,9 @@ jobs:
           name: sdist
           path: dist
           merge-multiple: true
+
+      - name: List packages to publish
+        run: ls -la dist
 
       - name: Publish
         uses: pypa/gh-action-pypi-publish@release/v1
