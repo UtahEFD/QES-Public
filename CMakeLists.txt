@@ -20,6 +20,11 @@ PROJECT(QES VERSION 2.3.1 LANGUAGES CXX)
 # Absolute paths — work as top-level project or as a subdirectory (pyQES).
 set(QES_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(QES_SRC_DIR "${QES_ROOT_DIR}/src")
+# Directory-scoped sets stay local; export when embedded so pyQES native/ can see them.
+if (NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  set(QES_ROOT_DIR "${QES_ROOT_DIR}" PARENT_SCOPE)
+  set(QES_SRC_DIR "${QES_SRC_DIR}" PARENT_SCOPE)
+endif()
 
 # The following will pass the version into the code as a preprocessor variable
 SET(QES_VERSION_INFO v${QES_VERSION_MAJOR}.${QES_VERSION_MINOR}.${QES_VERSION_PATCH})
@@ -449,6 +454,25 @@ endif (DOXYGEN_FOUND)
 #   build the code
 # ----------------------------------------------------------
 function(link_external_libraries exec)
+  # Directory INCLUDE_DIRECTORIES in this file do not apply to sibling
+  # targets (e.g. pyQES native/); attach headers on the consumer explicitly.
+  target_include_directories(${exec} PRIVATE
+    ${Boost_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIR}
+    ${GDAL_INCLUDE_DIR}
+  )
+  if (WIN32 OR CMAKE_TOOLCHAIN_FILE)
+    target_include_directories(${exec} PRIVATE
+      ${NETCDF_C_INCLUDE_DIR}
+      ${netCDF_INCLUDE_DIR}
+    )
+  else()
+    target_include_directories(${exec} PRIVATE
+      ${NETCDF_INCLUDES}
+      ${NETCDF_INCLUDES_CXX}
+    )
+  endif()
+
   target_link_libraries(${exec} PRIVATE ${Boost_LIBRARIES})
 #  target_link_libraries(${exec} PRIVATE ${Boost_DATE_TIME_LIBRARIES})
   #target_link_libraries(${exec} PRIVATE ${Boost_FILESYSTEM_LIBRARIES})
@@ -465,8 +489,8 @@ function(link_external_libraries exec)
     target_link_libraries(${exec} PRIVATE ${CUDA_LIBRARIES})
   ENDIF()
 
-  IF (ENABLE_OPENMP AND ${OpenMP_FOUND})
-    target_link_libraries(${exec} PRIVATE ${OpenMP_CXX_LIBRARIES})    
+  IF (ENABLE_OPENMP AND OpenMP_FOUND)
+    target_link_libraries(${exec} PRIVATE ${OpenMP_CXX_LIBRARIES})
   ENDIF()
 endfunction()
 
