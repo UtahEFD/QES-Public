@@ -110,6 +110,9 @@ public:
    * @param itermax Maximum number of iterations
    */
   virtual void solve(WINDSGeneralData *, const int &) = 0;
+
+  /** Required: Solver is deleted through a base pointer in library runners. */
+  virtual ~Solver() = default;
 };
 
 inline void Solver::resetLambda()
