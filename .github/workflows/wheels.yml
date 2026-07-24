@@ -87,9 +87,11 @@ jobs:
           # .pyds load but GDAL/NetCDF/Boost DLLs are missing → ImportError.
           # Pin VCPKG_INSTALLED_DIR so repair can find DLLs outside build/{tag}.
           CIBW_BEFORE_BUILD_WINDOWS: "python -m pip install delvewheel"
+          # Quote PATH: an unquoted ";" is treated as an env-var separator by
+          # cibuildwheel's bash lexer ("Malformed environment option").
           CIBW_ENVIRONMENT_WINDOWS: >
             VCPKG_DEFAULT_TRIPLET=x64-windows
-            PATH=$GITHUB_WORKSPACE/vcpkg_installed/x64-windows/bin;$PATH
+            PATH="$GITHUB_WORKSPACE/vcpkg_installed/x64-windows/bin;$PATH"
             CMAKE_ARGS="-DCMAKE_TOOLCHAIN_FILE=$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake -DVCPKG_INSTALLED_DIR=$GITHUB_WORKSPACE/vcpkg_installed"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: >
             python -c "import os, subprocess, sys; bin_dir = os.path.join(os.environ['GITHUB_WORKSPACE'], 'vcpkg_installed', 'x64-windows', 'bin'); subprocess.check_call(['delvewheel', 'repair', '-w', sys.argv[1], '--add-path', bin_dir, '-v', sys.argv[2]])"
