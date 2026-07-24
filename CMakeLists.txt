@@ -17,12 +17,20 @@ CMAKE_POLICY(SET CMP0074 NEW)
 # from CMake based on the Version number provided in the PROJECT command.
 PROJECT(QES VERSION 2.3.1 LANGUAGES CXX)
 
+# Absolute paths — work as top-level project or as a subdirectory (pyQES).
+set(QES_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+set(QES_SRC_DIR "${QES_ROOT_DIR}/src")
+
 # The following will pass the version into the code as a preprocessor variable
 SET(QES_VERSION_INFO v${QES_VERSION_MAJOR}.${QES_VERSION_MINOR}.${QES_VERSION_PATCH})
 ADD_DEFINITIONS(-DQES_VERSION_INFO="${QES_VERSION_INFO}")
 MESSAGE(STATUS "Building QES ${QES_VERSION_INFO}")
 
-LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+# CMAKE_CURRENT_SOURCE_DIR so this file works both as a top-level project and
+# as a subdirectory (e.g. pyQES submodule qes-core).
+LIST(APPEND CMAKE_MODULE_PATH
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
 MESSAGE(STATUS "CMake Module Path: ${CMAKE_MODULE_PATH}")
 
 
@@ -38,12 +46,11 @@ option(ENABLE_OPENMP "Enable multithreaded support with OpenMP." OFF)
 option(ENABLE_CPPCHECK "Enable static analysis with cppcheck" OFF)
 option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
 option(ENABLE_TESTS "Enable Testing suite" OFF)
-option(QES_BUILD_PYTHON "Build the pyQES pybind11 extension modules (used for the Python wheel)." OFF)
+# When OFF (e.g. pyQES parent build), only core libraries are built — no CLI,
+# examples, or CPack. PIC is required so pybind11 modules can link the libs.
+option(QES_BUILD_APPS "Build QES CLI applications, examples, and CPack packages." ON)
 
-# When building the Python wheel we compile the core libraries into shared
-# pybind11 modules, so the object code must be position independent and the
-# CLI executables / examples / tests are not needed.
-if (QES_BUILD_PYTHON)
+if (NOT QES_BUILD_APPS)
   set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
 
@@ -249,7 +256,9 @@ if (WIN32 OR CMAKE_TOOLCHAIN_FILE) # MATCHES "vcpkg.cmake$"))
   ENDIF(netCDF_FOUND)
 
   # reset the module path...
-  LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+  LIST(APPEND CMAKE_MODULE_PATH
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/")
   MESSAGE(STATUS "CMake Module Path: ${CMAKE_MODULE_PATH}")
 else()
   # What we had before - but doesn't work so well with vcpkg or Windows
@@ -366,7 +375,7 @@ if(HAS_CUDA_SUPPORT)
       # 
       # include the OptiX macros
       #
-      include(${CMAKE_SOURCE_DIR}/cmake/Optix_macros.cmake)
+      include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Optix_macros.cmake)
 
       # Set the preprocessor definitions to conditonally compile the optix code
       SET(HAS_OPTIX_SUPPORT ON CACHE BOOL "Determines if OptiX functionality is compiled into the code base" FORCE)
@@ -469,18 +478,10 @@ add_subdirectory(src/winds)
 add_subdirectory(src/plume)
 add_subdirectory(src/fire)
 
-if (QES_BUILD_PYTHON)
-
-  # ----------------------------------------------------------
-  # Python wheel build: core libraries + pybind11 modules only.
-  # The CLI executables, examples and tests are skipped.
-  # ----------------------------------------------------------
-  FIND_PACKAGE(pybind11 CONFIG REQUIRED)
-  MESSAGE(STATUS "Building pyQES pybind11 modules (pybind11 ${pybind11_VERSION}).")
-  add_subdirectory(src/bindings)
-
-else (QES_BUILD_PYTHON)
-
+# ----------------------------------------------------------
+# CLI applications / examples (skipped when embedded by pyQES)
+# ----------------------------------------------------------
+if (QES_BUILD_APPS)
   # add_subdirectory(scratch)
   add_subdirectory(examples)
 
@@ -490,8 +491,7 @@ else (QES_BUILD_PYTHON)
   add_subdirectory(qesPlume)
   add_subdirectory(qesFire)
   add_subdirectory(qes)
-
-endif (QES_BUILD_PYTHON)
+endif (QES_BUILD_APPS)
 
 # ----------------------------------------------------------
 #  Testing Suite
@@ -521,7 +521,7 @@ IF (ENABLE_TESTS)
 ENDIF()
 
 
-if (NOT QES_BUILD_PYTHON)
+if (QES_BUILD_APPS)
 
 set(CPACK_PACKAGE_NAME "${CMAKE_PROJECT_NAME}")
 set(CPACK_PACKAGE_VENDOR "UtahEFD")
@@ -531,14 +531,14 @@ set(CPACK_PACKAGE_VERSION ${QES_VERSION_INFO})
 set(CPACK_PACKAGE_CONTACT "https://qes-documentation.readthedocs.io/en/latest")
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/UtahEFD")
 
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
-set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}")
 
-install(FILES "${CMAKE_SOURCE_DIR}/README.md" DESTINATION "${CPACK_PACKAGE_INSTALL_DIRECTORY}")
-install(FILES "${CMAKE_SOURCE_DIR}/LICENSE" DESTINATION "${CPACK_PACKAGE_INSTALL_DIRECTORY}")
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/data" DESTINATION "${CPACK_PACKAGE_INSTALL_DIRECTORY}")
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/README.md" DESTINATION "${CPACK_PACKAGE_INSTALL_DIRECTORY}")
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE" DESTINATION "${CPACK_PACKAGE_INSTALL_DIRECTORY}")
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/data" DESTINATION "${CPACK_PACKAGE_INSTALL_DIRECTORY}")
 install(TARGETS ${QES_INSTALL_EXECUTABLES} RUNTIME DESTINATION ${CPACK_PACKAGE_INSTALL_DIRECTORY}/bin)
 
 if(WIN32)
@@ -555,7 +555,7 @@ if(WIN32)
   
 elseif(APPLE)
   set(CPACK_GENERATOR "DragNDrop")  # macOS DMG package
-  set(CPACK_DMG_BACKGROUND_IMAGE "${CMAKE_SOURCE_DIR}/data/qesBackground.png")
+  set(CPACK_DMG_BACKGROUND_IMAGE "${CMAKE_CURRENT_SOURCE_DIR}/data/qesBackground.png")
 elseif(UNIX)
   # unix package gen has not been tested
   set(CPACK_GENERATOR "DEB;RPM")  # Linux: Deb for Debian/Ubuntu, RPM for Fedora/RHEL
@@ -566,4 +566,4 @@ endif()
 
 include( CPack )
 
-endif (NOT QES_BUILD_PYTHON)
+endif (QES_BUILD_APPS)

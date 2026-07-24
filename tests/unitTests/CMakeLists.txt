@@ -1,4 +1,4 @@
-include_directories(${CMAKE_SOURCE_DIR}/src)
+include_directories(${QES_SRC_DIR})
 include_directories(.)
 
 #FILE(GLOB files "*.h")

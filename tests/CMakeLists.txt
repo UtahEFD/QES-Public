@@ -25,30 +25,30 @@ ENDIF()
 function(add_sanity_check_winds_CPU infile_prefix)
   add_test(NAME sanity_check::winds_CPU_${infile_prefix}
           COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds
-          -q ${CMAKE_SOURCE_DIR}/tests/runTestsFiles/winds_${infile_prefix}.xml -s 1
+          -q ${QES_ROOT_DIR}/tests/runTestsFiles/winds_${infile_prefix}.xml -s 1
           -o test_CPU_${infile_prefix} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 endfunction()
 
 function(add_sanity_check_winds_GPU infile_prefix)
   add_test(NAME sanity_check::winds_GPU_${infile_prefix}
           COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds
-          -q ${CMAKE_SOURCE_DIR}/tests/runTestsFiles/winds_${infile_prefix}.xml -s 3
+          -q ${QES_ROOT_DIR}/tests/runTestsFiles/winds_${infile_prefix}.xml -s 3
           -o test_GPU_${infile_prefix} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 endfunction()
 
 function(add_sanity_check_qes_CPU infile_prefix)
   add_test(NAME sanity_check::qes_CPU_${infile_prefix}
           COMMAND ${CMAKE_BINARY_DIR}/qes/qes
-          -q ${CMAKE_SOURCE_DIR}/tests/runTestsFiles/winds_${infile_prefix}.xml -s 1
-          -p ${CMAKE_SOURCE_DIR}/tests/runTestsFiles/plume_${infile_prefix}.xml
+          -q ${QES_ROOT_DIR}/tests/runTestsFiles/winds_${infile_prefix}.xml -s 1
+          -p ${QES_ROOT_DIR}/tests/runTestsFiles/plume_${infile_prefix}.xml
           -o test_CPU_${infile_prefix} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 endfunction()
 
 function(add_sanity_check_qes_GPU infile_prefix)
   add_test(NAME sanity_check::qes_GPU_${infile_prefix}
           COMMAND ${CMAKE_BINARY_DIR}/qes/qes
-          -q ${CMAKE_SOURCE_DIR}/tests/runTestsFiles/winds_${infile_prefix}.xml -s 3
-          -p ${CMAKE_SOURCE_DIR}/tests/runTestsFiles/plume_${infile_prefix}.xml
+          -q ${QES_ROOT_DIR}/tests/runTestsFiles/winds_${infile_prefix}.xml -s 3
+          -p ${QES_ROOT_DIR}/tests/runTestsFiles/plume_${infile_prefix}.xml
           -o test_GPU_${infile_prefix} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 endfunction()
 
@@ -128,7 +128,7 @@ link_external_libraries(compareWindsResults)
 function(add_comparison_test infile_prefix solver_arg solver_name)
   add_test(NAME ${solver_name}_COMPARISON_${infile_prefix}
           COMMAND ${CMAKE_BINARY_DIR}/tests/compareSolvers
-          -q ${CMAKE_SOURCE_DIR}/data/InputFiles/${infile_prefix}.xml
+          -q ${QES_ROOT_DIR}/data/InputFiles/${infile_prefix}.xml
           -s ${solver_arg} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 endfunction()
 
