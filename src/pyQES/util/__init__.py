@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 # Geospatial helpers depend on optional native libraries (rasterio/pyproj/
 # geopandas); import lazily so `import pyQES.util` works without them.
 from . import geo  # noqa: F401  (re-exported module)
@@ -43,4 +45,15 @@ __all__ = [
     "resolve_work_dir",
     "resolve_path",
     "geo",
+    "mag_to_tif",
+    "default_mag_tif_name",
 ]
+
+
+def __getattr__(name: str) -> Any:
+    """Lazy-load NetCDF/rasterio exporters so light imports stay optional-free."""
+    if name in ("mag_to_tif", "default_mag_tif_name"):
+        from . import outputs
+
+        return getattr(outputs, name)
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

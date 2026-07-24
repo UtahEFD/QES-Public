@@ -291,12 +291,15 @@ def main() -> int:
     print(f"Work dir: {kwargs['work_dir']}")
 
     result = pywinds.run(**kwargs)
+    tif = pywinds.to_tif(z=1.5)
+    print(tif)
 
     print("Done.")
     if getattr(result, "winds_out", None):
         print(f"  winds_out: {result.winds_out}")
     if getattr(result, "winds_wk", None):
         print(f"  winds_wk:  {result.winds_wk}")
+    
     return 0
 
 
